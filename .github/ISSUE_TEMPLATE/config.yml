@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question or propose an idea
+    url: https://github.com/openqa-cn/openqa-skills/discussions
+    about: Use Discussions for questions and design conversations.
+  - name: Security vulnerability
+    url: mailto:security@openqa.cn
+    about: Do not disclose security vulnerabilities in public issues.
