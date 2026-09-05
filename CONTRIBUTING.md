@@ -2,6 +2,8 @@
 
 We welcome skills, adapters, benchmark cases, documentation, and reproducible bug reports.
 
+Agent-assisted contributions are welcome. They must include human maintainer review and reproducible evidence; generated code or text is not, by itself, evidence of correctness.
+
 ## Before opening a pull request
 
 - Explain the user problem and the expected verification outcome.

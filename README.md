@@ -47,7 +47,7 @@ Early access. The public repository is being built around real, reproducible exa
 
 - [x] Publish the first three skill contracts
 - [x] Add portable evidence schema
-- [ ] Publish production-usable skill implementations
+- [ ] Publish executable skill adapters with reproducible examples
 - [ ] Add seeded-defect benchmark
 - [ ] Add GitHub Action and CLI
 - [ ] Add adapters for Claude Code, Codex, Cursor, Playwright, pytest, and API runners
@@ -68,6 +68,7 @@ Apache-2.0. See [LICENSE](LICENSE).
 - Open-source project: https://github.com/openqa-cn/openqa-skills
 - Report a problem: https://github.com/openqa-cn/openqa-skills/issues
 - Discussions: https://github.com/openqa-cn/openqa-skills/discussions
+- Support matrix: [docs/SUPPORT_MATRIX.md](docs/SUPPORT_MATRIX.md)
 
 ## Project status
 

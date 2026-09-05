@@ -35,6 +35,7 @@ cd openqa-skills
 - [Benchmark 规范](benchmarks/README.md)：评估测试有效性的原则；
 - [贡献指南](CONTRIBUTING.md)：如何提交 Skill、适配器和案例；
 - [支持与反馈](SUPPORT.md)：问题、讨论和企业合作入口。
+- [支持矩阵](docs/SUPPORT_MATRIX.md)：当前工具和框架的真实状态。
 
 ## 相关链接
 
