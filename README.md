@@ -1,8 +1,16 @@
 # OpenQA Skills
 
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/status-early%20access-orange.svg)](https://openqa.cn)
+[![Website](https://img.shields.io/badge/website-openqa.cn-111827.svg)](https://openqa.cn)
+
 Open-source verification skills for coding agents.
 
 OpenQA helps coding agents prove that software changes work—not only generate code or tests.
+
+> AI writes the change. OpenQA helps prove it.
+
+中文说明：[README.zh-CN.md](README.zh-CN.md)
 
 ## What this project provides
 
@@ -44,5 +52,11 @@ Apache-2.0. See [LICENSE](LICENSE).
 ## Links
 
 - Website: https://openqa.cn
-- Commercial platform: https://openqa.cn/agent
-- Report a problem: https://github.com/openqa-com/openqa-skills/issues
+- Product preview: https://openqa.cn/agent
+- Open-source project: https://github.com/openqa-cn/openqa-skills
+- Report a problem: https://github.com/openqa-cn/openqa-skills/issues
+- Discussions: https://github.com/openqa-cn/openqa-skills/discussions
+
+## Project status
+
+This repository is the public, local-first layer of the OpenQA project. Commercial services may provide hosted execution, enterprise history, private deployment, and organization-level analysis. See [the boundary](docs/COMMERCIAL_BOUNDARY.md).

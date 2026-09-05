@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+title: OpenQA Skills
+message: If OpenQA Skills contributes to your work, please cite this project.
+type: software
+url: https://github.com/openqa-cn/openqa-skills
+repository-code: https://github.com/openqa-cn/openqa-skills
+license: Apache-2.0
+authors:
+  - name: OpenQA Contributors
