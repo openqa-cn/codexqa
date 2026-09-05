@@ -53,6 +53,8 @@ Early access. The public repository is being built around real, reproducible exa
 - [ ] Add adapters for Claude Code, Codex, Cursor, Playwright, pytest, and API runners
 - [ ] Document optional OpenQA Cloud capabilities for team history, assets, impact analysis, and hosted execution
 
+See the [repository architecture](docs/ARCHITECTURE.md) for the long-term structure and maturity rules.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Please share reproducible examples, failures, and adapters.
