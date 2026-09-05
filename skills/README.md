@@ -1,6 +1,6 @@
 # Skills
 
-Each skill will be independently runnable and documented. The first release will contain:
+Each skill is independently documented. The current release contains workflow contracts; executable adapters and reproducible examples will be added incrementally. The first release contains:
 
 - `verify-change`
 - `test-quality`

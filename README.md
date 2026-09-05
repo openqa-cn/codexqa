@@ -20,6 +20,17 @@ OpenQA helps coding agents prove that software changes work—not only generate 
 
 The skills are designed to run locally with your existing coding agent, test runner, and CI. No OpenQA Cloud account is required.
 
+## Quick start
+
+Clone the repository and open the skill instructions in your coding agent:
+
+```bash
+git clone https://github.com/openqa-cn/openqa-skills.git
+cd openqa-skills
+```
+
+Start with [`skills/verify-change/SKILL.md`](skills/verify-change/SKILL.md). Copy or reference the instructions from your agent, then provide a local diff, acceptance criteria, and the commands that can be run safely. The current release is a contract and workflow preview; executable adapters are being added incrementally.
+
 ## Status
 
 Early access. The public repository is being built around real, reproducible examples and benchmarks. Interfaces may change before v1.0.
@@ -34,8 +45,9 @@ Early access. The public repository is being built around real, reproducible exa
 
 ## Roadmap
 
-- [ ] Publish the first three production-usable skills
-- [ ] Add portable evidence schema
+- [x] Publish the first three skill contracts
+- [x] Add portable evidence schema
+- [ ] Publish production-usable skill implementations
 - [ ] Add seeded-defect benchmark
 - [ ] Add GitHub Action and CLI
 - [ ] Add adapters for Claude Code, Codex, Cursor, Playwright, pytest, and API runners

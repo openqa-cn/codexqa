@@ -20,6 +20,13 @@ Skills 设计为本地运行，可连接已有的测试框架和 CI，不要求�
 
 项目仍处于 early access 阶段。请先阅读 [Skills 目录](skills/README.md)、[Benchmark 规范](benchmarks/README.md) 和 [贡献指南](CONTRIBUTING.md)。
 
+```bash
+git clone https://github.com/openqa-cn/openqa-skills.git
+cd openqa-skills
+```
+
+可以先阅读 [`skills/verify-change/SKILL.md`](skills/verify-change/SKILL.md)，将其中的指令交给你正在使用的 Coding Agent，并提供本地 diff、验收条件和可安全执行的命令。当前版本是 Skill 合约和工作流预览，真正可执行的适配器会逐步加入。
+
 ## 文档导航
 
 - [英文主文档](README.md)：完整项目介绍和最新信息；
