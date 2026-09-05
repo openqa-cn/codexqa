@@ -1,6 +1,6 @@
 # Skills
 
-Each skill is independently documented. The current release contains workflow contracts; executable adapters and reproducible examples will be added incrementally. The first release contains:
+Each skill is independently documented. Every published skill has an agent-facing `SKILL.md` and a human-facing `README.md`. The current release contains workflow contracts; executable adapters and reproducible examples will be added incrementally. The first release contains:
 
 - `verify-change`
 - `test-quality`

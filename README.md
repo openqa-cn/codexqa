@@ -54,6 +54,7 @@ Early access. The public repository is being built around real, reproducible exa
 - [ ] Document optional OpenQA Cloud capabilities for team history, assets, impact analysis, and hosted execution
 
 See the [repository architecture](docs/ARCHITECTURE.md) for the long-term structure and maturity rules.
+See [PUBLISHING.md](PUBLISHING.md) and [skills.json](skills.json) for the public Skill registry and release rules.
 
 ## Contributing
 
