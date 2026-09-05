@@ -1,0 +1,19 @@
+name: Feature request
+description: Propose a verification workflow or adapter
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem
+      description: What verification problem should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence of demand
+      description: Share a reproducible example, failure, or workflow.
+    validations:
+      required: true
