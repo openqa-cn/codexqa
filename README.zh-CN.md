@@ -2,6 +2,8 @@
 
 面向 Coding Agent 的开源软件变更验证 Skills。
 
+**语言：** [English](README.md) · 简体中文
+
 > AI 负责写变更，OpenQA 帮助证明它有效。
 
 OpenQA 关注的不只是生成代码或测试，而是帮助 Agent 验证软件变更是否满足目标、覆盖关键风险，并留下可复核的证据。
@@ -17,6 +19,15 @@ Skills 设计为本地运行，可连接已有的测试框架和 CI，不要求�
 ## 快速开始
 
 项目仍处于 early access 阶段。请先阅读 [Skills 目录](skills/README.md)、[Benchmark 规范](benchmarks/README.md) 和 [贡献指南](CONTRIBUTING.md)。
+
+## 文档导航
+
+- [英文主文档](README.md)：完整项目介绍和最新信息；
+- [Skills 目录](skills/README.md)：当前和计划中的验证 Skill；
+- [Evidence Schema](schemas/evidence.schema.json)：机器可读的证据格式；
+- [Benchmark 规范](benchmarks/README.md)：评估测试有效性的原则；
+- [贡献指南](CONTRIBUTING.md)：如何提交 Skill、适配器和案例；
+- [支持与反馈](SUPPORT.md)：问题、讨论和企业合作入口。
 
 ## 相关链接
 

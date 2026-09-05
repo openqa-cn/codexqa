@@ -4,13 +4,13 @@
 [![Status](https://img.shields.io/badge/status-early%20access-orange.svg)](https://openqa.cn)
 [![Website](https://img.shields.io/badge/website-openqa.cn-111827.svg)](https://openqa.cn)
 
+**Languages:** English · [简体中文](README.zh-CN.md)
+
 Open-source verification skills for coding agents.
 
 OpenQA helps coding agents prove that software changes work—not only generate code or tests.
 
 > AI writes the change. OpenQA helps prove it.
-
-中文说明：[README.zh-CN.md](README.zh-CN.md)
 
 ## What this project provides
 
