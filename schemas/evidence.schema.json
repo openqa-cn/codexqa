@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openqa.cn/schemas/evidence/v0.1.json",
+  "title": "OpenQA Evidence Record",
+  "type": "object",
+  "required": ["version", "change", "verification", "decision"],
+  "properties": {
+    "version": {"type": "string"},
+    "change": {"type": "object"},
+    "intent": {"type": "object"},
+    "risk": {"type": "object"},
+    "verification": {"type": "object"},
+    "evidence": {"type": "array", "items": {"type": "object"}},
+    "residual_risk": {"type": "array", "items": {"type": "string"}},
+    "decision": {"enum": ["PASS", "FAIL", "REVIEW"]},
+    "production_outcome": {"type": "object"}
+  }
+}
