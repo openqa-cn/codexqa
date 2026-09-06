@@ -1,33 +1,25 @@
 # OpenQA Skills
 
-**AI-assisted defect review for coding agents.**
+**Verification infrastructure for AI software engineering.**
 
-Review code changes against implementation and business context. Produce defect candidates with source locations, reasoning, and suggested fixes for human review.
+AI coding tools can produce a patch quickly. They do not automatically show that the patch satisfies the requirement, covers the affected code paths, or remains safe to merge. Tests may pass while checking the wrong behavior; a code review may miss an indirect caller or a business rule hidden in another document.
 
-[简体中文](README.zh-CN.md) · [Getting started](docs/GETTING_STARTED.md) · [Example](examples/checkout-boundary/README.md) · [Report an issue](https://github.com/openqa-cn/openqa-skills/issues)
+OpenQA adds a verification layer around that work. It connects change intent, repository context, code impact, tests, static analysis, runtime evidence, and human decisions. The goal is a reviewable answer to a practical question: **is this change supported by enough evidence to merge or release?**
 
-## About OpenQA
+## What OpenQA provides
 
-[OpenQA](https://openqa.cn) is building verification infrastructure for AI software engineering. As coding agents take on more implementation work, teams need an independent way to determine whether a change satisfies its intent, affects the right parts of a system, and has enough direct evidence to merge or release. OpenQA treats that as an engineering verification problem rather than as a larger code-generation prompt.
+OpenQA is building an open platform for AI software engineering verification:
 
-The platform direction connects several layers:
+- **Verifier / Agent** plans and runs checks for a concrete software change.
+- **Skill Hub** distributes reusable skills and MCP tools for coding agents.
+- **Engineering systems and SaaS** connect requirements, test cases, issues, traces, and release workflows. Cross-repository code graphs and change-impact analysis are examples of this layer.
+- **Benchmarks and tool catalogues** record what a tool can do and how it performs on reproducible tasks.
 
-- **Verification Agent** — plans and executes change-level verification in a developer workstation or controlled CI environment.
-- **Skill Hub** — an open catalog of reusable skills and MCP tools that teach agents how to perform focused testing and verification workflows.
-- **Software systems and SaaS solutions** — integrations for requirements, test cases, issues, traces, and other engineering records; examples include cross-repository code knowledge graphs and change-impact analysis.
-- **Tools and benchmarks** — a directory and evaluation layer for comparing testing tools and recording evidence about what works.
-
-These layers have different release and trust boundaries. The website describes the broader product direction and hosted capabilities. This repository contains the public, local-first Skill layer: instructions, executable adapters, fixtures, and tests that developers can inspect, run, and contribute to.
+This repository is the public, local-first skill layer. It contains the `ai-defect-detection` workflow, its executable CLI, providers, fixtures, and tests. Product services and hosted capabilities may live outside this repository; see the [commercial boundary](docs/COMMERCIAL_BOUNDARY.md).
 
 - [OpenQA website](https://openqa.cn)
-- [OpenQA product preview](https://openqa.cn/agent)
-- [Skill Hub](https://openqa.cn/skills)
-- [OpenQA Skills source](https://github.com/openqa-cn/openqa-skills)
-
-This repository does not claim that a skill proves the absence of defects. It provides a repeatable workflow for collecting context, selecting checks, preserving evidence, and presenting findings for human review. Hosted or organization-level capabilities may be provided separately; see the [commercial boundary](docs/COMMERCIAL_BOUNDARY.md).
-
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![Repository checks](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml)
+- [OpenQA product](https://openqa.cn/agent)
+- [OpenQA Skill Hub](https://openqa.cn/skills)
 
 ## Install
 
@@ -35,74 +27,43 @@ This repository does not claim that a skill proves the absence of defects. It pr
 npx skills add openqa-cn/openqa-skills --skill ai-defect-detection
 ```
 
-Choose your agent interactively. Installation is project-level by default; add `--agent codex --global` for a user-level Codex installation. OpenQA does not require an npm account or its own npm package. The command installs the version available on GitHub.
+Choose an agent interactively. Use `--agent codex --global` for a user-level Codex installation. The installer fetches this repository from GitHub; no OpenQA or npm account is required.
 
-**Runtime:** Node.js and Git. Node 22.15.0 was tested with `NODE_OPTIONS=--experimental-strip-types`; set this in the environment used by the agent's commands. See [installation and troubleshooting](docs/GETTING_STARTED.md) before your first analysis.
+Requirements for running the workflow are Node.js 22+, Git, and an agent that can read skill files and run commands. Start with the [installation guide](docs/GETTING_STARTED.md).
 
-## When to use it
+## Use it
 
-- Review a repository branch before merging or handing it to QA.
-- Check implementation against supplied requirements and test cases.
-- Revisit findings with additional context and record human feedback.
-
-The current skill is [ai-defect-detection](skills/ai-defect-detection/README.md). It combines analysis instructions, a TypeScript CLI, static-analysis integration, local storage, and optional enterprise adapters.
-
-## Start a review
-
-After installing, open a new agent session and provide a request such as:
+After installation, ask your coding agent to review a repository and provide the requirement or test material it should use:
 
 ```text
-Use ai-defect-detection to review <repository URL>, branch <branch name>.
-Requirement: checkout amounts must be strictly positive.
-Focus on changed code and report each suspected defect with its location,
-trigger condition, supporting evidence, and suggested fix.
+Review REPOSITORY_URL at BRANCH_NAME with ai-defect-detection.
+Check this requirement: checkout amounts must be greater than zero.
+For each suspected defect, give the location, trigger, evidence, and fix.
 ```
 
-Replace the placeholders with an accessible repository and branch. The agent performs the analysis; the CLI alone does not supply an AI model. Missing business material limits what the review can assess.
+The workflow collects context, analyzes changed methods, runs available checks, validates findings, and produces a report for human review. It can run with local providers or connect to configured enterprise adapters.
 
-## See what a finding looks like
+## Example and verification
 
-| Field | Boundary-case example |
-| --- | --- |
-| Candidate | Zero-value checkout is accepted |
-| Trigger | `checkout(0)` |
-| Expected / actual | Reject / accept |
-| Evidence | A boundary assertion fails on the defective implementation |
-| Suggested fix | Reject amounts less than or equal to zero |
-| Status | Candidate for human review |
+The [checkout boundary fixture](examples/checkout-boundary/README.md) contains a known-good implementation and a seeded defect. Run it with:
 
-This is a documented fixture, not a claim that an agent discovered it. [Run both implementations and inspect the expected result](examples/checkout-boundary/README.md).
+```bash
+node examples/checkout-boundary/verify.mjs
+```
 
-## How it works
+The repository test suite covers the CLI and provider behavior. It does not measure model accuracy or prove that a review found every defect:
 
-1. Collect a branch diff, changed methods, rules, and available business context.
-2. Combine static-analysis candidates with agent-led code inspection.
-3. Validate finding structure and record analysis progress.
-4. Produce a local HTML report or a configured platform report.
-5. Let a human confirm, reject, or follow up on findings.
+```bash
+export NODE_OPTIONS=--experimental-strip-types
+(cd skills/ai-defect-detection && npm test)
+```
 
-Coverage checks track workflow records; they do not establish exhaustive defect detection. Suspected defects and improvements remain separate from human decisions.
+## Boundaries
 
-## Compatibility and data handling
+Findings are candidates for human confirmation. Local providers write to disk; the host agent/model controls how source context is processed; remote providers and automatic tool installation can use the network. The current project is experimental, and complete agent benchmarks are still pending. See the [FAQ](docs/FAQ.md) and [support matrix](docs/SUPPORT_MATRIX.md).
 
-The project is **experimental**. CLI tests exist; complete agent workflows and detection accuracy have not yet been independently benchmarked. See the [support matrix](docs/SUPPORT_MATRIX.md).
+## Contributing
 
-Local providers store data on disk without an OpenQA Cloud account. Your coding agent/model may transmit source context according to its configuration. Repository cloning, remote providers, and tool installation can use the network. Current analysis paths may automatically install Semgrep or GitNexus. See [FAQ and data boundaries](docs/FAQ.md).
+Add a public reproduction, a known-good control, expected results, and the environment used. Remove credentials and private source. Read [CONTRIBUTING.md](CONTRIBUTING.md), [PUBLISHING.md](PUBLISHING.md), and [SECURITY.md](SECURITY.md).
 
-## Documentation and contribution
-
-- [Skill manual](skills/ai-defect-detection/README.md): requirements, adapters, and tests.
-- [Getting started](docs/GETTING_STARTED.md): install, verify, update, remove.
-- [Examples](examples/README.md) and [benchmark plan](benchmarks/README.md): evidence and remaining evaluation work.
-- [Contributing](CONTRIBUTING.md): reproduce bugs, contribute fixtures, or improve adapters.
-- [Release process](PUBLISHING.md) and [changelog](CHANGELOG.md).
-
-Useful contributions include false-positive examples, missed-defect cases, and verified agent/environment combinations. Remove private source and credentials before sharing. [Security reporting](SECURITY.md).
-
-## Roadmap
-
-- [ ] Validate complete reviews across named agent and runtime versions.
-- [ ] Measure false positives and missed defects on a public benchmark.
-- [ ] Publish a reproducible agent-generated report and walkthrough.
-
-Apache-2.0. See [LICENSE](LICENSE). [OpenQA website](https://openqa.cn) · [Commercial boundary](docs/COMMERCIAL_BOUNDARY.md).
+Apache-2.0. See [LICENSE](LICENSE).
