@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md)
 
-**End-to-end quality verification for AI software engineering.**
+**OpenQA — evidence-based quality verification for AI-generated software changes.**
 
 AI Coding makes implementation cheap. Verification is still expensive. A patch can satisfy a prompt while missing a requirement, weakening a test, breaking an indirect caller, or passing checks that do not exercise the intended behavior. The evidence needed for a merge or release is usually spread across the specification, repository, test system, and delivery tools.
 
