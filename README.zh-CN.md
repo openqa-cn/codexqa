@@ -14,6 +14,20 @@ AI Coding 让实现变得便宜，但验证仍然昂贵。一个补丁可能满�
 
 OpenQA 的完整平台会分阶段建设。规格评审、需求评审、结构化用例生成、更完整的代码分析、AI Code Review 集成和托管服务达到可复现的发布标准后会陆续开放；它们属于产品方向，不代表本仓库当前已经覆盖。
 
+### 能力状态
+
+| 能力 | 本仓库状态 |
+| --- | --- |
+| 缺陷检测工作流 | 已提供，experimental |
+| 证据采集与结构化发现 | 当前工作流已提供 |
+| 本地与 HTTP provider | 已提供，取决于环境 |
+| Java 调用图与变更影响路径 | experimental，依赖 GitNexus |
+| 规格与需求评审 | 计划中 |
+| 测试用例生成 | 计划中 |
+| 更完整的代码分析与 AI Code Review | 计划中 |
+| 托管验证服务 | 产品方向，不在本仓库 |
+
+
 - [OpenQA 官网](https://openqa.cn)
 - [OpenQA 产品](https://openqa.cn/agent)
 - [OpenQA Skill Hub](https://openqa.cn/skills)
@@ -37,6 +51,14 @@ npx skills add openqa-cn/openqa-skills --skill ai-defect-detection
 ```
 
 工作流会收集上下文，分析变更方法，执行可用检查，校验发现并生成报告，交给人工复核。它可以使用本地 provider，也可以连接配置好的企业适配器。
+
+## 路线图
+
+- **现在：** 让 `ai-defect-detection` 在干净安装、不同 Agent 和公开案例中稳定运行。
+- **下一步：** 按同一套证据和人工复核约定，发布规格评审、需求评审、用例生成和更完整的代码分析 Skill。
+- **之后：** 接入跨仓影响分析、AI Code Review、CI 质量门禁和托管工程系统。
+
+进度见[公开路线图](https://openqa.cn/roadmap)。只有文件、案例、局限性和验证证据齐全的能力，才会在本仓库标为已提供。
 
 ## 查看结果
 

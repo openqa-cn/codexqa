@@ -14,6 +14,20 @@ AI Coding makes implementation cheap. Verification is still expensive. A patch c
 
 The broader OpenQA platform is being built in stages. Specification review, requirement review, structured test-case generation, broader code analysis, AI Code Review integrations, and hosted services will be published as they reach a reproducible release. They are product direction, not claims about this repository's current coverage.
 
+### Capability status
+
+| Capability | Status in this repository |
+| --- | --- |
+| Defect detection workflow | Available, experimental |
+| Evidence collection and structured findings | Available in the current workflow |
+| Local and HTTP provider adapters | Available, environment dependent |
+| Java call-graph and change-impact path | Experimental, GitNexus dependent |
+| Specification and requirement review | Planned |
+| Test-case generation | Planned |
+| Broader code analysis and AI Code Review | Planned |
+| Hosted verification services | Product direction, outside this repository |
+
+
 - [OpenQA website](https://openqa.cn)
 - [OpenQA product](https://openqa.cn/agent)
 - [OpenQA Skill Hub](https://openqa.cn/skills)
@@ -37,6 +51,14 @@ For each suspected defect, report the location, trigger, evidence, and fix.
 ```
 
 The workflow collects context, analyzes changed methods, runs available checks, validates findings, and produces a report for human review. It can use local providers or configured enterprise adapters.
+
+## Roadmap
+
+- **Now:** make `ai-defect-detection` reliable across clean installations, agents, and public fixtures.
+- **Next:** publish specification review, requirement review, test-case generation, and broader code-analysis skills with the same evidence and human-review contract.
+- **Then:** connect cross-repository impact analysis, AI Code Review, CI quality gates, and hosted engineering systems.
+
+Progress is tracked in the [public roadmap](https://openqa.cn/roadmap). A capability is marked available here only when its files, example, limitations, and verification evidence are published.
 
 ## See the result
 
