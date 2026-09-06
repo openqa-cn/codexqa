@@ -6,6 +6,16 @@
 
 [English](README.md) · [安装与入门](docs/GETTING_STARTED.md) · [可复现示例](examples/checkout-boundary/README.md) · [问题反馈](https://github.com/openqa-cn/openqa-skills/issues)
 
+## 关于 OpenQA
+
+OpenQA 是这些开源 Skill 背后的组织与产品计划，关注帮助软件团队把 AI 生成的变更推进到可审查、可验证的结果：明确需求、执行证据，并保留清晰的人工决定。本仓库是 OpenQA 的公开本地优先 Skill 层，提供可安装、可检查的 Coding Agent 工作流；官网用于介绍产品背景和整体方向。
+
+- [OpenQA 官网](https://openqa.cn)
+- [OpenQA 产品预览](https://openqa.cn/agent)
+- [OpenQA Skills 源码](https://github.com/openqa-cn/openqa-skills)
+
+如果你需要 Skill 指令、CLI、案例和测试，请使用本仓库。托管执行或组织级能力可能单独提供，详见[商业边界](docs/COMMERCIAL_BOUNDARY.md)。
+
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Repository checks](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml)
 

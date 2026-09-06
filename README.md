@@ -6,6 +6,16 @@ Review code changes against implementation and business context. Produce defect 
 
 [简体中文](README.zh-CN.md) · [Getting started](docs/GETTING_STARTED.md) · [Example](examples/checkout-boundary/README.md) · [Report an issue](https://github.com/openqa-cn/openqa-skills/issues)
 
+## About OpenQA
+
+OpenQA is the organization and product initiative behind these open-source skills. It focuses on helping software teams move from AI-generated changes to changes that can be reviewed with explicit requirements, executable evidence, and a clear human decision. The OpenQA website provides the product context; this repository contains the public, local-first skill layer that coding agents can install and inspect.
+
+- [OpenQA website](https://openqa.cn)
+- [OpenQA product preview](https://openqa.cn/agent)
+- [OpenQA Skills source](https://github.com/openqa-cn/openqa-skills)
+
+Use this repository when you want the skill instructions, CLI, fixtures, and tests. Hosted or organization-level capabilities may be provided separately; see the [commercial boundary](docs/COMMERCIAL_BOUNDARY.md).
+
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Repository checks](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml)
 
