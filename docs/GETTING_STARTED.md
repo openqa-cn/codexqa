@@ -1,5 +1,7 @@
 # Install and run AI Defect Detection
 
+[简体中文](GETTING_STARTED.zh-CN.md)
+
 ## Requirements
 
 Use Node.js, npm/npx, Git, and a coding agent able to read skill files and run commands. The CLI suite has been run locally on macOS with Node 22.15.0 using TypeScript stripping:

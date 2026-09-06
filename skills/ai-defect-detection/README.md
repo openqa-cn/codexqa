@@ -1,5 +1,7 @@
 # AI Defect Detection Skill
 
+[简体中文](README.zh-CN.md)
+
 Agent-led static and business-logic defect detection for pull requests and test plans. This experimental package combines agent instructions with a TypeScript CLI and pluggable providers. Complete agent workflows and detection accuracy are not yet independently benchmarked.
 
 ## What you get

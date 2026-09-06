@@ -1,5 +1,7 @@
 # AI Defect Detection FAQ
 
+[简体中文](FAQ.zh-CN.md)
+
 ## What is OpenQA Skills?
 
 OpenQA Skills is an experimental open-source repository for AI-assisted defect review. Its current skill, ai-defect-detection, combines agent instructions with a CLI and local or remote providers.

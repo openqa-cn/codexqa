@@ -27,7 +27,7 @@ npx skills add openqa-cn/openqa-skills --skill ai-defect-detection
 
 按提示选择 Agent；使用 `--agent codex --global` 可全局安装到 Codex。安装器从 GitHub 获取本仓库，无需 OpenQA 或 npm 账号。
 
-运行工作流需要 Node.js 22+、Git，以及能够读取 Skill 文件并执行命令的 Agent。请先阅读[安装与入门](docs/GETTING_STARTED.md)。
+运行工作流需要 Node.js 22+、Git，以及能够读取 Skill 文件并执行命令的 Agent。请先阅读[安装与入门](docs/GETTING_STARTED.zh-CN.md)。
 
 ## 使用
 
@@ -58,10 +58,10 @@ export NODE_OPTIONS=--experimental-strip-types
 
 ## 边界
 
-发现结果需要人工确认。本地 provider 将结果写入磁盘；源码上下文如何处理由宿主 Agent/模型决定；远程 provider 和自动安装工具可能联网。项目目前处于 experimental 阶段，完整 Agent 评测仍在进行。详见 [FAQ](docs/FAQ.md) 和[支持矩阵](docs/SUPPORT_MATRIX.md)。
+发现结果需要人工确认。本地 provider 将结果写入磁盘；源码上下文如何处理由宿主 Agent/模型决定；远程 provider 和自动安装工具可能联网。项目目前处于 experimental 阶段，完整 Agent 评测仍在进行。详见 [FAQ](docs/FAQ.zh-CN.md) 和[支持矩阵](docs/SUPPORT_MATRIX.zh-CN.md)。
 
 ## 参与贡献
 
-提交公开复现、正常对照、预期结果和运行环境，分享前移除凭据与私有代码。请阅读[贡献指南](CONTRIBUTING.md)、[发布流程](PUBLISHING.md)和[安全说明](SECURITY.md)。
+提交公开复现、正常对照、预期结果和运行环境，分享前移除凭据与私有代码。请阅读[贡献指南](CONTRIBUTING.zh-CN.md)、[发布流程](PUBLISHING.zh-CN.md)和[安全说明](SECURITY.zh-CN.md)。
 
 Apache-2.0，见 [LICENSE](LICENSE)。
