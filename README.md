@@ -8,13 +8,23 @@ Review code changes against implementation and business context. Produce defect 
 
 ## About OpenQA
 
-OpenQA (openqa.cn) is an open platform for AI testing. Its product direction connects an AI testing Agent, a Skill Hub, first-party systems, a directory of testing tools, and practical writing and benchmarks. The shared goal is to help teams move from AI-generated changes to changes that can be reviewed with explicit requirements, executable evidence, and a clear human decision. This repository contains the public, local-first skill layer that coding agents can install and inspect.
+[OpenQA](https://openqa.cn) is building verification infrastructure for AI software engineering. As coding agents take on more implementation work, teams need an independent way to determine whether a change satisfies its intent, affects the right parts of a system, and has enough direct evidence to merge or release. OpenQA treats that as an engineering verification problem rather than as a larger code-generation prompt.
+
+The platform direction connects several layers:
+
+- **Verification Agent** — plans and executes change-level verification in a developer workstation or controlled CI environment.
+- **Skill Hub** — an open catalog of reusable skills and MCP tools that teach agents how to perform focused testing and verification workflows.
+- **Software systems and SaaS solutions** — integrations for requirements, test cases, issues, traces, and other engineering records; examples include cross-repository code knowledge graphs and change-impact analysis.
+- **Tools and benchmarks** — a directory and evaluation layer for comparing testing tools and recording evidence about what works.
+
+These layers have different release and trust boundaries. The website describes the broader product direction and hosted capabilities. This repository contains the public, local-first Skill layer: instructions, executable adapters, fixtures, and tests that developers can inspect, run, and contribute to.
 
 - [OpenQA website](https://openqa.cn)
 - [OpenQA product preview](https://openqa.cn/agent)
+- [Skill Hub](https://openqa.cn/skills)
 - [OpenQA Skills source](https://github.com/openqa-cn/openqa-skills)
 
-Use this repository when you want the skill instructions, CLI, fixtures, and tests. Hosted or organization-level capabilities may be provided separately; see the [commercial boundary](docs/COMMERCIAL_BOUNDARY.md).
+This repository does not claim that a skill proves the absence of defects. It provides a repeatable workflow for collecting context, selecting checks, preserving evidence, and presenting findings for human review. Hosted or organization-level capabilities may be provided separately; see the [commercial boundary](docs/COMMERCIAL_BOUNDARY.md).
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Repository checks](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml)

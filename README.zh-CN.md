@@ -8,13 +8,23 @@
 
 ## 关于 OpenQA
 
-OpenQA（openqa.cn）是一个面向 AI 测试的开放平台。产品方向包括 AI 测试 Agent、Skill Hub、可读写的一方系统、测试工具目录，以及技术文章和评测。共同目标是帮助团队把 AI 生成的变更推进到可审查、可验证的结果：明确需求、执行证据，并保留清晰的人工决定。本仓库是 OpenQA 的公开本地优先 Skill 层，提供可安装、可检查的 Coding Agent 工作流。
+[OpenQA](https://openqa.cn) 正在建设面向 AI 软件工程的验证基础设施。随着 Coding Agent 承担越来越多的实现工作，团队需要一种独立的方法来判断：变更是否满足目标、是否影响了正确的系统范围、是否拥有足以支持合并或发布的直接证据。OpenQA 将这视为软件工程验证问题，而不是继续扩大代码生成 Prompt。
+
+产品方向由几个相互连接但边界不同的层组成：
+
+- **验证 Agent**：在开发者电脑或受控 CI 环境中，为一次具体变更规划并执行验证。
+- **Skill Hub**：开放的可复用 Skill 与 MCP 工具目录，让 Agent 能执行聚焦的测试和验证工作流。
+- **软件系统与 SaaS 解决方案**：连接需求、用例、缺陷、运行轨迹等工程记录，包括跨仓代码知识图谱和变更影响面分析等能力。
+- **工具与评测**：收录测试工具，并通过公开任务和证据记录比较它们在实际场景中的表现。
+
+这些层的发布状态和信任边界不同。官网介绍完整的产品方向和托管能力；本仓库提供其中公开、本地优先的 Skill 层，包括可检查的指令、可执行适配器、案例和测试，开发者可以直接使用和贡献。
 
 - [OpenQA 官网](https://openqa.cn)
 - [OpenQA 产品预览](https://openqa.cn/agent)
+- [Skill Hub](https://openqa.cn/skills)
 - [OpenQA Skills 源码](https://github.com/openqa-cn/openqa-skills)
 
-如果你需要 Skill 指令、CLI、案例和测试，请使用本仓库。托管执行或组织级能力可能单独提供，详见[商业边界](docs/COMMERCIAL_BOUNDARY.md)。
+本仓库不声称 Skill 能证明代码不存在缺陷，而是提供一套可重复的流程：收集上下文、选择检查、保存证据，并将发现交给人工复核。托管执行或组织级能力可能单独提供，详见[商业边界](docs/COMMERCIAL_BOUNDARY.md)。
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Repository checks](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml)
