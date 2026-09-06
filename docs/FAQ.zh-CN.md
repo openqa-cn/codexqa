@@ -4,7 +4,7 @@
 
 ## 这是做什么的？
 
-`ai-defect-detection` 是 OpenQA 的实验性 Skill，将 Agent 指令、TypeScript CLI、静态分析和本地/远程 provider 组合成一次可追踪的变更审查。
+`ai-defect-detection` 是 OpenQA 当前已提供的 Skill，将 Agent 指令、TypeScript CLI、静态分析和本地/远程 provider 组合成一次可追踪的变更审查。它可以用于工程实践，但检测效果尚未经过独立 benchmark。
 
 ## 需要 npm 或 OpenQA 账号吗？
 

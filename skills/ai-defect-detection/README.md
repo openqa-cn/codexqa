@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md)
 
-Agent-led static and business-logic defect detection for pull requests and test plans. This experimental package combines agent instructions with a TypeScript CLI and pluggable providers. Complete agent workflows and detection accuracy are not yet independently benchmarked.
+Agent-led static and business-logic defect detection for pull requests and test plans. This is a usable local-first workflow that combines Agent instructions, a TypeScript CLI, static analysis, and pluggable providers. The workflow is available for engineering use, while complete agent runs and detection accuracy are not yet independently benchmarked.
 
 ## What you get
 
