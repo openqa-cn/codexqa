@@ -8,7 +8,7 @@ Review code changes against implementation and business context. Produce defect 
 
 ## About OpenQA
 
-OpenQA is the organization and product initiative behind these open-source skills. It focuses on helping software teams move from AI-generated changes to changes that can be reviewed with explicit requirements, executable evidence, and a clear human decision. The OpenQA website provides the product context; this repository contains the public, local-first skill layer that coding agents can install and inspect.
+OpenQA (openqa.cn) is an open platform for AI testing. Its product direction connects an AI testing Agent, a Skill Hub, first-party systems, a directory of testing tools, and practical writing and benchmarks. The shared goal is to help teams move from AI-generated changes to changes that can be reviewed with explicit requirements, executable evidence, and a clear human decision. This repository contains the public, local-first skill layer that coding agents can install and inspect.
 
 - [OpenQA website](https://openqa.cn)
 - [OpenQA product preview](https://openqa.cn/agent)

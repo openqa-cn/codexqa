@@ -8,7 +8,7 @@
 
 ## 关于 OpenQA
 
-OpenQA 是这些开源 Skill 背后的组织与产品计划，关注帮助软件团队把 AI 生成的变更推进到可审查、可验证的结果：明确需求、执行证据，并保留清晰的人工决定。本仓库是 OpenQA 的公开本地优先 Skill 层，提供可安装、可检查的 Coding Agent 工作流；官网用于介绍产品背景和整体方向。
+OpenQA（openqa.cn）是一个面向 AI 测试的开放平台。产品方向包括 AI 测试 Agent、Skill Hub、可读写的一方系统、测试工具目录，以及技术文章和评测。共同目标是帮助团队把 AI 生成的变更推进到可审查、可验证的结果：明确需求、执行证据，并保留清晰的人工决定。本仓库是 OpenQA 的公开本地优先 Skill 层，提供可安装、可检查的 Coding Agent 工作流。
 
 - [OpenQA 官网](https://openqa.cn)
 - [OpenQA 产品预览](https://openqa.cn/agent)
