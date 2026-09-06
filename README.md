@@ -1,25 +1,21 @@
 # OpenQA Skills
 
-**Verification infrastructure for AI software engineering.**
+**End-to-end quality verification infrastructure for AI software engineering.**
 
-AI coding tools can produce a patch quickly. They do not automatically show that the patch satisfies the requirement, covers the affected code paths, or remains safe to merge. Tests may pass while checking the wrong behavior; a code review may miss an indirect caller or a business rule hidden in another document.
+AI Coding changes how software is produced, but the delivery problem remains: a generated change can satisfy the prompt and still misunderstand the specification, miss a requirement, weaken a test, break an indirect caller, or pass a check that does not prove the intended behavior. Verification has to follow the change from intent to release.
 
-OpenQA adds a verification layer around that work. It connects change intent, repository context, code impact, tests, static analysis, runtime evidence, and human decisions. The goal is a reviewable answer to a practical question: **is this change supported by enough evidence to merge or release?**
+OpenQA is building that verification layer for Coding Agents and engineering teams. It connects specification review, requirement review, test-case generation, code analysis, AI code review, test execution, evidence collection, and release decisions. Each capability can use the tools already in a team's workflow and can be combined with an Agent or CI pipeline.
 
-## What OpenQA provides
+## OpenQA and this repository
 
-OpenQA is building an open platform for AI software engineering verification:
+OpenQA is the organization and product initiative behind this work. The broader platform is a full-chain quality verification system: it plans checks from the change intent, understands repository and cross-repository impact, calls appropriate testing and engineering tools, and records evidence and remaining risk for a human or policy decision.
 
-- **Verifier / Agent** plans and runs checks for a concrete software change.
-- **Skill Hub** distributes reusable skills and MCP tools for coding agents.
-- **Engineering systems and SaaS** connect requirements, test cases, issues, traces, and release workflows. Cross-repository code graphs and change-impact analysis are examples of this layer.
-- **Benchmarks and tool catalogues** record what a tool can do and how it performs on reproducible tasks.
-
-This repository is the public, local-first skill layer. It contains the `ai-defect-detection` workflow, its executable CLI, providers, fixtures, and tests. Product services and hosted capabilities may live outside this repository; see the [commercial boundary](docs/COMMERCIAL_BOUNDARY.md).
+This repository is the public, local-first part of that platform. It currently ships the `ai-defect-detection` skill, including its Agent workflow, executable CLI, providers, fixtures, and tests. Other parts of the chain—such as specification and requirement review, structured test-case generation, broader code analysis, and AI Code Review integrations—are being built and will be published as they reach a reproducible release. The repository is therefore a starting point for the full OpenQA verification model, not a claim that every planned capability is already available here.
 
 - [OpenQA website](https://openqa.cn)
 - [OpenQA product](https://openqa.cn/agent)
 - [OpenQA Skill Hub](https://openqa.cn/skills)
+- [OpenQA Skills source](https://github.com/openqa-cn/openqa-skills)
 
 ## Install
 
