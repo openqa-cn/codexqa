@@ -1,5 +1,7 @@
 # OpenQA Skills
 
+[简体中文](README.zh-CN.md)
+
 **End-to-end quality verification infrastructure for AI software engineering.**
 
 AI Coding changes how software is produced, but the delivery problem remains: a generated change can satisfy the prompt and still misunderstand the specification, miss a requirement, weaken a test, break an indirect caller, or pass a check that does not prove the intended behavior. Verification has to follow the change from intent to release.
