@@ -1,0 +1,8 @@
+[
+  {
+    "id": "BUG-88",
+    "title": "Negative amount accepted in checkout",
+    "status": "open",
+    "severity": 2
+  }
+]

@@ -1,0 +1,103 @@
+usage: open_detect.ts [-h] [--token TOKEN] cmd ...
+
+AI defect detection skill trigger (modular)
+
+options:
+  -h, --help     show this help message and exit
+  --token  Access token or API key for remote providers
+
+subcommands:
+  submit-plan                  Trigger Skill detection by test plan ID
+  submit-git                   Trigger Skill detection by Git repo + branch
+  submit-skill-direct          Direct trigger: AST scan (8) + business detection (11) only
+  status                       Query Skill detection task status
+  get-plan-info                Query test plan details
+  check-materials              Inventory materials
+  extract-client-plan-info     Extract git+branch from plan/user materials
+  get-pending                  Claim pending inspection list
+  check-coverage               Check detection coverage
+  get-rules                    Get detection rules
+  list-my-tasks                Query recent user tasks
+  retry                        Re-detect based on an existing task
+  get-report                   Get detection task report
+  reconcile-report             Reconcile report
+  check-rank-integrity         Check rank consistency
+  complete-task                Close task
+  validate-summary             Offline-validate summary
+  update-summary               Submit detection summary
+  force-abort-task             Force-abort task
+  skip-service-batch           Skip or fail a single service
+  finalize-rank                Write rank
+  get-detection-flow           Query by processId
+  get-detection-flow-by-rank   Query by rankId
+  mark-bug                     User-confirm defect
+  get-exception-traces         Query exception traces
+  get-detection-records        Query detection records
+  create-issue                 Create defect ticket
+  run-ast-scan                 Batch AST rule scan
+  batch-dismiss-by-strategy    Batch-mark AST strategy as no-defect
+  dismiss-class                Mark no-defect by class
+  update-rank-content          Update rank description
+  get-confirmed-defect-history Query confirmed defect history
+  get-defect-history-by-commit Query defect history by commit
+  process-sample               Output writeback sample
+  resolve-writeback-context    Resolve writeback context
+  update-process               Write back a single conclusion
+  batch-update-process         Batch writeback
+  gen-writeback-template       Generate writeback skeleton
+  batch-no-bug                 Batch no-defect writeback
+  report-progress              Report progress
+  finalize-all                 One-shot Phase 3 close
+  get-delivery-defects         Query submitted defects
+  get-tag-list                 Get tag list
+  phase1-fetch-all             Phase 1 parallel data fetch
+  clone-and-diff               clone + diff + register
+  ensure-gitnexus              Detect/install GitNexus
+  gitnexus-impact              GitNexus impact
+  gitnexus-context             GitNexus context
+  gitnexus-query               GitNexus query
+  register-repo-clone          Register repository clone
+  check-phase2-readiness       Phase 2 pre-check
+  register-code-read           Register code read
+  read-method-code             Read method code
+  code-read-stats              Code-read stats
+  trivial-method-filter        Trivial-method prefilter
+  invalid-record               Mark rank invalid
+  show-local-progress          Local progress
+  cleanup-stale-data           Clean stale data
+  init-content                 Initialize content
+  add-service-to-content       Add service
+  update-service-in-content    Update service
+  set-diff-files               Set diff.files
+  set-changed-methods          Set changed methods
+  set-meta-field               Set meta field
+  set-doc-summary              Set document summary path
+  add-document                 Add document
+  scan-repo-docs               Scan repository docs
+  add-test-case                Add test case
+  add-detection-plan-item      Add detection plan item
+  add-cross-repo-class         Record cross-repo class
+  record-process-writeback     Record process writeback
+  update-plan-status           Update plan status
+  set-plan-ast-result          Cache AST result
+  record-rank                  Record rank
+  content-summary              Content summary
+  register-context-read        Register context read
+  register-finding             Record detection finding
+  get-findings                 Get findings list
+  check-req-coverage           Check requirement coverage
+  cross-view-check             Cross-view check
+  check-analysis-quality       Analysis quality gate
+  get-changed-methods          Extract changed methods
+  build-detection-plan         Build detection plan
+  prep-and-plan                changed methods + plan + trivial filter
+  verify-line-method-mapping   Check line ownership
+  extract-rules-from-docs      Extract rules from docs
+  phase1-init                  Phase 1 one-shot init
+  fetch-test-cases             Fallback test-case fetch
+  testcase-pipeline            Test-case DAG
+  run-frontend-rules           Frontend-only rules
+
+Examples:
+  node open_detect.ts submit-plan --plan-id 74873 --plan-type 2 --submit-user demo-user
+  node open_detect.ts status --task-id 42

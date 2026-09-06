@@ -1,0 +1,17 @@
+{
+  "planId": 1001,
+  "planType": 2,
+  "planName": "Order checkout validation",
+  "services": [
+    {
+      "git": "git@github.com:acme/order-service.git",
+      "branch": "feature/checkout-guard",
+      "serviceKey": "acme.order.service",
+      "language": "java"
+    }
+  ],
+  "testCaseIds": ["TC-1001"],
+  "issueList": ["42"],
+  "requirementDocs": ["checkout-rules.md"],
+  "technicalDocs": ["checkout-api.md"]
+}

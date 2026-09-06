@@ -15,3 +15,20 @@ Agent-assisted contributions are welcome. They must include human maintainer rev
 ## Quality bar
 
 A contribution should make it easier to distinguish a test that merely passes from a test that proves behavior.
+
+## Local verification
+
+From the repository root:
+
+```bash
+python3 scripts/check-docs.py
+export NODE_OPTIONS=--experimental-strip-types
+(cd skills/ai-defect-detection && npm test)
+node examples/checkout-boundary/verify.mjs
+```
+
+The skill suite requires Git and packaging tools (Bash, rsync, zip, unzip). Include OS, Node version, commit, and results in your PR. Passing CLI tests do not measure model detection accuracy.
+
+## Useful contributions
+
+Submit minimal public reproductions of false positives or missed defects, expected results, agent/model versions, and sanitized evidence. Include a known-good control when possible. For installation issues, specify agent, installation scope, Node version, and the exact command. See [examples](examples/README.md).

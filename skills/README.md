@@ -1,11 +1,9 @@
 # Skills
 
-Each skill is independently documented. Every published skill has an agent-facing `SKILL.md` and a human-facing `README.md`. The current release contains workflow contracts; executable adapters and reproducible examples will be added incrementally. The first release contains:
+Each skill is independently documented. Every published skill has an agent-facing `SKILL.md` and a human-facing `README.md`.
 
-- `verify-change`
-- `test-quality`
-- `evidence-report`
+## Available skills
 
-Use [SKILL_TEMPLATE.md](SKILL_TEMPLATE.md) when proposing a new skill. Do not add a new skill only because a model can generate a similar prompt; include a distinct verification problem, acceptance criteria, and evidence of usefulness.
+- [`ai-defect-detection`](ai-defect-detection/): executable, local-first AI-assisted defect review for code changes and test plans.
 
-The implementation is intentionally being added only after its examples and acceptance criteria are reproducible.
+Use [SKILL_TEMPLATE.md](SKILL_TEMPLATE.md) when proposing a new skill. A contribution should solve a distinct verification problem, include acceptance criteria, and provide reproducible evidence.

@@ -1,46 +1,87 @@
 # OpenQA Skills
 
-面向 Coding Agent 的开源软件变更验证 Skills。
+**面向 Coding Agent 的 AI 缺陷审查 Skill。**
 
-**语言：** [English](README.md) · 简体中文
+结合代码变更与业务上下文，生成带代码位置、分析依据和修复建议的缺陷候选，供人工复核。
 
-> AI 负责写变更，OpenQA 帮助证明它有效。
+[English](README.md) · [安装与入门](docs/GETTING_STARTED.md) · [可复现示例](examples/checkout-boundary/README.md) · [问题反馈](https://github.com/openqa-cn/openqa-skills/issues)
 
-OpenQA 关注的不只是生成代码或测试，而是帮助 Agent 验证软件变更是否满足目标、覆盖关键风险，并留下可复核的证据。
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Repository checks](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml)
 
-## 当前提供
-
-- `verify-change`：分析变更、风险、验证计划和合并准备度；
-- `test-quality`：识别弱断言、缺失异常路径和“通过但没有证明价值”的测试；
-- `evidence-report`：将执行结果整理为可阅读、可追踪的验收证据。
-
-Skills 设计为本地运行，可连接已有的测试框架和 CI，不要求注册 OpenQA Cloud。
-
-## 快速开始
-
-项目仍处于 early access 阶段。请先阅读 [Skills 目录](skills/README.md)、[Benchmark 规范](benchmarks/README.md) 和 [贡献指南](CONTRIBUTING.md)。
+## 安装
 
 ```bash
-git clone https://github.com/openqa-cn/openqa-skills.git
-cd openqa-skills
+npx skills add openqa-cn/openqa-skills --skill ai-defect-detection
 ```
 
-可以先阅读 [`skills/verify-change/SKILL.md`](skills/verify-change/SKILL.md)，将其中的指令交给你正在使用的 Coding Agent，并提供本地 diff、验收条件和可安全执行的命令。当前版本是 Skill 合约和工作流预览，真正可执行的适配器会逐步加入。
+按提示选择 Agent，默认安装到当前项目。添加 `--agent codex --global` 可为 Codex 全局安装。无需注册 npm，也无需发布 OpenQA 自有 npm 包。命令安装的是 GitHub 上可用的版本。
 
-## 文档导航
+**运行环境：** Node.js 和 Git。已在 Node 22.15.0 上通过 `NODE_OPTIONS=--experimental-strip-types` 运行测试；Agent 执行命令的环境也需要相应配置。首次分析前请查看[安装与排错说明](docs/GETTING_STARTED.md)。
 
-- [英文主文档](README.md)：完整项目介绍和最新信息；
-- [Skills 目录](skills/README.md)：当前和计划中的验证 Skill；
-- [Evidence Schema](schemas/evidence.schema.json)：机器可读的证据格式；
-- [Benchmark 规范](benchmarks/README.md)：评估测试有效性的原则；
-- [贡献指南](CONTRIBUTING.md)：如何提交 Skill、适配器和案例；
-- [支持与反馈](SUPPORT.md)：问题、讨论和企业合作入口。
-- [支持矩阵](docs/SUPPORT_MATRIX.md)：当前工具和框架的真实状态。
+## 适用场景
 
-## 相关链接
+- 合并或交付测试前，审查仓库分支中的变更。
+- 结合需求和测试用例检查实现。
+- 为已有发现补充上下文并记录人工反馈。
 
-- 官网：https://openqa.cn
-- 产品预览：https://openqa.cn/agent
-- GitHub：https://github.com/openqa-cn/openqa-skills
-- 问题反馈：https://github.com/openqa-cn/openqa-skills/issues
-- 讨论区：https://github.com/openqa-cn/openqa-skills/discussions
+当前提供 [ai-defect-detection](skills/ai-defect-detection/README.md)，包含分析指令、TypeScript CLI、静态分析集成、本地存储和可选企业适配器。
+
+## 开始审查
+
+安装后打开新的 Agent 会话，提供类似请求：
+
+```text
+使用 ai-defect-detection 审查 <仓库 URL> 的 <分支名>。
+业务要求：结账金额必须严格大于零。
+重点检查变更代码，给出每个疑似缺陷的位置、触发条件、依据和修复建议。
+```
+
+请替换为真实可访问的仓库和分支。分析由 Agent 执行，CLI 本身不提供 AI 模型。缺少业务材料会限制审查范围。
+
+## 输出示例
+
+| 字段 | 边界案例 |
+| --- | --- |
+| 缺陷候选 | 零金额结账被接受 |
+| 触发条件 | `checkout(0)` |
+| 预期 / 实际 | 拒绝 / 接受 |
+| 依据 | 边界断言在缺陷实现上失败 |
+| 修复建议 | 拒绝小于或等于零的金额 |
+| 状态 | 待人工复核 |
+
+这是明确标注的演示案例，不代表 Agent 已自动发现该问题。[运行正常与缺陷实现，查看预期结果](examples/checkout-boundary/README.md)。
+
+## 工作流程
+
+1. 收集分支差异、变更方法、规则和可用业务上下文。
+2. 结合静态分析候选和 Agent 代码审查。
+3. 校验发现的结构，记录分析过程。
+4. 生成本地 HTML 报告或已配置平台的报告。
+5. 人工确认、驳回或跟进发现。
+
+覆盖检查核对的是流程记录，不等于证明已经发现全部缺陷。疑似缺陷、改进建议和人工决定分别处理。
+
+## 兼容性与数据处理
+
+项目处于 **experimental** 阶段。已有 CLI 测试，完整 Agent 流程和检测准确率尚未完成独立评测，详见[支持矩阵](docs/SUPPORT_MATRIX.md)。
+
+本地 provider 将数据存储在磁盘，无需 OpenQA Cloud 账号；Coding Agent/模型是否发送源码取决于其配置。克隆仓库、远程 provider 和工具安装可能联网。当前分析流程可能自动安装 Semgrep 或 GitNexus，详见[FAQ 与数据边界](docs/FAQ.md)。
+
+## 文档与参与
+
+- [Skill 手册](skills/ai-defect-detection/README.md)：运行要求、适配器和测试。
+- [安装与入门](docs/GETTING_STARTED.md)：安装、检查、更新和卸载。
+- [示例](examples/README.md)与[评测计划](benchmarks/README.md)：已有证据及待验证事项。
+- [贡献指南](CONTRIBUTING.md)：复现问题、补充案例、改善适配器。
+- [发布流程](PUBLISHING.md)与[变更记录](CHANGELOG.md)。
+
+欢迎提供误报、漏报案例及已验证的 Agent/运行环境组合。分享前请移除私有代码和凭据。[安全问题报告](SECURITY.md)。
+
+## 后续计划
+
+- [ ] 验证指定 Agent 与运行时版本下的完整审查流程。
+- [ ] 用公开评测集衡量误报与漏报。
+- [ ] 发布可复现的 Agent 实际报告与演示。
+
+Apache-2.0，见 [LICENSE](LICENSE)。[OpenQA 官网](https://openqa.cn) · [商业边界](docs/COMMERCIAL_BOUNDARY.md)。

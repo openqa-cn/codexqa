@@ -1,0 +1,19 @@
+usage: open_detect.ts get-plan-info [-h] --plan-id
+
+Query test plan details
+
+options:
+  -h, --help     show this help message and exit
+  --plan-id  
+  --plan-type  
+  --task-id  
+  --plan-name  
+  --git  
+  --branch  
+  --service-key  
+  --services-json  
+  --requirement-docs  
+  --technical-docs  
+  --test-case-ids  
+  --issue-list  
+  --user-materials-json  

@@ -1,0 +1,22 @@
+{
+  "groups": [
+    {
+      "id": "G-1",
+      "issueId": "42",
+      "planId": 1001,
+      "caseIds": ["TC-1001"]
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC-1001",
+      "title": "Reject negative checkout amount",
+      "preCondition": "User has a valid cart and is logged in.",
+      "steps": "1. Set item price to -1.\n2. Submit checkout.",
+      "expectedResult": "API returns 400 and no order is created.",
+      "planId": 1001,
+      "issueId": "42",
+      "groupId": "G-1"
+    }
+  ]
+}

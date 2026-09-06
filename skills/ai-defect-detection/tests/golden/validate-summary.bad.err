@@ -1,0 +1,3 @@
+[validate-summary] ❌ summary format check failed:
+  - Missing section markers: Requirement changes, Analysis scope, Risks, Notes, Conclusion
+[validate-summary] Hint: must include 5 sections (📋[Requirement changes]🔍[Analysis scope]⚠️[Risks]📌[Notes]✅[Conclusion]), separated by 4 spaces, as plain text.

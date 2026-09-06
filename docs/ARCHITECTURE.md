@@ -15,7 +15,7 @@ openqa-skills/
 
 ## Naming and maturity
 
-- A skill directory uses a short action-oriented name, such as `verify-change`.
+- A skill directory uses a short action-oriented name, such as `ai-defect-detection`.
 - `SKILL.md` is the agent-facing contract.
 - Examples and tests are required before a skill is called supported.
 - Experimental adapters may change without a compatibility promise.

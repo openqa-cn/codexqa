@@ -1,0 +1,7 @@
+{
+  "id": "42",
+  "title": "Guard checkout against negative amounts",
+  "description": "Orders with amount <= 0 must be rejected before persistence.",
+  "url": "https://github.com/acme/order-service/issues/42",
+  "fetchStatus": "success"
+}

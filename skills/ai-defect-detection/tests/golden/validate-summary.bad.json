@@ -1,0 +1,18 @@
+{
+  "code": 1,
+  "msg": "summary_validation_failed",
+  "data": {
+    "issues": [
+      "Missing section markers: Requirement changes, Analysis scope, Risks, Notes, Conclusion"
+    ],
+    "charCount": 3,
+    "presentSections": [],
+    "missingSections": [
+      "Requirement changes",
+      "Analysis scope",
+      "Risks",
+      "Notes",
+      "Conclusion"
+    ]
+  }
+}

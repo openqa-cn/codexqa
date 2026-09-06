@@ -1,0 +1,9 @@
+data/
+config.yaml
+node_modules/
+*.tmp
+*.zip
+*.jar
+.DS_Store
+__MACOSX/
+._*

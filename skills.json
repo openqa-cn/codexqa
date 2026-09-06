@@ -2,8 +2,10 @@
   "schema_version": "0.1",
   "project": "openqa-skills",
   "skills": [
-    {"name": "verify-change", "path": "skills/verify-change", "status": "experimental"},
-    {"name": "test-quality", "path": "skills/test-quality", "status": "experimental"},
-    {"name": "evidence-report", "path": "skills/evidence-report", "status": "experimental"}
+    {
+      "name": "ai-defect-detection",
+      "path": "skills/ai-defect-detection",
+      "status": "experimental"
+    }
   ]
 }

@@ -1,78 +1,88 @@
 # OpenQA Skills
 
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-early%20access-orange.svg)](https://openqa.cn)
-[![Website](https://img.shields.io/badge/website-openqa.cn-111827.svg)](https://openqa.cn)
+**AI-assisted defect review for coding agents.**
 
-**Languages:** English · [简体中文](README.zh-CN.md)
+Review code changes against implementation and business context. Produce defect candidates with source locations, reasoning, and suggested fixes for human review.
 
-Open-source verification skills for coding agents.
+[简体中文](README.zh-CN.md) · [Getting started](docs/GETTING_STARTED.md) · [Example](examples/checkout-boundary/README.md) · [Report an issue](https://github.com/openqa-cn/openqa-skills/issues)
 
-OpenQA helps coding agents prove that software changes work—not only generate code or tests.
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Repository checks](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml)
 
-> AI writes the change. OpenQA helps prove it.
-
-## What this project provides
-
-- `verify-change`: inspect a change, identify risk, run relevant checks, and produce a merge-readiness decision.
-- `test-quality`: detect weak assertions, missing negative paths, and tests that pass without proving behavior.
-- `evidence-report`: turn execution results into portable, reviewable evidence.
-
-The skills are designed to run locally with your existing coding agent, test runner, and CI. No OpenQA Cloud account is required.
-
-## Quick start
-
-Clone the repository and open the skill instructions in your coding agent:
+## Install
 
 ```bash
-git clone https://github.com/openqa-cn/openqa-skills.git
-cd openqa-skills
+npx skills add openqa-cn/openqa-skills --skill ai-defect-detection
 ```
 
-Start with [`skills/verify-change/SKILL.md`](skills/verify-change/SKILL.md). Copy or reference the instructions from your agent, then provide a local diff, acceptance criteria, and the commands that can be run safely. The current release is a contract and workflow preview; executable adapters are being added incrementally.
+Choose your agent interactively. Installation is project-level by default; add `--agent codex --global` for a user-level Codex installation. OpenQA does not require an npm account or its own npm package. The command installs the version available on GitHub.
 
-## Status
+**Runtime:** Node.js and Git. Node 22.15.0 was tested with `NODE_OPTIONS=--experimental-strip-types`; set this in the environment used by the agent's commands. See [installation and troubleshooting](docs/GETTING_STARTED.md) before your first analysis.
 
-Early access. The public repository is being built around real, reproducible examples and benchmarks. Interfaces may change before v1.0.
+## When to use it
 
-## Design principles
+- Review a repository branch before merging or handing it to QA.
+- Check implementation against supplied requirements and test cases.
+- Revisit findings with additional context and record human feedback.
 
-1. Evidence over claims.
-2. Local-first and tool-agnostic.
-3. Existing test runners remain the execution layer.
-4. A green test is not proof unless the test can fail when behavior is broken.
-5. Verification and code generation should be independently reviewable.
+The current skill is [ai-defect-detection](skills/ai-defect-detection/README.md). It combines analysis instructions, a TypeScript CLI, static-analysis integration, local storage, and optional enterprise adapters.
+
+## Start a review
+
+After installing, open a new agent session and provide a request such as:
+
+```text
+Use ai-defect-detection to review <repository URL>, branch <branch name>.
+Requirement: checkout amounts must be strictly positive.
+Focus on changed code and report each suspected defect with its location,
+trigger condition, supporting evidence, and suggested fix.
+```
+
+Replace the placeholders with an accessible repository and branch. The agent performs the analysis; the CLI alone does not supply an AI model. Missing business material limits what the review can assess.
+
+## See what a finding looks like
+
+| Field | Boundary-case example |
+| --- | --- |
+| Candidate | Zero-value checkout is accepted |
+| Trigger | `checkout(0)` |
+| Expected / actual | Reject / accept |
+| Evidence | A boundary assertion fails on the defective implementation |
+| Suggested fix | Reject amounts less than or equal to zero |
+| Status | Candidate for human review |
+
+This is a documented fixture, not a claim that an agent discovered it. [Run both implementations and inspect the expected result](examples/checkout-boundary/README.md).
+
+## How it works
+
+1. Collect a branch diff, changed methods, rules, and available business context.
+2. Combine static-analysis candidates with agent-led code inspection.
+3. Validate finding structure and record analysis progress.
+4. Produce a local HTML report or a configured platform report.
+5. Let a human confirm, reject, or follow up on findings.
+
+Coverage checks track workflow records; they do not establish exhaustive defect detection. Suspected defects and improvements remain separate from human decisions.
+
+## Compatibility and data handling
+
+The project is **experimental**. CLI tests exist; complete agent workflows and detection accuracy have not yet been independently benchmarked. See the [support matrix](docs/SUPPORT_MATRIX.md).
+
+Local providers store data on disk without an OpenQA Cloud account. Your coding agent/model may transmit source context according to its configuration. Repository cloning, remote providers, and tool installation can use the network. Current analysis paths may automatically install Semgrep or GitNexus. See [FAQ and data boundaries](docs/FAQ.md).
+
+## Documentation and contribution
+
+- [Skill manual](skills/ai-defect-detection/README.md): requirements, adapters, and tests.
+- [Getting started](docs/GETTING_STARTED.md): install, verify, update, remove.
+- [Examples](examples/README.md) and [benchmark plan](benchmarks/README.md): evidence and remaining evaluation work.
+- [Contributing](CONTRIBUTING.md): reproduce bugs, contribute fixtures, or improve adapters.
+- [Release process](PUBLISHING.md) and [changelog](CHANGELOG.md).
+
+Useful contributions include false-positive examples, missed-defect cases, and verified agent/environment combinations. Remove private source and credentials before sharing. [Security reporting](SECURITY.md).
 
 ## Roadmap
 
-- [x] Publish the first three skill contracts
-- [x] Add portable evidence schema
-- [ ] Publish executable skill adapters with reproducible examples
-- [ ] Add seeded-defect benchmark
-- [ ] Add GitHub Action and CLI
-- [ ] Add adapters for Claude Code, Codex, Cursor, Playwright, pytest, and API runners
-- [ ] Document optional OpenQA Cloud capabilities for team history, assets, impact analysis, and hosted execution
+- [ ] Validate complete reviews across named agent and runtime versions.
+- [ ] Measure false positives and missed defects on a public benchmark.
+- [ ] Publish a reproducible agent-generated report and walkthrough.
 
-See the [repository architecture](docs/ARCHITECTURE.md) for the long-term structure and maturity rules.
-See [PUBLISHING.md](PUBLISHING.md) and [skills.json](skills.json) for the public Skill registry and release rules.
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md). Please share reproducible examples, failures, and adapters.
-
-## License
-
-Apache-2.0. See [LICENSE](LICENSE).
-
-## Links
-
-- Website: https://openqa.cn
-- Product preview: https://openqa.cn/agent
-- Open-source project: https://github.com/openqa-cn/openqa-skills
-- Report a problem: https://github.com/openqa-cn/openqa-skills/issues
-- Discussions: https://github.com/openqa-cn/openqa-skills/discussions
-- Support matrix: [docs/SUPPORT_MATRIX.md](docs/SUPPORT_MATRIX.md)
-
-## Project status
-
-This repository is the public, local-first layer of the OpenQA project. Commercial services may provide hosted execution, enterprise history, private deployment, and organization-level analysis. See [the boundary](docs/COMMERCIAL_BOUNDARY.md).
+Apache-2.0. See [LICENSE](LICENSE). [OpenQA website](https://openqa.cn) · [Commercial boundary](docs/COMMERCIAL_BOUNDARY.md).
