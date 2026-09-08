@@ -2,23 +2,29 @@
 
 [简体中文](HOW_IT_WORKS.zh-CN.md)
 
-[`defect-detection`](README.md) ships no model, and it is not another Semgrep wrapper. It is scaffolding around a host agent: changed methods are ranked by how strongly they connect to a stated requirement, the agent reviews them one at a time against the spec, and a set of validation rules confirms it actually read the code and produced findings that can be checked.
+[`defect-detection`](README.md) ships no model and is not another Semgrep wrapper. It is scaffolding for a host agent: changed methods are ranked by how closely they tie to a stated requirement, the agent reviews them one at a time against the spec, and validation checks that it actually read the code and that the findings can be checked.
 
-What follows is why the structure looks like that. For the agent-facing runtime contract, read [`SKILL.md`](SKILL.md) instead.
+Why the structure looks like this is below. The runtime contract is in [`SKILL.md`](SKILL.md). What the HTML report looks like: [sample page](https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/defect-report.html).
 
-## The problem: two kinds of defects, one of which tools miss
+## The problem: two kinds of defects, rules only catch one
 
-Static analysers are good at defects that have a *shape*. A null dereference, a swallowed exception, a `== None` comparison, a hardcoded credential — these are recognisable from the syntax tree alone, without knowing what the program is supposed to do.
+Static analysers are good at bugs you can recognise by *shape*. A null dereference, a swallowed exception, `== None`, a hardcoded secret — the syntax tree is enough. You do not need to know what the program is supposed to do.
 
-The defects that survive code review are usually the other kind: the code is syntactically fine, idiomatic, and passes its tests, but it does not do what the requirement says. A discount tier that uses `>` where the spec says "at least"; a refund path that returns the requested amount without capping it at the remaining balance; a cache that is never invalidated after a sibling function mutates the underlying counter. No grammar-level rule catches these, because the bug is in the *gap between the code and the intent*, and the intent lives in a requirements document, a test case, or a reviewer's head.
+The bugs that survive review are usually the other kind: the code is valid, idiomatic, and green in tests, and it still does not match the requirement.
 
-An LLM can close that gap: it can read a requirement and a method together and notice the mismatch. But an unconstrained LLM reviewer has three well-known failure modes, and all three are worse than no tool at all:
+- Spec says “discount at 10 items”; the code uses `>`, so 10 items get no discount.
+- A refund returns the requested amount and never caps it at the remaining balance.
+- One function updates an inventory counter; the cache that reads the same data is never invalidated.
 
-- **Fabrication.** It reports a defect in a method that does not exist, or cites line numbers it never read.
-- **Hollow output.** It emits fluent, confident, content-free findings — "reviewed, looks good" across 200 methods — that are indistinguishable from real analysis until someone checks.
-- **Volume without discrimination.** It flags every unusual-looking line, so the true positives drown in noise and reviewers stop reading.
+No grammar rule catches these. The bug is the **gap between code and intent**. Intent lives in a requirement, a test case, or a reviewer’s head — not in the AST.
 
-The design of this skill follows from one premise: **the model supplies the semantic judgement, and the infrastructure's job is to make that judgement verifiable.** Almost every non-obvious decision below exists to defend against one of those three failure modes.
+A model can read the requirement and the method together and notice the mismatch. Left unconstrained, it fails in three ways, each worse than no tool:
+
+- **Fabrication.** A defect in a method that does not exist, or line numbers it never read.
+- **Hollow output.** Fluent, confident “reviewed, looks good” across 200 methods — indistinguishable from real analysis until someone checks.
+- **Noise.** Every unusual line is flagged, so true positives drown and people stop reading.
+
+One premise: **the model judges meaning; the infrastructure makes that judgement checkable.** Almost every non-obvious decision below defends one of those three failures.
 
 ## Evidence that the split is real
 
@@ -30,9 +36,9 @@ One blind evaluation has been run on the [`inventory-service`](https://github.co
 | False positives on traps | 0 / 4 |
 | Defects found by Semgrep seed rules | **0 / 7** |
 
-Every one of the seven was found by method-level analysis against the requirements document; the AST pass contributed nothing on this fixture. That is not a criticism of the seed rules — they exist to catch a different class of defect cheaply — but it does establish that the semantic layer is where the value is, and therefore that constraining the semantic layer is the design problem worth solving.
+All seven came from reading each method against the requirements; the AST pass found none of them on this fixture. That is not a knock on the seed rules — they exist to catch a different class of bug cheaply — but it does show **the hard part is the semantic layer, so that is what has to be constrained.**
 
-One caveat, stated plainly: this is a single agent/model sample on a fixture authored in-house. It is a demonstration of the contract, not a benchmark score. See [known limitations](KNOWN_LIMITATIONS.md).
+Plainly: one agent, one model, one in-house fixture, one run. A demo of the contract, not a benchmark. See [known limitations](KNOWN_LIMITATIONS.md).
 
 ## Four design decisions
 

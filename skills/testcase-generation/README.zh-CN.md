@@ -4,6 +4,12 @@
 
 开源 Agent Skill：从本地 PRD、技术方案、接口规格和可选知识库，生成并维护结构化的**手工测试用例**。
 
+写出来的用例如此（Markdown 渲染）：
+
+<p align="center">
+  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/testcase-sample.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/testcase-sample.png" alt="库存预占手工用例样例" width="880"></a>
+</p>
+
 **输入是文档，不是 git 克隆。** 生成读 `prd/`（以及可选的 `knowledge/`）。`code/` **只在更新**时用来 diff、判断哪些已有用例受影响——不从代码推断 schema，也不填测试数据。
 
 ## 它做什么

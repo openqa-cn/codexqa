@@ -2,7 +2,7 @@
 
 [English](SUPPORT_MATRIX.md)
 
-安装兼容不等于分析质量。除非另行点名，下表行属于 `defect-detection`。
+安装兼容不等于分析质量。除非另行点名，下表行属于 `defect-detection`。产物样例：[README 预览](../README.zh-CN.md#产物长什么样)。
 
 | 组件 | 当前证据 | 限制 |
 | --- | --- | --- |

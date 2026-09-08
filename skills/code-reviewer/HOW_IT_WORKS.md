@@ -6,7 +6,7 @@
 
 **Input is a local checkout, not a clone URL.** Open the repository in the agent and name the branch / PR / commit. The skill does not fetch a remote the way [`defect-detection`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/defect-detection/README.md) does. See [README — What you give it](README.md#what-you-give-it).
 
-Agents read [`SKILL.md`](SKILL.md) then [`review-playbook.md`](review-playbook.md), not this page. Gaps: [Known limitations](KNOWN_LIMITATIONS.md).
+Agents read [`SKILL.md`](SKILL.md) then [`review-playbook.md`](review-playbook.md), not this page. Gaps: [Known limitations](KNOWN_LIMITATIONS.md). Sample report: [preview](https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/cr-findings.html).
 
 ## Problem
 

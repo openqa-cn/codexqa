@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+不需要开 Agent 就能跑的小 fixture。报告长什么样见[根 README · 产物长什么样](../README.zh-CN.md#产物长什么样)。
+
 从[结账边界案例](checkout-boundary/README.md)开始：它包含正常实现、预置缺陷和可执行验证器。
 
 ```bash

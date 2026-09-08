@@ -4,6 +4,12 @@
 
 Open-source Agent Skill for generating and updating structured **manual test cases** from local PRD, technical design, API specs, and optional knowledge files.
 
+What a finished case looks like (Markdown rendered):
+
+<p align="center">
+  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/testcase-sample.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/testcase-sample.png" alt="Sample generated manual test case" width="880"></a>
+</p>
+
 **Input is documents, not a git clone.** Generate reads `prd/` (and optional `knowledge/`). `code/` is used only on **update**, to diff what changed and decide which existing cases are affected — not to invent schemas or fill test data.
 
 ## What it does

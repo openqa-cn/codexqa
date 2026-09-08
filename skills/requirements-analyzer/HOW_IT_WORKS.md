@@ -6,7 +6,7 @@
 
 **Input is requirement text, not source code.** A PRD, stories, API notes, a scope sheet — not a git clone and not `code/`. See [README — What you give it](README.md#what-you-give-it).
 
-Agents read [`SKILL.md`](SKILL.md) then [`prompts/requirements-analyzer.md`](prompts/requirements-analyzer.md), not this page. Gaps: [Known limitations](KNOWN_LIMITATIONS.md).
+Agents read [`SKILL.md`](SKILL.md) then [`prompts/requirements-analyzer.md`](prompts/requirements-analyzer.md), not this page. Gaps: [Known limitations](KNOWN_LIMITATIONS.md). Sample register: [preview](https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/ra-register.html).
 
 ## Problem
 

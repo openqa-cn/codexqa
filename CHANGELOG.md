@@ -6,6 +6,7 @@ Each release has two sections. **Highlights** is what changes for someone using 
 
 ### Highlights
 
+- **Sample reports you can see.** Root README and each skill README now include screenshots of the defect HTML report, a generated case, a CR findings page, a requirements gap register, and testdata write-back. Pages live in `docs/assets/previews/`.
 - **Neutralized consumer-local-life sample language.** Removed flash-sale / points / hourly-stay wording from requirements-analyzer samples and the testdata catalog slot. Samples now use inventory-hold and account credit (`/v1/credits/enroll`, `validHours`).
 - **Imported `requirements-analyzer` (0.0.1) as a fifth skill.** Requirement-document quality and gap/conflict register. Named `requirements-analyzer` (dropped the `ai-` prefix). Distinct from `testcase-generation`: it does not write cases. Sample store-brand / membership labels replaced with generic Northwind / premium. No published host-agent score.
 - **Imported `code-reviewer` (0.0.1) as a fourth skill.** Playbook-driven CR of a local Git checkout (P0 / P1 / P2). Named `code-reviewer` (dropped the `ai-` prefix). Distinct from `defect-detection`: no clone URL, no write-back gates. MIT license kept. No public fixture yet.

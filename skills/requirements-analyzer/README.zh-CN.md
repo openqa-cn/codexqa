@@ -4,6 +4,12 @@
 
 对**需求文档**做质量与风险分析。核对材料、找缺口和冲突，写出一份带可执行 P0 / P1 验证项的登记表。
 
+登记表长什么样：
+
+<p align="center">
+  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/ra-register.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/ra-register.png" alt="需求分析缺口登记表样例" width="880"></a>
+</p>
+
 **不是** [`testcase-generation`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/testcase-generation/README.zh-CN.md)。那个 skill 根据 `prd/` 写手工用例库。本 skill 审的是需求本身是否完整、一致、可测。
 
 ## 你要交什么

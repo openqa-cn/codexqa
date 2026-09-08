@@ -4,6 +4,8 @@ A JavaScript reservation-and-refund service with an approved product specificati
 
 None of the seven has a syntactic signature. Each one is code that reads naturally and only becomes a defect when checked against [`base/docs/requirements.md`](base/docs/requirements.md). That makes this fixture a test of *semantic* review rather than pattern matching, and a way to measure false positives, which most detection demos leave out.
 
+What a finished HTML report looks like on this domain: [sample page](../../docs/assets/previews/defect-report.html) (canned findings, same renderer).
+
 ## Run the answer key
 
 ```bash

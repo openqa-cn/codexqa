@@ -9,6 +9,7 @@
 
 <p align="center">
   <a href="#quick-start"><strong>Quick Start</strong></a> ·
+  <a href="#what-the-output-looks-like"><strong>What it looks like</strong></a> ·
   <a href="docs/HOW_IT_WORKS.md"><strong>How It Works</strong></a> ·
   <a href="examples/inventory-service/README.md"><strong>Blind Evaluation</strong></a> ·
   <a href="skills/defect-detection/KNOWN_LIMITATIONS.md"><strong>Limitations</strong></a> ·
@@ -52,34 +53,78 @@ Method write-ups live in each skill: [defect-detection](skills/defect-detection/
 
 ## How defect-detection works
 
-Static analysers catch defects that have a *shape*: a swallowed exception, a hardcoded credential, an unchecked null. The defects that survive review are usually the other kind — code that is idiomatic, passes its tests, and still does not do what the requirement says. A discount tier using `>` where the spec says "at least"; a refund that is never capped at the remaining balance; a cache nothing invalidates after a sibling function mutates the underlying counter. The bug lives in the gap between the code and the intent, and the intent is in a document, not the syntax tree.
+Static rules catch bugs you can recognise by *shape*: a swallowed exception, a hardcoded secret, a missing null check. The bugs that survive review are usually different: the code looks fine, the tests are green, and it still does not match the requirement.
 
-A model can close that gap. An unconstrained model reviewer also fabricates methods it never read, emits confident empty findings across hundreds of methods, and flags enough noise that reviewers stop reading. So the premise here is: **the model supplies the semantic judgement; the infrastructure makes that judgement verifiable.**
+- Spec says “discount at 10 items”; the code uses `>`, so 10 items get no discount.
+- A refund pays the requested amount and never caps it at the remaining balance.
+- One function updates a counter; the cache that reads the same data is never invalidated.
+
+Those bugs are not in the syntax tree. They sit in the **gap between code and intent**, and the intent lives in requirements and test cases. A model can compare the two. Left unconstrained, it also invents methods it never read, stamps “looks good” on hundreds of methods, and files so much noise that people stop reading.
+
+So the split is: **the model judges meaning; the infrastructure makes that judgement checkable.**
 
 ```text
-Repository + branch + requirements or test material
-                         │
-                         ▼
-       Context collection and change analysis
-                         │
-                         ▼
-      AST rules + optional call-graph analysis
-                         │
-                         ▼
-         Agent review and finding validation
-                         │
-                         ▼
-        Structured findings + HTML report
-                         │
-                         ▼
-                    Human review
+Repo + branch + requirements or cases
+                  │
+                  ▼
+     Collect context, analyse the change
+                  │
+                  ▼
+     AST rules + optional call graph
+                  │
+                  ▼
+     Agent review, findings validated
+                  │
+                  ▼
+     Structured findings + HTML report
+                  │
+                  ▼
+              Human review
 ```
 
-OpenQA coordinates the workflow; the host Agent/model performs the semantic review. Local providers work without a private OpenQA backend, while adapters can connect the same workflow to external platforms.
+OpenQA runs the workflow. The host Agent / model does the semantic review. Local providers need no private backend; adapters can attach the same flow to an external platform.
 
-Three decisions do most of the work. Changed methods are **tiered** by how strongly they connect to a stated requirement or test case, so the expensive analysis is rationed rather than spread thin. Write-backs pass **23 validation rules** that exist to defend against specific model failure modes — a finding is rejected if the code was never read, if the method name does not appear in the real source, or if a batch shows the statistical signature of a model on autopilot. And **closing is a gate**: coverage, report integrity, and evidence depth are re-checked before a task can complete.
+Three controls do the real work:
 
-On the [inventory-service](examples/inventory-service/README.md) blind-evaluation fixture — seven business-logic defects hidden in legitimate feature work, plus four decoys that look wrong but are correct — a recorded agent run found 7/7 with 0 false positives, and **none** of the seven came from the 102 Semgrep seed rules. That is one model on one in-house fixture, not a benchmark score. [How it works](skills/defect-detection/HOW_IT_WORKS.md) explains the design; [known limitations](skills/defect-detection/KNOWN_LIMITATIONS.md) explains where it falls down.
+1. **Tiers.** Methods tied to a stated requirement or case get deeper analysis; the rest are not treated equally.
+2. **23 write-back rules.** Rejected if the code was never read, the method name is not in the source, or the batch looks like autopilot output.
+3. **A close gate.** Coverage, report consistency, and evidence depth are checked again before the task can finish.
+
+On the [inventory-service](examples/inventory-service/README.md) blind fixture, seven business-logic defects sit inside ordinary feature work, plus four decoys that look wrong but are correct. One recorded agent run found 7/7 with 0 false positives, and none of the seven came from the 102 Semgrep seed rules. That is one model, one run, one in-house fixture — not a benchmark. Design: [How it works](skills/defect-detection/HOW_IT_WORKS.md). Limits: [known limitations](skills/defect-detection/KNOWN_LIMITATIONS.md).
+
+### What the output looks like
+
+These are **sample pages** (same renderer as a local run, canned findings). Open the HTML if the image is stale.
+
+<p align="center">
+  <a href="docs/assets/previews/defect-report.html"><img src="docs/assets/previews/defect-report.png" alt="Sample defect-detection HTML report: inventory reservation findings" width="880"></a>
+</p>
+
+<p align="center"><em>Defect-detection HTML report — task header, KPIs, and three requirement mismatches. <a href="docs/assets/previews/defect-report.html">Open the page</a>.</em></p>
+
+<p align="center">
+  <a href="docs/assets/previews/testcase-sample.html"><img src="docs/assets/previews/testcase-sample.png" alt="Sample generated manual test case for inventory hold" width="880"></a>
+</p>
+
+<p align="center"><em>testcase-generation writes Markdown cases. This is that file rendered: steps, expected results, empty Construction column. <a href="docs/assets/previews/testcase-sample.html">Open the page</a>.</em></p>
+
+<p align="center">
+  <a href="docs/assets/previews/cr-findings.html"><img src="docs/assets/previews/cr-findings.png" alt="Sample code-reviewer P0 and P1 findings" width="880"></a>
+</p>
+
+<p align="center"><em>code-reviewer report: each finding has location, rule, runtime impact, and a fix. <a href="docs/assets/previews/cr-findings.html">Open the page</a>.</em></p>
+
+<p align="center">
+  <a href="docs/assets/previews/ra-register.html"><img src="docs/assets/previews/ra-register.png" alt="Sample requirements-analyzer gap register" width="880"></a>
+</p>
+
+<p align="center"><em>requirements-analyzer: one gap / conflict register with an executable check per row. <a href="docs/assets/previews/ra-register.html">Open the page</a>.</em></p>
+
+<p align="center">
+  <a href="docs/assets/previews/testdata-writeback.html"><img src="docs/assets/previews/testdata-writeback.png" alt="Sample testdata write-back replacing placeholders" width="880"></a>
+</p>
+
+<p align="center"><em>testdata-generation fills <code>{placeholder}</code> with IDs the backend actually returned. <a href="docs/assets/previews/testdata-writeback.html">Open the page</a>.</em></p>
 
 ## Capability map
 

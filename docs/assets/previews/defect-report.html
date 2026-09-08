@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inventory reservation v2 - Task 12</title>
+  <style>
+:root {
+  color-scheme: light;
+  --bg: #F8FAFC;
+  --card: #FFFFFF;
+  --ink: #0F172A;
+  --heading: #1E3A8A;
+  --muted: #475569;
+  --line: #DBEAFE;
+  --primary: #1E40AF;
+  --accent: #D97706;
+  --danger: #DC2626;
+  --ok: #047857;
+  --chip: #E9EEF6;
+  --shadow: 0 1px 2px rgb(15 23 42 / 6%);
+  --topbar: 108px;
+  --sans: ui-sans-serif, "PingFang SC", "Noto Sans SC", "Segoe UI", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0B1220;
+  --card: #111827;
+  --ink: #E2E8F0;
+  --heading: #BFDBFE;
+  --muted: #94A3B8;
+  --line: #1E3A8A;
+  --chip: #1E293B;
+  --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: calc(var(--topbar) + 12px); }
+body {
+  margin: 0;
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.55;
+  font-size: 14px;
+}
+.skip-link {
+  position: absolute; left: 12px; top: -40px; z-index: 20;
+  background: var(--primary); color: #fff; padding: 8px 12px; border-radius: 8px;
+}
+.skip-link:focus { top: 12px; }
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar-inner, .toc, main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+.topbar-inner {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 16px; padding: 12px 0 8px;
+}
+.brand { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.brand-mark {
+  display: grid; place-items: center; width: 36px; height: 36px; flex: 0 0 auto;
+  border-radius: 10px; background: var(--primary); color: #fff;
+}
+.eyebrow { margin: 0; color: var(--muted); font-size: 12px; }
+h1 {
+  margin: 0; font-size: 20px; color: var(--heading); font-weight: 650;
+  text-wrap: balance;
+}
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.toc {
+  display: flex; flex-wrap: wrap; gap: 8px 14px; padding: 0 0 10px;
+}
+.toc a {
+  color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 600;
+}
+.toc a:hover, .toc a:focus-visible { color: var(--primary); }
+main { padding: 20px 0 72px; }
+.meta-grid, .kpi-row, .note-grid, .confirm-list {
+  display: grid; gap: 10px; margin: 0 0 16px;
+}
+.meta-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.kpi-row { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+.meta-item, .kpi, .panel, .confirm-card, .finding {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+.meta-item { padding: 10px 12px; min-width: 0; }
+.meta-item span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 2px; }
+.meta-item code, .finding summary code, td code {
+  font-family: var(--mono); font-size: 12px; word-break: break-all;
+}
+.kpi { padding: 12px 14px; }
+.kpi strong { display: block; font-size: 28px; line-height: 1.1; color: var(--heading); }
+.kpi-bug strong { color: var(--danger); }
+.kpi-opt strong { color: var(--accent); }
+.kpi-confirm strong { color: var(--primary); }
+.kpi span { color: var(--muted); font-size: 12px; }
+.panel { padding: 16px 18px; margin: 0 0 14px; }
+.panel-head {
+  display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between;
+  gap: 12px; margin: 0 0 12px;
+}
+.panel-head h2 { margin: 0; }
+.toolbar {
+  margin-left: auto; display: flex; flex-direction: column; align-items: flex-end;
+  gap: 8px; max-width: 100%;
+}
+h2 {
+  display: flex; align-items: center; gap: 8px; margin: 0 0 12px;
+  font-size: 16px; color: var(--heading);
+}
+.sec-icon { display: grid; place-items: center; color: var(--primary); }
+.count {
+  margin-left: 8px; background: var(--chip); color: var(--muted);
+  border-radius: 999px; padding: 1px 8px; font-size: 12px;
+}
+.prose { margin: 0; }
+.table-wrap { overflow-x: auto; }
+table.data { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.data th, table.data td {
+  text-align: left; vertical-align: top; padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+}
+table.data th { color: var(--muted); font-weight: 650; font-size: 12px; }
+.index-table { margin: 0; }
+.findings-table .finding-row { cursor: pointer; }
+.findings-table .finding-row:hover, .findings-table .finding-row.is-open { background: var(--chip); }
+.findings-table .finding-row.is-open td { border-bottom-color: transparent; }
+.finding-jump { color: inherit; text-decoration: none; font-weight: 650; }
+.finding-detail td {
+  padding: 4px 10px 16px; background: color-mix(in srgb, var(--chip) 45%, var(--card));
+}
+.finding-detail .finding-dl, .finding-detail .tags { margin: 8px 0 0; }
+.finding-detail pre.code { margin: 12px 0 0; }
+.muted { color: var(--muted); font-size: 12px; }
+.badge, .tag, .tag-confirm, .sev, .chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  border-radius: 999px; padding: 2px 8px; font-size: 12px; font-weight: 650;
+  white-space: nowrap;
+}
+.badge { background: #DBEAFE; color: var(--primary); }
+.status-completed { background: #D1FAE5; color: var(--ok); }
+.status-failed, .status-aborted { background: #FEE2E2; color: var(--danger); }
+.kind-bug { background: #FEE2E2; color: var(--danger); }
+.kind-opt { background: #FEF3C7; color: #92400E; }
+.kind-other { background: var(--chip); color: var(--muted); }
+.sev-high { background: #FEE2E2; color: var(--danger); }
+.sev-med { background: #FEF3C7; color: #92400E; }
+.sev-low { background: #DBEAFE; color: var(--primary); }
+.tag, .tag-confirm { background: var(--chip); color: var(--muted); }
+.tag-confirm { background: #FEF3C7; color: #92400E; }
+.chip-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.toolbar .chip-list { justify-content: flex-end; }
+.chip {
+  border: 1px solid var(--line); background: var(--card); color: var(--muted); cursor: pointer;
+}
+.chip.is-on { background: var(--primary); color: #fff; border-color: var(--primary); }
+.search {
+  display: flex; align-items: center; gap: 8px; width: min(320px, 100%);
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; background: var(--card);
+}
+.search input {
+  border: 0; outline: none; width: 100%; background: transparent; color: var(--ink); font: inherit;
+}
+.icon-btn {
+  border: 1px solid var(--line); background: var(--card); color: var(--heading);
+  width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: grid; place-items: center;
+}
+.confirm-list { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.confirm-card, .note-grid > div { padding: 12px 14px; }
+.confirm-card h3, .note-grid h3 { margin: 0 0 8px; font-size: 14px; color: var(--heading); }
+.note-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin: 0; }
+.note-grid > div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+.note-grid p, .confirm-card dd, .finding-dl dd { margin: 0; color: var(--ink); }
+dl { margin: 0; display: grid; gap: 8px; }
+dt { color: var(--muted); font-size: 12px; font-weight: 650; }
+.finding { padding: 0; margin: 0 0 10px; }
+.finding summary {
+  list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; gap: 8px 12px;
+  align-items: center; padding: 12px 14px;
+}
+.finding summary::-webkit-details-marker { display: none; }
+.finding summary strong { color: var(--heading); }
+.finding details[open] summary { border-bottom: 1px solid var(--line); }
+.finding-dl, .tags, .finding .code { margin: 12px 14px; }
+.finding .code, pre.code {
+  white-space: pre-wrap; word-break: break-word; background: #0F172A; color: #E2E8F0;
+  border-radius: 8px; padding: 12px; overflow-x: auto; font-family: var(--mono); font-size: 12px;
+}
+.empty { color: var(--muted); }
+.hidden { display: none !important; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); border: 0;
+}
+a, button, input, summary { outline: none; }
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+@media (max-width: 720px) {
+  h1 { font-size: 18px; }
+  .kpi strong { font-size: 22px; }
+  table.data th:nth-child(n+5), table.data td:nth-child(n+5) { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; scroll-behavior: auto !important; }
+}
+@media print {
+  .topbar { position: static; }
+  .toolbar, .skip-link, .icon-btn { display: none !important; }
+  .finding-detail, .finding-detail.hidden { display: table-row !important; }
+  .finding-row, .finding-detail { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+  <a class="skip-link" href="#findings">Skip to findings</a>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6l-8-3z"/></svg></span>
+        <div>
+          <p class="eyebrow">Defect detection report - Task 12</p>
+          <h1>Inventory reservation v2</h1>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span class="badge status-completed">Completed</span>
+        <button type="button" class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"/></svg></button>
+      </div>
+    </div>
+    <nav class="toc" aria-label="Report outline"><a href="#sec-change">Requirement changes</a><a href="#sec-scope">Analysis scope</a><a href="#sec-risks">Risks</a><a href="#sec-confirm">Pending confirmation</a><a href="#sec-notes">Notes</a><a href="#sec-verdict">Conclusion</a><a href="#findings">Findings</a></nav>
+  </header>
+  <main id="main">
+    <section class="meta-grid" aria-label="Task info">
+      <div class="meta-item"><span>Repo</span><code title="https://github.com/example/inventory-service.git">https://github.com/example/inventory-service.git</code></div>
+      <div class="meta-item"><span>Detection branch</span><code>feature/reservation-v2</code></div>
+      <div class="meta-item"><span>Baseline branch</span><code>main</code></div>
+      <div class="meta-item"><span>Submitter</span><strong>reviewer</strong></div>
+      <div class="meta-item"><span>Created</span>2026-09-08 10:00:00</div>
+      <div class="meta-item"><span>Updated</span>2026-09-08 11:20:00</div>
+    </section>
+    <section class="kpi-row" aria-label="Results overview"><div class="kpi kpi-total"><strong>3</strong><span>Total findings</span></div><div class="kpi kpi-bug"><strong>3</strong><span>Suspected defect</span></div><div class="kpi kpi-opt"><strong>0</strong><span>Improvement</span></div><div class="kpi kpi-risk"><strong>4</strong><span>Summary risks</span></div><div class="kpi kpi-confirm"><strong>1</strong><span>Pending confirmation</span></div></section>
+    <section class="panel" id="sec-change"><h2 data-marker="📋[Requirement changes]"><span class="sec-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg></span>Requirement changes<span class="sr-only">📋[Requirement changes]</span></h2><p class="prose">Inventory hold, volume discount, and refund cap on feature/reservation-v2</p></section><section class="panel" id="sec-scope"><h2 data-marker="🔍[Analysis scope]"><span class="sec-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg></span>Analysis scope<span class="sr-only">🔍[Analysis scope]</span></h2><p class="prose">reservation.js, pricing.js, refund.js against docs/requirements.md</p></section><section class="panel" id="sec-risks"><h2 data-marker="⚠️[Risks]"><span class="sec-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 21h20L12 3z"/><path d="M12 9v5"/><path d="M12 17h.01"/></svg></span>Risks<span class="sr-only">⚠️[Risks]</span></h2><div class="table-wrap"><table class="data"><thead><tr><th>#</th><th>Severity</th><th>Introduced</th><th>Location</th><th>Trigger conditions</th><th>Impact</th></tr></thead><tbody><tr><td>1</td><td><span class="sev sev-med">Med</span></td><td>This change</td><td><code>▎[This change]</code></td><td>—</td><td>—</td></tr><tr><td>2</td><td><span class="sev sev-high">High</span></td><td>This change</td><td><code>reservation.js#expireStaleReservations lines 162-168</code></td><td>Trigger: expire a hold then call checkAvailability</td><td>storefront still shows held stock.▎[This change]</td></tr><tr><td>3</td><td><span class="sev sev-high">High</span></td><td>This change</td><td><code>pricing.js#volumeDiscountRate lines 32-39</code></td><td>Trigger: order exactly 10 units</td><td>published 5% discount is skipped.▎[This change]</td></tr><tr><td>4</td><td><span class="sev sev-high">High</span></td><td>This change</td><td><code>refund.js#resolveRefundAmount lines 18-28</code></td><td>Trigger: second partial refund</td><td>refundedTotal can exceed paidAmount</td></tr></tbody></table></div></section><section class="panel" id="sec-confirm"><h2 data-marker="🔔[Pending confirmation]"><span class="sec-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.2 2.4c-.8.3-1.2.8-1.2 1.6V14"/><path d="M12 17h.01"/></svg></span>Pending confirmation<span class="sr-only">🔔[Pending confirmation]</span></h2><div class="confirm-list"><article class="confirm-card"><h3>#1 Hold window</h3><dl><div><dt>Open question</dt><dd>should expiry notify the storefront immediately?</dd></div><div><dt>Current assumption</dt><dd>yes, via cache invalidate.</dd></div><div><dt>Please confirm</dt><dd>product owner.</dd></div></dl></article></div></section><section class="panel" id="sec-notes"><h2 data-marker="📌[Notes]"><span class="sec-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.2"/></svg></span>Notes<span class="sr-only">📌[Notes]</span></h2><div class="note-grid"><div><h3>Test</h3><p>hold, expire, then checkAvailability on the same SKU</p></div><div><h3>Release</h3><p>do not ship refund or discount until the three defects are fixed</p></div></div></section><section class="panel" id="sec-verdict"><h2 data-marker="✅[Conclusion]"><span class="sec-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.8 2.8L16 9.5"/></svg></span>Conclusion<span class="sr-only">✅[Conclusion]</span></h2><p class="prose">Three requirement mismatches found. None came from Semgrep seed rules. Fix before release.</p></section>
+    <section class="panel" id="findings">
+      <div class="panel-head">
+        <h2>Findings<span class="count">3</span></h2>
+        <div class="toolbar">
+          <label class="search">
+            <span class="sr-only">Search findings</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.2-3.2"/></svg>
+            <input id="finding-search" type="search" placeholder="Search class, method, or summary" autocomplete="off">
+          </label>
+          <div class="chip-list" role="group" aria-label="Filter by type">
+            <button type="button" class="chip is-on" data-filter="all">All 3</button>
+            <button type="button" class="chip" data-filter="bug">Suspected defect 3</button>
+            <button type="button" class="chip" data-filter="opt">Improvement 0</button>
+            <button type="button" class="chip" data-filter="confirm">Please confirm 0</button>
+          </div>
+        </div>
+      </div>
+      <div id="finding-list"><div class="table-wrap index-table"><table class="data findings-table"><thead><tr><th>#</th><th>Type</th><th>Location</th><th>Summary</th></tr></thead><tbody><tr class="finding-row" id="finding-1-row" data-finding="1" data-kind="bug" data-confirm="" data-text="js#expirestalereservations expiry releases reserved units without invalidating the availability cache" role="button" tabindex="0" aria-expanded="false" aria-controls="finding-1"><td><a class="finding-jump" href="#finding-1">1</a></td><td><span class="badge kind-bug">Suspected defect</span></td><td><code>js#expireStaleReservations</code> <span class="muted">Lines 162-168</span></td><td>Expiry releases reserved units without invalidating the availability cache</td></tr><tr class="finding-detail hidden" id="finding-1" data-kind="bug" data-confirm="" data-text="js#expirestalereservations expiry releases reserved units without invalidating the availability cache"><td colspan="4"><dl class='finding-dl'><div><dt>Problem description</dt><dd>expireStaleReservations calls db.adjustReserved but never availabilityCache.invalidate. checkAvailability keeps serving the held (lower) count.</dd></div><div><dt>Affected business</dt><dd>customers cannot buy stock that is already free
+
+Trigger: create a reservation (warms cache), wait until it expires, run expireStaleReservations, then checkAvailability for the same SKU</dd></div><div><dt>Expected vs actual</dt><dd>availability should recover after expiry; it stays at the held value until TTL</dd></div><div><dt>Fix suggestion</dt><dd>invalidate the same cache key holdStock / releaseStock already invalidate</dd></div></dl><pre class='code'><code>db.adjustReserved(sku, -qty);
+availabilityCache.invalidate(sku);</code></pre></td></tr><tr class="finding-row" id="finding-2-row" data-finding="2" data-kind="bug" data-confirm="" data-text="js#volumediscountrate volume tiers use exclusive &gt; so exactly 10 units get no 5% discount" role="button" tabindex="0" aria-expanded="false" aria-controls="finding-2"><td><a class="finding-jump" href="#finding-2">2</a></td><td><span class="badge kind-bug">Suspected defect</span></td><td><code>js#volumeDiscountRate</code> <span class="muted">Lines 32-39</span></td><td>Volume tiers use exclusive &gt; so exactly 10 units get no 5% discount</td></tr><tr class="finding-detail hidden" id="finding-2" data-kind="bug" data-confirm="" data-text="js#volumediscountrate volume tiers use exclusive &gt; so exactly 10 units get no 5% discount"><td colspan="4"><dl class='finding-dl'><div><dt>Problem description</dt><dd>spec says discount at 10 and 50 units; code uses units &gt; 10 and units &gt; 50</dd></div><div><dt>Affected business</dt><dd>published tier boundaries
+
+Trigger: volumeDiscountRate(10) or computeOrderTotal with 10 units</dd></div><div><dt>Fix suggestion</dt><dd>use inclusive bounds (&gt;= 10, &gt;= 50)</dd></div></dl></td></tr><tr class="finding-row" id="finding-3-row" data-finding="3" data-kind="bug" data-confirm="" data-text="js#resolverefundamount requested refund is not capped at the remaining paid balance" role="button" tabindex="0" aria-expanded="false" aria-controls="finding-3"><td><a class="finding-jump" href="#finding-3">3</a></td><td><span class="badge kind-bug">Suspected defect</span></td><td><code>js#resolveRefundAmount</code> <span class="muted">Lines 18-28</span></td><td>Requested refund is not capped at the remaining paid balance</td></tr><tr class="finding-detail hidden" id="finding-3" data-kind="bug" data-confirm="" data-text="js#resolverefundamount requested refund is not capped at the remaining paid balance"><td colspan="4"><dl class='finding-dl'><div><dt>Problem description</dt><dd>remaining is computed then ignored; the function returns the requested amount</dd></div><div><dt>Affected business</dt><dd>over-refund
+
+Trigger: paidAmount=100, refundedTotal=80, resolveRefundAmount(order, 80)</dd></div><div><dt>Fix suggestion</dt><dd>return min(requested, remaining)</dd></div></dl></td></tr></tbody></table></div></div>
+      <p class="empty hidden" id="finding-empty">No matching findings.</p>
+    </section>
+  </main>
+  <script>
+(function () {
+  var root = document.documentElement;
+  var pref = localStorage.getItem("dd-theme");
+  if (pref) root.setAttribute("data-theme", pref);
+  else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)
+    root.setAttribute("data-theme", "dark");
+  var toggle = document.getElementById("theme-toggle");
+  if (toggle) toggle.addEventListener("click", function () {
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    localStorage.setItem("dd-theme", next);
+  });
+  var filter = "all";
+  var search = document.getElementById("finding-search");
+  var chips = document.querySelectorAll(".chip[data-filter]");
+  function detailFor(row) {
+    return document.getElementById("finding-" + row.getAttribute("data-finding"));
+  }
+  function isOpen(row) {
+    return row.getAttribute("aria-expanded") === "true";
+  }
+  function setOpen(row, open, scroll) {
+    var detail = detailFor(row);
+    row.setAttribute("aria-expanded", open ? "true" : "false");
+    row.classList.toggle("is-open", open);
+    if (detail) {
+      var visible = open && !row.classList.contains("hidden");
+      detail.classList.toggle("hidden", !visible);
+      if (visible && scroll) detail.scrollIntoView({ block: "nearest" });
+    }
+    if (open) {
+      try { history.replaceState(null, "", "#finding-" + row.getAttribute("data-finding")); }
+      catch (err) { location.hash = "finding-" + row.getAttribute("data-finding"); }
+    }
+  }
+  function toggleRow(row, scroll) {
+    setOpen(row, !isOpen(row), scroll);
+  }
+  function apply() {
+    var q = (search && search.value || "").trim().toLowerCase();
+    var shown = 0;
+    document.querySelectorAll(".finding-row").forEach(function (row) {
+      var kind = row.getAttribute("data-kind") || "";
+      var confirm = row.getAttribute("data-confirm") === "1";
+      var text = row.getAttribute("data-text") || row.textContent.toLowerCase();
+      var ok = (filter === "all") || (filter === "confirm" ? confirm : kind === filter);
+      if (q && text.indexOf(q) === -1) ok = false;
+      row.classList.toggle("hidden", !ok);
+      setOpen(row, isOpen(row), false);
+      if (ok) shown += 1;
+    });
+    var empty = document.getElementById("finding-empty");
+    if (empty) empty.classList.toggle("hidden", shown !== 0);
+  }
+  chips.forEach(function (chip) {
+    chip.addEventListener("click", function () {
+      filter = chip.getAttribute("data-filter") || "all";
+      chips.forEach(function (c) { c.classList.toggle("is-on", c === chip); });
+      apply();
+    });
+  });
+  if (search) search.addEventListener("input", apply);
+  document.querySelectorAll(".finding-row").forEach(function (row) {
+    row.addEventListener("click", function (ev) {
+      ev.preventDefault();
+      toggleRow(row, true);
+    });
+    row.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter" || ev.key === " ") {
+        ev.preventDefault();
+        toggleRow(row, true);
+      }
+    });
+  });
+  var hash = (location.hash || "").replace(/^#/, "");
+  var match = hash.match(/^finding-(\d+)$/);
+  if (match) {
+    var target = document.getElementById("finding-" + match[1] + "-row");
+    if (target) setOpen(target, true, true);
+  }
+})();
+</script>
+</body>
+</html>

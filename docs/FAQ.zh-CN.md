@@ -18,6 +18,8 @@ OpenQA Skills 是面向 Coding Agent 的公开、本地优先 skill 层。仓库
 
 `npx skills add … --skill <name>` 一次只复制一个目录。按任务安装，彼此不互相替代。`defect-detection` 的检出效果尚未独立 benchmark。`testcase-generation`、`code-reviewer` 和 `requirements-analyzer` 没有公开的宿主 agent 成绩。
 
+报告、用例长什么样：[样例页和截图](../README.zh-CN.md#产物长什么样)。
+
 ## 该装哪一个？
 
 按任务选，不要按措辞选：
@@ -65,6 +67,10 @@ OpenQA Skills 是面向 Coding Agent 的公开、本地优先 skill 层。仓库
 ## 当前支持什么？
 
 Skill 文档面向 Codex、Claude Code、Cursor 和 OpenClaw；完整 Agent 流程和检测准确率尚未完成独立 benchmark，详见[支持矩阵](SUPPORT_MATRIX.md)。
+
+## 产物长什么样？
+
+样例页（同一套渲染，发现项是写好的示例）：[README · 产物长什么样](../README.zh-CN.md#产物长什么样)。HTML 和截图在 `docs/assets/previews/`。
 
 ## testcase-generation 会填测试数据吗？
 

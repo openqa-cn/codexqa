@@ -18,6 +18,6 @@ Index only. `npx skills add … --skill <name>` copies `skills/<name>/`, so meth
 | `testdata-generation` | [How it works](../skills/testdata-generation/HOW_IT_WORKS.md) · [Known limitations](../skills/testdata-generation/KNOWN_LIMITATIONS.md) | [`SKILL.md`](../skills/testdata-generation/SKILL.md) |
 | `testcase-generation` | [How it works](../skills/testcase-generation/HOW_IT_WORKS.md) · [Known limitations](../skills/testcase-generation/KNOWN_LIMITATIONS.md) | [`SKILL.md`](../skills/testcase-generation/SKILL.md) |
 
-What to bring to each skill (repo vs PRD vs cases/API): [FAQ](FAQ.md#what-do-i-have-to-give-each-skill).
+What to bring to each skill (repo vs PRD vs cases/API): [FAQ](FAQ.md#what-do-i-have-to-give-each-skill). What the artifacts look like: [README previews](../README.md#what-the-output-looks-like).
 
 Install, contributing, security, layout, and the [support matrix](SUPPORT_MATRIX.md) stay here. [Documentation audiences](ARCHITECTURE.md#documentation-audiences).

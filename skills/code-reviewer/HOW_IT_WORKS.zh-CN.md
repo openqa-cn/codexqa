@@ -6,7 +6,7 @@
 
 **输入是本地工作副本，不是克隆地址。** 在 Agent 里打开仓库，并说出分支 / PR / commit。本 skill 不会像 [`defect-detection`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/defect-detection/README.zh-CN.md) 那样去拉远程。详见 [README · 你要交什么](README.zh-CN.md#你要交什么)。
 
-Agent 运行时读 [`SKILL.md`](SKILL.md) 再读 [`review-playbook.md`](review-playbook.md)，不要读本页。能力边界见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。
+Agent 运行时读 [`SKILL.md`](SKILL.md) 再读 [`review-playbook.md`](review-playbook.md)，不要读本页。能力边界见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。报告样例：[预览页](https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/cr-findings.html)。
 
 ## 要解决的问题
 

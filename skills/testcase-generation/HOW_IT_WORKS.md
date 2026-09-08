@@ -4,7 +4,7 @@
 
 `testcase-generation` is a host-agent workflow skill. It does not ship a model. Inputs are a workspace PRD / technical design / API contract (optional knowledge files and code under test). Outputs are manual cases at `usecases/cases/{module}/*.md` plus intermediates under `usecases/testdocs/`.
 
-Runtime steps: [`SKILL.md`](SKILL.md). Gaps: [Known limitations](KNOWN_LIMITATIONS.md). Install / zero-config: [README](README.md).
+Runtime steps: [`SKILL.md`](SKILL.md). Gaps: [Known limitations](KNOWN_LIMITATIONS.md). Install / zero-config: [README](README.md). A rendered case: [sample page](https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/testcase-sample.html).
 
 ## Problem
 

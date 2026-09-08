@@ -4,7 +4,7 @@
 
 `testcase-generation` 是宿主 agent 上的工作流 skill，不内置模型。输入是工作区里的 PRD / 技术方案 / 接口契约（可选知识库、被测代码）。输出是 `usecases/cases/{module}/*.md` 手工用例，以及 `usecases/testdocs/` 下的中间产物。
 
-运行时步骤见 [`SKILL.md`](SKILL.md)。能力边界见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。安装与零配置见 [README](README.zh-CN.md)。
+运行时步骤见 [`SKILL.md`](SKILL.md)。能力边界见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。安装与零配置见 [README](README.zh-CN.md)。渲染后的用例：[样例页](https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/testcase-sample.html)。
 
 ## 要解决的问题
 

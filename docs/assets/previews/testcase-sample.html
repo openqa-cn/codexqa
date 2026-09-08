@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sample generated case</title>
+  <style>
+    :root { color-scheme: light; --bg:#f4f6f8; --card:#fff; --ink:#1c2333; --muted:#5c6778; --line:#d8dee6; --acc:#1b6b4a; }
+    * { box-sizing: border-box; }
+    body { margin:0; font:15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); }
+    .wrap { max-width:880px; margin:0 auto; padding:28px 20px 48px; }
+    .kicker { margin:0 0 6px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+    h1 { margin:0 0 8px; font-size:26px; }
+    .meta { color:var(--muted); margin-bottom:20px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px 22px; margin-bottom:16px; }
+    h2 { margin:0 0 12px; font-size:16px; }
+    table { width:100%; border-collapse:collapse; font-size:14px; }
+    th, td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+    th { background:#eef2f6; font-weight:600; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:13px; background:#eef2f6; padding:1px 5px; border-radius:4px; }
+    .empty { color:var(--muted); font-style:italic; }
+    .tag { display:inline-block; background:#e5f4ec; color:var(--acc); font-size:12px; padding:2px 8px; border-radius:999px; margin-right:6px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="kicker">testcase-generation · sample output</p>
+    <h1>[inventory-hold] submit succeeds when stock is reserved</h1>
+    <p class="meta"><span class="tag">SERVER</span> <code>caseId</code> a1b2c3d4-0001 · module <code>inventory-hold</code> · <code>Construction</code> left empty on purpose</p>
+
+    <section class="card">
+      <h2>1. Prerequisites</h2>
+      <table>
+        <tr><th>Entity</th><th>Content</th><th>Construction</th></tr>
+        <tr><td>Catalog product</td><td><code>productId</code>: {placeholder}<br><code>kind</code>: standard<br><code>available</code>: 10</td><td class="empty">(backfill later)</td></tr>
+        <tr><td>Account</td><td><code>userId</code>: u_1001<br><code>verified</code>: true</td><td class="empty"></td></tr>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>2. Steps and expected results</h2>
+      <table>
+        <tr><th>#</th><th>Step</th><th>Expected</th></tr>
+        <tr><td>1</td><td>Call <code>POST /v1/holds</code> with productId, userId, quantity=1</td><td>HTTP 200; <code>holdId</code> not empty; available stock becomes 9</td></tr>
+        <tr><td>2</td><td>Repeat the same request with the same idempotency key</td><td>Same <code>holdId</code>; stock stays 9</td></tr>
+        <tr><td>3</td><td>Call with quantity=11 when available is 9</td><td>HTTP 400; no new hold row</td></tr>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>3. Request and assertions</h2>
+      <table>
+        <tr><th>API</th><th>Request</th><th>Assert</th></tr>
+        <tr><td><code>POST /v1/holds</code></td><td><code>productId</code>={placeholder}, <code>quantity</code>=1</td><td>status=200; DB hold row +1; available=9</td></tr>
+      </table>
+    </section>
+  </div>
+</body>
+</html>

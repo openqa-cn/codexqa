@@ -18,6 +18,8 @@ OpenQA Skills is a public, local-first skill layer for coding agents. The reposi
 
 `npx skills add … --skill <name>` copies one directory. Install the skill you need; they do not replace each other. Detection accuracy for `defect-detection` has not been independently benchmarked. `testcase-generation`, `code-reviewer`, and `requirements-analyzer` have no published host-agent score.
 
+What a finished report or case looks like: [sample pages and screenshots](../README.md#what-the-output-looks-like).
+
 ## Which skill should I install?
 
 Match the request, not the wording:
@@ -75,6 +77,10 @@ The instructions mention Codex, Claude Code, Cursor, and OpenClaw. Installation 
 ## Is detection accuracy measured?
 
 Not yet on a published agent benchmark. The regression suite validates CLI and workflow behaviors. The boundary example demonstrates a deterministic defect, not AI detection accuracy or a false-positive rate.
+
+## What does the output look like?
+
+Sample pages (same renderers, canned findings): [README · What the output looks like](../README.md#what-the-output-looks-like). HTML and PNGs live in `docs/assets/previews/`.
 
 ## Does testcase-generation fill test data?
 

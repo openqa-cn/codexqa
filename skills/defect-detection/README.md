@@ -2,7 +2,13 @@
 
 [简体中文](README.zh-CN.md) · [How it works](HOW_IT_WORKS.md) · [Known limitations](KNOWN_LIMITATIONS.md)
 
-Agent-led static and business-logic defect detection for pull requests and test plans. **Input is a git repository and branch** (plus any requirements or test cases you can share). This is a usable local-first workflow that combines Agent instructions, a TypeScript CLI, static analysis, and pluggable providers. The workflow is available for engineering use, while complete agent runs and detection accuracy are not yet independently benchmarked.
+Agent-led static and business-logic defect detection for pull requests and test plans. **Input is a git repository and branch** (plus any requirements or test cases you can share). Local-first: CLI, static rules, and pluggable providers. The workflow is usable; detection accuracy is not independently benchmarked.
+
+Sample HTML report (same renderer as a local run):
+
+<p align="center">
+  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/defect-report.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/defect-report.png" alt="Sample defect-detection HTML report" width="880"></a>
+</p>
 
 ## What you get
 

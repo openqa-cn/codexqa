@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sample testdata write-back</title>
+  <style>
+    :root { color-scheme: light; --bg:#f4f6f8; --card:#fff; --ink:#1c2333; --muted:#5c6778; --line:#d8dee6; --acc:#1b4f8a; }
+    * { box-sizing: border-box; }
+    body { margin:0; font:15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); }
+    .wrap { max-width:880px; margin:0 auto; padding:28px 20px 48px; }
+    .kicker { margin:0 0 6px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+    h1 { margin:0 0 8px; font-size:24px; }
+    .meta { color:var(--muted); margin-bottom:18px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:14px; }
+    h2 { margin:0 0 10px; font-size:16px; }
+    table { width:100%; border-collapse:collapse; font-size:14px; }
+    th, td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+    th { background:#eef2f6; font-weight:600; }
+    code { font-family: ui-monospace, Menlo, monospace; font-size:13px; background:#eef2f6; padding:1px 5px; border-radius:4px; }
+    .was { color:#9b1c1c; text-decoration:line-through; }
+    .now { color:#0f6b3a; font-weight:600; }
+    .tag { display:inline-block; background:#e8f0fa; color:var(--acc); font-size:12px; padding:2px 8px; border-radius:999px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="kicker">testdata-generation · sample write-back</p>
+    <h1>Placeholders filled with IDs the backend returned</h1>
+    <p class="meta"><span class="tag">case-executable.md</span> · mock catalog · no <code>node</code> commands in the case</p>
+    <section class="card">
+      <h2>Before (from testcase-generation)</h2>
+      <table>
+        <tr><th>Entity</th><th>Content</th><th>Construction</th></tr>
+        <tr><td>Catalog product</td><td><code>productId</code>: {placeholder}<br><code>kind</code>: standard</td><td><em>(empty)</em></td></tr>
+      </table>
+    </section>
+    <section class="card">
+      <h2>After (backend created the row)</h2>
+      <table>
+        <tr><th>Entity</th><th>Content</th><th>Construction</th></tr>
+        <tr>
+          <td>Catalog product</td>
+          <td><code>productId</code>: <span class="was">{placeholder}</span> <span class="now">prd_8f21</span><br><code>kind</code>: standard</td>
+          <td>Created via <code>POST /v1/catalog/products</code>; id from response <code>data.id</code></td>
+        </tr>
+      </table>
+    </section>
+    <section class="card">
+      <h2>Success means this — not a number in chat</h2>
+      <p>Manifest records <code>prd_8f21</code> as returned by the mock. Re-run tomorrow and you get a new id, same field mapping.</p>
+    </section>
+  </div>
+</body>
+</html>

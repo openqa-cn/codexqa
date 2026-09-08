@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sample code-reviewer findings</title>
+  <style>
+    :root { color-scheme: light; --bg:#f4f6f8; --card:#fff; --ink:#1c2333; --muted:#5c6778; --line:#d8dee6; }
+    body { margin:0; font:15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); }
+    .wrap { max-width:880px; margin:0 auto; padding:28px 20px 48px; }
+    .kicker { margin:0 0 6px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+    h1 { margin:0 0 16px; font-size:26px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:12px; }
+    .sev { display:inline-block; font-size:12px; font-weight:700; padding:2px 8px; border-radius:6px; margin-right:8px; }
+    .p0 { background:#fde8e8; color:#9b1c1c; }
+    .p1 { background:#fff4d6; color:#8a5a00; }
+    h2 { margin:0 0 8px; font-size:16px; }
+    p, li { margin:6px 0; color:#2a3344; }
+    code { font-family: ui-monospace, Menlo, monospace; font-size:13px; background:#eef2f6; padding:1px 5px; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="kicker">code-reviewer · sample findings report</p>
+    <h1>P0 / P1 review of <code>feature/refund-cap</code></h1>
+    <section class="card">
+      <h2><span class="sev p0">P0</span> Refund amount not capped at remaining balance</h2>
+      <p><strong>Where:</strong> <code>src/refund.js</code> <code>resolveRefundAmount</code> lines 18–28</p>
+      <p><strong>Rule:</strong> monetary / spec bound — remaining balance must be an upper bound</p>
+      <p><strong>Runtime:</strong> a second partial refund can push <code>refundedTotal</code> above <code>paidAmount</code></p>
+      <p><strong>Fix:</strong> return <code>min(requested, remaining)</code>; add a case at the exact remaining amount</p>
+    </section>
+    <section class="card">
+      <h2><span class="sev p1">P1</span> Lock release missing on the error path</h2>
+      <p><strong>Where:</strong> <code>src/db.js</code> <code>withLock</code> lines 186–200</p>
+      <p><strong>Rule:</strong> critical section must release in <code>finally</code></p>
+      <p><strong>Runtime:</strong> if the body throws, the lock key stays held and retries hang</p>
+      <p><strong>Fix:</strong> wrap the body in <code>try/finally</code> and always call <code>releaseLock</code></p>
+    </section>
+  </div>
+</body>
+</html>

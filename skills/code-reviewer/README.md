@@ -4,6 +4,12 @@
 
 Playbook-driven code review of a **local Git checkout**: current branch, a PR, or a commit. It writes a P0 / P1 / P2 report with file locations, rule citations, runtime impact, and suggested fixes.
 
+Sample findings shape:
+
+<p align="center">
+  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/cr-findings.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/cr-findings.png" alt="Sample code-reviewer P0 / P1 findings" width="880"></a>
+</p>
+
 It is **not** [`defect-detection`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/defect-detection/README.md). That skill clones a remote URL, extracts changed methods, runs AST / optional call-graph analysis, and gates write-backs. This skill diffs in place and loads frontend / backend playbooks.
 
 ## What you give it

@@ -6,7 +6,7 @@
 
 **输入是需求正文，不是源码。** PRD、故事、接口说明、范围表——不是 git 克隆，也不是 `code/`。详见 [README · 你要交什么](README.zh-CN.md#你要交什么)。
 
-Agent 运行时读 [`SKILL.md`](SKILL.md) 再读 [`prompts/requirements-analyzer.md`](prompts/requirements-analyzer.md)，不要读本页。能力边界见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。
+Agent 运行时读 [`SKILL.md`](SKILL.md) 再读 [`prompts/requirements-analyzer.md`](prompts/requirements-analyzer.md)，不要读本页。能力边界见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。登记表样例：[预览页](https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/ra-register.html)。
 
 ## 要解决的问题
 

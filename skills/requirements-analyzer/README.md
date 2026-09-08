@@ -4,6 +4,12 @@
 
 Quality-and-risk analysis of **requirement documents**. It audits sources, finds gaps and conflicts, and writes one register with executable P0 / P1 verification.
 
+What the register looks like:
+
+<p align="center">
+  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/ra-register.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/ra-register.png" alt="Sample requirements-analyzer gap register" width="880"></a>
+</p>
+
 It is **not** [`testcase-generation`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/testcase-generation/README.md). That skill writes a manual case library from `prd/`. This skill reviews whether the requirements themselves are complete, consistent, and testable.
 
 ## What you give it

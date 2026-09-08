@@ -2,6 +2,8 @@
 
 [简体中文](README.zh-CN.md)
 
+Small fixtures you can run without an agent. For what a finished report looks like, see the [sample pages in the root README](../README.md#what-the-output-looks-like).
+
 Start with [checkout boundary](checkout-boundary/README.md): a small positive-amount requirement, a known-good implementation, and a seeded boundary defect. Its verifier exercises both implementations.
 
 [Polyglot service](polyglot-service/README.md) builds a Python + Go + TypeScript repository whose feature branch plants one seeded defect per language; it exercises language detection, per-language method extraction, the per-language Semgrep packs on one `run-ast-scan`, and non-Java write-back conventions.

@@ -6,7 +6,7 @@
 
 **输入不是被测源码。** 你带上造数请求、写好的用例，和/或 API 来源（OpenAPI / `planId` / `serviceId`）。本 skill 不读 `code/` 来编造表名或 ID。详见 [README · 你要交什么](README.zh-CN.md#你要交什么)。
 
-Agent 运行时读 [`SKILL.md`](SKILL.md)，不要读本页。命令、安装、排障在英文 [HOW_IT_WORKS.md 操作附录](HOW_IT_WORKS.md#operator-appendix)。能力边界见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。
+Agent 运行时读 [`SKILL.md`](SKILL.md)，不要读本页。命令、安装、排障在英文 [HOW_IT_WORKS.md 操作附录](HOW_IT_WORKS.md#operator-appendix)。能力边界见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。回写样例：[预览页](https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/testdata-writeback.html)。
 
 ## 要解决的问题
 

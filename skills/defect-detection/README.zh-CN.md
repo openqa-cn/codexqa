@@ -2,7 +2,13 @@
 
 [English](README.md) · [工作原理](HOW_IT_WORKS.zh-CN.md) · [已知边界](KNOWN_LIMITATIONS.zh-CN.md)
 
-面向 Pull Request、测试计划和交付任务的 Agent 缺陷检测工作流。**输入是 git 仓库和分支**（再加你能提供的需求或用例）。它结合 TypeScript CLI、本地 provider、静态分析和可选远程适配器，输出带位置和依据的疑似缺陷，交给人工确认；当前工作流已经可以用于工程实践。
+面向 Pull Request、测试计划和交付任务的 Agent 缺陷检测。**输入是 git 仓库和分支**（再加你能提供的需求或用例）。本地 CLI + 静态规则 + 可选适配器，输出带位置和依据的疑似缺陷，交给人确认。工作流能跑；检出效果还没有独立 benchmark。
+
+报告样例（和本地渲染同一套）：
+
+<p align="center">
+  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/defect-report.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/defect-report.png" alt="缺陷检测 HTML 报告样例" width="880"></a>
+</p>
 
 ## 安装要求
 

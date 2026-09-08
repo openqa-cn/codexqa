@@ -4,6 +4,12 @@
 
 对着**本地 Git 工作副本**做 playbook 驱动的代码审查：当前分支、PR 或某个 commit。产出带文件位置、规则引用、运行时影响和修复建议的 P0 / P1 / P2 报告。
 
+报告长什么样：
+
+<p align="center">
+  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/cr-findings.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/cr-findings.png" alt="代码审查 P0 / P1 发现样例" width="880"></a>
+</p>
+
 **不是** [`defect-detection`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/defect-detection/README.zh-CN.md)。那个 skill 会按 URL 克隆仓库、抽变更方法、跑 AST / 可选调用图，并对写回做门禁。本 skill 在原地 diff，按前端 / 后端加载 playbook。
 
 ## 你要交什么

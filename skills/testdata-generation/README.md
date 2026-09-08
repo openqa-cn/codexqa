@@ -4,6 +4,12 @@
 
 Vendor-neutral [Agent Skill](https://agentskills.io/specification) for constructing test data against a backend and, when the request is a case-material job, writing the values back as executable preconditions.
 
+What write-back looks like:
+
+<p align="center">
+  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/testdata-writeback.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/testdata-writeback.png" alt="Sample testdata write-back" width="880"></a>
+</p>
+
 It does **not** invent business IDs. "Construct succeeded" means the backend returned an ID, not that one appeared in the chat. It also does **not** author test cases from a PRD — that is the sibling [`testcase-generation`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/testcase-generation/README.md) skill.
 
 ## What you give it

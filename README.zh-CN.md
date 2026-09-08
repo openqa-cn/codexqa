@@ -9,6 +9,7 @@
 
 <p align="center">
   <a href="#快速开始"><strong>快速开始</strong></a> ·
+  <a href="#产物长什么样"><strong>产物长什么样</strong></a> ·
   <a href="docs/HOW_IT_WORKS.zh-CN.md"><strong>工作原理</strong></a> ·
   <a href="examples/inventory-service/README.md"><strong>盲测评估</strong></a> ·
   <a href="skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md"><strong>已知边界</strong></a> ·
@@ -52,34 +53,78 @@ AI Coding 降低了实现成本，但一个补丁仍可能遗漏需求、削弱�
 
 ## defect-detection 工作方式
 
-静态分析擅长有**形状**的缺陷：被吞掉的异常、硬编码凭证、未判空的引用。而真正能活过评审的缺陷通常是另一类——写法地道、测试也过，但做的不是需求说的事。规格写「满 10 件」而代码用了 `>`；退款没有按剩余余额封顶；某个函数改了计数器，而读同一份数据的缓存从来没被失效过。Bug 藏在代码与意图的落差里，而意图在文档里，不在语法树里。
+静态规则能抓住「长什么样都认得」的问题：吞掉的异常、写死的密钥、没判空的引用。能混过评审的，往往是另一类：代码写得规范、测试也绿，但和需求不一致。
 
-模型能补上这个落差。但不受约束的模型审查者也会编造它没读过的方法、对几百个方法给出自信的空结论、标出多到让人放弃阅读的噪音。所以这里的前提是：**模型负责语义判断，基础设施负责让这个判断可被验证。**
+- 需求写「满 10 件打折」，代码用了 `>`，满 10 件反而没打上。
+- 退款直接按申请金额走，没有按剩余可退余额封顶。
+- 一个函数改了计数器，读同一份数据的缓存却从未失效。
+
+这类 bug 不在语法树里，在**代码和意图对不上**的地方；意图在需求、用例里，不在 AST 里。模型能对照两者做判断，但放开了也会编造没读过的方法、对几百个方法写「没问题」、标出一堆没人看的噪音。
+
+所以分工是：**模型做语义判断，基础设施保证这个判断能被核对。**
 
 ```text
-代码仓库 + 分支 + 需求或测试材料
-                    │
-                    ▼
-          上下文收集与变更分析
-                    │
-                    ▼
-       AST 规则 + 可选调用图分析
-                    │
-                    ▼
-          Agent 审查与发现校验
-                    │
-                    ▼
-        结构化发现 + HTML 报告
-                    │
-                    ▼
-                  人工复核
+仓库 + 分支 + 需求或用例
+              │
+              ▼
+     收集上下文，分析这次改了什么
+              │
+              ▼
+     AST 规则 + 可选调用图
+              │
+              ▼
+     Agent 审查，发现项过校验
+              │
+              ▼
+     结构化发现 + HTML 报告
+              │
+              ▼
+           人工复核
 ```
 
-OpenQA 负责编排工作流，语义审查由宿主 Agent/模型执行。本地 provider 无需连接 OpenQA 私有后端；如有需要，也可以通过适配器连接外部平台。
+OpenQA 编排流程；语义审查由你这边的 Agent / 模型做。本地就能跑，不必连私有后端；需要时再用适配器接到外部平台。
 
-三个决策承担了主要工作。变更方法按「与已陈述需求或用例的关联强度」**分层**，从而把昂贵的分析配给出去，而不是平摊。写回要通过 **23 条校验规则**，它们针对的是模型的具体失效模式——没读过代码、方法名在真实源码中不存在、或者整批结论呈现出「模型进入自动驾驶」的统计特征，都会被拒绝。而**关门是一道闸**：覆盖率、报告一致性和证据深度会在任务完成前重新校验。
+真正起作用的是三道约束：
 
-在 [inventory-service](examples/inventory-service/README.md) 盲测 fixture 上——7 处业务逻辑缺陷藏在合理的功能改动中，外加 4 个「看起来像 bug 实则正确」的诱饵——一次已记录的 agent 运行检出 7/7 且零误报，而且这 7 处**没有一处**来自 102 条 Semgrep 种子规则。这是单模型、单次、自建 fixture 的结果，不是 benchmark 成绩。设计细节见[工作原理](skills/defect-detection/HOW_IT_WORKS.zh-CN.md)，能力边界见[已知边界](skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md)。
+1. **分层**：和需求、用例绑得越紧的方法，分析越深；其余不平均用力。
+2. **23 条写回规则**：没读过代码、方法名在源码里找不到、整批结论像自动敷衍——一律拒收。
+3. **关门闸**：任务结束前再查一遍覆盖率、报告是否对得上、证据够不够。
+
+[inventory-service](examples/inventory-service/README.md) 盲测里，7 个业务逻辑缺陷藏在正常功能改动中，另有 4 个「看着像 bug、其实是对的」诱饵。一次已记录的 agent 跑出 7/7、0 误报，且这 7 处都不是 102 条 Semgrep 种子规则抓到的。这是单模型、单次、自建样例，不是榜单成绩。细节见[工作原理](skills/defect-detection/HOW_IT_WORKS.zh-CN.md)，做不到什么见[已知边界](skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md)。
+
+### 产物长什么样
+
+下面是**样例页**（和本地跑出来的是同一套渲染，发现项是写好的示例）。图旧了就直接打开 HTML。
+
+<p align="center">
+  <a href="docs/assets/previews/defect-report.html"><img src="docs/assets/previews/defect-report.png" alt="缺陷检测 HTML 报告样例：库存预占相关发现" width="880"></a>
+</p>
+
+<p align="center"><em>缺陷检测 HTML 报告：任务头、指标、三条和需求对不上的发现。<a href="docs/assets/previews/defect-report.html">打开页面</a>。</em></p>
+
+<p align="center">
+  <a href="docs/assets/previews/testcase-sample.html"><img src="docs/assets/previews/testcase-sample.png" alt="库存预占手工用例样例" width="880"></a>
+</p>
+
+<p align="center"><em>用例生成写出 Markdown。这是渲染后的样子：步骤、期望、空着的 Construction 列。<a href="docs/assets/previews/testcase-sample.html">打开页面</a>。</em></p>
+
+<p align="center">
+  <a href="docs/assets/previews/cr-findings.html"><img src="docs/assets/previews/cr-findings.png" alt="代码审查 P0 / P1 发现样例" width="880"></a>
+</p>
+
+<p align="center"><em>代码审查报告：每条都有位置、规则、运行时影响和改法。<a href="docs/assets/previews/cr-findings.html">打开页面</a>。</em></p>
+
+<p align="center">
+  <a href="docs/assets/previews/ra-register.html"><img src="docs/assets/previews/ra-register.png" alt="需求分析缺口登记表样例" width="880"></a>
+</p>
+
+<p align="center"><em>需求分析：一份缺口 / 冲突登记表，每行带可执行检查。<a href="docs/assets/previews/ra-register.html">打开页面</a>。</em></p>
+
+<p align="center">
+  <a href="docs/assets/previews/testdata-writeback.html"><img src="docs/assets/previews/testdata-writeback.png" alt="测试数据回填占位符样例" width="880"></a>
+</p>
+
+<p align="center"><em>测试数据构造把 <code>{placeholder}</code> 换成后端真正返回的 ID。<a href="docs/assets/previews/testdata-writeback.html">打开页面</a>。</em></p>
 
 ## 能力地图
 

@@ -37,7 +37,7 @@ Three different readers, and the largest body of text is not written for humans 
 
 | Audience | Where to read | Notes |
 | --- | --- | --- |
-| **Evaluating or using a skill** | The skill's own `README.md`, `HOW_IT_WORKS.md`, `KNOWN_LIMITATIONS.md`; plus [Getting Started](GETTING_STARTED.md), [Support matrix](SUPPORT_MATRIX.md), [FAQ](FAQ.md), [examples](../examples/README.md) | Start here. Enough to decide whether to trust the tool and how far. [Index of per-skill method docs](HOW_IT_WORKS.md). |
+| **Evaluating or using a skill** | The skill's own `README.md`, `HOW_IT_WORKS.md`, `KNOWN_LIMITATIONS.md`; plus [Getting Started](GETTING_STARTED.md), [Support matrix](SUPPORT_MATRIX.md), [FAQ](FAQ.md), [examples](../examples/README.md) | Start here. Enough to decide whether to trust the tool and how far. [Index of per-skill method docs](HOW_IT_WORKS.md). Sample HTML/screenshots: [README · What the output looks like](../README.md#what-the-output-looks-like). |
 | **The agent, at runtime** | `skills/*/SKILL.md` and `skills/*/references/**` | Loaded progressively when a task triggers the skill, not read front to back. This is by far the bulk of the text and it is written as instructions to a model, not as a manual. |
 | **Operating, extending, contributing** | [Contributing](../CONTRIBUTING.md), this document, [benchmarks](../benchmarks/README.md), `skills/defect-detection/references/operator-manual.md` | The operator manual sits under `references/` next to the agent files but is explicitly a human walkthrough; `SKILL.md` marks it as not needed by the agent. |
 

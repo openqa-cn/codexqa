@@ -2,7 +2,7 @@
 
 [简体中文](SUPPORT_MATRIX.zh-CN.md)
 
-Installation compatibility does not establish analysis quality. Record agent/model, runtime, OS, commit, and actual outcome before expanding a support claim. Rows below are `defect-detection` unless named otherwise.
+Installation compatibility does not establish analysis quality. Record agent/model, runtime, OS, commit, and actual outcome before expanding a support claim. Rows below are `defect-detection` unless named otherwise. Sample artifacts: [README previews](../README.md#what-the-output-looks-like).
 
 | Component | Current evidence | Limitations |
 | --- | --- | --- |
