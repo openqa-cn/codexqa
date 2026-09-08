@@ -1,0 +1,10 @@
+{
+  "displayDescription": "Full quality-and-risk analysis of requirement documents (single- or multi-source), producing one gap/conflict register with executable P0/P1 verification. Triggers: requirements analyzer, requirement quality, gap register, 需求分析, 需求分析器, 需求评审, 需求缺口. Not for writing a case library (that is testcase-generation), constructing test data (testdata-generation), or reviewing code (defect-detection / code-reviewer).",
+  "environment": "production",
+  "fileTree": ["SKILL.md"],
+  "displayName": "requirements-analyzer",
+  "name": "requirements-analyzer",
+  "description": "Full quality-and-risk analysis of requirement documents (single- or multi-source), producing one gap/conflict register with executable P0/P1 verification. Triggers: requirements analyzer, requirement quality, gap register, 需求分析, 需求分析器, 需求评审, 需求缺口. Not for writing a case library (that is testcase-generation), constructing test data (testdata-generation), or reviewing code (defect-detection / code-reviewer).",
+  "uuid": "cskill-1810a45d-8",
+  "version": "0.0.1"
+}

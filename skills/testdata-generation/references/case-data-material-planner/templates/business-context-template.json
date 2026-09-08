@@ -1,0 +1,43 @@
+{
+  "version": "1.0",
+  "requirement": {
+    "name": null,
+    "summary": null,
+    "coreFlow": null,
+    "affectedServices": []
+  },
+  "glossary": {
+    "_example_": {
+      "definition": null,
+      "prerequisites": [],
+      "relatedEntities": [],
+      "relatedConfigs": []
+    }
+  },
+  "entityGraph": {
+    "_example_": {
+      "fields": [],
+      "states": [],
+      "upstream": [],
+      "downstream": [],
+      "aliases": []
+    }
+  },
+  "configMap": {
+    "_example_": {
+      "serviceId": null,
+      "env": "test",
+      "default": null,
+      "description": null
+    }
+  },
+  "systemDependencies": {
+    "_example_": {
+      "type": null,
+      "service": null,
+      "interface": null,
+      "latency": null,
+      "description": null
+    }
+  }
+}

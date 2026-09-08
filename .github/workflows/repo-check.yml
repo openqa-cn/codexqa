@@ -25,6 +25,10 @@ jobs:
         run: python3 scripts/check-docs.py
       - name: Verify known-good and seeded-defect example
         run: node examples/checkout-boundary/verify.mjs
+      - name: Verify blind-evaluation fixture answer key
+        run: node examples/inventory-service/verify.mjs
+      - name: Build polyglot fixture
+        run: node examples/polyglot-service/make-git-fixture.mjs
       - name: Run skill tests
-        working-directory: skills/ai-defect-detection
+        working-directory: skills/defect-detection
         run: npm test

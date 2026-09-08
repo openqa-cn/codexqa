@@ -1,0 +1,26 @@
+id: edge-risk-priority
+title: Short window keeps high-risk gaps only
+description: |
+  Many features and a half-day release window must be ranked by business risk, not analyzed equally.
+
+input:
+  prompt: |
+    Use requirements-analyzer. Scope includes login, search, checkout, payment, notifications, audit logs, and reports.
+    The release window is half a day. Keep only the gaps and risks that most block release, and say what can wait.
+
+expect:
+  must_contain:
+    - "P0"
+    - "Risks and Priorities"
+  must_not_contain:
+    - "TODO"
+    - "I cannot"
+
+judge:
+  type: rule_based
+  success:
+    - output_contains:
+        all:
+          - "P0"
+          - "Priority"
+          - "Gap and Conflict Register"

@@ -1,0 +1,23 @@
+{
+  "skill_name": "testdata-generation",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "这份用例帮我准备测试数据，并把前置数据回写进去。用例在 ./testdata/sample-case.md。",
+      "expected_output": "Routes to the case-material sub-skill and runs pipeline.ts. Does not walk the generic four-step fallback, and does not generate new test cases.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "帮我按这个 OpenAPI 建一条可复用的数据构造脚本并跑通。",
+      "expected_output": "Searches for a matching domain slot, or falls through to API catalog / script template. Runs an executor or generated script and reports a backend-returned id. Does not invent the id.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "根据这份 PRD 生成结构化测试用例。",
+      "expected_output": "Does not take the testdata-generation construct path. That request belongs to testcase-generation.",
+      "files": []
+    }
+  ]
+}

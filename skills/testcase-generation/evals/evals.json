@@ -1,0 +1,41 @@
+{
+  "skill_name": "testcase-generation",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a PRD and a technical design in this workspace under prd/requirementDocs/ and prd/techDocs/. There is no case library yet. Generate the structured manual test cases from those documents — unique IDs, engineering info, the usual review gates. Pause for confirmation where the skill says to.",
+      "expected_output": "A first-time generate run: Phase 0 baseline, analysis.md + R1, design.md + api-details.md + R2, human confirmation pause, then a case-registry.json with pending entries promoted to done, one .md per entry under usecases/cases/, lint_case_documents.ts run with --resolved, and a rendered case-overview diagram. Placeholders left intact; no invented engineering identifiers.",
+      "files": [],
+      "expectations": [
+        "usecases/testdocs/case-registry.json exists and every entry has status done",
+        "The number of case .md files under usecases/cases/ matches the registry entry count",
+        "Each case file keeps {placeholder} markers and an empty Construction column",
+        "integrations-resolved.json was written by validate_integrations.ts",
+        "The run paused for design confirmation before writing case files"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We already generated cases last sprint. The PM just dropped an updated PRD (same path as in .project/context.json) and the coupon service branch has new commits under code/. Update only the affected cases — don't regenerate the whole library.",
+      "expected_output": "An update run: PRD overwrite + git diff, change-point extraction, change-impact-analysis.md shown for confirmation, then parallel subagent-update / subagent-gen. New cases quote subagent-gen-duty.md. Data reconstruction is handed to testdata-generation, not invented here.",
+      "files": [],
+      "expectations": [
+        "usecases/testdocs/change-impact-analysis.md is written and shown before any case rewrite",
+        "Existing caseIds that are unaffected are not rewritten",
+        "New cases (if any) are appended to case-registry.json rather than replacing it",
+        "Placeholder backfill is delegated to testdata-generation or left intact with a note"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "上次生成用例做到一半上下文断了。usecases/testdocs/case-registry.json 里还有 pending 的条目，帮我从断点继续，不要从头再分析一遍 PRD。",
+      "expected_output": "A resume: the agent reads the resume table, loads only phase-3-cases.md, and generates .md files for pending entries only. It does not rebuild analysis.md or design.md.",
+      "files": [],
+      "expectations": [
+        "analysis.md and design.md are not rewritten",
+        "Only registry entries with status pending receive new or completed .md files",
+        "Previously done entries stay done with the same caseId"
+      ]
+    }
+  ]
+}

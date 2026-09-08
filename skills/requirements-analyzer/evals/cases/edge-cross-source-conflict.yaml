@@ -1,0 +1,30 @@
+id: edge-cross-source-conflict
+title: Multi-source conflict must show conflict plus source pairs
+description: |
+  When three materials disagree on creating an order with insufficient stock, the register must mark conflict and name sources.
+
+input:
+  prompt: |
+    Use requirements-analyzer.
+    Source A (Word PRD): submit is allowed when stock is insufficient; reserve later in the backend.
+    Source B (API Markdown): insufficient stock returns 400 and must not create an order.
+    Source C (Excel scope): this iteration covers only the successful reserve path.
+    Cross-check source consistency and output conflicts, testability risks, and questions to resolve first.
+
+expect:
+  must_contain:
+    - "conflict"
+    - "Source"
+    - "Gap and Conflict Register"
+  must_not_contain:
+    - "TODO"
+    - "I cannot"
+
+judge:
+  type: rule_based
+  success:
+    - output_contains:
+        all:
+          - "conflict"
+          - "Source"
+          - "Risk"

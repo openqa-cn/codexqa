@@ -1,0 +1,31 @@
+id: basic-success
+title: Single-source story still produces a register and separates facts from assumptions
+description: |
+  A single requirement pack must still run the full pipeline: understanding, audit, register, facts vs assumptions.
+
+input:
+  prompt: |
+    Use requirements-analyzer.
+    Requirement: users sign in with email and password; lock 15 minutes after 5 failed attempts; forgot-password uses an email code.
+    Acceptance: valid credentials reach home within 2 seconds. Code TTL, concurrent sessions, and third-party login are unspecified.
+    Run the full pipeline. Separate confirmed facts from assumptions and output a gap register.
+
+expect:
+  must_contain:
+    - "Requirement Understanding and Scope"
+    - "Input and Source Audit"
+    - "Gap and Conflict Register"
+    - "assumption"
+    - "RA-"
+  must_not_contain:
+    - "TODO"
+    - "I cannot"
+
+judge:
+  type: rule_based
+  success:
+    - output_contains:
+        all:
+          - "Requirement Understanding and Scope"
+          - "Input and Source Audit"
+          - "Gap and Conflict Register"

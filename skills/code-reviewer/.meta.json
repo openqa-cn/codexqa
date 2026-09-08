@@ -1,0 +1,10 @@
+{
+  "displayDescription": "Review Git branch, PR, or commit changes for quality, security, and maintainability (CR / 代码审查 / 审查 / pre-commit / risk assessment). Frontend: React, TypeScript, JavaScript, React Native, mini-program. Backend: Java, Kotlin, Go, Python, C, C++, Groovy, SQL / service-layer. Requires a local Git checkout — not a pasted snippet. Do not use for how-to questions, debugging a known bug, explaining or rewriting code, method-level requirement defect hunting with write-back gates (that is defect-detection), writing test cases (testcase-generation), or constructing test data (testdata-generation).",
+  "environment": "production",
+  "fileTree": ["SKILL.md"],
+  "displayName": "code-reviewer",
+  "name": "code-reviewer",
+  "description": "Review Git branch, PR, or commit changes for quality, security, and maintainability (CR / 代码审查 / 审查 / pre-commit / risk assessment). Frontend: React, TypeScript, JavaScript, React Native, mini-program. Backend: Java, Kotlin, Go, Python, C, C++, Groovy, SQL / service-layer. Requires a local Git checkout — not a pasted snippet. Do not use for how-to questions, debugging a known bug, explaining or rewriting code, method-level requirement defect hunting with write-back gates (that is defect-detection), writing test cases (testcase-generation), or constructing test data (testdata-generation).",
+  "uuid": "cskill-52e99df4-1",
+  "version": "0.0.1"
+}

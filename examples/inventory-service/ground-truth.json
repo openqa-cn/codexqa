@@ -1,0 +1,182 @@
+{
+  "fixture": "examples/inventory-service",
+  "buildWith": "node examples/inventory-service/make-git-fixture.mjs",
+  "answerKey": "node examples/inventory-service/verify.mjs",
+  "withholdDuringEvaluation": true,
+  "baseBranch": "main",
+  "headBranch": "feature/reservation-v2",
+  "changedFunctions": [
+    {
+      "file": "src/db.js",
+      "function": "withLock",
+      "hasDefect": true
+    },
+    {
+      "file": "src/cache.js",
+      "function": "set",
+      "hasDefect": false
+    },
+    {
+      "file": "src/inventory.js",
+      "function": "holdStock",
+      "hasDefect": true
+    },
+    {
+      "file": "src/inventory.js",
+      "function": "releaseStock",
+      "hasDefect": false
+    },
+    {
+      "file": "src/pricing.js",
+      "function": "roundMoney",
+      "hasDefect": false
+    },
+    {
+      "file": "src/pricing.js",
+      "function": "volumeDiscountRate",
+      "hasDefect": true
+    },
+    {
+      "file": "src/reservation.js",
+      "function": "resolveHoldWindow",
+      "hasDefect": false
+    },
+    {
+      "file": "src/reservation.js",
+      "function": "createReservation",
+      "hasDefect": false
+    },
+    {
+      "file": "src/reservation.js",
+      "function": "commitReservation",
+      "hasDefect": true
+    },
+    {
+      "file": "src/reservation.js",
+      "function": "expireStaleReservations",
+      "hasDefect": true
+    },
+    {
+      "file": "src/refund.js",
+      "function": "resolveRefundAmount",
+      "hasDefect": true
+    },
+    {
+      "file": "src/refund.js",
+      "function": "refundOrder",
+      "hasDefect": true
+    }
+  ],
+  "defects": [
+    {
+      "id": "D1",
+      "category": "cross-method-state",
+      "file": "src/reservation.js",
+      "function": "expireStaleReservations",
+      "lines": "162-168",
+      "summary": "Expiry releases reserved units via db.adjustReserved without invalidating the availability TTL cache that checkAvailability reads.",
+      "trigger": "Create a reservation (which warms the availability cache), wait until it expires, run expireStaleReservations, then immediately call checkAvailability for the same SKU.",
+      "impact": "Storefront keeps reporting the held (lower) availability after the hold has already been released, so customers cannot buy stock that is free.",
+      "howDetectable": "expireStaleReservations adjusts reserved directly and never calls availabilityCache.invalidate; compare with holdStock/releaseStock/consumeStock in inventory.js which all invalidate after mutating reserved/onHand.",
+      "difficulty": "medium"
+    },
+    {
+      "id": "D2",
+      "category": "concurrency-async-race",
+      "file": "src/inventory.js",
+      "function": "holdStock",
+      "lines": "49-65",
+      "summary": "Check-then-act race: availability is read from a snapshot, then an await happens before writing reserved, so two concurrent holds can both succeed against the same unit.",
+      "trigger": "Seed a SKU with onHand=1, reserved=0. Fire two holdStock(sku, 1) calls (or two createReservation for different orders) without awaiting the first.",
+      "impact": "Reserved can exceed onHand; the same physical unit is sold twice (oversell).",
+      "howDetectable": "readStock returns a copy; appendAudit is awaited between the availability check and putStock of the mutated copy. Concurrent callers both observe available>=qty and both write reserved+=qty. Main-branch holdStock used synchronous getStock+adjustReserved without a yield in between.",
+      "difficulty": "medium"
+    },
+    {
+      "id": "D3",
+      "category": "spec-deviation",
+      "file": "src/refund.js",
+      "function": "resolveRefundAmount",
+      "lines": "18-28",
+      "summary": "Requested refund amounts are returned as-is without capping to the remaining unpaid balance, violating requirements rule 11.",
+      "trigger": "Order paidAmount=100 with refundedTotal=80; call resolveRefundAmount(order, 80) or refundOrder(id, 80).",
+      "impact": "A second partial refund can push refundedTotal above paidAmount, over-refunding the customer.",
+      "howDetectable": "remaining is computed but never used as an upper bound; the function returns roundMoney(requested) whenever requested>0. docs/requirements.md rule 11 requires the sum of refunds never exceed the paid amount.",
+      "difficulty": "easy"
+    },
+    {
+      "id": "D4",
+      "category": "boundary-off-by-one",
+      "file": "src/pricing.js",
+      "function": "volumeDiscountRate",
+      "lines": "32-39",
+      "summary": "Volume tiers use exclusive > comparisons, so orders of exactly 10 or exactly 50 units get no / wrong discount versus the inclusive thresholds in the spec.",
+      "trigger": "Call volumeDiscountRate(10) and volumeDiscountRate(50), or computeOrderTotal with 10 and 50 units.",
+      "impact": "Customers at the published tier boundaries do not receive the advertised 5%/10% discounts.",
+      "howDetectable": "Code uses units > 50 and units > 10; docs/requirements.md rule 8 and TC-06 require inclusive bounds (>=10 for 5%, >=50 for 10%).",
+      "difficulty": "easy"
+    },
+    {
+      "id": "D5",
+      "category": "swallowed-exception",
+      "file": "src/refund.js",
+      "function": "refundOrder",
+      "lines": "56-91",
+      "summary": "Payment gateway failures are caught, logged, and replaced with a synthetic local receipt; the ledger is still updated and the caller receives ok:true.",
+      "trigger": "gateway.failNextRefunds(1) then refundOrder(orderId, 10).",
+      "impact": "Caller and ledger treat a failed gateway refund as successful; money is marked refunded without the payment provider paying out (and rule 12 is violated).",
+      "howDetectable": "catch block builds a localOnly receipt and falls through to refundedTotal/status mutation and return { ok: true }. docs/requirements.md rule 12 requires failure to leave the ledger untouched and return a failure result.",
+      "difficulty": "easy"
+    },
+    {
+      "id": "D6",
+      "category": "resource-cleanup-leak",
+      "file": "src/db.js",
+      "function": "withLock",
+      "lines": "186-200",
+      "summary": "Lock release is not in a finally block; if the critical section throws, releaseLock is skipped and the key stays held forever.",
+      "trigger": "createReservation with a malformed line (missing unitPrice) so computeOrderTotal throws inside withLock for order:ORD-4; then retry the same order id with a valid line.",
+      "impact": "Subsequent operations on the same lock key hang indefinitely (wedged order/reservation).",
+      "howDetectable": "Main-branch withLock wrapped fn in try/finally; feature branch awaits fn then calls releaseLock only on the success path. docs/requirements.md rule 14 and TC-10 require release on error.",
+      "difficulty": "medium"
+    },
+    {
+      "id": "D7",
+      "category": "cross-file-invariant",
+      "file": "src/reservation.js",
+      "function": "commitReservation",
+      "lines": "93-96",
+      "summary": "Commit no longer sets reservation.status to COMMITTED, so expireStaleReservations still treats the reservation as HELD and can release/consume stock a second time.",
+      "trigger": "Commit a reservation whose expiresAt is already in the past (or set a short ttlMs), then run expireStaleReservations.",
+      "impact": "Reserved counter is decremented again after commit already released the hold, understating reserved / overstating availability and corrupting stock accounting.",
+      "howDetectable": "commitReservation writes committedAt but leaves status as HELD (main set status='COMMITTED'). expireStaleReservations only skips when status !== 'HELD', so the combination across the two functions breaks the single-release invariant.",
+      "difficulty": "hard"
+    }
+  ],
+  "traps": [
+    {
+      "file": "src/pricing.js",
+      "function": "roundMoney",
+      "whyItLooksWrong": "Adding Number.EPSILON before Math.round looks like a magic hack that could round the wrong way.",
+      "whyItIsActuallyCorrect": "Binary floats store values like 1.005 as slightly under 1.005; the epsilon nudge restores half-up behaviour required by rule 10, and the comment documents the finance reconciliation reason."
+    },
+    {
+      "file": "src/inventory.js",
+      "function": "releaseStock",
+      "whyItLooksWrong": "No null/undefined guard on getStock(sku) before reading row.reserved \u2014 looks like a crash waiting to happen.",
+      "whyItIsActuallyCorrect": "All callers (cancel/commit/create rollback) only release SKUs from holds that were successfully placed, so the row is guaranteed to exist; the JSDoc states that contract."
+    },
+    {
+      "file": "src/reservation.js",
+      "function": "resolveHoldWindow",
+      "whyItLooksWrong": "Only Math.min against the max \u2014 looks like it fails to clamp a zero/negative or missing lower bound.",
+      "whyItIsActuallyCorrect": "Rule 1 only requires clamping to a maximum of 60 minutes; defaulting undefined to 15 minutes and capping the upper bound fully satisfies the written spec."
+    },
+    {
+      "file": "src/cache.js",
+      "function": "set",
+      "whyItLooksWrong": "Deleting and re-inserting the key, then dropping keys().next(), looks like it might evict the entry just written or use an arbitrary order.",
+      "whyItIsActuallyCorrect": "Map iteration is insertion-ordered; delete+reinsert moves an updated key to the newest position, so keys().next() is the least-recently-written entry and the size check runs after the insert, so the new entry is never the eviction victim when size is exactly MAX_ENTRIES+1."
+    }
+  ]
+}

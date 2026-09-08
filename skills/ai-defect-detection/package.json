@@ -1,9 +1,0 @@
-{
-  "name": "defect-detection-skill",
-  "private": true,
-  "type": "module",
-  "description": "Dev-only metadata. Do not ship this file in the skill zip.",
-  "scripts": {
-    "test": "NODE_OPTIONS=--experimental-strip-types node --test tests/*.test.ts"
-  }
-}

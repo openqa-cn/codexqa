@@ -3,8 +3,28 @@
   "project": "openqa-skills",
   "skills": [
     {
-      "name": "ai-defect-detection",
-      "path": "skills/ai-defect-detection",
+      "name": "defect-detection",
+      "path": "skills/defect-detection",
+      "status": "available"
+    },
+    {
+      "name": "testcase-generation",
+      "path": "skills/testcase-generation",
+      "status": "available"
+    },
+    {
+      "name": "testdata-generation",
+      "path": "skills/testdata-generation",
+      "status": "available"
+    },
+    {
+      "name": "code-reviewer",
+      "path": "skills/code-reviewer",
+      "status": "available"
+    },
+    {
+      "name": "requirements-analyzer",
+      "path": "skills/requirements-analyzer",
       "status": "available"
     }
   ]

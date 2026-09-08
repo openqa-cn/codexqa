@@ -23,11 +23,11 @@ From the repository root:
 ```bash
 python3 scripts/check-docs.py
 export NODE_OPTIONS=--experimental-strip-types
-(cd skills/ai-defect-detection && npm test)
+(cd skills/defect-detection && npm test)
 node examples/checkout-boundary/verify.mjs
 ```
 
-The skill suite requires Git and packaging tools (Bash, rsync, zip, unzip). Include OS, Node version, commit, and results in your PR. Passing CLI tests do not measure model detection accuracy.
+`check-docs.py` covers all published skills (relative links must stay inside each skill directory). `code-reviewer`, `requirements-analyzer`, `testcase-generation`, and `testdata-generation` have no equivalent CLI test suite; verify those changes with the checks in each skill's `CONTRIBUTING.md`. The defect-detection suite requires Git and packaging tools (Bash, rsync, zip, unzip). Include OS, Node version, commit, and results in your PR. Passing CLI tests do not measure model detection accuracy.
 
 ## Useful contributions
 

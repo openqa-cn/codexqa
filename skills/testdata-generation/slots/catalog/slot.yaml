@@ -1,0 +1,43 @@
+name: catalog
+domain: catalog
+description: Constructs catalog products, catalog orders, and account-credit enrollment.
+version: "1.0"
+entities:
+  - id: limited-product
+    action: create
+    executor: scripts/executors/create_limited_product.ts
+    aliases: [limited, 限量]
+    invokeParams: [name]
+  - id: account-credit
+    action: enroll
+    executor: scripts/executors/setup_account_credit.ts
+    aliases: [credit, 额度]
+    params: [productId, userId]
+  - id: catalog-product
+    action: create
+    executor: scripts/executors/create_product.ts
+    aliases: [product, 商品, 标准]
+    invokeParams: [name]
+  - id: catalog-order
+    action: create
+    executor: scripts/executors/create_order.ts
+    aliases: [order, 订单]
+    params: [productId, userId]
+actions:
+  - id: enroll-credit
+    executor: scripts/executors/setup_account_credit.ts
+    aliases: [credit, 额度]
+    params: [productId, userId]
+  - id: create-order
+    executor: scripts/executors/create_order.ts
+    aliases: [order, 下单, 购买, 订单]
+    params: [productId, userId]
+scenes:
+  - id: credit-ready-product
+    steps:
+      - catalog-product::create
+      - enroll-credit
+  - id: bookable-order
+    steps:
+      - catalog-product::create
+      - catalog-order::create

@@ -1,0 +1,29 @@
+id: edge-incomplete-input
+title: Thin input still drafts, with input audit and working assumptions
+description: |
+  Incomplete input must not be refused or invented; ship a bounded draft with audit, assumptions, and gaps.
+
+input:
+  prompt: |
+    Use requirements-analyzer. All we know: a session-expiry requirement says annual cleanup only, and omits timezone, notification, revoke, and account-freeze handling.
+    No environment, version, or evidence is available. Give a usable first draft and state which conclusions cannot stand.
+
+expect:
+  must_contain:
+    - "Input and Source Audit"
+    - "Working Assumptions"
+    - "information gap"
+    - "Questions"
+  must_not_contain:
+    - "TODO"
+    - "I cannot"
+    - "cannot help"
+
+judge:
+  type: rule_based
+  success:
+    - output_contains:
+        all:
+          - "Input and Source Audit"
+          - "Working Assumptions"
+          - "gap"

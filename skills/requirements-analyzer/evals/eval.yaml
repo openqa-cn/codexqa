@@ -1,0 +1,36 @@
+schema_version: v1alpha1
+
+environment:
+  type: none
+
+skills:
+  - source: local_path
+    path: .
+
+engine:
+  name: claude_code
+
+cases:
+  files:
+    - evals/cases/basic-success.yaml
+    - evals/cases/edge-cross-source-conflict.yaml
+    - evals/cases/edge-incomplete-input.yaml
+    - evals/cases/edge-risk-priority.yaml
+    - evals/cases/edge-role-artifact-input.yaml
+    - evals/cases/edge-p0-verification.yaml
+    - evals/cases/edge-singular-compound.yaml
+    - evals/cases/edge-nfr-grid.yaml
+    - evals/cases/edge-no-oracle-p0.yaml
+    - evals/cases/edge-success-metrics.yaml
+    - evals/cases/edge-dependency-grid.yaml
+  defaults:
+    timeout_seconds: 180
+    max_turns: 8
+    expect:
+      exit_code: 0
+      must_not_contain:
+        - "TODO"
+        - "I cannot"
+
+report:
+  formats: [json]

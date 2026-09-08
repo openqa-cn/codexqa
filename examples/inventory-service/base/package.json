@@ -1,0 +1,13 @@
+{
+  "name": "inventory-service",
+  "version": "1.4.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "smoke": "node smoke.mjs"
+  }
+}

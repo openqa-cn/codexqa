@@ -1,0 +1,46 @@
+{
+  "code": 0,
+  "msg": "success",
+  "data": {
+    "planId": 1001,
+    "planType": 2,
+    "planName": "Order checkout validation",
+    "services": [
+      {
+        "git": "git@github.com:acme/order-service.git",
+        "branch": "feature/checkout-guard",
+        "serviceKey": "acme.order.service",
+        "language": "java",
+        "gitUrl": "git@github.com:acme/order-service.git",
+        "developBranch": "feature/checkout-guard",
+        "languageSource": "declared"
+      }
+    ],
+    "testCaseIds": [
+      "TC-1001"
+    ],
+    "issueList": [
+      "42"
+    ],
+    "requirementDocs": [
+      "checkout-rules.md"
+    ],
+    "technicalDocs": [
+      "checkout-api.md"
+    ]
+  },
+  "source": "provider",
+  "degraded": false,
+  "hasUserMaterials": false,
+  "missing": [],
+  "blocking": [],
+  "recommended": [],
+  "optionalMissing": [
+    "historyDefects",
+    "traces"
+  ],
+  "askUser": [],
+  "nextActions": [
+    "Continue Phase 1: submit-plan or submit-git, then clone-and-diff."
+  ]
+}

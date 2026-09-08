@@ -1,0 +1,7 @@
+# Keep LF everywhere so golden files, YAML rules and shell wrappers behave the same
+# on Windows checkouts (core.autocrlf would otherwise rewrite them to CRLF).
+* text=auto eol=lf
+*.sh text eol=lf
+*.png binary
+*.jpg binary
+*.zip binary

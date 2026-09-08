@@ -1,0 +1,103 @@
+usage: detect.ts [-h] [--token TOKEN] cmd ...
+
+AI defect-detection Skill trigger (modular)
+
+options:
+  -h, --help     show this help message and exit
+  --token  Access token or API key for remote providers
+
+subcommands:
+  submit-plan                  Trigger Skill detection from a test-plan ID
+  submit-git                   Trigger Skill detection from a Git repo + branch
+  submit-skill-direct          Direct trigger: AST scan (8) + business detection (11) only
+  status                       Query Skill detection task status
+  get-plan-info                Get test-plan details
+  check-materials              Inventory materials
+  extract-client-plan-info     Extract git+branch from plan/user materials
+  get-pending                  Claim the pending checklist
+  check-coverage               Check detection coverage
+  get-rules                    Get detection rules
+  list-my-tasks                List recent tasks for a user
+  retry                        Re-run detection from an existing task
+  get-report                   Get the detection task report
+  reconcile-report             Reconcile report
+  check-rank-integrity         Check rank consistency
+  complete-task                Finalize the task
+  validate-summary             Validate summary offline
+  update-summary               Upload the detection summary
+  force-abort-task             Force-abort a task
+  skip-service-batch           Skip or fail a single service
+  finalize-rank                Write a rank
+  get-detection-flow           Query by processId
+  get-detection-flow-by-rank   Query by rankId
+  mark-bug                     User-confirm a defect
+  get-exception-traces         Query exception traces
+  get-detection-records        Query detection records
+  create-issue                 Create a defect ticket
+  run-ast-scan                 Batch AST rule scan
+  batch-dismiss-by-strategy    Batch-dismiss AST strategy as no-defect
+  dismiss-class                Dismiss by class as no-defect
+  update-rank-content          Update rank description
+  get-confirmed-defect-history Query confirmed defect history
+  get-defect-history-by-commit Query defect history by commit
+  process-sample               Print a write-back sample
+  resolve-writeback-context    Resolve write-back context
+  update-process               Write back a single conclusion
+  batch-update-process         Batch write-back
+  gen-writeback-template       Generate a write-back skeleton
+  batch-no-bug                 Batch no-defect write-back
+  report-progress              Report progress
+  finalize-all                 One-shot Phase 3 finalize
+  get-delivery-defects         Query submitted defects
+  get-tag-list                 Get tag list
+  phase1-fetch-all             Phase 1 parallel data fetch
+  clone-and-diff               clone + diff + register
+  ensure-gitnexus              Detect/install GitNexus
+  gitnexus-impact              GitNexus impact
+  gitnexus-context             GitNexus context
+  gitnexus-query               GitNexus query
+  register-repo-clone          Register a repo clone
+  check-phase2-readiness       Phase 2 readiness check
+  register-code-read           Register a code read
+  read-method-code             Read method code
+  code-read-stats              Code-read statistics
+  trivial-method-filter        Pre-filter trivial methods
+  invalid-record               Invalidate a rank
+  show-local-progress          Local progress
+  cleanup-stale-data           Clean up stale data
+  init-content                 Initialize content
+  add-service-to-content       Add a service
+  update-service-in-content    Update a service
+  set-diff-files               Set diff.files
+  set-changed-methods          Set changed methods
+  set-meta-field               Set a meta field
+  set-doc-summary              Set the doc-summary path
+  add-document                 Add a document
+  scan-repo-docs               Scan repo documents
+  add-test-case                Add a test case
+  add-detection-plan-item      Add a detection-plan item
+  add-cross-repo-class         Record a cross-repo class
+  record-process-writeback     Record a process write-back
+  update-plan-status           Update plan status
+  set-plan-ast-result          Cache an AST result
+  record-rank                  Record a rank
+  content-summary              Content summary
+  register-context-read        Register a context read
+  register-finding             Record a finding
+  get-findings                 Get findings
+  check-req-coverage           Requirement coverage check
+  cross-view-check             Cross-view check
+  check-analysis-quality       Analysis quality gate
+  get-changed-methods          Extract changed methods
+  build-detection-plan         Build the detection plan
+  prep-and-plan                changed methods + plan + trivial filter
+  verify-line-method-mapping   Verify line-to-method mapping
+  extract-rules-from-docs      Extract rules from documents
+  phase1-init                  Phase 1 one-shot init
+  fetch-test-cases             Fallback test-case fetch
+  testcase-pipeline            Test-case DAG
+  run-frontend-rules           Frontend-specific rules
+
+Examples:
+  node detect.ts submit-plan --plan-id 74873 --plan-type 2 --submit-user demo-user
+  node detect.ts status --task-id 42

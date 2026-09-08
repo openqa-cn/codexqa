@@ -1,0 +1,10 @@
+version: 1
+metadata:
+  key: "requirements-analyzer"
+  last_verified: "2026-09-08"
+interface:
+  display_name: "Requirements Analyzer"
+  short_description: "Use this skill when you need a full quality-and-risk analysis of requirement documents; triggers include AI requirements analyzer, requirement quality risk, and gap/conflict register."
+  default_prompt: "Use requirements-analyzer to complete the task with local scripts, prompts, and examples in this skill folder."
+policy:
+  allow_implicit_invocation: true

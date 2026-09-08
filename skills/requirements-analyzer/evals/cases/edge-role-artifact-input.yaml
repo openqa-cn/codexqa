@@ -1,0 +1,24 @@
+id: edge-role-artifact-input
+title: Role reports with source_role must not become anonymous consensus
+description: |
+  When materials include role reports, the analysis stays standalone and keeps source-role attribution.
+
+input:
+  prompt: |
+    Use requirements-analyzer to analyze an inventory-hold redesign.
+    PRD v3: reserve stock immediately on submit; fail when inventory is short.
+    API note v2: requests enter an async queue; duplicates are deduped by an idempotency key.
+    Two review notes:
+    - source_role Product: failures should release the hold immediately, but the release window is undecided.
+    - source_role QA: no acceptance criteria for duplicate submit or async failure; end-to-end outcome cannot be judged.
+    Produce a reviewable requirements analysis.
+
+judge:
+  type: agent_judge
+  model: openai/gpt-5
+  criteria:
+    - The result keeps the standalone 7-section analysis and covers facts, assumptions, risks, sources, and open questions; role reports remain optional composition inputs rather than prerequisites.
+    - Any view, risk, or question taken from the Product or QA notes keeps the matching source role; do not flatten into anonymous consensus or present a role view as a PRD/API fact.
+    - Alignment, conflict, missing, or untestable status across PRD, API, and role reports is traceable; the unknown release window and missing AC stay as open questions and are not invented.
+    - Do not require reading, installing, or linking any role Skill internal file; consume only reports that already declare a source role.
+  pass_threshold: 0.8

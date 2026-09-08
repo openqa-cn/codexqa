@@ -1,0 +1,159 @@
+# Copy to {workspace}/.ai-testcase/integrations.yaml and fill endpoints.
+# Secrets and cert paths must be ${ENV_VAR} — never paste raw tokens or PEM.
+version: 1
+
+profile:
+  protocols:
+    - http
+    - grpc
+  mockableProtocols:
+    - grpc
+  components:
+    - id: database
+      label: Database
+      fields: [datasource, table, shardingRule]
+    - id: cache
+      label: Cache
+      fields: [cluster, key, command]
+    - id: mq
+      label: MQ
+      fields: [cluster, topic, producer]
+    - id: config
+      label: Config service
+      fields: [serviceId, key, value]
+    - id: experiment
+      label: Experiment
+      fields: [experimentKey, groups]
+
+capabilities:
+  spec_lookup:
+    enabled: true
+    provider: http
+    fallback: local
+    http:
+      baseUrl: https://api.example.com
+      path: /v1/spec/lookup
+      method: POST
+      timeoutSec: 15
+      requestMap:
+        serviceId: serviceId
+        method: method
+      responseMap:
+        qualifiedName: $.data.qualifiedName
+        protocol: $.data.protocol
+        requestExample: $.data.request
+        responseExample: $.data.response
+        source: $.data.source
+      auth:
+        kind: oauth2_client_credentials
+        tokenUrl: https://sso.example.com/oauth/token
+        clientId: ${OAUTH_CLIENT_ID}
+        clientSecret: ${OAUTH_CLIENT_SECRET}
+        clientAuth: body
+        scope: spec.read
+        tokenResponse: $.access_token
+        expiresInResponse: $.expires_in
+        inject:
+          header: Authorization
+          prefix: "Bearer "
+
+  knowledge_search:
+    enabled: true
+    provider: http
+    fallback: local
+    http:
+      baseUrl: https://api.example.com
+      path: /v1/knowledge/search
+      method: POST
+      timeoutSec: 15
+      query:
+        access_token: ${KNOWLEDGE_QUERY_TOKEN}
+      requestMap:
+        query: query
+        scope: scope
+      responseMap:
+        hits: $.data.hits
+
+  env_info:
+    enabled: true
+    provider: http
+    fallback: local
+    http:
+      baseUrl: https://api.example.com
+      path: /v1/env
+      method: GET
+      timeoutSec: 10
+      responseMap:
+        env: $.data.env
+        lane: $.data.lane
+      auth:
+        kind: token_exchange
+        tokenUrl: https://sso.example.com/exchange
+        method: POST
+        headers:
+          Authorization: Bearer ${SSO_SUBJECT_TOKEN}
+        body:
+          grant_type: urn:ietf:params:oauth:grant-type:token-exchange
+        tokenResponse: $.access_token
+        inject:
+          header: Authorization
+          prefix: "Bearer "
+
+  config_lookup:
+    enabled: true
+    provider: http
+    fallback: local
+    http:
+      baseUrl: https://api.example.com
+      path: /v1/config/lookup
+      method: POST
+      timeoutSec: 10
+      requestMap:
+        serviceId: serviceId
+        key: key
+      responseMap:
+        key: $.data.key
+        value: $.data.value
+        description: $.data.description
+      auth:
+        kind: session
+        loginUrl: https://api.example.com/login
+        method: POST
+        contentType: application/json
+        body:
+          username: ${LOGIN_USER}
+          password: ${LOGIN_PASSWORD}
+
+  middleware_lookup:
+    enabled: true
+    provider: http
+    fallback: local
+    http:
+      baseUrl: https://api.example.com
+      path: /v1/middleware/lookup
+      method: POST
+      headers:
+        X-App-Id: ${MIDDLEWARE_APP_ID}
+      timeoutSec: 10
+      requestMap:
+        kind: kind
+        serviceId: serviceId
+        hint: hint
+      responseMap:
+        kind: $.data.kind
+        fields: $.data.fields
+      auth:
+        kind: header
+        token: ${MIDDLEWARE_API_TOKEN}
+        inject:
+          header: Authorization
+          prefix: "Bearer "
+      tls:
+        certFile: ${MTLS_CERT_PATH}
+        keyFile: ${MTLS_KEY_PATH}
+        caFile: ${MTLS_CA_PATH}
+
+  experiment_lookup:
+    enabled: false
+    provider: local
+    fallback: local

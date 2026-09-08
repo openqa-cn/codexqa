@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Requirement data-build dashboard</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #232735;
+  --border: #2e3345;
+  --text: #e1e4ed;
+  --text2: #8b90a0;
+  --accent: #6c8cff;
+  --green: #34d399;
+  --yellow: #fbbf24;
+  --red: #f87171;
+  --orange: #fb923c;
+  --purple: #a78bfa;
+  --cyan: #22d3ee;
+  --radius: 8px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+.container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+/* ── Header ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+header h1 { font-size: 20px; font-weight: 600; }
+header .meta { font-size: 13px; color: var(--text2); display: flex; gap: 16px; align-items: center; }
+.live-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+  display: inline-block; animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* ── Tabs ── */
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab .tab-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+/* ── Summary view ── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.case-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.case-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+.case-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.case-card-id {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: "SF Mono", Menlo, monospace;
+  color: var(--accent);
+}
+.case-card-conf { font-size: 18px; font-weight: 700; }
+
+.mini-pipeline {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 12px;
+}
+.mini-stage {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface2);
+  transition: background 0.3s;
+}
+.mini-stage[data-status="done"]    { background: var(--green); }
+.mini-stage[data-status="running"] { background: var(--accent); animation: mini-pulse 1.5s infinite; }
+.mini-stage[data-status="failed"]  { background: var(--red); }
+@keyframes mini-pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+.case-card-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text2);
+}
+.case-card-stats span { display: flex; align-items: center; gap: 4px; }
+.stat-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+
+.case-card-stage {
+  font-size: 11px;
+  color: var(--text2);
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.stage-running-label { color: var(--accent); font-weight: 500; }
+
+/* ── Detail view ── */
+#detail-view { display: none; }
+#summary-view { display: block; }
+
+.pipeline-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 32px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 6px;
+}
+.pipeline-stage {
+  flex: 1;
+  text-align: center;
+  padding: 10px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+.pipeline-stage .stage-label { opacity: 0.9; }
+.pipeline-stage .stage-status { font-size: 11px; opacity: 0.6; margin-top: 2px; }
+.pipeline-stage[data-status="done"]    { background: rgba(52,211,153,0.15); color: var(--green); }
+.pipeline-stage[data-status="running"] { background: rgba(108,140,255,0.15); color: var(--accent); animation: stage-pulse 1.5s infinite; }
+.pipeline-stage[data-status="pending"] { background: transparent; color: var(--text2); }
+.pipeline-stage[data-status="failed"]  { background: rgba(248,113,113,0.15); color: var(--red); }
+@keyframes stage-pulse {
+  0%, 100% { background: rgba(108,140,255,0.1); }
+  50%       { background: rgba(108,140,255,0.25); }
+}
+
+.section { margin-bottom: 32px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.section-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.section-count { font-size: 12px; color: var(--text2); background: var(--surface2); padding: 2px 8px; border-radius: 10px; }
+
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.card-id {
+  font-size: 12px; font-weight: 700; font-family: "SF Mono", Menlo, monospace;
+  color: var(--accent); background: rgba(108,140,255,0.1); padding: 2px 6px; border-radius: 4px;
+}
+.card-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+.badge-verified      { background: rgba(52,211,153,0.15);  color: var(--green); }
+.badge-unverified    { background: rgba(251,191,36,0.15);  color: var(--yellow); }
+.badge-failed        { background: rgba(248,113,113,0.15); color: var(--red); }
+.badge-pending       { background: rgba(139,144,160,0.15); color: var(--text2); }
+.badge-missing       { background: rgba(251,146,60,0.15);  color: var(--orange); }
+.badge-filled        { background: rgba(52,211,153,0.15);  color: var(--green); }
+.badge-gen-failed    { background: rgba(248,113,113,0.15); color: var(--red); }
+.badge-missing-param { background: rgba(251,146,60,0.15);  color: var(--orange); }
+.badge-runtime-deferred { background: rgba(34,211,238,0.15); color: var(--cyan); }
+
+.card-title { font-size: 14px; font-weight: 500; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-fields { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.field-tag {
+  font-size: 11px; padding: 1px 6px; border-radius: 4px;
+  font-family: "SF Mono", Menlo, monospace; background: var(--surface2); color: var(--text2);
+}
+.field-tag.has-value { color: var(--green); background: rgba(52,211,153,0.08); }
+
+.confidence-bar { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+.confidence-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+
+.card-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 11px; color: var(--text2); }
+.card-note {
+  font-size: 11px; color: var(--text2); margin-top: 6px; padding: 4px 8px;
+  background: var(--surface2); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card-note.fail { color: var(--red); background: rgba(248,113,113,0.08); }
+
+.deps-row { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+.dep-chip {
+  font-size: 10px; padding: 1px 5px; border-radius: 3px;
+  background: rgba(167,139,250,0.12); color: var(--purple); font-family: "SF Mono", Menlo, monospace;
+}
+
+.lint-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.lint-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.verdict-tag { font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 6px; }
+.verdict-PASS          { background: rgba(52,211,153,0.15); color: var(--green); }
+.verdict-FAIL          { background: rgba(248,113,113,0.15); color: var(--red); }
+.verdict-ROUND_EXCEEDED { background: rgba(251,146,60,0.15); color: var(--orange); }
+.lint-details { margin-top: 8px; }
+.lint-detail {
+  font-size: 12px; padding: 6px 10px; background: var(--surface2);
+  border-radius: 4px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
+}
+.lint-detail .detail-id { font-family: "SF Mono", Menlo, monospace; font-weight: 600; color: var(--accent); min-width: 36px; }
+
+.confidence-summary { display: flex; gap: 20px; margin-bottom: 28px; flex-wrap: wrap; }
+.conf-stat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 20px; flex: 1; min-width: 180px;
+}
+.conf-stat-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+.conf-stat-value { font-size: 28px; font-weight: 700; }
+
+.wb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+.wb-item {
+  font-size: 12px; padding: 8px 12px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.wb-loc { font-family: "SF Mono", Menlo, monospace; font-size: 11px; color: var(--text2); }
+
+.empty-state { text-align: center; padding: 32px; color: var(--text2); font-size: 13px; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Requirement data-build dashboard</h1>
+    <div class="meta">
+      <span id="case-count">—</span>
+      <span><span class="live-dot"></span> Live</span>
+    </div>
+  </header>
+
+  <div class="tab-bar" id="tab-bar"></div>
+
+  <div id="summary-view">
+    <div class="summary-grid" id="summary-grid"></div>
+  </div>
+
+  <div id="detail-view">
+    <div class="pipeline-bar" id="pipeline-bar"></div>
+    <div class="confidence-summary" id="conf-summary"></div>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Data entities <span class="section-count" id="entity-count">0</span></div>
+      </div>
+      <div class="card-grid" id="entity-grid"></div>
+    </div>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Action commands <span class="section-count" id="action-count">0</span></div>
+      </div>
+      <div class="card-grid" id="action-grid"></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><div class="section-title">Quality checks</div></div>
+      <div id="lint-content"></div>
+    </div>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Writeback status <span class="section-count" id="wb-count">0</span></div>
+      </div>
+      <div class="wb-grid" id="wb-grid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PIPELINE_STAGES = [
+  { key: "knowledge-build", label: "Knowledge build" },
+  { key: "parse",           label: "Case parse" },
+  { key: "preprocess",      label: "Preprocess" },
+  { key: "data-track",      label: "Data construct" },
+  { key: "action-track",    label: "Command bind" },
+  { key: "lint-gate",       label: "Quality checks" },
+  { key: "writeback",       label: "Write back" },
+];
+
+let allCases = {};
+let dispatcherState = null;
+let activeTab = "summary";
+
+function esc(s) {
+  if (!s) return "";
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function confColor(v) {
+  if (v == null) return "var(--text2)";
+  if (v >= 0.85) return "var(--green)";
+  if (v >= 0.5)  return "var(--yellow)";
+  if (v > 0)     return "var(--orange)";
+  return "var(--red)";
+}
+
+function pipelineStatus(st) {
+  if (!st) return "pending";
+  const s = st.status;
+  if (s === "done") return "done";
+  if (s === "running" || s === "in-progress") return "running";
+  if (s === "failed") return "failed";
+  return "pending";
+}
+
+function currentStageName(pipelines) {
+  if (!pipelines) return null;
+  for (const { key, label } of PIPELINE_STAGES) {
+    if (pipelineStatus(pipelines[key]) === "running") return label;
+  }
+  if (pipelineStatus(pipelines["writeback"]) === "done") return "Done";
+  return null;
+}
+
+function statusBadge(status) {
+  if (!status) return `<span class="card-badge badge-pending">pending</span>`;
+  const cls = {
+    verified: "badge-verified", unverified: "badge-unverified",
+    failed: "badge-failed", "verify-failed": "badge-failed",
+    "missing-dependency": "badge-missing",
+    filled: "badge-filled", "gen-failed": "badge-gen-failed",
+    "missing-param": "badge-missing-param",
+    "runtime-deferred": "badge-runtime-deferred",
+  }[status] || "badge-pending";
+  return `<span class="card-badge ${cls}">${status}</span>`;
+}
+
+function strategyChip(strategy) {
+  if (!strategy || strategy === "tool-build") return "";
+  const map = {
+    "config": { label: "Config", color: "var(--purple)", bg: "rgba(167,139,250,0.15)" },
+    "static-value": { label: "Static", color: "var(--green)", bg: "rgba(52,211,153,0.15)" },
+    "runtime": { label: "Runtime", color: "var(--cyan)", bg: "rgba(34,211,238,0.15)" },
+  };
+  const s = map[strategy];
+  if (!s) return "";
+  return `<span style="font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600;color:${s.color};background:${s.bg};margin-left:6px">${s.label}</span>`;
+}
+
+const STATUS_LABEL = { pending:"Pending", running:"Running", done:"Done", failed:"Failed" };
+
+// ── Tab bar ────────────────────────────────────────────────────────────────
+function renderTabBar(cases) {
+  const ids = Object.keys(cases).sort();
+  const runningCount = ids.filter(id => {
+    const m = cases[id];
+    return m && Object.values(m.pipelines || {}).some(p => pipelineStatus(p) === "running");
+  }).length;
+
+  let html = `<div class="tab ${activeTab === "summary" ? "active" : ""}" data-tab="summary">
+    Summary
+    ${runningCount > 0 ? `<span class="tab-badge" style="background:rgba(108,140,255,0.2);color:var(--accent)">${runningCount} running</span>` : ""}
+  </div>`;
+
+  for (const id of ids) {
+    const m = cases[id];
+    const isRunning = m && Object.values(m.pipelines || {}).some(p => pipelineStatus(p) === "running");
+    const isDone    = m && pipelineStatus((m.pipelines || {}).writeback) === "done";
+    const isFailed  = m && Object.values(m.pipelines || {}).some(p => pipelineStatus(p) === "failed");
+    let badge = "";
+    if (isRunning)     badge = `<span class="tab-badge" style="background:rgba(108,140,255,0.2);color:var(--accent)">Running</span>`;
+    else if (isDone)   badge = `<span class="tab-badge" style="background:rgba(52,211,153,0.15);color:var(--green)">Done</span>`;
+    else if (isFailed) badge = `<span class="tab-badge" style="background:rgba(248,113,113,0.15);color:var(--red)">Failed</span>`;
+    html += `<div class="tab ${activeTab === id ? "active" : ""}" data-tab="${esc(id)}">${esc(id)}${badge}</div>`;
+  }
+
+  const bar = document.getElementById("tab-bar");
+  bar.innerHTML = html;
+  bar.querySelectorAll(".tab").forEach(el =>
+    el.addEventListener("click", () => switchTab(el.dataset.tab))
+  );
+}
+
+// ── Tab switching ──────────────────────────────────────────────────────────
+function switchTab(tabId) {
+  activeTab = tabId;
+  renderTabBar(allCases);
+  if (tabId === "summary") {
+    document.getElementById("summary-view").style.display = "block";
+    document.getElementById("detail-view").style.display  = "none";
+    renderSummary(allCases);
+  } else {
+    document.getElementById("summary-view").style.display = "none";
+    document.getElementById("detail-view").style.display  = "block";
+    renderDetail(allCases[tabId]);
+  }
+}
+
+// ── Summary view ───────────────────────────────────────────────────────────
+const GLOBAL_PHASES = [
+  { key: "knowledge-build", label: "Knowledge build" },
+  { key: "parallel-parse", label: "Parallel parse" },
+  { key: "deterministic-preprocess", label: "Preprocess" },
+  { key: "parallel-execution", label: "Parallel execute" },
+  { key: "checkpoint", label: "Checkpoint" },
+  { key: "parallel-writeback", label: "Parallel writeback" },
+  { key: "done", label: "Done" },
+];
+
+function renderGlobalPhase(ds) {
+  if (!ds) return "";
+  const current = ds.globalPhase || "pending";
+  if (current === "pending") return "";
+  if (current === "aborted") return `<div style="grid-column:1/-1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:13px;font-weight:600">Batch dispatch</span>
+      <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(248,113,113,0.15);color:var(--red);font-weight:500">Aborted</span>
+    </div>
+  </div>`;
+  const idx = GLOBAL_PHASES.findIndex(p => p.key === current);
+  return `<div style="grid-column:1/-1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-size:13px;font-weight:600">Batch dispatch</span>
+      <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(108,140,255,0.15);color:var(--accent);font-weight:500">${esc(current)}</span>
+    </div>
+    <div style="display:flex;gap:3px">${GLOBAL_PHASES.map((p, i) => {
+      const st = i < idx ? "done" : i === idx ? (current === "done" ? "done" : "running") : "pending";
+      return `<div class="mini-stage" data-status="${st}" title="${p.label}" style="flex:1;height:6px;border-radius:3px"></div>`;
+    }).join("")}</div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">${(ds.cases||[]).map(c => {
+      const dotColor = c.status === "failed" ? "var(--red)" : c.status === "skipped" ? "var(--orange)" : c.phase === current ? "var(--accent)" : c.phase === "done" || c.lintVerdict === "PASS" ? "var(--green)" : "var(--text2)";
+      return `<span style="font-size:11px;display:flex;align-items:center;gap:3px"><span style="width:6px;height:6px;border-radius:50%;background:${dotColor};display:inline-block"></span>${esc(c.caseId)}</span>`;
+    }).join("")}</div>
+  </div>`;
+}
+
+function renderSummary(cases) {
+  const ids = Object.keys(cases).sort();
+  document.getElementById("case-count").textContent = `${ids.length} cases`;
+
+  if (!ids.length) {
+    document.getElementById("summary-grid").innerHTML = '<div class="empty-state">No case data</div>';
+    return;
+  }
+
+  const globalPhaseHtml = renderGlobalPhase(dispatcherState);
+  document.getElementById("summary-grid").innerHTML = globalPhaseHtml + ids.map(id => {
+    const m = cases[id];
+    if (!m) return `<div class="case-card" onclick="switchTab('${esc(id)}')">
+      <div class="case-card-header"><span class="case-card-id">${esc(id)}</span></div>
+      <div style="font-size:12px;color:var(--red)">Failed to read manifest</div>
+    </div>`;
+
+    const pipes = m.pipelines || {};
+    const miniStages = PIPELINE_STAGES.map(({ key }) =>
+      `<div class="mini-stage" data-status="${pipelineStatus(pipes[key])}"></div>`
+    ).join("");
+
+    const entities  = m.entities || [];
+    const actions   = m.actions  || [];
+    const eVerified = entities.filter(e => e.entityStatus === "verified").length;
+    const aFilled   = actions.filter(a => a.cmdStatus === "filled").length;
+    const conf      = m.caseConfidence;
+
+    const eDots = entities.map(e => {
+      const c = e.entityStatus === "verified"   ? "var(--green)"
+               : e.entityStatus === "failed"    ? "var(--red)"
+               : e.entityStatus === "unverified" ? "var(--yellow)"
+               : "var(--surface2)";
+      return `<span class="stat-dot" style="background:${c}" title="${esc(e.entityId)}:${esc(e.entityStatus)}"></span>`;
+    }).join("");
+
+    const stageName = currentStageName(pipes);
+    const stageHtml = stageName
+      ? `<div class="case-card-stage"><span class="stage-running-label">▶ ${esc(stageName)}</span></div>`
+      : "";
+
+    return `<div class="case-card" onclick="switchTab('${esc(id)}')">
+      <div class="case-card-header">
+        <span class="case-card-id">${esc(id)}</span>
+        <span class="case-card-conf" style="color:${confColor(conf)}">${conf != null ? (conf*100).toFixed(0)+"%" : "—"}</span>
+      </div>
+      <div class="mini-pipeline">${miniStages}</div>
+      <div class="case-card-stats">
+        <span>Entities <b style="color:var(--text)">${eVerified}/${entities.length}</b></span>
+        <span>Commands <b style="color:var(--text)">${aFilled}/${actions.length}</b></span>
+        ${eDots ? `<span style="gap:3px">${eDots}</span>` : ""}
+      </div>
+      ${stageHtml}
+    </div>`;
+  }).join("");
+}
+
+// ── Detail view ────────────────────────────────────────────────────────────
+function renderDetail(m) {
+  if (!m) {
+    document.getElementById("pipeline-bar").innerHTML = "";
+    document.getElementById("conf-summary").innerHTML = '<div class="empty-state">Failed to read manifest</div>';
+    return;
+  }
+  renderPipeline(m.pipelines);
+  renderConfSummary(m);
+  renderEntities(m.entities || []);
+  renderActions(m.actions   || []);
+  renderLint(m);
+  renderWriteback(m);
+}
+
+function renderPipeline(pipelines) {
+  document.getElementById("pipeline-bar").innerHTML = PIPELINE_STAGES.map(({ key, label }) => {
+    const st = (pipelines || {})[key] || {};
+    const ds = pipelineStatus(st);
+    let extra = "";
+    if (key === "lint-gate" && st.round) extra = `Round ${st.round}`;
+    else if (st.phase) extra = st.phase;
+    return `<div class="pipeline-stage" data-status="${ds}">
+      <div class="stage-label">${label}</div>
+      <div class="stage-status">${STATUS_LABEL[ds] || ds}${extra ? " · "+extra : ""}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderConfSummary(m) {
+  const entities = m.entities || [];
+  const actions  = m.actions  || [];
+  const scorable = entities.filter(e => e.constructionStrategy !== "config" && e.constructionStrategy !== "runtime");
+  const eTotal = scorable.length;
+  const eDone  = scorable.filter(e => e.entityStatus === "verified").length;
+  const eConf  = eTotal ? scorable.reduce((s,e) => s+(e.dataConfidence||0), 0)/eTotal : 0;
+  const aTotal = actions.length;
+  const aFilled = actions.filter(a => a.cmdStatus === "filled").length;
+  const aConf  = aTotal ? actions.reduce((s,a) => s+(a.cmdConfidence||0), 0)/aTotal : 0;
+
+  document.getElementById("conf-summary").innerHTML = `
+    <div class="conf-stat">
+      <div class="conf-stat-label">Entity completion</div>
+      <div class="conf-stat-value" style="color:${confColor(eTotal ? eDone/eTotal : null)}">${eDone}/${eTotal}</div>
+    </div>
+    <div class="conf-stat">
+      <div class="conf-stat-label">Entity avg confidence</div>
+      <div class="conf-stat-value" style="color:${confColor(eConf)}">${(eConf*100).toFixed(0)}%</div>
+    </div>
+    <div class="conf-stat">
+      <div class="conf-stat-label">Command ready rate</div>
+      <div class="conf-stat-value" style="color:${confColor(aTotal ? aFilled/aTotal : null)}">${aFilled}/${aTotal}</div>
+    </div>
+    <div class="conf-stat">
+      <div class="conf-stat-label">Command avg confidence</div>
+      <div class="conf-stat-value" style="color:${confColor(aConf)}">${(aConf*100).toFixed(0)}%</div>
+    </div>
+    <div class="conf-stat">
+      <div class="conf-stat-label">Overall confidence</div>
+      <div class="conf-stat-value" style="color:${confColor(m.caseConfidence)}">${m.caseConfidence != null ? (m.caseConfidence*100).toFixed(0)+"%" : "—"}</div>
+    </div>`;
+}
+
+function renderEntities(entities) {
+  document.getElementById("entity-count").textContent = entities.length;
+  if (!entities.length) {
+    document.getElementById("entity-grid").innerHTML = '<div class="empty-state">No data entities</div>';
+    return;
+  }
+  document.getElementById("entity-grid").innerHTML = entities.map(e => {
+    const fields = e.fields || {};
+    const fieldTags = Object.entries(fields).map(([k,v]) =>
+      `<span class="field-tag ${v!=null?"has-value":""}">${k}${v!=null?"="+String(v).slice(0,16):""}</span>`
+    ).join("");
+    const deps = (e.dependencies||[]).map(d =>
+      `<span class="dep-chip">${d.entityId}.${d.field}</span>`).join("");
+    const conf = e.dataConfidence;
+    const confPct = conf != null ? conf*100 : 0;
+    const note = e.failReason
+      ? `<div class="card-note fail" title="${esc(e.failReason)}">${esc(e.failReason)}</div>`
+      : e.verifyNote
+        ? `<div class="card-note" title="${esc(e.verifyNote)}">${esc(e.verifyNote)}</div>`
+        : "";
+    return `<div class="card">
+      <div class="card-top"><span class="card-id">${e.entityId}${strategyChip(e.constructionStrategy)}</span>${statusBadge(e.entityStatus)}</div>
+      <div class="card-title" title="${esc(e.entityType+(e.constraints?" · "+e.constraints:""))}">${esc(e.entityType)}${e.constraints?" · "+esc(e.constraints):""}</div>
+      <div class="card-fields">${fieldTags}</div>
+      ${deps?`<div class="deps-row">${deps}</div>`:""}
+      <div class="confidence-bar"><div class="confidence-fill" style="width:${confPct}%;background:${confColor(conf)}"></div></div>
+      <div class="card-meta">
+        <span>${e.toolBinding?.toolType?"🔧 "+e.toolBinding.toolType:""}</span>
+        <span>${conf!=null?confPct.toFixed(0)+"%":"—"}</span>
+      </div>
+      ${note}
+    </div>`;
+  }).join("");
+}
+
+function renderActions(actions) {
+  document.getElementById("action-count").textContent = actions.length;
+  if (!actions.length) {
+    document.getElementById("action-grid").innerHTML = '<div class="empty-state">No action commands</div>';
+    return;
+  }
+  document.getElementById("action-grid").innerHTML = actions.map(a => {
+    const pfe = (a.paramsFromEntities||[]).map(p =>
+      `<span class="dep-chip">${p.sourceEntityId}.${p.sourceField}</span>`).join("");
+    const pfp = (a.paramsFromPriorActions||[]).map(p =>
+      `<span class="dep-chip" style="color:var(--cyan);background:rgba(34,211,238,0.12)">${p.sourceActionId}.${p.sourceOutputField}</span>`).join("");
+    const pfg = (a.paramsFromGenerators||[]).map(p =>
+      `<span class="dep-chip" style="color:var(--yellow);background:rgba(251,191,36,0.12)">${p.generator}</span>`).join("");
+    const conf = a.cmdConfidence;
+    const confPct = conf != null ? conf*100 : 0;
+    const note = a.failReason
+      ? `<div class="card-note fail" title="${esc(a.failReason)}">${esc(a.failReason)}</div>`
+      : a.verifyNote
+        ? `<div class="card-note" title="${esc(a.verifyNote)}">${esc(a.verifyNote)}</div>`
+        : "";
+    return `<div class="card">
+      <div class="card-top"><span class="card-id">${a.actionId} · Step ${a.stepIdx}</span>${statusBadge(a.cmdStatus)}</div>
+      <div class="card-title" title="${esc(a.actionDesc)}">${esc(a.actionDesc)}</div>
+      <div class="deps-row">${pfe}${pfp}${pfg}</div>
+      <div class="confidence-bar"><div class="confidence-fill" style="width:${confPct}%;background:${confColor(conf)}"></div></div>
+      <div class="card-meta">
+        <span>${a.toolBinding?.toolType?"🔧 "+a.toolBinding.toolType:""}${a.actionType?" · "+a.actionType:""}</span>
+        <span>${conf!=null?confPct.toFixed(0)+"%":"—"}</span>
+      </div>
+      ${note}
+    </div>`;
+  }).join("");
+}
+
+function renderLint(m) {
+  const lg = (m.pipelines||{})["lint-gate"] || {};
+  const rounds = m.lintRounds || [];
+  if (!lg.verdict && !rounds.length) {
+    document.getElementById("lint-content").innerHTML = '<div class="empty-state">Quality check not run yet</div>';
+    return;
+  }
+  let html = `<div class="lint-panel">
+    <div class="lint-header">
+      <span>Current round: ${lg.round||0}</span>
+      ${lg.verdict?`<span class="verdict-tag verdict-${lg.verdict}">${lg.verdict}</span>`:""}
+    </div>`;
+  const details = lg.details || [];
+  if (details.length) {
+    html += `<div class="lint-details">`;
+    details.forEach(d => {
+      html += `<div class="lint-detail">
+        <span class="detail-id">${d.id}</span>
+        <span>${esc(d.reason)}</span>
+        <span style="margin-left:auto;color:var(--purple);font-size:11px">${d.suggestedAction||""}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  if (rounds.length) {
+    html += `<div style="margin-top:12px;font-size:12px;color:var(--text2)">`;
+    rounds.forEach((r,i) => {
+      html += `<div style="margin-bottom:4px">Round ${i+1}: ${r.verdict||"—"}${r.reason?" — "+esc(r.reason):""}</div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div>`;
+  document.getElementById("lint-content").innerHTML = html;
+}
+
+function renderWriteback(m) {
+  const items = [
+    ...(m.entities||[]).filter(e=>e.targetLocation).map(e=>({id:e.entityId,loc:e.targetLocation,ws:e.writeStatus})),
+    ...(m.actions ||[]).filter(a=>a.targetLocation).map(a=>({id:a.actionId, loc:a.targetLocation,ws:a.writeStatus})),
+  ];
+  document.getElementById("wb-count").textContent = items.length;
+  if (!items.length) {
+    document.getElementById("wb-grid").innerHTML = '<div class="empty-state">No writeback targets</div>';
+    return;
+  }
+  document.getElementById("wb-grid").innerHTML = items.map(it => {
+    const color = it.ws==="done" ? "var(--green)" : it.ws==="skipped" ? "var(--red)" : "var(--text2)";
+    return `<div class="wb-item">
+      <span><span class="card-id" style="font-size:10px">${it.id}</span> <span class="wb-loc">${it.loc}</span></span>
+      <span style="color:${color};font-size:11px;font-weight:600">${it.ws||"pending"}</span>
+    </div>`;
+  }).join("");
+}
+
+// ── Main render ────────────────────────────────────────────────────────────
+function render(data) {
+  if (!data || !data.cases) return;
+  allCases = data.cases;
+  dispatcherState = data.dispatcherState || null;
+  renderTabBar(allCases);
+  if (activeTab === "summary") {
+    document.getElementById("summary-view").style.display = "block";
+    document.getElementById("detail-view").style.display  = "none";
+    renderSummary(allCases);
+  } else {
+    document.getElementById("summary-view").style.display = "none";
+    document.getElementById("detail-view").style.display  = "block";
+    renderDetail(allCases[activeTab]);
+  }
+}
+
+const es = new EventSource("/events");
+es.onmessage = ev => { try { render(JSON.parse(ev.data)); } catch {} };
+es.onerror   = ()  => { document.querySelector(".live-dot").style.background = "var(--red)"; };
+</script>
+</body>
+</html>

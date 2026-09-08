@@ -1,0 +1,30 @@
+id: edge-success-metrics
+title: Missing north-star and data source must enter the register as Trace=metric
+description: |
+  Success metrics are orthogonal to NFR; a missing KPI must not be labeled functional suitability only.
+
+input:
+  prompt: |
+    Use requirements-analyzer.
+    Requirement: ship inventory hold so checkout can reserve stock before payment. Acceptance is that available stock drops after a successful reserve.
+    No north-star, numeric target, data source, measurement window, or negative guardrail is given.
+    Fill the success-metrics grid and put the gap on the register. Do not label “no KPI” as NFR functional suitability.
+
+expect:
+  must_contain:
+    - "Success-metrics"
+    - "metric"
+    - "north-star"
+    - "missing"
+  must_not_contain:
+    - "TODO"
+    - "I cannot"
+
+judge:
+  type: rule_based
+  success:
+    - output_contains:
+        all:
+          - "metric"
+          - "north-star"
+          - "missing"

@@ -1,6 +1,8 @@
-# Install and run AI Defect Detection
+# Install and run OpenQA Skills
 
 [简体中文](GETTING_STARTED.zh-CN.md)
+
+This walkthrough uses [`defect-detection`](../skills/defect-detection/README.md) because it has the CLI smoke path. The same installer accepts `--skill code-reviewer`, `--skill requirements-analyzer`, `--skill testcase-generation`, and `--skill testdata-generation`; those skills have no equivalent `detect.ts` smoke suite.
 
 ## Requirements
 
@@ -19,13 +21,13 @@ Analysis can attempt to install Semgrep (Python/pip or Homebrew) and GitNexus (n
 ## Install from GitHub
 
 ```bash
-npx skills add openqa-cn/openqa-skills --skill ai-defect-detection
+npx skills add openqa-cn/openqa-skills --skill defect-detection
 ```
 
 Choose an agent interactively. Default scope is the current project. For Codex across projects:
 
 ```bash
-npx skills add openqa-cn/openqa-skills --skill ai-defect-detection --agent codex --global
+npx skills add openqa-cn/openqa-skills --skill defect-detection --agent codex --global
 ```
 
 Use `--copy` if you prefer copies to agent-directory symlinks. Installation locations are managed by the third-party `skills` installer; use its output to locate the installed skill. Installation does not prove that a complete analysis works on that agent.
@@ -41,15 +43,15 @@ npx skills add . --list
 To install this checkout, run from the repository root:
 
 ```bash
-npx skills add . --skill ai-defect-detection --agent codex --copy
+npx skills add . --skill defect-detection --agent codex --copy
 ```
 
 For a CLI-only smoke check, no model or private platform is needed:
 
 ```bash
 export NODE_OPTIONS=--experimental-strip-types
-node skills/ai-defect-detection/open_detect.ts --help
-node --test skills/ai-defect-detection/tests/cli_smoke.test.ts
+node skills/defect-detection/scripts/detect.ts --help
+node --test skills/defect-detection/tests/cli_smoke.test.ts
 ```
 
 The smoke suite verifies sample-plan loading, task creation, and missing-material handling. The included `acme` repository addresses are sample data; this test does not clone them. [Run the boundary-case example](../examples/checkout-boundary/README.md) for a known-good and seeded-defect pair.
@@ -58,7 +60,7 @@ The smoke suite verifies sample-plan loading, task creation, and missing-materia
 
 Open a new session after installation. Provide an accessible repository URL and branch, plus any requirements or test cases you can share. Example request:
 
-> Use ai-defect-detection to review my repository at REPOSITORY_URL, branch BRANCH_NAME. Check the changed implementation against these requirements: REQUIREMENTS. Return suspected defects with code locations, trigger conditions, and supporting evidence.
+> Use defect-detection to review my repository at REPOSITORY_URL, branch BRANCH_NAME. Check the changed implementation against these requirements: REQUIREMENTS. Return suspected defects with code locations, trigger conditions, and supporting evidence.
 
 Replace uppercase placeholders. Expect a task, analysis records, and a report link if the workflow completes. Inspect incomplete services and unavailable tools before accepting the report. Keep suspected findings under human review.
 
@@ -70,10 +72,30 @@ Use the third-party installer's help to inspect its current options:
 npx skills --help
 npx skills list
 npx skills update
-npx skills remove ai-defect-detection --agent codex
+npx skills remove defect-detection --agent codex
 ```
 
 For global installations add `--global` where supported. Back up configuration and task data before updating or removing an installed directory. The default skill stores data inside its installation; updates must not be used as a backup mechanism.
+
+## Other published skills
+
+```bash
+npx skills add openqa-cn/openqa-skills --skill code-reviewer
+npx skills add openqa-cn/openqa-skills --skill requirements-analyzer
+npx skills add openqa-cn/openqa-skills --skill testcase-generation
+npx skills add openqa-cn/openqa-skills --skill testdata-generation
+```
+
+After install, start a new agent session and point it at the skill. Inputs differ:
+
+- `code-reviewer` needs a local Git checkout plus the branch / PR / commit. It does not clone. See [What you give it](../skills/code-reviewer/README.md#what-you-give-it).
+- `requirements-analyzer` needs requirement documents, not a repo. See [What you give it](../skills/requirements-analyzer/README.md#what-you-give-it).
+- `testcase-generation` needs `prd/` (PRD / design / specs). `code/` is optional and used on update only. See its [README](../skills/testcase-generation/README.md).
+- `testdata-generation` needs a construct request, cases, or an API source — not application source. See [What you give it](../skills/testdata-generation/README.md#what-you-give-it).
+
+Sample prompts for each skill: [root README · Quick start](../README.md#quick-start).
+
+Method write-ups: [How it works index](HOW_IT_WORKS.md). What to bring: [FAQ](FAQ.md#what-do-i-have-to-give-each-skill).
 
 ## Troubleshooting
 

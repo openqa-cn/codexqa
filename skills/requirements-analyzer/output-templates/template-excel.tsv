@@ -1,0 +1,2 @@
+ID	Topic	Sources	Status	Impact	Priority	Question	Owner	Next action	Preconditions	Stimulus	Expected	Evidence	QualityChar	Smell	Trace	VerifyMethod	RiskClass	FailureMode
+RA-01			missing	High	P0						none	orphan	test	product-functional	missed-rule

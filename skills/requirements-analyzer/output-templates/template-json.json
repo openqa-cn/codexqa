@@ -1,0 +1,97 @@
+{
+  "understanding": {
+    "goal": "",
+    "in_scope": [],
+    "out_of_scope": [],
+    "traceable_facts": []
+  },
+  "audit": {
+    "sources": [
+      { "name": "", "class": "scope|behavior|constraint|plan|risk", "source_role": "" }
+    ],
+    "completeness": "",
+    "credibility": "",
+    "recency": "",
+    "comparability": "",
+    "confirmed_facts": [],
+    "working_assumptions": [],
+    "information_gaps": [],
+    "quality_characteristic_hits": [],
+    "smell_hits": [],
+    "nfr_grid": {
+      "functional_suitability": "specified-measurable|specified-vague|missing|not-applicable",
+      "reliability": "",
+      "performance_efficiency": "",
+      "usability": "",
+      "security": "",
+      "compatibility": "",
+      "maintainability": "",
+      "portability": ""
+    },
+    "structure_inventory": {
+      "background": "present|thin|absent",
+      "goal": "",
+      "stories": "",
+      "features": "",
+      "nfr": "",
+      "boundary": "",
+      "ac": "",
+      "kpi": "",
+      "dependencies": "",
+      "timeline": "",
+      "prototype": ""
+    },
+    "success_metrics_grid": {
+      "north_star": "",
+      "numeric_target": "",
+      "data_source": "",
+      "time_window": "",
+      "negative_metric": ""
+    },
+    "dependency_grid": {
+      "upstream": "",
+      "downstream": "",
+      "data_tracking": "",
+      "sequence": "",
+      "owner_ready_date": ""
+    }
+  },
+  "register": [
+    {
+      "id": "RA-01",
+      "topic": "",
+      "sources": [],
+      "status": "aligned|conflict|missing|stale|untestable",
+      "impact": "high|medium|low",
+      "priority": "P0",
+      "question": "",
+      "suggested_owner": "",
+      "suggested_next_action": "",
+      "preconditions": "",
+      "stimulus": "",
+      "expected": "",
+      "evidence_required": "",
+      "quality_char": "",
+      "smell": "none",
+      "trace": "goal|rule|ac|orphan|metric|dep",
+      "verify_method": "test|analysis|demonstration|inspection",
+      "risk_class": "product-functional|product-security|product-reliability|product-data|product-ux|project-schedule|project-scope|project-dependency",
+      "failure_mode": "misinterpret|missed-rule|no-oracle|conflict-escape"
+    }
+  ],
+  "risks": [
+    { "priority": "P0", "class": "product-functional", "severity": "", "occurrence": "", "detectability": "", "failure_mode": "", "summary": "" }
+  ],
+  "testability": {
+    "blocked_tests": [],
+    "blocked_gates": [],
+    "oracle_type": ""
+  },
+  "blockers": {
+    "items": [],
+    "residual_risk": ""
+  },
+  "next_actions": [
+    { "priority": "P0", "owner": "", "action": "", "decision_criterion": "" }
+  ]
+}

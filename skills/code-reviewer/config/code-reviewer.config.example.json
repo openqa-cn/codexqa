@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "git": {
+    "defaultBaseBranch": "main",
+    "codeBrowseUrlTemplate": "https://github.com/{org}/{repo}/blob/{branch}/{path}#L{line}"
+  },
+  "layers": {
+    "ui": ["src/pages/", "src/components/"],
+    "store": ["src/stores/"],
+    "api": ["src/api/"],
+    "backend": ["src/main/java/", "src/main/kotlin/", "src/main/resources/"],
+    "exclude": [
+      "**/*.test.*",
+      "**/*.spec.*",
+      "**/*.stories.*",
+      "**/__mocks__/**",
+      "**/__MACOSX/**",
+      "**/.DS_Store",
+      "**/._*"
+    ]
+  },
+  "conventions": {
+    "stateLibrary": "",
+    "httpWrapper": "",
+    "backendLanguage": "",
+    "generatedGlobs": [],
+    "generatedMarkers": ["@generated", "This file is auto-generated", "Code generated"]
+  },
+  "integrations": {
+    "prMetadata": {
+      "enabled": false,
+      "method": "GET",
+      "url": "https://api.example.com/review/pr-metadata?repo={repo}&branch={branch}",
+      "headers": {
+        "Accept": "application/json"
+      },
+      "auth": {
+        "type": "bearer",
+        "tokenEnv": "CODE_REVIEWER_TOKEN",
+        "required": true
+      },
+      "timeoutMs": 8000
+    },
+    "notify": {
+      "enabled": false,
+      "method": "POST",
+      "url": "https://hooks.example.com/code-review",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "auth": {
+        "type": "header",
+        "headerName": "X-Api-Key",
+        "tokenEnv": "CODE_REVIEWER_TOKEN",
+        "required": true
+      },
+      "timeoutMs": 8000
+    },
+    "telemetry": {
+      "enabled": false,
+      "method": "POST",
+      "url": "https://telemetry.example.com/code-review/events",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "timeoutMs": 5000
+    },
+    "extraKnowledge": {
+      "enabled": false,
+      "method": "GET",
+      "url": "https://docs.example.com/code-review/extra-rules.md",
+      "headers": {
+        "Accept": "text/markdown"
+      },
+      "timeoutMs": 8000
+    }
+  }
+}

@@ -1,0 +1,32 @@
+id: edge-nfr-grid
+title: NFR eight-cell grid must conclude; security and reliability cannot be skipped
+description: |
+  A functional-only story still needs the ISO 25010 eight-cell grid; unstated security and reliability are missing.
+
+input:
+  prompt: |
+    Use requirements-analyzer.
+    Requirement: after adding an item to the cart the user can submit an order; acceptance is that the order appears under My Orders.
+    Auth, authorization, encryption, availability, recovery, timeout, and retry are unspecified.
+    Give an NFR eight-cell conclusion in section 2. Do not omit characteristics that were never mentioned.
+
+expect:
+  must_contain:
+    - "NFR"
+    - "reliability"
+    - "security"
+    - "missing"
+    - "not-applicable"
+  must_not_contain:
+    - "TODO"
+    - "I cannot"
+
+judge:
+  type: rule_based
+  success:
+    - output_contains:
+        all:
+          - "NFR"
+          - "reliability"
+          - "security"
+          - "missing"

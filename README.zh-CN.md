@@ -8,9 +8,10 @@
 [English](README.md)
 
 <p align="center">
-  <a href="#能力地图"><strong>能力地图</strong></a> ·
   <a href="#快速开始"><strong>快速开始</strong></a> ·
-  <a href="examples/checkout-boundary/README.md"><strong>可运行示例</strong></a> ·
+  <a href="docs/HOW_IT_WORKS.zh-CN.md"><strong>工作原理</strong></a> ·
+  <a href="examples/inventory-service/README.md"><strong>盲测评估</strong></a> ·
+  <a href="skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md"><strong>已知边界</strong></a> ·
   <a href="docs/GETTING_STARTED.zh-CN.md"><strong>安装入门</strong></a> ·
   <a href="docs/FAQ.zh-CN.md"><strong>FAQ</strong></a> ·
   <a href="docs/SUPPORT_MATRIX.zh-CN.md"><strong>支持矩阵</strong></a>
@@ -29,9 +30,17 @@ AI Coding 降低了实现成本，但一个补丁仍可能遗漏需求、削弱�
 
 ## 本仓库提供什么
 
-`openqa-skills` 是 OpenQA 面向 Coding Agent 的公开、本地优先 Skill 层。当前发布 [`ai-defect-detection`](skills/ai-defect-detection/README.zh-CN.md)：一套可执行的缺陷检测工作流，用于审查代码变更和测试计划，并输出带依据的结构化疑似缺陷。
+`openqa-skills` 是 OpenQA 面向 Coding Agent 的公开、本地优先 Skill 层。当前发布五个 skill，**输入各不相同**：
 
-当前工作流包括：
+| Skill | 你要带上的 | 它做什么 |
+| --- | --- | --- |
+| [`defect-detection`](skills/defect-detection/README.zh-CN.md) | Git 地址 + 分支（再加需求或用例） | 克隆、分析变更方法、写出带门禁的发现 |
+| [`code-reviewer`](skills/code-reviewer/README.zh-CN.md) | 本地 Git 工作副本 + 分支 / PR / commit | Playbook CR，产出 P0 / P1 / P2 报告；不克隆 |
+| [`requirements-analyzer`](skills/requirements-analyzer/README.zh-CN.md) | PRD / 故事 / 接口说明（文档） | 一份缺口/冲突登记表，带 P0 / P1 验证 |
+| [`testcase-generation`](skills/testcase-generation/README.zh-CN.md) | `prd/` 下的 PRD / 技术方案 / 契约 | 生成并更新手工用例库。`code/` 只在更新时用 |
+| [`testdata-generation`](skills/testdata-generation/README.zh-CN.md) | 造数请求、用例，和/或 OpenAPI | 打后端（或本地 mock）拿真实 ID；不是 git 克隆 |
+
+[`defect-detection`](skills/defect-detection/README.zh-CN.md) 工作流：
 
 - 创建任务、克隆仓库、收集分支与 diff 上下文
 - 基于 AST 规则分析变更方法，并可选使用 Java 调用图分析
@@ -39,7 +48,13 @@ AI Coding 降低了实现成本，但一个补丁仍可能遗漏需求、削弱�
 - 发现结果校验、写回、排序、标签和 HTML 报告
 - 可确定复现的正常实现/预置缺陷案例，以及自动化 CLI 测试套件
 
-## 工作方式
+各 skill 原理：[缺陷检测](skills/defect-detection/HOW_IT_WORKS.zh-CN.md)、[代码审查](skills/code-reviewer/HOW_IT_WORKS.zh-CN.md)、[需求分析](skills/requirements-analyzer/HOW_IT_WORKS.zh-CN.md)、[用例生成](skills/testcase-generation/HOW_IT_WORKS.zh-CN.md)、[数据构造](skills/testdata-generation/HOW_IT_WORKS.zh-CN.md)。索引：[docs/HOW_IT_WORKS.zh-CN.md](docs/HOW_IT_WORKS.zh-CN.md)。
+
+## defect-detection 工作方式
+
+静态分析擅长有**形状**的缺陷：被吞掉的异常、硬编码凭证、未判空的引用。而真正能活过评审的缺陷通常是另一类——写法地道、测试也过，但做的不是需求说的事。规格写「满 10 件」而代码用了 `>`；退款没有按剩余余额封顶；某个函数改了计数器，而读同一份数据的缓存从来没被失效过。Bug 藏在代码与意图的落差里，而意图在文档里，不在语法树里。
+
+模型能补上这个落差。但不受约束的模型审查者也会编造它没读过的方法、对几百个方法给出自信的空结论、标出多到让人放弃阅读的噪音。所以这里的前提是：**模型负责语义判断，基础设施负责让这个判断可被验证。**
 
 ```text
 代码仓库 + 分支 + 需求或测试材料
@@ -62,23 +77,27 @@ AI Coding 降低了实现成本，但一个补丁仍可能遗漏需求、削弱�
 
 OpenQA 负责编排工作流，语义审查由宿主 Agent/模型执行。本地 provider 无需连接 OpenQA 私有后端；如有需要，也可以通过适配器连接外部平台。
 
+三个决策承担了主要工作。变更方法按「与已陈述需求或用例的关联强度」**分层**，从而把昂贵的分析配给出去，而不是平摊。写回要通过 **23 条校验规则**，它们针对的是模型的具体失效模式——没读过代码、方法名在真实源码中不存在、或者整批结论呈现出「模型进入自动驾驶」的统计特征，都会被拒绝。而**关门是一道闸**：覆盖率、报告一致性和证据深度会在任务完成前重新校验。
+
+在 [inventory-service](examples/inventory-service/README.md) 盲测 fixture 上——7 处业务逻辑缺陷藏在合理的功能改动中，外加 4 个「看起来像 bug 实则正确」的诱饵——一次已记录的 agent 运行检出 7/7 且零误报，而且这 7 处**没有一处**来自 102 条 Semgrep 种子规则。这是单模型、单次、自建 fixture 的结果，不是 benchmark 成绩。设计细节见[工作原理](skills/defect-detection/HOW_IT_WORKS.zh-CN.md)，能力边界见[已知边界](skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md)。
+
 ## 能力地图
 
-OpenQA 的产品方向覆盖 AI 软件工程全生命周期的质量验证。本仓库当前主要提供 [`ai-defect-detection`](skills/ai-defect-detection/README.zh-CN.md) 一个 Skill。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由该工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
+OpenQA 的产品方向覆盖 AI 软件工程全生命周期的质量验证。本仓库当前提供 [`defect-detection`](skills/defect-detection/README.zh-CN.md)、[`code-reviewer`](skills/code-reviewer/README.zh-CN.md)、[`requirements-analyzer`](skills/requirements-analyzer/README.zh-CN.md)、[`testcase-generation`](skills/testcase-generation/README.zh-CN.md) 和 [`testdata-generation`](skills/testdata-generation/README.zh-CN.md)。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由这些工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
 
 | 能力 | 当前仓库状态 | 范围 |
 | --- | --- | --- |
 | 缺陷检测 | **已提供** | 面向代码变更、测试计划和交付任务的 Agent 静态与业务逻辑审查 |
 | 代码分析 | **部分提供** | 基于 AST 规则和变更方法分析；更多语言和框架仍在扩展 |
-| 需求评审 | **计划中** | 根据结构化业务需求检查实现与测试 |
+| 需求评审 | **已提供** | 对需求文档做缺口/冲突分析（`requirements-analyzer`）；实现是否符合需求仍是计划中 |
 | 规格评审 | **计划中** | 检查技术规格的完整性、一致性和可测试性 |
-| AI Code Review | **计划中** | 更完整的 Pull Request 审查、协作和平台集成 |
+| AI Code Review | **已提供** | Playbook 驱动的 PR / 分支 / commit 审查（`code-reviewer`）；尚无公开 fixture |
 | 变更影响分析 | **部分提供** | 通过 GitNexus 提供 Java 调用图路径，并有降级行为；跨仓影响分析仍在规划 |
 | 测试执行编排 | **计划中** | 在验证工作流中运行现有测试框架并采集结果 |
 | 代码覆盖率分析 | **计划中** | 覆盖率质量信号和需求到测试的覆盖分析 |
 | UI 端到端测试 | **计划中** | 浏览器和 UI 工作流生成、执行与结果集成 |
-| 测试用例生成 | **计划中** | 根据需求和已有材料生成结构化测试用例 |
-| 测试数据构造 | **计划中** | 构造边界、场景和可复用的领域测试数据 |
+| 测试用例生成 | **已提供** | 根据 PRD、技术方案、接口契约和知识库生成并增量更新结构化手工用例 |
+| 测试数据构造 | **已提供** | 通过 domain slot、工具、API 和生成脚本构造可复用测试数据，并回写到用例前置条件 |
 | 问题定位与诊断 | **部分提供** | 发现结果包含位置、触发条件、分析依据和修复建议；更深入的根因诊断仍在建设 |
 | 证据采集与结构化发现 | **已提供** | 发现校验、写回、排序、标签和可追踪 HTML 报告 |
 | 本地 provider 与报告 | **已提供** | 本地优先的 JSON 持久化和报告生成，不依赖私有后端 |
@@ -98,38 +117,89 @@ OpenQA 的产品方向覆盖 AI 软件工程全生命周期的质量验证。本
 ## 安装
 
 ```bash
-npx skills add openqa-cn/openqa-skills --skill ai-defect-detection
+npx skills add openqa-cn/openqa-skills --skill defect-detection
+npx skills add openqa-cn/openqa-skills --skill code-reviewer
+npx skills add openqa-cn/openqa-skills --skill requirements-analyzer
+npx skills add openqa-cn/openqa-skills --skill testcase-generation
+npx skills add openqa-cn/openqa-skills --skill testdata-generation
 ```
 
-按提示选择 Agent。全局安装到 Codex：
-
-```bash
-npx skills add openqa-cn/openqa-skills --skill ai-defect-detection --agent codex --global
-```
+按提示选择 Agent。全局安装到 Codex 时加 `--agent codex --global`。每个 `--skill` 只复制一个目录。
 
 无需 OpenQA 或 npm 账号。运行要求、安装范围和故障排查见[安装与入门](docs/GETTING_STARTED.zh-CN.md)。
 
 ## 快速开始
 
-1. 使用上面的命令安装 Skill。
+1. 用上面的命令安装你需要的那个 skill。
 2. 新建一个 Coding Agent 会话。
-3. 提供可访问的仓库、分支，以及需求或测试材料：
+3. 把**该 skill 要的材料**交给 Agent。三者不能互相顶替。
+
+### 审查分支（`defect-detection`）
 
 ```text
-使用 ai-defect-detection 审查 REPOSITORY_URL 的 BRANCH_NAME。
+使用 defect-detection 审查 REPOSITORY_URL 的 BRANCH_NAME。
 业务要求：结账金额必须大于零。
 对每个疑似缺陷给出位置、触发条件、依据和修复建议。
 ```
 
-将大写占位符替换为真实内容。工作流会收集上下文、分析变更方法、执行当前可用的检查、校验发现并生成报告，供人工复核。
+将大写占位符换成真实内容。工作流会收集上下文、分析变更方法、校验发现并生成报告，供人工复核。
 
-如果想运行一个不需要 AI 模型或私有后端的完整仓库示例：
+不需要模型或私有后端的契约示例（不是检测准确率）：
 
 ```bash
 node examples/checkout-boundary/verify.mjs
 ```
 
-该案例包含正常实现和预置边界缺陷，用于展示预期契约和验证流程；它不代表模型检测准确率。
+### 审查本地工作副本（`code-reviewer`）
+
+在 Agent 里打开该仓库。本 skill 原地 diff，不克隆。
+
+```text
+用 code-reviewer 对照 main 审查当前分支。
+每条发现给出严重级别、文件:行号、规则、运行时影响和修复建议。
+```
+
+目前没有公开 fixture。要做带写回门禁的方法级需求缺陷审查，用 `defect-detection`。
+
+### 分析需求（`requirements-analyzer`）
+
+交文档，不要交仓库。
+
+```text
+用 requirements-analyzer 分析这些需求文档。
+只出一份缺口/冲突登记表。P0 必须带验证字段。
+源材料没有的接口和 SLA 不要编。
+```
+
+这是在审 PRD。要根据 `prd/` 写用例库，用 `testcase-generation`。
+
+### 写用例库（`testcase-generation`）
+
+先把 PRD / 技术方案 / 契约放到 `prd/`。生成阶段不需要 `code/`。
+
+```text
+用 testcase-generation 根据 prd/ 下的文档生成手工用例库。
+源材料没写的工程字段不要编，写成 TBD。
+```
+
+Agent 停在 PRD 与技术方案冲突时，回复 `Confirm follow PRD` 或 `Item N follow technical design`。目前没有公开 fixture。
+
+### 构造测试数据（`testdata-generation`）
+
+不是 git 克隆。直接说要造什么，或指向已写好的用例 / OpenAPI：
+
+```text
+用 testdata-generation 建一个叫 Northwind Standard 的标准目录商品。
+没配企业网关就走本地 mock。
+```
+
+回写用例前置：
+
+```text
+这份用例帮我准备测试数据，并把 ID 回写到前置条件。
+```
+
+默认后端是 `http://127.0.0.1:8765` 上的本地 mock。demo 拿到 ID **不等于** 写入了真实系统。
 
 ## 开发者验证
 
@@ -138,7 +208,7 @@ node examples/checkout-boundary/verify.mjs
 ```bash
 python3 scripts/check-docs.py
 export NODE_OPTIONS=--experimental-strip-types
-(cd skills/ai-defect-detection && npm test)
+(cd skills/defect-detection && npm test)
 node examples/checkout-boundary/verify.mjs
 ```
 
@@ -153,7 +223,7 @@ node examples/checkout-boundary/verify.mjs
 ## 路线图
 
 - **现在：** 加固干净环境安装、Agent 兼容性、公开案例和开发者文档。
-- **下一步：** 按同一套“证据 + 人工复核”约定，增加规格评审、需求评审、测试用例生成和更广泛的分析 Skill。
+- **下一步：** 按同一套“证据 + 人工复核”约定，增加规格评审、需求评审和更广泛的分析 Skill。
 - **之后：** 接入跨仓影响分析、AI Code Review、CI 质量门禁和托管工程系统。
 
 只有实现、案例和局限性都已公开的能力，才会在本仓库标记为“已提供”。进度见[公开路线图](https://openqa.cn/roadmap)。
@@ -162,6 +232,8 @@ node examples/checkout-boundary/verify.mjs
 
 | 文档 | 内容 |
 | --- | --- |
+| [各 skill 的工作原理](docs/HOW_IT_WORKS.zh-CN.md) | 各 skill 原理索引 |
+| [已知边界](skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md) | 具体失败场景、实现缺口，以及现有证据不足以支撑的结论 |
 | [安装与入门](docs/GETTING_STARTED.zh-CN.md) | 运行要求、安装范围、本地设置和故障排查 |
 | [FAQ](docs/FAQ.zh-CN.md) | 账号、数据处理、联网行为、报告和局限性 |
 | [支持矩阵](docs/SUPPORT_MATRIX.zh-CN.md) | 已验证的运行时、Agent、集成和已知限制 |

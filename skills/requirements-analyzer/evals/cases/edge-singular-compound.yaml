@@ -1,0 +1,29 @@
+id: edge-singular-compound
+title: Compound sentences must fail Singular
+description: |
+  One statement binding several independent behaviors must fail Singular and record a compound smell.
+
+input:
+  prompt: |
+    Use requirements-analyzer.
+    Single requirement sentence: after a successful login the system shall send an email notification and update the last-login timestamp and refresh the dashboard.
+    It is not split into three rules and has no separate acceptance criteria. Run the statement-level quality scan and output a register.
+
+expect:
+  must_contain:
+    - "Singular"
+    - "compound"
+    - "QualityChar"
+    - "Gap and Conflict Register"
+  must_not_contain:
+    - "TODO"
+    - "I cannot"
+
+judge:
+  type: rule_based
+  success:
+    - output_contains:
+        all:
+          - "Singular"
+          - "compound"
+          - "QualityChar"

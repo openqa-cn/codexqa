@@ -1,0 +1,28 @@
+id: edge-no-oracle-p0
+title: Weak AC with no oracle must not be an executable P0
+description: |
+  “Experience should be good / optimize as needed” with no observable failure must be untestable and no-oracle.
+
+input:
+  prompt: |
+    Use requirements-analyzer.
+    Sole acceptance criterion: checkout experience should be good; optimize the cashier as needed.
+    No response time, failure code, timeout, or observable failure condition is given.
+    Decide whether this item can be an executable P0. If there is no oracle, do not write it as an executable P0.
+
+expect:
+  must_contain:
+    - "untestable"
+    - "no-oracle"
+    - "Verifiable"
+  must_not_contain:
+    - "TODO"
+    - "I cannot"
+
+judge:
+  type: rule_based
+  success:
+    - output_contains:
+        all:
+          - "untestable"
+          - "no-oracle"

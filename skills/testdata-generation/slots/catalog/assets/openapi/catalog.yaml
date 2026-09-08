@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: Catalog test-data API
+  version: "1.0.0"
+servers:
+  - url: http://127.0.0.1:8765
+paths:
+  /v1/products:
+    post:
+      operationId: createCatalogProduct
+      summary: Create a catalog product
+      requestBody:
+        required: true
+      responses:
+        "200":
+          description: created
+  /v1/orders:
+    post:
+      operationId: createCatalogOrder
+      summary: Create a catalog order
+      responses:
+        "200":
+          description: created
+  /v1/credits/enroll:
+    post:
+      operationId: enrollAccountCredit
+      summary: Enroll a user and product in account credit
+      responses:
+        "200":
+          description: enrolled

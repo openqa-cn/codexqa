@@ -1,0 +1,30 @@
+id: edge-dependency-grid
+title: Upstream without owner or ready date must be Trace=dep, not aligned
+description: |
+  Naming upstream systems without an owner and ready date must not be marked aligned.
+
+input:
+  prompt: |
+    Use requirements-analyzer.
+    Requirement: before creating an order, call the inventory service for available stock, then call the payment gateway to charge.
+    Inventory service and payment gateway are named as dependencies, but no owner, expected ready date, or downstream impact is given.
+    Fill the dependency grid and write the register. Do not mark dependencies aligned when owner or ready date is missing.
+
+expect:
+  must_contain:
+    - "Dependency"
+    - "dep"
+    - "owner"
+    - "missing"
+  must_not_contain:
+    - "TODO"
+    - "I cannot"
+
+judge:
+  type: rule_based
+  success:
+    - output_contains:
+        all:
+          - "dep"
+          - "owner"
+          - "missing"

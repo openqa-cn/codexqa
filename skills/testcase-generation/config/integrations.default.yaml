@@ -1,0 +1,65 @@
+# Zero-config profile: local files only, no outbound HTTP.
+version: 1
+
+profile:
+  protocols:
+    - http
+    - grpc
+  mockableProtocols:
+    - grpc
+  components:
+    - id: database
+      label: Database
+      fields:
+        - datasource
+        - table
+        - shardingRule
+    - id: cache
+      label: Cache
+      fields:
+        - cluster
+        - key
+        - command
+    - id: mq
+      label: MQ
+      fields:
+        - cluster
+        - topic
+        - producer
+    - id: config
+      label: Config service
+      fields:
+        - serviceId
+        - key
+        - value
+    - id: experiment
+      label: Experiment
+      fields:
+        - experimentKey
+        - groups
+
+capabilities:
+  spec_lookup:
+    enabled: true
+    provider: local
+    fallback: local
+  knowledge_search:
+    enabled: true
+    provider: local
+    fallback: local
+  env_info:
+    enabled: true
+    provider: local
+    fallback: local
+  config_lookup:
+    enabled: false
+    provider: local
+    fallback: local
+  middleware_lookup:
+    enabled: false
+    provider: local
+    fallback: local
+  experiment_lookup:
+    enabled: false
+    provider: local
+    fallback: local

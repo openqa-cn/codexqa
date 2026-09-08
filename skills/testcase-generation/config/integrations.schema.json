@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openqa.cn/schemas/testcase-generation/integrations.v1.json",
+  "title": "testcase-generation integrations",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "profile", "capabilities"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocols", "mockableProtocols", "components"],
+      "properties": {
+        "protocols": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "mockableProtocols": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "components": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "fields"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "enum": ["database", "cache", "mq", "config", "experiment"]
+              },
+              "label": { "type": "string", "minLength": 1 },
+              "fields": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "spec_lookup": { "$ref": "#/$defs/capability" },
+        "knowledge_search": { "$ref": "#/$defs/capability" },
+        "env_info": { "$ref": "#/$defs/capability" },
+        "config_lookup": { "$ref": "#/$defs/capability" },
+        "middleware_lookup": { "$ref": "#/$defs/capability" },
+        "experiment_lookup": { "$ref": "#/$defs/capability" }
+      }
+    }
+  },
+  "$defs": {
+    "capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "provider"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "provider": { "type": "string", "enum": ["local", "http"] },
+        "fallback": { "type": "string", "enum": ["local", "none"] },
+        "http": { "$ref": "#/$defs/http" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "enabled": { "const": true }, "provider": { "const": "http" } }
+          },
+          "then": { "required": ["http"] }
+        }
+      ]
+    },
+    "http": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseUrl", "path", "method", "responseMap"],
+      "properties": {
+        "baseUrl": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 },
+        "method": { "type": "string", "enum": ["GET", "POST"] },
+        "headers": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "timeoutSec": { "type": "number", "minimum": 1, "maximum": 120 },
+        "requestMap": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "responseMap": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "query": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "auth": { "$ref": "#/$defs/auth" },
+        "tls": { "$ref": "#/$defs/tls" }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "none",
+            "header",
+            "query",
+            "oauth2_client_credentials",
+            "token_exchange",
+            "session"
+          ]
+        },
+        "token": { "type": "string" },
+        "queryParam": { "type": "string" },
+        "tokenUrl": { "type": "string", "minLength": 1 },
+        "loginUrl": { "type": "string", "minLength": 1 },
+        "method": { "type": "string", "enum": ["GET", "POST"] },
+        "clientId": { "type": "string" },
+        "clientSecret": { "type": "string" },
+        "clientAuth": { "type": "string", "enum": ["body", "basic"] },
+        "scope": { "type": "string" },
+        "audience": { "type": "string" },
+        "contentType": {
+          "type": "string",
+          "enum": ["application/json", "application/x-www-form-urlencoded"]
+        },
+        "headers": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "requestMap": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "tokenResponse": { "type": "string" },
+        "expiresInResponse": { "type": "string" },
+        "cookieNames": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "inject": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "header": { "type": "string" },
+            "prefix": { "type": "string" },
+            "query": { "type": "string" }
+          }
+        }
+      }
+    },
+    "tls": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "certFile": { "type": "string", "minLength": 1 },
+        "keyFile": { "type": "string", "minLength": 1 },
+        "caFile": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

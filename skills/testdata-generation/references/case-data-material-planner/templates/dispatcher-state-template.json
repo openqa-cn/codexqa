@@ -1,0 +1,18 @@
+{
+  "version": "1.0",
+  "globalPhase": "pending",
+  "cases": [],
+  "sharedResources": {
+    "businessContext": null,
+    "toolBindingCache": null
+  },
+  "checkpoint": {
+    "triggered": false,
+    "failedCases": [],
+    "userDecision": null
+  },
+  "timing": {
+    "startedAt": null,
+    "completedAt": null
+  }
+}

@@ -1,0 +1,100 @@
+# Copy to ./testdata/config.yaml or ~/.testdata/config.yaml
+# Override the path with DATA_BUILD_CONFIG.
+
+workspace:
+  testdata_dir: ./testdata
+  contributor: ${USER}
+  # Only if company scene skills live outside pack slots/ and skill slots/:
+  # slot_roots:
+  #   - /opt/company/data-slots
+
+adapters:
+  skill_marketplace:
+    type: local
+    # Optional extra scan dirs. Pack slots/ + skill slots/ + workspace.slot_roots
+    # are already discovered; you do not need to list a new scene here.
+    paths:
+      - ${HOME}/.agents/skills
+    http:
+      base_url: ""
+      search_path: /v1/skills/search
+      install_path: /v1/skills/install
+
+  tool_registry:
+    type: local
+    path: ./testdata/tools
+    http:
+      base_url: ""
+      query_path: /v1/tools/query
+      execute_path: /v1/tools/execute
+      publish_path: /v1/tools/publish
+
+  api_catalog:
+    type: openapi
+    # Extra OpenAPI dirs only. Each slot's assets/openapi/ is auto-indexed.
+    paths:
+      - ./testdata/openapi
+    http:
+      base_url: ""
+      search_path: /v1/apis/search
+      detail_path: /v1/apis/detail
+
+  experience_store:
+    type: local
+    path: ./testdata/experience
+    http:
+      base_url: ""
+      fetch_path: /v1/experience/fetch
+      report_path: /v1/experience/report
+      feedback_path: /v1/experience/feedback
+
+  auth:
+    type: env
+    token_env: DATA_BUILD_TOKEN
+    header: Authorization
+    prefix: "Bearer "
+    oauth:
+      token_url: ""
+      client_id_env: DATA_BUILD_CLIENT_ID
+      client_secret_env: DATA_BUILD_CLIENT_SECRET
+      scope: ""
+
+  data_store:
+    type: none
+    dsn_env: DATABASE_DSN
+
+  config_store:
+    type: file
+    path: ./testdata/config-store.yaml
+    http:
+      base_url: ""
+      get_path: /v1/config/get
+      set_path: /v1/config/set
+
+  feature_flags:
+    type: noop
+    http:
+      base_url: ""
+      detail_path: /v1/flags/detail
+      whitelist_path: /v1/flags/whitelist
+      evaluate_path: /v1/flags/evaluate
+
+  doc_source:
+    type: local
+    http:
+      base_url: ""
+      get_path: /v1/docs/get
+
+  case_writeback:
+    type: local
+    path: ./testdata/case-materials
+    http:
+      base_url: ""
+      update_path: /v1/cases/update
+
+  workspace_context:
+    type: local
+    path: ./testdata/context.json
+    http:
+      base_url: ""
+      plan_path: /v1/test-plans/{id}

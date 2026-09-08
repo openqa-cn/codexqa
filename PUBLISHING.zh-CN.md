@@ -13,7 +13,7 @@ Skill 从本 GitHub 仓库通过 `npx skills add` 分发，无需发布 OpenQA �
 ```bash
 python3 scripts/check-docs.py
 export NODE_OPTIONS=--experimental-strip-types
-(cd skills/ai-defect-detection && npm test)
+(cd skills/defect-detection && npm test)
 node examples/checkout-boundary/verify.mjs
 npx skills add . --list
 ```
@@ -28,7 +28,7 @@ npx skills add . --list
 创建经过审核的 GitHub release/tag，说明变更、运行要求和已知限制。可通过以下命令生成可选 ZIP 包：
 
 ```bash
-bash skills/ai-defect-detection/pack-skill.sh /absolute/output/directory
+bash skills/defect-detection/pack-skill.sh /absolute/output/directory
 ```
 
 版本元数据应与 release 保持一致；当前导入的 Skill 元数据版本为 0.0.2。

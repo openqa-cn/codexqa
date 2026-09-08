@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: Distribution test-data API
+  version: "1.0.0"
+servers:
+  - url: http://127.0.0.1:8765
+paths:
+  /v1/distributors:
+    post:
+      operationId: createDistributor
+      summary: Create a distributor account
+      responses:
+        "200":
+          description: created
+  /v1/distributors/{distributorId}/inventory:
+    post:
+      operationId: bindDistributorInventory
+      summary: Bind a catalog product to a distributor
+      responses:
+        "200":
+          description: bound
+  /v1/distributors/{distributorId}/commission:
+    post:
+      operationId: setDistributorCommission
+      summary: Set distributor commission rate
+      responses:
+        "200":
+          description: updated
+  /v1/distributors/{distributorId}/quote:
+    post:
+      operationId: browseAndQuote
+      summary: Browse supply and return a quote
+      responses:
+        "200":
+          description: quoted

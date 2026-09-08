@@ -26,6 +26,15 @@ The verifier exits zero only when the good implementation passes the sampled con
 
 The corresponding candidate finding is: “Zero-value checkout is accepted at defective.mjs line 2; reject zero as required.” It has a concrete input, expected/actual behavior, and executable evidence. This is a hand-authored fixture, not an agent-generated platform report.
 
+## Use it with defect-detection CLI
+
+Build a git branch pair and run the skill's Quick start (submit-git → clone-and-diff → run-ast-scan). The defective branch should produce Semgrep finding `AST-JS-BOUND-001`:
+
+```bash
+node examples/checkout-boundary/make-git-fixture.mjs   # Node + git; `make-git-fixture.sh` is a bash wrapper
+# then follow skills/defect-detection/README.md → Quick start
+```
+
 ## Use it in an agent evaluation
 
 Provide the requirement and one implementation to the agent without revealing the answer or verifier. Record the agent/model version, commit, command environment, and finding. Repeat with the good implementation as a negative control. The seed should be found; unrelated findings require human assessment. That evaluation has not been performed as part of this example.

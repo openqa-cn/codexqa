@@ -1,0 +1,42 @@
+{
+  "version": "v5",
+  "policyVersion": "2.0.0",
+  "caseId": null,
+  "businessContext": null,
+  "caseSource": {
+    "type": null,
+    "original": null
+  },
+  "knowledgeInputs": {
+    "prdSource": null,
+    "techDesignSource": null,
+    "testPlanId": null
+  },
+
+  "pipelines": {
+    "knowledge-build": { "status": "pending" },
+    "parse":        { "status": "pending", "confirmedAt": null },
+    "preprocess":   { "status": "pending" },
+    "data-track":   { "status": "pending", "phase": "plan", "inlineRetryCount": 0 },
+    "action-track": { "status": "pending", "phase": "plan" },
+    "lint-gate":    {
+      "status": "pending",
+      "round": 0,
+      "verdict": null,
+      "failingIds": { "entities": [], "actions": [] },
+      "details": [],
+      "confirmedAt": null
+    },
+    "writeback":    { "status": "pending", "confirmedAt": null }
+  },
+
+  "entities": [],
+  "actions": [],
+  "skillSessions": [],
+
+  "lintRounds": [],
+  "confirmations": [],
+
+  "caseConfidence": null,
+  "generatedAt": null
+}

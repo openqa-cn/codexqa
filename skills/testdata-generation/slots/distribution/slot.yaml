@@ -1,0 +1,30 @@
+name: distribution
+domain: distribution
+description: Constructs distributor accounts, inventory binds, commission, and quotes.
+version: "1.0"
+entities:
+  - id: distributor
+    action: create
+    executor: scripts/executors/create_distributor.ts
+    aliases: [distributor, 分销商]
+    invokeParams: [name]
+  - id: inventory-bind
+    action: bind
+    executor: scripts/executors/bind_inventory.ts
+    aliases: [binding, inventory, 库存, 绑定]
+    params: [distributorId, productId]
+actions:
+  - id: set-commission
+    executor: scripts/executors/set_commission.ts
+    aliases: [commission, 佣金]
+    params: [distributorId, rate]
+  - id: browse-and-quote
+    executor: scripts/executors/browse_and_quote.ts
+    aliases: [quote, 报价]
+    params: [distributorId, productId]
+scenes:
+  - id: ready-to-sell
+    steps:
+      - distributor::create
+      - inventory-bind::bind
+      - set-commission

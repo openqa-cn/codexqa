@@ -1,0 +1,31 @@
+id: edge-p0-verification
+title: P0 items must include preconditions, stimulus, expected, and evidence
+description: |
+  Keep the gap-analysis execution bar: high-priority items cannot be checkpoints only.
+
+input:
+  prompt: |
+    Use requirements-analyzer.
+    PRD: payment success must callback the order center; timeout, retry, and duplicate callbacks are unspecified.
+    Tech note: callbacks may arrive more than once.
+    Output a register. Every P0 item must include preconditions, stimulus, expected result, and required evidence.
+
+expect:
+  must_contain:
+    - "P0"
+    - "Precondition"
+    - "Expected"
+    - "Evidence"
+  must_not_contain:
+    - "TODO"
+    - "I cannot"
+
+judge:
+  type: rule_based
+  success:
+    - output_contains:
+        all:
+          - "P0"
+          - "Precondition"
+          - "Expected"
+          - "Evidence"

@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/code-reviewer.schema.json",
+  "title": "Code Reviewer Skill config",
+  "description": "Vendor-neutral configuration. The skill never ships default external hosts. A reviewed repository declares its own Git layout, conventions, and optional HTTP integrations.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1
+    },
+    "git": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "defaultBaseBranch": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Preferred compare base when the user does not name a branch. If that ref is missing, the playbook tries main then master. Typical values: main, master, develop."
+        },
+        "codeBrowseUrlTemplate": {
+          "type": "string",
+          "description": "Optional. Placeholders: {org} {repo} {branch} {path} {line} {sha}. Empty means backtick paths in the report."
+        }
+      }
+    },
+    "layers": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Directory prefixes used for scope mapping and multi-agent grouping. Empty arrays fall back to common src/* defaults.",
+      "properties": {
+        "ui": { "type": "array", "items": { "type": "string" } },
+        "store": { "type": "array", "items": { "type": "string" } },
+        "api": { "type": "array", "items": { "type": "string" } },
+        "backend": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Server-side path prefixes for scope mapping (Java/Kotlin/resources). Empty falls back to src/main/java, src/main/kotlin, src/main/resources."
+        },
+        "exclude": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "conventions": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional handwritten project conventions. Empty values disable the related rule.",
+      "properties": {
+        "stateLibrary": {
+          "type": "string",
+          "description": "mobx | redux | zustand | jotai | none | empty. Empty = infer from the diff, do not require a library."
+        },
+        "httpWrapper": {
+          "type": "string",
+          "description": "Module path of the project's HTTP helper, e.g. src/lib/http. Empty = do not flag raw fetch/axios."
+        },
+        "generatedGlobs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "generatedMarkers": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "backendLanguage": {
+          "type": "string",
+          "description": "java | kotlin | go | python | c | cpp | empty. Empty = infer from the diff, do not require a language."
+        }
+      }
+    },
+    "integrations": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Named HTTP endpoints. The skill calls only enabled entries that already have a URL. Never invent hosts.",
+      "properties": {
+        "prMetadata": {
+          "$ref": "#/$defs/httpEndpoint",
+          "description": "Optional GET/POST that returns PR title and body JSON when git log is not enough."
+        },
+        "notify": {
+          "$ref": "#/$defs/httpEndpoint",
+          "description": "Optional webhook after a finished review. Send a summary payload, not full source."
+        },
+        "telemetry": {
+          "$ref": "#/$defs/httpEndpoint",
+          "description": "Optional counts-only callback (mode, file count, P0/P1/P2). No secrets, no source."
+        },
+        "extraKnowledge": {
+          "$ref": "#/$defs/httpEndpoint",
+          "description": "Optional GET of extra Markdown rules maintained by the enterprise."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "httpEndpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "method": {
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "PATCH"]
+        },
+        "url": {
+          "type": "string",
+          "description": "Absolute http(s) URL. Placeholders: {org} {repo} {branch} {path} {line} {baseBranch} {sha}. Optional ${ENV_NAME} in the URL is resolved at request time only."
+        },
+        "headers": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "auth": {
+          "$ref": "#/$defs/auth",
+          "description": "How to attach credentials. Token values come from environment variables, never from committed JSON."
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 500,
+          "maximum": 30000
+        }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["none", "bearer", "basic", "header", "query"]
+        },
+        "tokenEnv": {
+          "type": "string",
+          "description": "Env var that holds the token / API key. Default CODE_REVIEWER_TOKEN."
+        },
+        "usernameEnv": {
+          "type": "string",
+          "description": "Basic auth username env. Default CODE_REVIEWER_USER."
+        },
+        "passwordEnv": {
+          "type": "string",
+          "description": "Basic auth password env. Default CODE_REVIEWER_PASSWORD."
+        },
+        "headerName": {
+          "type": "string",
+          "description": "For type=header. Default X-Api-Key."
+        },
+        "queryParam": {
+          "type": "string",
+          "description": "For type=query. Default access_token."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "If true (default when type is not none), skip the call when the env var is missing instead of sending an unauthenticated request."
+        }
+      }
+    }
+  }
+}

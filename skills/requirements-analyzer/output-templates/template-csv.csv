@@ -1,0 +1,2 @@
+id,topic,sources,status,impact,priority,question,suggested_owner,suggested_next_action,preconditions,stimulus,expected,evidence_required,quality_char,smell,trace,verify_method,risk_class,failure_mode
+RA-01,,,"missing|conflict|aligned|stale|untestable",High,P0,,,,,,,,none,orphan,test,product-functional,missed-rule

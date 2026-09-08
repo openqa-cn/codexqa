@@ -9,7 +9,7 @@
 ```bash
 python3 scripts/check-docs.py
 export NODE_OPTIONS=--experimental-strip-types
-(cd skills/ai-defect-detection && npm test)
+(cd skills/defect-detection && npm test)
 node examples/checkout-boundary/verify.mjs
 ```
 
