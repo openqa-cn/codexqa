@@ -164,7 +164,7 @@ OpenQA's product direction covers the full AI software engineering quality lifec
 - [OpenQA product](https://openqa.cn/agent)
 - [OpenQA Skill Hub](https://openqa.cn/skills)
 
-## Install
+## Install on Cursor, Claude Code, and Codex
 
 ```bash
 npx skills add openqa-cn/openqa-skills --skill defect-detection
@@ -223,7 +223,7 @@ Do not invent endpoints or SLAs that are not in the source.
 
 This reviews the PRD. To write a case library from `prd/`, use `testcase-generation`.
 
-### Write a case library (`testcase-generation`)
+### Generate manual test cases from a PRD (`testcase-generation`)
 
 Put PRD / design / specs under `prd/` first. `code/` is not required for generate.
 

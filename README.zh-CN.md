@@ -164,7 +164,7 @@ OpenQA 的产品方向覆盖 AI 软件工程全生命周期的质量验证。本
 - [OpenQA 产品](https://openqa.cn/agent)
 - [OpenQA Skill Hub](https://openqa.cn/skills)
 
-## 安装
+## 在 Cursor、Claude Code、Codex 上安装
 
 ```bash
 npx skills add openqa-cn/openqa-skills --skill defect-detection
@@ -223,7 +223,7 @@ node examples/checkout-boundary/verify.mjs
 
 这是在审 PRD。要根据 `prd/` 写用例库，用 `testcase-generation`。
 
-### 写用例库（`testcase-generation`）
+### 从 PRD 生成手工用例（`testcase-generation`）
 
 先把 PRD / 技术方案 / 契约放到 `prd/`。生成阶段不需要 `code/`。
 

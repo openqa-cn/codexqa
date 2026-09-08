@@ -6,7 +6,7 @@ Each release has two sections. **Highlights** is what changes for someone using 
 
 ### Highlights
 
-- **Discoverability copy.** README and GitHub About lead with the post-AI-coding pain (requirement bugs, rubber-stamp review, PRD → cases → testdata) and name Cursor / Claude Code / Codex, so repository search matches how people look for Agent Skills.
+- **Discoverability copy.** README and GitHub About lead with the post-AI-coding pain (requirement bugs, rubber-stamp review, PRD → cases → testdata) and name Cursor / Claude Code / Codex, so repository search matches how people look for Agent Skills. README H2s now say the hosts and “from a PRD”; topics are filled (20/20), including `agentskills` and `manual-testing`.
 
 ## 0.2.0 — 2026-09-08
 
