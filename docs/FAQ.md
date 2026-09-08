@@ -6,7 +6,7 @@ This page covers installation and the published skills. Most answers below are a
 
 ## What is OpenQA Skills?
 
-OpenQA Skills is a public, local-first skill layer for coding agents. The repository currently ships five skills:
+OpenQA Skills is a public, local-first [Agent Skills](https://agentskills.io/specification) pack for Cursor, Claude Code, Codex, and OpenClaw. It is for the work that stays expensive after an agent writes a green PR: requirement / business-logic bugs, rubber-stamp reviews, incomplete PRDs, manual test-case libraries, and testdata `{placeholder}`s. Five skills:
 
 | Skill | Role |
 | --- | --- |

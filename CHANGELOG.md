@@ -4,6 +4,10 @@ Each release has two sections. **Highlights** is what changes for someone using 
 
 ## Unreleased
 
+### Highlights
+
+- **Discoverability copy.** README and GitHub About lead with the post-AI-coding pain (requirement bugs, rubber-stamp review, PRD → cases → testdata) and name Cursor / Claude Code / Codex, so repository search matches how people look for Agent Skills.
+
 ## 0.2.0 — 2026-09-08
 
 Five published skills on current `main`. This is the first tag that includes `defect-detection`, `code-reviewer`, `requirements-analyzer`, `testcase-generation`, and `testdata-generation` together.

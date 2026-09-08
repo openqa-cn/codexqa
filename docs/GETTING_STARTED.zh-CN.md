@@ -2,7 +2,7 @@
 
 [English](GETTING_STARTED.md)
 
-一次只装一个 skill。本页以 [`defect-detection`](../skills/defect-detection/README.zh-CN.md) 为例，因为它有可冒烟的 CLI。同一条命令也可以加 `--skill code-reviewer`、`--skill requirements-analyzer`、`--skill testcase-generation`、`--skill testdata-generation`——那四个没有 `detect.ts` 套件。
+在 Cursor、Claude Code、Codex 或 OpenClaw 上一次只装一个 skill。本页以 [`defect-detection`](../skills/defect-detection/README.zh-CN.md) 为例，因为它有可冒烟的 CLI。同一条命令也可以加 `--skill code-reviewer`、`--skill requirements-analyzer`、`--skill testcase-generation`、`--skill testdata-generation`——那四个没有 `detect.ts` 套件。
 
 每个 skill 要交的材料不一样（[FAQ](FAQ.zh-CN.md#每个-skill-要我交什么)）。跑完长什么样见 [README · 产物长什么样](../README.zh-CN.md#产物长什么样)。
 

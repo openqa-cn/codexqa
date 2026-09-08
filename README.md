@@ -1,6 +1,8 @@
 # OpenQA Skills
 
-**Quality verification infrastructure for AI software engineering, from requirements to release.**
+**Agent Skills that check whether AI-written code still matches the requirement — and turn a PRD into manual test cases and real testdata.**
+
+For [Cursor](https://cursor.com), [Claude Code](https://claude.com/claude-code), [Codex](https://openai.com/codex), and OpenClaw. Install with `npx skills add` ([Agent Skills](https://agentskills.io/specification)). Local-first; no OpenQA account.
 
 [![CI](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml)
 [![License](https://img.shields.io/github/license/openqa-cn/openqa-skills)](LICENSE)
@@ -18,20 +20,23 @@
   <a href="docs/SUPPORT_MATRIX.md"><strong>Support Matrix</strong></a>
 </p>
 
-AI Coding makes implementation cheaper, but a patch can still miss a requirement, weaken a test, break an indirect caller, or pass checks that do not exercise the intended behavior. OpenQA is building a verification layer that connects repository context, requirements, tests, analysis, evidence, and human release decisions.
+Coding agents make a green pull request cheap. The expensive part is now **requirement bugs, rubber-stamp reviews, and test work the model cannot finish alone**:
 
-> **Coding Agents help create changes. OpenQA helps review whether those changes are ready to trust.**
+| What goes wrong after the agent writes code | Skill |
+| --- | --- |
+| The PR looks right and CI is green; the spec said “discount at 10 items” and the code used `>` | [`defect-detection`](skills/defect-detection/README.md) — business-logic / requirement defects, not only Semgrep shape |
+| You need AI code review of a local branch or PR: file:line, runtime impact, a fix — not “LGTM” | [`code-reviewer`](skills/code-reviewer/README.md) |
+| The PRD contradicts the API note, or a P0 has no way to fail | [`requirements-analyzer`](skills/requirements-analyzer/README.md) |
+| QA still writes the manual test-case library from the PRD by hand | [`testcase-generation`](skills/testcase-generation/README.md) |
+| Cases are full of `{placeholder}` and nobody created the real IDs on a backend | [`testdata-generation`](skills/testdata-generation/README.md) |
 
-Use this repository when you want to:
+> **Coding agents write the change. These skills check the requirement, the review, the cases, and the testdata.**
 
-- Review a pull request, branch, test plan, or delivery task against explicit requirements
-- Find static and business-logic defect candidates before human review
-- Turn analysis into structured findings with locations, triggers, reasoning, and suggested fixes
-- Run locally first, while retaining optional integration points for existing engineering systems
+Host-by-host scores are [not published](docs/SUPPORT_MATRIX.md). Findings are candidates for a human.
 
 ## What this repository provides
 
-`openqa-skills` is OpenQA's public, local-first skill layer for Coding Agents. It currently ships five skills. They do not share one input:
+`openqa-skills` is OpenQA's public, local-first [Agent Skills](https://agentskills.io/specification) pack. Five skills; they do not share one input:
 
 | Skill | You bring | It does |
 | --- | --- | --- |

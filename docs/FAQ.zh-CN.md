@@ -6,7 +6,7 @@
 
 ## 这是做什么的？
 
-OpenQA Skills 是面向 Coding Agent 的公开、本地优先 skill 层。仓库当前发布五个 skill：
+OpenQA Skills 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优先 [Agent Skills](https://agentskills.io/specification) 包。针对 Agent 写出绿 PR 之后仍然贵的部分：需求 / 业务逻辑缺陷、走过场的审查、不完整的 PRD、手工用例库、以及用例里的 `{placeholder}`。五个 skill：
 
 | Skill | 用途 |
 | --- | --- |

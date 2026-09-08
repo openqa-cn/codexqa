@@ -2,7 +2,7 @@
 
 [简体中文](GETTING_STARTED.zh-CN.md)
 
-Install one skill at a time. This page walks [`defect-detection`](../skills/defect-detection/README.md) because it has a CLI you can smoke-test. The same command also takes `--skill code-reviewer`, `--skill requirements-analyzer`, `--skill testcase-generation`, and `--skill testdata-generation` — those have no `detect.ts` suite.
+Install one skill at a time on Cursor, Claude Code, Codex, or OpenClaw. This page walks [`defect-detection`](../skills/defect-detection/README.md) because it has a CLI you can smoke-test. The same command also takes `--skill code-reviewer`, `--skill requirements-analyzer`, `--skill testcase-generation`, and `--skill testdata-generation` — those have no `detect.ts` suite.
 
 What you give each skill is different ([FAQ](FAQ.md#what-do-i-have-to-give-each-skill)). What a finished report looks like: [README · What the output looks like](../README.md#what-the-output-looks-like).
 

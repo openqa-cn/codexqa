@@ -1,6 +1,8 @@
 # OpenQA Skills
 
-**为 AI 软件工程提供从需求到发布的质量验证基础设施。**
+**给 Cursor / Claude Code / Codex 用的 Agent Skill：检查 AI 写的代码是否还符合需求，并把 PRD 变成手工用例和真实测试数据。**
+
+适用于 [Cursor](https://cursor.com)、[Claude Code](https://claude.com/claude-code)、[Codex](https://openai.com/codex) 和 OpenClaw。`npx skills add` 安装（[Agent Skills](https://agentskills.io/specification)）。本地优先，不用 OpenQA 账号。
 
 [![CI](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml)
 [![License](https://img.shields.io/github/license/openqa-cn/openqa-skills)](LICENSE)
@@ -18,20 +20,23 @@
   <a href="docs/SUPPORT_MATRIX.zh-CN.md"><strong>支持矩阵</strong></a>
 </p>
 
-AI Coding 降低了实现成本，但一个补丁仍可能遗漏需求、削弱测试、破坏间接调用方，或通过未覆盖目标行为的检查。OpenQA 正在建设一层质量验证能力，把仓库上下文、需求、测试、分析结果、证据和人工发布决策连接起来。
+Coding Agent 让「看起来能合的 PR」变得便宜。现在真正耗时间的是 **需求对不上、审查在走过场、测试工作模型做不完**：
 
-> **Coding Agent 帮助生成变更，OpenQA 帮助判断这些变更是否值得信任。**
+| Agent 写完代码之后还会怎样 | 用这个 skill |
+| --- | --- |
+| PR 看起来对、CI 是绿的；需求写「满 10 件打折」，代码用了 `>` | [`defect-detection`](skills/defect-detection/README.zh-CN.md) — 业务逻辑 / 需求缺陷，不只是 Semgrep 形态 |
+| 要对本地分支或 PR 做 AI 代码审查：文件:行号、运行时影响、改法，而不是一句 LGTM | [`code-reviewer`](skills/code-reviewer/README.zh-CN.md) |
+| PRD 和接口说明打架，或一个 P0 没法判定失败 | [`requirements-analyzer`](skills/requirements-analyzer/README.zh-CN.md) |
+| 测试还在对着 PRD 手写手工用例库 | [`testcase-generation`](skills/testcase-generation/README.zh-CN.md) |
+| 用例里全是 `{placeholder}`，没人在后端造出真实 ID | [`testdata-generation`](skills/testdata-generation/README.zh-CN.md) |
 
-适合在以下场景使用本仓库：
+> **Agent 负责写出变更。这些 skill 核对需求、审查、用例和测试数据。**
 
-- 按明确需求审查 Pull Request、分支、测试计划或交付任务
-- 在人工评审前发现静态缺陷和业务逻辑缺陷候选
-- 把分析结果整理为包含位置、触发条件、分析依据和修复建议的结构化发现
-- 优先在本地运行，同时按需连接现有工程系统
+各宿主的成绩[尚未公布](docs/SUPPORT_MATRIX.zh-CN.md)。发现项交给人确认。
 
 ## 本仓库提供什么
 
-`openqa-skills` 是 OpenQA 面向 Coding Agent 的公开、本地优先 Skill 层。当前发布五个 skill，**输入各不相同**：
+`openqa-skills` 是 OpenQA 面向 Coding Agent 的公开、本地优先 [Agent Skills](https://agentskills.io/specification) 包。五个 skill，**输入各不相同**：
 
 | Skill | 你要带上的 | 它做什么 |
 | --- | --- | --- |
