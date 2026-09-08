@@ -3,7 +3,7 @@
 **为 AI 软件工程提供从需求到发布的质量验证基础设施。**
 
 [![CI](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/github/license/openqa-cn/openqa-skills)](LICENSE)
 
 [English](README.md)
 

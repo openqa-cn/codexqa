@@ -3,7 +3,7 @@
 **Quality verification infrastructure for AI software engineering, from requirements to release.**
 
 [![CI](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/github/license/openqa-cn/openqa-skills)](LICENSE)
 
 [简体中文](README.zh-CN.md)
 

@@ -4,17 +4,34 @@ Each release has two sections. **Highlights** is what changes for someone using 
 
 ## Unreleased
 
+## 0.2.0 — 2026-09-08
+
+Five published skills on current `main`. This is the first tag that includes `defect-detection`, `code-reviewer`, `requirements-analyzer`, `testcase-generation`, and `testdata-generation` together.
+
 ### Highlights
 
-- **Sample reports you can see.** Root README and each skill README now include screenshots of the defect HTML report, a generated case, a CR findings page, a requirements gap register, and testdata write-back. Pages live in `docs/assets/previews/`.
-- **Neutralized consumer-local-life sample language.** Removed flash-sale / points / hourly-stay wording from requirements-analyzer samples and the testdata catalog slot. Samples now use inventory-hold and account credit (`/v1/credits/enroll`, `validHours`).
-- **Imported `requirements-analyzer` (0.0.1) as a fifth skill.** Requirement-document quality and gap/conflict register. Named `requirements-analyzer` (dropped the `ai-` prefix). Distinct from `testcase-generation`: it does not write cases. Sample store-brand / membership labels replaced with generic Northwind / premium. No published host-agent score.
-- **Imported `code-reviewer` (0.0.1) as a fourth skill.** Playbook-driven CR of a local Git checkout (P0 / P1 / P2). Named `code-reviewer` (dropped the `ai-` prefix). Distinct from `defect-detection`: no clone URL, no write-back gates. MIT license kept. No public fixture yet.
-- **testcase-generation is documented as a first-class skill.** Generate is an orchestrator (`generation/generate-skill.md`) plus per-phase files; `HOW_IT_WORKS` / `KNOWN_LIMITATIONS` ship inside the skill. Repository FAQ, Getting Started, and the root README no longer describe the repo as defect-detection only. Cases still hand `{placeholder}` backfill to `testdata-generation`. No public fixture yet.
-- **Ten languages, not just Java.** Java, Kotlin, Scala, JavaScript, TypeScript, Python, Go, C, C++, and C# now get language-aware method extraction, per-language write-back conventions, and their own Semgrep packs. The bundled seed catalog grew from 15 to 102 rules with CWE / OWASP Top 10 2025 / ASVS 5.0 metadata. Previously a JS/TS/Python run produced an empty detection plan and silently reported full coverage.
-- **A reproducible blind evaluation.** [`examples/inventory-service`](examples/inventory-service/README.md) ships a JavaScript service with seven business-logic defects hidden in legitimate feature work plus four decoys, an executable answer key (`verify.mjs`), and a documented blind protocol. A recorded agent run scored 7/7 recall and 7/7 precision — with none of the seven found by static rules.
-- **Documentation that explains the method.** New [How it works](skills/defect-detection/HOW_IT_WORKS.md) covers the detection approach, the tier system, and what each group of validation rules defends against; new [Known limitations](skills/defect-detection/KNOWN_LIMITATIONS.md) records concrete failure cases and implementation gaps. Both ship **inside** the skill, so they are available after `npx skills add` rather than only on GitHub.
-- **Fixed docs that broke after install.** Skill READMEs linked to repository-level `docs/` and `examples/` with `../../` paths that do not exist once the skill is installed on its own. Those now use absolute URLs, and `scripts/check-docs.py` fails the build if any link inside a skill escapes its directory — it now validates 92 skill documents instead of 3 READMEs. Per-skill method docs are named `HOW_IT_WORKS.md` across all three skills (`testdata-generation/PRINCIPLES-AND-OPERATIONS.md` was renamed). Dropped per-skill copies of `CODE_OF_CONDUCT.md` / `SECURITY.md`; vulnerability reporting stays at the repository root, and skill-specific hard rules live in each skill's `CONTRIBUTING.md`.
-- **Windows support.** Runtime paths come from the data directory instead of `/tmp`, `.cmd` shims are executed correctly, fixtures build with plain Node, and `.gitattributes` forces LF. Not yet covered by a Windows CI host.
-- **Optional third-party scanners.** `run-optional-overlays` runs gitleaks, trivy/grype, bandit, gosec, go vet, staticcheck, cppcheck, eslint, or detekt when they are installed, and skips them silently when they are not.
-- **Documentation now matches the CLI.** A 90-subcommand audit removed commands and flags that never existed and corrected the rule descriptions that disagreed with the code.
+- **Five vendor-neutral skills.** The pack is `defect-detection`, `code-reviewer`, `requirements-analyzer`, `testcase-generation`, and `testdata-generation`. Sample language is inventory-hold / account credit, not a consumer app.
+- **Sample reports you can see.** Root README and each skill README include screenshots of the defect HTML report, a generated case, a CR findings page, a requirements gap register, and testdata write-back. Pages live in `docs/assets/previews/` and are illustrations, not a recorded agent run.
+- **Ten languages, not just Java.** Java, Kotlin, Scala, JavaScript, TypeScript, Python, Go, C, C++, and C# get language-aware method extraction, per-language write-back conventions, and their own Semgrep packs (102 seed rules).
+- **A reproducible blind evaluation.** [`examples/inventory-service`](examples/inventory-service/README.md) hides seven business-logic defects plus four decoys. One recorded agent run scored 7/7 recall and 7/7 precision — one model, one run, not a benchmark.
+- **Docs that travel with the skill.** `HOW_IT_WORKS` / `KNOWN_LIMITATIONS` live inside each skill directory. Relative links cannot escape the skill; cross-skill links use absolute GitHub URLs.
+- **Windows paths and optional scanners.** Runtime data is not hardcoded to `/tmp`. `run-optional-overlays` runs third-party scanners when they are installed.
+- **License GitHub can detect.** `LICENSE` is the full Apache License 2.0 text. `code-reviewer` remains MIT.
+
+## 0.1.2 — 2026-09-05
+
+### Highlights
+
+- Multilingual quickstart, corrected roadmap status, and editor configuration.
+
+## 0.1.1 — 2026-09-05
+
+### Highlights
+
+- Documentation and community-readiness polish.
+
+## 0.1.0 — 2026-09-05
+
+### Highlights
+
+- Initial public verification-skill repository.
