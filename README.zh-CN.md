@@ -1,24 +1,38 @@
+<div align="center">
+
 # OpenQA Skills
 
 **给 Cursor / Claude Code / Codex 用的 Agent Skill：检查 AI 写的代码是否还符合需求，并把 PRD 变成手工用例和真实测试数据。**
 
-适用于 [Cursor](https://cursor.com)、[Claude Code](https://claude.com/claude-code)、[Codex](https://openai.com/codex) 和 OpenClaw。`npx skills add` 安装（[Agent Skills](https://agentskills.io/specification)）。本地优先，不用 OpenQA 账号。
-
 [![CI](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml)
+[![Release](https://img.shields.io/github/v/tag/openqa-cn/openqa-skills?label=release&style=flat)](https://github.com/openqa-cn/openqa-skills/releases)
+[![GitHub stars](https://img.shields.io/github/stars/openqa-cn/openqa-skills?style=flat)](https://github.com/openqa-cn/openqa-skills/stargazers)
 [![License](https://img.shields.io/github/license/openqa-cn/openqa-skills)](LICENSE)
 
-[English](README.md)
+**[English](README.md) | 简体中文**
+
+<a href="#快速开始"><strong>快速开始</strong></a> ·
+<a href="#产物长什么样"><strong>产物长什么样</strong></a> ·
+<a href="docs/HOW_IT_WORKS.zh-CN.md"><strong>工作原理</strong></a> ·
+<a href="examples/inventory-service/README.md"><strong>盲测评估</strong></a> ·
+<a href="skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md"><strong>已知边界</strong></a> ·
+<a href="docs/GETTING_STARTED.zh-CN.md"><strong>安装入门</strong></a> ·
+<a href="docs/FAQ.zh-CN.md"><strong>FAQ</strong></a> ·
+<a href="docs/SUPPORT_MATRIX.zh-CN.md"><strong>支持矩阵</strong></a>
+
+</div>
 
 <p align="center">
-  <a href="#快速开始"><strong>快速开始</strong></a> ·
-  <a href="#产物长什么样"><strong>产物长什么样</strong></a> ·
-  <a href="docs/HOW_IT_WORKS.zh-CN.md"><strong>工作原理</strong></a> ·
-  <a href="examples/inventory-service/README.md"><strong>盲测评估</strong></a> ·
-  <a href="skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md"><strong>已知边界</strong></a> ·
-  <a href="docs/GETTING_STARTED.zh-CN.md"><strong>安装入门</strong></a> ·
-  <a href="docs/FAQ.zh-CN.md"><strong>FAQ</strong></a> ·
-  <a href="docs/SUPPORT_MATRIX.zh-CN.md"><strong>支持矩阵</strong></a>
+  <a href="docs/assets/previews/defect-report.html"><img src="docs/assets/previews/defect-report.png" alt="缺陷检测 HTML 报告：三条和需求对不上的发现" width="100%"></a>
 </p>
+
+<p align="center">
+  <sub><em>Agent 负责写出变更。这些 skill 核对需求、审查、用例和测试数据。<br>（上图是样例页：和本地跑出来的是同一套渲染，发现项是写好的示例。）</em></sub>
+</p>
+
+---
+
+适用于 [Cursor](https://cursor.com)、[Claude Code](https://claude.com/claude-code)、[Codex](https://openai.com/codex) 和 OpenClaw。`npx skills add` 安装（[Agent Skills](https://agentskills.io/specification)）。本地优先，不用 OpenQA 账号。
 
 Coding Agent 让「看起来能合的 PR」变得便宜。现在真正耗时间的是 **需求对不上、审查在走过场、测试工作模型做不完**：
 
@@ -30,9 +44,7 @@ Coding Agent 让「看起来能合的 PR」变得便宜。现在真正耗时间�
 | 测试还在对着 PRD 手写手工用例库 | [`testcase-generation`](skills/testcase-generation/README.zh-CN.md) |
 | 用例里全是 `{placeholder}`，没人在后端造出真实 ID | [`testdata-generation`](skills/testdata-generation/README.zh-CN.md) |
 
-> **Agent 负责写出变更。这些 skill 核对需求、审查、用例和测试数据。**
-
-各宿主的成绩[尚未公布](docs/SUPPORT_MATRIX.zh-CN.md)。发现项交给人确认。
+我们没有按宿主分别测量并公布成绩——[核对到哪一步都写在支持矩阵里](docs/SUPPORT_MATRIX.zh-CN.md)。所有发现项都交给人确认。
 
 ## 本仓库提供什么
 
@@ -95,17 +107,11 @@ OpenQA 编排流程；语义审查由你这边的 Agent / 模型做。本地就�
 2. **23 条写回规则**：没读过代码、方法名在源码里找不到、整批结论像自动敷衍——一律拒收。
 3. **关门闸**：任务结束前再查一遍覆盖率、报告是否对得上、证据够不够。
 
-[inventory-service](examples/inventory-service/README.md) 盲测里，7 个业务逻辑缺陷藏在正常功能改动中，另有 4 个「看着像 bug、其实是对的」诱饵。一次已记录的 agent 跑出 7/7、0 误报，且这 7 处都不是 102 条 Semgrep 种子规则抓到的。这是单模型、单次、自建样例，不是榜单成绩。细节见[工作原理](skills/defect-detection/HOW_IT_WORKS.zh-CN.md)，做不到什么见[已知边界](skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md)。
+[inventory-service](examples/inventory-service/README.md) 盲测里，7 个业务逻辑缺陷藏在正常功能改动中，另有 4 个「看着像 bug、其实是对的」诱饵。一次已记录的 agent 跑出 7/7、0 误报，且这 7 处都不是 102 条 Semgrep 种子规则抓到的。这是单模型、单次、自建样例，不是榜单成绩——[评估方法](benchmarks/README.md)、[工作原理](skills/defect-detection/HOW_IT_WORKS.zh-CN.md)、[已知边界](skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md)。
 
-### 产物长什么样
+## 产物长什么样
 
-下面是**样例页**（和本地跑出来的是同一套渲染，发现项是写好的示例）。图旧了就直接打开 HTML。
-
-<p align="center">
-  <a href="docs/assets/previews/defect-report.html"><img src="docs/assets/previews/defect-report.png" alt="缺陷检测 HTML 报告样例：库存预占相关发现" width="880"></a>
-</p>
-
-<p align="center"><em>缺陷检测 HTML 报告：任务头、指标、三条和需求对不上的发现。<a href="docs/assets/previews/defect-report.html">打开页面</a>。</em></p>
+下面都是**样例页**（和本地跑出来的是同一套渲染，发现项是写好的示例）。图旧了就直接打开 HTML。
 
 <p align="center">
   <a href="docs/assets/previews/testcase-sample.html"><img src="docs/assets/previews/testcase-sample.png" alt="库存预占手工用例样例" width="880"></a>
@@ -131,38 +137,25 @@ OpenQA 编排流程；语义审查由你这边的 Agent / 模型做。本地就�
 
 <p align="center"><em>测试数据构造把 <code>{placeholder}</code> 换成后端真正返回的 ID。<a href="docs/assets/previews/testdata-writeback.html">打开页面</a>。</em></p>
 
-## 能力地图
+缺陷检测报告的样例页在最上面，也可以[单独打开](docs/assets/previews/defect-report.html)。
 
-OpenQA 的产品方向覆盖 AI 软件工程全生命周期的质量验证。本仓库当前提供 [`defect-detection`](skills/defect-detection/README.zh-CN.md)、[`code-reviewer`](skills/code-reviewer/README.zh-CN.md)、[`requirements-analyzer`](skills/requirements-analyzer/README.zh-CN.md)、[`testcase-generation`](skills/testcase-generation/README.zh-CN.md) 和 [`testdata-generation`](skills/testdata-generation/README.zh-CN.md)。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由这些工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
+## 宿主与语言支持
 
-| 能力 | 当前仓库状态 | 范围 |
+Skill 指令面向 **Cursor、Claude Code、Codex、OpenClaw**：装完新开一个会话，把材料交给它。装得上不等于在那个宿主上跑得完整流程，逐项核对状态见[支持矩阵](docs/SUPPORT_MATRIX.zh-CN.md)。
+
+`defect-detection` 对下列语言做语言感知的方法抽取，并各有自己的 Semgrep 种子包（共 102 条种子规则）。抽取器基于正则 / 括号 / 缩进，不是完整解析器：
+
+| 语言 | 方法级抽取 | 附加 |
 | --- | --- | --- |
-| 缺陷检测 | **已提供** | 面向代码变更、测试计划和交付任务的 Agent 静态与业务逻辑审查 |
-| 代码分析 | **部分提供** | 基于 AST 规则和变更方法分析；更多语言和框架仍在扩展 |
-| 需求评审 | **已提供** | 对需求文档做缺口/冲突分析（`requirements-analyzer`）；实现是否符合需求仍是计划中 |
-| 规格评审 | **计划中** | 检查技术规格的完整性、一致性和可测试性 |
-| AI Code Review | **已提供** | Playbook 驱动的 PR / 分支 / commit 审查（`code-reviewer`）；尚无公开 fixture |
-| 变更影响分析 | **部分提供** | 通过 GitNexus 提供 Java 调用图路径，并有降级行为；跨仓影响分析仍在规划 |
-| 测试执行编排 | **计划中** | 在验证工作流中运行现有测试框架并采集结果 |
-| 代码覆盖率分析 | **计划中** | 覆盖率质量信号和需求到测试的覆盖分析 |
-| UI 端到端测试 | **计划中** | 浏览器和 UI 工作流生成、执行与结果集成 |
-| 测试用例生成 | **已提供** | 根据 PRD、技术方案、接口契约和知识库生成并增量更新结构化手工用例 |
-| 测试数据构造 | **已提供** | 通过 domain slot、工具、API 和生成脚本构造可复用测试数据，并回写到用例前置条件 |
-| 问题定位与诊断 | **部分提供** | 发现结果包含位置、触发条件、分析依据和修复建议；更深入的根因诊断仍在建设 |
-| 证据采集与结构化发现 | **已提供** | 发现校验、写回、排序、标签和可追踪 HTML 报告 |
-| 本地 provider 与报告 | **已提供** | 本地优先的 JSON 持久化和报告生成，不依赖私有后端 |
-| 企业与外部系统集成 | **部分提供** | HTTP 和 GitHub 适配器已有代码，需要部署配置 |
-| 质量门禁与发布决策 | **产品方向** | 将验证结果连接到 CI 门禁和发布流程 |
-| 托管验证服务 | **产品方向** | 不在本仓库中的 OpenQA 托管工程系统 |
+| Java | ✓ | 可选 GitNexus 调用图 |
+| Kotlin · Scala | ✓ | — |
+| JavaScript · TypeScript | ✓ | 已记录的盲测样本（7/7）跑在这里 |
+| Python | ✓ | 17 条种子规则；方法边界按缩进判断 |
+| Go | ✓ | 可选叠加 go vet / staticcheck |
+| C · C++ | ✓ | 宏密集代码为近似 |
+| C# | ✓ | — |
 
-> **状态说明：** **已提供**表示当前仓库可用；**部分提供**表示已有工作路径，但覆盖范围或集成仍不完整；**计划中**表示尚未在本仓库交付；**产品方向**表示 OpenQA 更大的平台目标。
-
-> [!IMPORTANT]
-> 当前缺陷检测工作流已经是一套可实际使用的工程工具，而不是只能用于实验的原型。它输出供人工确认的缺陷候选，不能替代测试、静态分析、安全审查或维护者判断。
-
-- [OpenQA 官网](https://openqa.cn)
-- [OpenQA 产品](https://openqa.cn/agent)
-- [OpenQA Skill Hub](https://openqa.cn/skills)
+另有可选叠加扫描：gitleaks、trivy / grype、bandit、gosec、cppcheck、eslint、detekt——装了就用，没装就跳过。
 
 ## 在 Cursor、Claude Code、Codex 上安装
 
@@ -184,7 +177,7 @@ npx skills add openqa-cn/openqa-skills --skill testdata-generation
 2. 新建一个 Coding Agent 会话。
 3. 把**该 skill 要的材料**交给 Agent。三者不能互相顶替。
 
-### 审查分支（`defect-detection`）
+先跑通一个：**审查分支**（`defect-detection`）。
 
 ```text
 使用 defect-detection 审查 REPOSITORY_URL 的 BRANCH_NAME。
@@ -200,9 +193,12 @@ npx skills add openqa-cn/openqa-skills --skill testdata-generation
 node examples/checkout-boundary/verify.mjs
 ```
 
-### 审查本地工作副本（`code-reviewer`）
+<details>
+<summary><b>另外四个 skill 分别怎么开口</b></summary>
 
-在 Agent 里打开该仓库。本 skill 原地 diff，不克隆。
+<br/>
+
+**审查本地工作副本（`code-reviewer`）** — 在 Agent 里打开该仓库。本 skill 原地 diff，不克隆。
 
 ```text
 用 code-reviewer 对照 main 审查当前分支。
@@ -211,9 +207,7 @@ node examples/checkout-boundary/verify.mjs
 
 目前没有公开 fixture。要做带写回门禁的方法级需求缺陷审查，用 `defect-detection`。
 
-### 分析需求（`requirements-analyzer`）
-
-交文档，不要交仓库。
+**分析需求（`requirements-analyzer`）** — 交文档，不要交仓库。
 
 ```text
 用 requirements-analyzer 分析这些需求文档。
@@ -223,9 +217,7 @@ node examples/checkout-boundary/verify.mjs
 
 这是在审 PRD。要根据 `prd/` 写用例库，用 `testcase-generation`。
 
-### 从 PRD 生成手工用例（`testcase-generation`）
-
-先把 PRD / 技术方案 / 契约放到 `prd/`。生成阶段不需要 `code/`。
+**从 PRD 生成手工用例（`testcase-generation`）** — 先把 PRD / 技术方案 / 契约放到 `prd/`。生成阶段不需要 `code/`。
 
 ```text
 用 testcase-generation 根据 prd/ 下的文档生成手工用例库。
@@ -234,9 +226,7 @@ node examples/checkout-boundary/verify.mjs
 
 Agent 停在 PRD 与技术方案冲突时，回复 `Confirm follow PRD` 或 `Item N follow technical design`。目前没有公开 fixture。
 
-### 构造测试数据（`testdata-generation`）
-
-不是 git 克隆。直接说要造什么，或指向已写好的用例 / OpenAPI：
+**构造测试数据（`testdata-generation`）** — 不是 git 克隆。直接说要造什么，或指向已写好的用例 / OpenAPI：
 
 ```text
 用 testdata-generation 建一个叫 Northwind Standard 的标准目录商品。
@@ -251,6 +241,26 @@ Agent 停在 PRD 与技术方案冲突时，回复 `Confirm follow PRD` 或 `Ite
 
 默认后端是 `http://127.0.0.1:8765` 上的本地 mock。demo 拿到 ID **不等于** 写入了真实系统。
 
+</details>
+
+## 为什么做成 skill，不是又一个平台
+
+装进来的是文件，不是一个服务。`npx skills add … --skill <name>` 只复制一个目录，之后是你现有的 Agent 在读它——**没有账号、没有网关、没有要你迁移的工作流**。
+
+- **语义判断留给你已经在付费的模型。** 本仓库不带模型，也不猜哪个模型更好。它负责把上下文组织好，再让模型的结论能被核对：23 条写回规则、分层、关门闸。
+- **本地优先不是口号。** 本地 JSON provider 直接落盘，报告是能双击打开的 HTML。要接企业系统时，再配 HTTP / GitHub 适配器。
+- **一次只装一个。** 五个 skill 输入不通用，装多了只会让 Agent 选错。按当下的任务装。
+- **能力和结论分开写。** 哪些已提供、哪些还只是计划，全部在[能力地图与路线图](docs/ROADMAP.zh-CN.md)；每个组件核对到哪一步在[支持矩阵](docs/SUPPORT_MATRIX.zh-CN.md)；做不到什么在[已知边界](skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md)。
+
+## 适用边界
+
+> [!IMPORTANT]
+> 当前缺陷检测工作流已经是一套可实际使用的工程工具，而不是只能用于实验的原型。它输出供人工确认的缺陷候选，不能替代测试、静态分析、安全审查或维护者判断。
+
+本项目用于组织代码上下文和验证证据，不能替代测试、静态分析、安全审查或维护者判断；也不能证明不存在缺陷，或推断未提供的业务规则。发现结果是待确认候选，不是自动合并决策。
+
+本地 provider 会把数据写入磁盘。仓库克隆、文档获取、远程 provider、自动安装 Semgrep/GitNexus，以及宿主 Agent/模型都可能联网。处理私有源码前，请阅读 [FAQ](docs/FAQ.zh-CN.md)、[支持矩阵](docs/SUPPORT_MATRIX.zh-CN.md)和[安全说明](SECURITY.zh-CN.md)。
+
 ## 开发者验证
 
 参与贡献前，请运行仓库检查：
@@ -262,34 +272,21 @@ export NODE_OPTIONS=--experimental-strip-types
 node examples/checkout-boundary/verify.mjs
 ```
 
-这些检查覆盖文档链接、CLI 与 provider 行为、打包、任务隔离、写回校验和仓库自带的边界案例，但不能证明所有缺陷都会被发现。
+这些检查覆盖文档链接、中英章节对齐、CLI 与 provider 行为、打包、任务隔离、写回校验和仓库自带的边界案例，但不能证明所有缺陷都会被发现。
 
-## 适用边界
+## 文档
 
-本项目用于组织代码上下文和验证证据，不能替代测试、静态分析、安全审查或维护者判断；也不能证明不存在缺陷，或推断未提供的业务规则。发现结果是待确认候选，不是自动合并决策。
-
-本地 provider 会把数据写入磁盘。仓库克隆、文档获取、远程 provider、自动安装 Semgrep/GitNexus，以及宿主 Agent/模型都可能联网。处理私有源码前，请阅读 [FAQ](docs/FAQ.zh-CN.md)、[支持矩阵](docs/SUPPORT_MATRIX.zh-CN.md)和[安全说明](SECURITY.zh-CN.md)。
-
-## 路线图
-
-- **现在：** 加固干净环境安装、Agent 兼容性、公开案例和开发者文档。
-- **下一步：** 按同一套“证据 + 人工复核”约定，增加规格评审、需求评审和更广泛的分析 Skill。
-- **之后：** 接入跨仓影响分析、AI Code Review、CI 质量门禁和托管工程系统。
-
-只有实现、案例和局限性都已公开的能力，才会在本仓库标记为“已提供”。进度见[公开路线图](https://openqa.cn/roadmap)。
-
-## 文档导航
-
-| 文档 | 内容 |
+| 我想…… | 从这里看 |
 | --- | --- |
-| [各 skill 的工作原理](docs/HOW_IT_WORKS.zh-CN.md) | 各 skill 原理索引 |
-| [已知边界](skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md) | 具体失败场景、实现缺口，以及现有证据不足以支撑的结论 |
-| [安装与入门](docs/GETTING_STARTED.zh-CN.md) | 运行要求、安装范围、本地设置和故障排查 |
-| [FAQ](docs/FAQ.zh-CN.md) | 账号、数据处理、联网行为、报告和局限性 |
-| [支持矩阵](docs/SUPPORT_MATRIX.zh-CN.md) | 已验证的运行时、Agent、集成和已知限制 |
-| [架构说明](docs/ARCHITECTURE.md) | 仓库结构、命名和项目成熟度模型 |
-| [示例](examples/README.zh-CN.md) | 可运行案例和预期结果 |
-| [安全说明](SECURITY.zh-CN.md) | 安全问题反馈和数据处理指引 |
+| 今天就跑一次审查 | [安装与入门](docs/GETTING_STARTED.zh-CN.md) · [快速开始](#快速开始) |
+| 搞清楚它凭什么下结论、怎么防模型敷衍 | [各 skill 的工作原理](docs/HOW_IT_WORKS.zh-CN.md) · [缺陷检测原理](skills/defect-detection/HOW_IT_WORKS.zh-CN.md) |
+| 知道它会漏什么、什么时候别信它 | [已知边界](skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md) · [支持矩阵](docs/SUPPORT_MATRIX.zh-CN.md) |
+| 确认代码和数据会不会离开本机 | [FAQ](docs/FAQ.zh-CN.md) · [安全说明](SECURITY.zh-CN.md) |
+| 自己复现那次 7/7 盲测 | [示例](examples/README.zh-CN.md) · [inventory-service](examples/inventory-service/README.md) · [评估方法](benchmarks/README.md) |
+| 知道下一步做什么、哪些还只是计划 | [能力地图与路线图](docs/ROADMAP.zh-CN.md) · [更新日志](CHANGELOG.md) |
+| 弄懂仓库结构、文档为什么这么放 | [架构说明](docs/ARCHITECTURE.md)（英文） |
+| 知道开源做到哪、商业从哪开始 | [商业边界](docs/COMMERCIAL_BOUNDARY.md)（英文） · [LICENSE](LICENSE) |
+| 提 PR 或发一个版本 | [贡献指南](CONTRIBUTING.zh-CN.md) · [发布流程](PUBLISHING.zh-CN.md) |
 
 ## 获取支持
 
@@ -297,7 +294,9 @@ node examples/checkout-boundary/verify.mjs
 - 在 [GitHub Discussions](https://github.com/openqa-cn/openqa-skills/discussions) 提问和讨论实现方案
 - 安全漏洞请按照[安全说明](SECURITY.zh-CN.md)反馈
 
-寻求帮助时，请提供 commit 或 Skill 版本、操作系统、Agent、命令、预期结果和实际结果。分享前请移除凭据、私有源码和专有日志。
+寻求帮助时，请提供 commit 或 skill 版本、操作系统、Agent、命令、预期结果和实际结果。分享前请移除凭据、私有源码和专有日志。
+
+OpenQA 的其他去处：[官网](https://openqa.cn) · [产品](https://openqa.cn/agent) · [Skill Hub](https://openqa.cn/skills)
 
 ## 参与贡献
 

@@ -23,7 +23,7 @@ def file_links(path):
 
 
 # Agent reference syntax is not a documentation link contract; check reader-facing docs.
-paths = list(root.glob('*.md')) + list((root / 'docs').glob('*.md')) + list((root / 'examples').rglob('*.md')) + [root / 'skills/README.md', root / 'skills/defect-detection/README.md', root / 'skills/code-reviewer/README.md', root / 'skills/requirements-analyzer/README.md', root / 'skills/testcase-generation/README.md', root / 'skills/testdata-generation/README.md']
+paths = list(root.glob('*.md')) + list((root / 'docs').glob('*.md')) + list((root / 'examples').rglob('*.md')) + [root / 'skills/README.md', root / 'skills/README.zh-CN.md', root / 'skills/defect-detection/README.md', root / 'skills/code-reviewer/README.md', root / 'skills/requirements-analyzer/README.md', root / 'skills/testcase-generation/README.md', root / 'skills/testdata-generation/README.md']
 for p in paths:
     for target in file_links(p):
         if not (p.parent / target).exists():
@@ -50,6 +50,33 @@ for skill_dir in sorted((root / 'skills').iterdir()):
                 continue
             if not resolved.exists():
                 errors.append(f'{p.relative_to(root)}: missing {target}')
+# Translations drift silently and the gap lands on trust content: the Chinese README
+# pointed at an FAQ answer the Chinese FAQ never had. Compare `## ` counts per
+# language pair; a file that is deliberately shorter has to say so here, so a gap
+# stays visible instead of disappearing.
+translation_gaps = {
+    'CONTRIBUTING.zh-CN.md': 'short summary; the full process is English-only',
+    'skills/defect-detection/README.zh-CN.md': 'operator sections not translated yet',
+    'skills/testdata-generation/HOW_IT_WORKS.zh-CN.md': 'appendices not translated yet',
+}
+declared_gaps = 0
+for zh in sorted(root.rglob('*.zh-CN.md')):
+    rel = zh.relative_to(root).as_posix()
+    if 'node_modules' in zh.parts or '/data/' in f'/{rel}':
+        continue
+    en = zh.with_name(zh.name.replace('.zh-CN.md', '.md'))
+    if not en.exists():
+        errors.append(f'{rel}: no English source ({en.name})')
+        continue
+    counts = [len(re.findall(r'^## ', p.read_text(), re.M)) for p in (en, zh)]
+    if counts[0] == counts[1]:
+        if rel in translation_gaps:
+            errors.append(f'{rel}: sections now match {en.name}; drop the translation_gaps entry')
+        continue
+    if rel in translation_gaps:
+        declared_gaps += 1
+        continue
+    errors.append(f'{rel}: {counts[1]} sections vs {counts[0]} in {en.name} (translate it, or declare it in translation_gaps)')
 registry = json.loads((root / 'skills.json').read_text())
 names = set()
 for item in registry['skills']:
@@ -65,4 +92,4 @@ for item in registry['skills']:
         errors.append(f'{name}: missing README or mismatched directory')
 if errors:
     raise SystemExit('\n'.join(errors))
-print(f'PASS: {len(paths)} reader documents, {skill_docs} skill documents (no link escapes the skill directory), {len(names)} skill registry entries (file links only; anchors/external URLs not checked)')
+print(f'PASS: {len(paths)} reader documents, {skill_docs} skill documents (no link escapes the skill directory), {len(names)} skill registry entries, {declared_gaps} declared translation gaps (file links only; anchors/external URLs not checked)')

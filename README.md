@@ -1,24 +1,38 @@
+<div align="center">
+
 # OpenQA Skills
 
 **Agent Skills that check whether AI-written code still matches the requirement — and turn a PRD into manual test cases and real testdata.**
 
-For [Cursor](https://cursor.com), [Claude Code](https://claude.com/claude-code), [Codex](https://openai.com/codex), and OpenClaw. Install with `npx skills add` ([Agent Skills](https://agentskills.io/specification)). Local-first; no OpenQA account.
-
 [![CI](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml)
+[![Release](https://img.shields.io/github/v/tag/openqa-cn/openqa-skills?label=release&style=flat)](https://github.com/openqa-cn/openqa-skills/releases)
+[![GitHub stars](https://img.shields.io/github/stars/openqa-cn/openqa-skills?style=flat)](https://github.com/openqa-cn/openqa-skills/stargazers)
 [![License](https://img.shields.io/github/license/openqa-cn/openqa-skills)](LICENSE)
 
-[简体中文](README.zh-CN.md)
+**English | [简体中文](README.zh-CN.md)**
+
+<a href="#quick-start"><strong>Quick Start</strong></a> ·
+<a href="#what-the-output-looks-like"><strong>What it looks like</strong></a> ·
+<a href="docs/HOW_IT_WORKS.md"><strong>How It Works</strong></a> ·
+<a href="examples/inventory-service/README.md"><strong>Blind Evaluation</strong></a> ·
+<a href="skills/defect-detection/KNOWN_LIMITATIONS.md"><strong>Limitations</strong></a> ·
+<a href="docs/GETTING_STARTED.md"><strong>Getting Started</strong></a> ·
+<a href="docs/FAQ.md"><strong>FAQ</strong></a> ·
+<a href="docs/SUPPORT_MATRIX.md"><strong>Support Matrix</strong></a>
+
+</div>
 
 <p align="center">
-  <a href="#quick-start"><strong>Quick Start</strong></a> ·
-  <a href="#what-the-output-looks-like"><strong>What it looks like</strong></a> ·
-  <a href="docs/HOW_IT_WORKS.md"><strong>How It Works</strong></a> ·
-  <a href="examples/inventory-service/README.md"><strong>Blind Evaluation</strong></a> ·
-  <a href="skills/defect-detection/KNOWN_LIMITATIONS.md"><strong>Limitations</strong></a> ·
-  <a href="docs/GETTING_STARTED.md"><strong>Getting Started</strong></a> ·
-  <a href="docs/FAQ.md"><strong>FAQ</strong></a> ·
-  <a href="docs/SUPPORT_MATRIX.md"><strong>Support Matrix</strong></a>
+  <a href="docs/assets/previews/defect-report.html"><img src="docs/assets/previews/defect-report.png" alt="Defect-detection HTML report: three requirement mismatches" width="100%"></a>
 </p>
+
+<p align="center">
+  <sub><em>Coding agents write the change. These skills check the requirement, the review, the cases, and the testdata.<br>(Above is a sample page: same renderer as a local run, canned findings.)</em></sub>
+</p>
+
+---
+
+For [Cursor](https://cursor.com), [Claude Code](https://claude.com/claude-code), [Codex](https://openai.com/codex), and OpenClaw. Install with `npx skills add` ([Agent Skills](https://agentskills.io/specification)). Local-first; no OpenQA account.
 
 Coding agents make a green pull request cheap. The expensive part is now **requirement bugs, rubber-stamp reviews, and test work the model cannot finish alone**:
 
@@ -30,9 +44,7 @@ Coding agents make a green pull request cheap. The expensive part is now **requi
 | QA still writes the manual test-case library from the PRD by hand | [`testcase-generation`](skills/testcase-generation/README.md) |
 | Cases are full of `{placeholder}` and nobody created the real IDs on a backend | [`testdata-generation`](skills/testdata-generation/README.md) |
 
-> **Coding agents write the change. These skills check the requirement, the review, the cases, and the testdata.**
-
-Host-by-host scores are [not published](docs/SUPPORT_MATRIX.md). Findings are candidates for a human.
+We have not measured and published a score per host — [what was actually checked is in the support matrix](docs/SUPPORT_MATRIX.md). Findings are candidates for a human.
 
 ## What this repository provides
 
@@ -95,17 +107,11 @@ Three controls do the real work:
 2. **23 write-back rules.** Rejected if the code was never read, the method name is not in the source, or the batch looks like autopilot output.
 3. **A close gate.** Coverage, report consistency, and evidence depth are checked again before the task can finish.
 
-On the [inventory-service](examples/inventory-service/README.md) blind fixture, seven business-logic defects sit inside ordinary feature work, plus four decoys that look wrong but are correct. One recorded agent run found 7/7 with 0 false positives, and none of the seven came from the 102 Semgrep seed rules. That is one model, one run, one in-house fixture — not a benchmark. Design: [How it works](skills/defect-detection/HOW_IT_WORKS.md). Limits: [known limitations](skills/defect-detection/KNOWN_LIMITATIONS.md).
+On the [inventory-service](examples/inventory-service/README.md) blind fixture, seven business-logic defects sit inside ordinary feature work, plus four decoys that look wrong but are correct. One recorded agent run found 7/7 with 0 false positives, and none of the seven came from the 102 Semgrep seed rules. That is one model, one run, one in-house fixture — not a benchmark. [Methodology](benchmarks/README.md), [design](skills/defect-detection/HOW_IT_WORKS.md), [known limitations](skills/defect-detection/KNOWN_LIMITATIONS.md).
 
-### What the output looks like
+## What the output looks like
 
-These are **sample pages** (same renderer as a local run, canned findings). Open the HTML if the image is stale.
-
-<p align="center">
-  <a href="docs/assets/previews/defect-report.html"><img src="docs/assets/previews/defect-report.png" alt="Sample defect-detection HTML report: inventory reservation findings" width="880"></a>
-</p>
-
-<p align="center"><em>Defect-detection HTML report — task header, KPIs, and three requirement mismatches. <a href="docs/assets/previews/defect-report.html">Open the page</a>.</em></p>
+These are all **sample pages** (same renderer as a local run, canned findings). Open the HTML if an image is stale.
 
 <p align="center">
   <a href="docs/assets/previews/testcase-sample.html"><img src="docs/assets/previews/testcase-sample.png" alt="Sample generated manual test case for inventory hold" width="880"></a>
@@ -131,38 +137,25 @@ These are **sample pages** (same renderer as a local run, canned findings). Open
 
 <p align="center"><em>testdata-generation fills <code>{placeholder}</code> with IDs the backend actually returned. <a href="docs/assets/previews/testdata-writeback.html">Open the page</a>.</em></p>
 
-## Capability map
+The defect-detection report is the page at the top; you can also [open it directly](docs/assets/previews/defect-report.html).
 
-OpenQA's product direction covers the full AI software engineering quality lifecycle. This repository currently ships [`defect-detection`](skills/defect-detection/README.md), [`code-reviewer`](skills/code-reviewer/README.md), [`requirements-analyzer`](skills/requirements-analyzer/README.md), [`testcase-generation`](skills/testcase-generation/README.md), and [`testdata-generation`](skills/testdata-generation/README.md). Capabilities marked **Available** or **Partial** below are delivered through those workflows unless stated otherwise. The remaining rows describe planned extensions, not features already included here.
+## Hosts and language support
 
-| Capability | Current repository status | Scope |
+The skill instructions target **Cursor, Claude Code, Codex, and OpenClaw**: install, start a new session, hand over the material. Installing is not the same as a complete run on that host; per-component status is in the [support matrix](docs/SUPPORT_MATRIX.md).
+
+`defect-detection` does language-aware method extraction for the languages below, each with its own Semgrep seed pack (102 seed rules in total). The extractors are regex / brace / indentation based, not full parsers:
+
+| Language | Method-level extraction | Extra |
 | --- | --- | --- |
-| Defect detection | **Available** | Agent-led static and business-logic review for code changes, test plans, and delivery tasks |
-| Code analysis | **Partial** | AST-based rules and changed-method analysis; broader language and framework coverage is still expanding |
-| Requirement review | **Available** | Gap/conflict analysis of requirement documents (`requirements-analyzer`); implementation-vs-requirement check is still planned |
-| Specification review | **Planned** | Review technical specifications for completeness, consistency, and testability |
-| AI Code Review | **Available** | Playbook-driven PR / branch / commit review (`code-reviewer`); no published fixture yet |
-| Change-impact analysis | **Partial** | Java call-graph path through GitNexus, with fallback behavior; cross-repository impact analysis is planned |
-| Test execution orchestration | **Planned** | Run and collect results from existing test frameworks as part of the verification workflow |
-| Code coverage analysis | **Planned** | Coverage-aware quality signals and requirement-to-test coverage |
-| UI end-to-end testing | **Planned** | Browser and UI workflow generation, execution, and result integration |
-| Test-case generation | **Available** | Generate and update structured manual cases from PRD, technical design, specs, and knowledge files |
-| Test-data construction | **Available** | Build reusable domain test data from slots, tools, APIs, and generated scripts; write constructed values back into case preconditions |
-| Issue localization and diagnosis | **Partial** | Findings include locations, triggers, reasoning, and fix suggestions; deeper root-cause diagnosis is planned |
-| Evidence collection and structured findings | **Available** | Validation, write-back, ranking, tagging, and traceable HTML reports |
-| Local providers and reports | **Available** | Local-first JSON persistence and report generation without a private backend |
-| Enterprise and external integrations | **Partial** | HTTP and GitHub adapters are available in code and require deployment configuration |
-| Quality gates and release decisions | **Product direction** | Connect verification results to CI gates and release workflows |
-| Hosted verification services | **Product direction** | Managed engineering systems outside this repository |
+| Java | ✓ | Optional GitNexus call graph |
+| Kotlin · Scala | ✓ | — |
+| JavaScript · TypeScript | ✓ | Where the one recorded blind-eval sample (7/7) ran |
+| Python | ✓ | 17 seed rules; method bounds from indentation |
+| Go | ✓ | Optional go vet / staticcheck overlays |
+| C · C++ | ✓ | Macro-heavy code is approximated |
+| C# | ✓ | — |
 
-> **Status vocabulary:** **Available** means usable in the current repository; **Partial** means a working path exists but coverage or integration is incomplete; **Planned** means not shipped here yet; **Product direction** means a broader OpenQA platform goal.
-
-> [!IMPORTANT]
-> The current defect-detection workflow is a usable engineering tool, not an experiment-only prototype. It produces candidates for human confirmation and does not replace tests, static analysis, security review, or maintainer judgment.
-
-- [OpenQA website](https://openqa.cn)
-- [OpenQA product](https://openqa.cn/agent)
-- [OpenQA Skill Hub](https://openqa.cn/skills)
+Optional overlays run when the binary is installed and are skipped when it is not: gitleaks, trivy / grype, bandit, gosec, cppcheck, eslint, detekt.
 
 ## Install on Cursor, Claude Code, and Codex
 
@@ -184,7 +177,7 @@ No OpenQA or npm account is required. See [Getting started](docs/GETTING_STARTED
 2. Start a new Coding Agent session.
 3. Give the agent the material **that** skill expects. They are not interchangeable.
 
-### Review a branch (`defect-detection`)
+Start with one: **review a branch** (`defect-detection`).
 
 ```text
 Review REPOSITORY_URL at BRANCH_NAME with defect-detection.
@@ -200,9 +193,12 @@ A model-free fixture of the contract (not a detection-accuracy claim):
 node examples/checkout-boundary/verify.mjs
 ```
 
-### Review a local checkout (`code-reviewer`)
+<details>
+<summary><b>What to say to the other four skills</b></summary>
 
-Open the repository in the agent. This skill diffs in place; it does not clone.
+<br/>
+
+**Review a local checkout (`code-reviewer`)** — open the repository in the agent. This skill diffs in place; it does not clone.
 
 ```text
 Review the current branch with code-reviewer against main.
@@ -211,9 +207,7 @@ For each finding give severity, file:line, the rule, the runtime impact, and a f
 
 There is no public fixture yet. For method-level requirement defects with write-back gates, use `defect-detection` instead.
 
-### Analyze requirements (`requirements-analyzer`)
-
-Give documents, not a repo.
+**Analyze requirements (`requirements-analyzer`)** — give documents, not a repo.
 
 ```text
 Analyze these requirement documents with requirements-analyzer.
@@ -223,9 +217,7 @@ Do not invent endpoints or SLAs that are not in the source.
 
 This reviews the PRD. To write a case library from `prd/`, use `testcase-generation`.
 
-### Generate manual test cases from a PRD (`testcase-generation`)
-
-Put PRD / design / specs under `prd/` first. `code/` is not required for generate.
+**Generate manual test cases from a PRD (`testcase-generation`)** — put PRD / design / specs under `prd/` first. `code/` is not required for generate.
 
 ```text
 Generate a manual case library with testcase-generation from the documents under prd/.
@@ -234,9 +226,7 @@ Do not invent engineering fields that are not in the source. Mark those TBD.
 
 When the agent stops on a PRD vs design conflict, reply `Confirm follow PRD` or `Item N follow technical design`. There is no public fixture yet.
 
-### Construct test data (`testdata-generation`)
-
-Not a git clone. Say what to construct, or point at written cases / OpenAPI:
+**Construct test data (`testdata-generation`)** — not a git clone. Say what to construct, or point at written cases / OpenAPI:
 
 ```text
 Create a standard catalog product named Northwind Standard with testdata-generation.
@@ -251,6 +241,26 @@ Prepare test data for this case file and write the IDs back as preconditions.
 
 Default backend is the bundled mock on `http://127.0.0.1:8765`. A demo ID is not proof that a real system was written.
 
+</details>
+
+## Why a skill, not another platform
+
+What you install is files, not a service. `npx skills add … --skill <name>` copies one directory, and the agent you already use reads it — **no account, no gateway, no workflow to migrate**.
+
+- **Semantic judgement stays with the model you already pay for.** This repository ships no model and does not rank them. It organizes the context, then makes the model's conclusion checkable: 23 write-back rules, tiers, a close gate.
+- **Local-first is literal.** Local JSON providers persist to disk and the report is an HTML file you can double-click. Configure the HTTP / GitHub adapters only when you want an external system attached.
+- **Install one at a time.** The five skills do not share an input; installing all of them mostly helps the agent pick the wrong one. Install for the task in front of you.
+- **Capabilities and claims are written down separately.** What ships versus what is planned: [capability map and roadmap](docs/ROADMAP.md). What was actually checked per component: [support matrix](docs/SUPPORT_MATRIX.md). What it cannot do: [known limitations](skills/defect-detection/KNOWN_LIMITATIONS.md).
+
+## Scope and limitations
+
+> [!IMPORTANT]
+> The current defect-detection workflow is a usable engineering tool, not an experiment-only prototype. It produces candidates for human confirmation and does not replace tests, static analysis, security review, or maintainer judgment.
+
+This project helps organize code context and evidence; it does not replace tests, static analysis, security review, or maintainer judgment. It cannot prove the absence of defects or infer business rules that were not provided. Findings are candidates, not automatic merge decisions.
+
+Local providers write data to disk. Repository cloning, document fetching, remote providers, automatic Semgrep/GitNexus installation, and the host Agent/model may use the network. Review [FAQ](docs/FAQ.md), [support matrix](docs/SUPPORT_MATRIX.md), and [security policy](SECURITY.md) before using private source.
+
 ## Developer verification
 
 Before contributing, run the repository checks:
@@ -262,34 +272,21 @@ export NODE_OPTIONS=--experimental-strip-types
 node examples/checkout-boundary/verify.mjs
 ```
 
-These checks cover documentation links, CLI and provider behavior, packaging, isolation, write-back validation, and the bundled boundary fixture. They do not prove that every defect will be found.
-
-## Scope and limitations
-
-This project helps organize code context and evidence; it does not replace tests, static analysis, security review, or maintainer judgment. It cannot prove the absence of defects or infer business rules that were not provided. Findings are candidates, not automatic merge decisions.
-
-Local providers write data to disk. Repository cloning, document fetching, remote providers, automatic Semgrep/GitNexus installation, and the host Agent/model may use the network. Review [FAQ](docs/FAQ.md), [support matrix](docs/SUPPORT_MATRIX.md), and [security policy](SECURITY.md) before using private source.
-
-## Roadmap
-
-- **Now:** harden clean installation, agent compatibility, public fixtures, and developer documentation.
-- **Next:** add specification review, requirement review, and broader analysis skills under the same evidence-and-human-review contract.
-- **Later:** connect cross-repository impact analysis, AI Code Review, CI quality gates, and hosted engineering systems.
-
-A capability is marked available in this repository only when its implementation, example, and limitations are published. Progress is tracked in the [public roadmap](https://openqa.cn/roadmap).
+These checks cover documentation links, translation section parity, CLI and provider behavior, packaging, isolation, write-back validation, and the bundled boundary fixture. They do not prove that every defect will be found.
 
 ## Documentation
 
-| Document | What it covers |
+| I want to… | Start here |
 | --- | --- |
-| [How the skills work](docs/HOW_IT_WORKS.md) | Index of per-skill method docs |
-| [Known Limitations](skills/defect-detection/KNOWN_LIMITATIONS.md) | Concrete failure cases, implementation gaps, and what the evidence does not support |
-| [Getting Started](docs/GETTING_STARTED.md) | Runtime requirements, installation scope, local setup, and troubleshooting |
-| [FAQ](docs/FAQ.md) | Accounts, data handling, network behavior, reports, and limitations |
-| [Support Matrix](docs/SUPPORT_MATRIX.md) | Verified runtimes, Agents, integrations, and known limitations |
-| [Architecture](docs/ARCHITECTURE.md) | Repository structure, naming, and project maturity model |
-| [Examples](examples/README.md) | Runnable fixtures and expected outcomes |
-| [Security Policy](SECURITY.md) | Security reporting and data-handling guidance |
+| Run a review today | [Getting Started](docs/GETTING_STARTED.md) · [Quick start](#quick-start) |
+| Understand how it reaches a conclusion, and what stops autopilot output | [How the skills work](docs/HOW_IT_WORKS.md) · [defect-detection method](skills/defect-detection/HOW_IT_WORKS.md) |
+| Know what it misses and when not to trust it | [Known Limitations](skills/defect-detection/KNOWN_LIMITATIONS.md) · [Support Matrix](docs/SUPPORT_MATRIX.md) |
+| Check whether code or data leaves my machine | [FAQ](docs/FAQ.md) · [Security Policy](SECURITY.md) |
+| Reproduce the 7/7 blind evaluation myself | [Examples](examples/README.md) · [inventory-service](examples/inventory-service/README.md) · [Methodology](benchmarks/README.md) |
+| See what is next and what is only planned | [Capability map and roadmap](docs/ROADMAP.md) · [Changelog](CHANGELOG.md) |
+| Understand the repository layout and why docs sit where they do | [Architecture](docs/ARCHITECTURE.md) |
+| Know where open source ends and commercial begins | [Commercial boundary](docs/COMMERCIAL_BOUNDARY.md) · [LICENSE](LICENSE) |
+| Send a PR or cut a release | [Contributing](CONTRIBUTING.md) · [Publishing](PUBLISHING.md) |
 
 ## Support
 
@@ -297,7 +294,9 @@ A capability is marked available in this repository only when its implementation
 - Ask questions and discuss implementations in [GitHub Discussions](https://github.com/openqa-cn/openqa-skills/discussions)
 - For security vulnerabilities, follow [SECURITY.md](SECURITY.md)
 
-When asking for help, include the commit or Skill version, operating system, Agent, command, expected result, and actual result. Remove credentials, private source, and proprietary logs.
+When asking for help, include the commit or skill version, operating system, Agent, command, expected result, and actual result. Remove credentials, private source, and proprietary logs.
+
+Elsewhere: [OpenQA website](https://openqa.cn) · [product](https://openqa.cn/agent) · [Skill Hub](https://openqa.cn/skills)
 
 ## Contribute
 

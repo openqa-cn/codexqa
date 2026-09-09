@@ -9,7 +9,7 @@ openqa-skills/
 ├── adapters/     # Tool and framework integrations (future)
 ├── examples/     # Small, runnable public examples
 ├── benchmarks/   # Seeded defects and evaluation methodology
-├── docs/         # Architecture, support, release, and commercial boundaries
+├── docs/         # Architecture, support, roadmap, release, and commercial boundaries
 └── .github/      # CI, issue forms, contribution automation
 ```
 
