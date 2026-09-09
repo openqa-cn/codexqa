@@ -400,9 +400,9 @@ function build_parser(): ArgumentParser {
   p_cad.add_argument("--task-id", { type: "int", required: true });
   p_cad.add_argument("--batch-id", { type: "int", required: true });
   p_cad.add_argument("--git-url", { required: true });
-  p_cad.add_argument("--branch", { required: true });
+  p_cad.add_argument("--branch", { required: true, help: "Branch to scan; a remote prefix (origin/x, refs/heads/x) is stripped" });
   p_cad.add_argument("--service-key", { dest: "service_key" });
-  p_cad.add_argument("--base-branch");
+  p_cad.add_argument("--base-branch", { help: "Diff base branch; omit to auto-detect the repo default. A remote prefix is stripped" });
   p_cad.add_argument("--contrast-commit");
   p_cad.add_argument("--diff-mode", { choices: ["two-dot", "three-dot"], default: "two-dot" });
   p_cad.add_argument("--language");

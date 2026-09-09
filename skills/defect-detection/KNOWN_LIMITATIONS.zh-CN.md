@@ -43,6 +43,16 @@
 
 要够格叫 benchmark，至少还缺：多个模型、重复运行的方差、第三方贡献的 fixture，以及我们没有主动植入的缺陷类型。检测质量随宿主模型变化，而这个方差我们还没有测过。
 
+## agent 本身就是 worker，所以中断的任务会一直停在 `in_progress`
+
+这里没有守护进程、没有队列、没有后台扫描器。`submit-plan` / `submit-git` / `submit-skill-direct` 只负责登记任务然后返回；后面每一个阶段——clone、diff、计划、逐方法分析、收尾——都是宿主 agent 自己调用的 CLI 命令，因为分析这一步**就是模型的推理本身**，没法交给子进程。`phase1-init` 和 `finalize-all` 把 Phase 1 和 Phase 3 的机械部分打包了，但 Phase 2 没有、也不可能有这样的打包命令。
+
+由此带来的后果是：任务只有在 agent 自己走到终点时才会进入终态（`completed` / `failed` / `aborted`）。如果会话中途结束——模型停了、终端被关掉、宿主崩了——任务就一直保持 `status=in_progress`，而且没有心跳、租约或超时回收机制去发现它。除此之外没有别的损坏（本地 `data/{taskId}` 目录完好且可复用），但**状态不能作为"有东西正在跑"的证据**。用 `force-abort-task --task-id N --reason ...` 清理，长时间没有动静的 `in_progress` 任务应当按已废弃处理，而不是按运行中处理。
+
+## 阶段状态不是事务性的
+
+clone 登记、计划、平台任务/process 状态是分别写入的，中途失败会留下部分状态：任务已登记但没有计划，或者计划的 process 已经播种但从未被分析。重跑基本安全，因为写入路径都是 upsert——`add-test-case` 按 id 合并，`build-detection-plan` 复用已播种的 process 而不是新建重复项，clone 目录按 `md5(gitUrl@branch)` 命名——但没有分阶段的 checkpoint 和幂等 key，所以恢复意味着重跑一个阶段，而不是从断点续跑。对于确实已经乱掉的任务，abort 掉再提交一个新任务，比原地重试更可靠。
+
 ## 平台与环境
 
 - **Windows** 在结构上是支持的——没有 `/tmp` 假设、处理了 `.cmd` shim、用 `.gitattributes` 强制 LF——但还没有 CI 主机。Semgrep 在 Windows 上是 beta，GitNexus 在那里未经测试。快速上手的命令片段默认你用的是 Git Bash 或 WSL。

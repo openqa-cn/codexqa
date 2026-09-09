@@ -359,10 +359,12 @@ node "$SKILL_SCRIPT" clone-and-diff \
 >
 > The platform underneath is a **two-dot diff** `commit ↔ contrast commit`. This command defaults to `--diff-mode two-dot` to match.
 >
-> - **Backend**: the diff is based on the repo **default branch** (**not necessarily master**; may be develop/main). Omit `--base-branch` and the command auto-detects `origin/HEAD`. Pass `--base-branch` only when detection fails or you must pin it.
+> - **Backend**: the diff is based on the repo **default branch** (**not necessarily master**; may be develop/main). Omit `--base-branch` and the command auto-detects it: remote `HEAD` first (the local `origin/HEAD` is ignored when it points at the branch being scanned, because the clone is `--single-branch`), then `main`/`master`/`develop` — refs already in the clone before the network. If none resolves it returns `code=1` asking for `--base-branch`/`--contrast-commit` instead of guessing `master`. Pass `--base-branch` only when detection fails or you must pin it.
 > - **Frontend**: the diff is based on the **foundation commit (branch fork point)**, **not** the current HEAD of the default branch. You must pass the platform contrast commit as `--contrast-commit`; otherwise later merges on the default branch from other people get counted and changed-file counts explode.
 >
 > ⚠️ **Do not hard-code `--base-branch master`**: that miscomputes diffs for backend repos whose default branch is not master, and for frontend repos that need a foundation commit (root cause of a historical bug).
+>
+> `--branch` and `--base-branch` take a plain branch name; `origin/master`, `refs/heads/master` and `refs/remotes/origin/master` are all accepted and reduced to `master` (the command builds the remote ref itself). Names containing a slash, e.g. `release/1.0`, are preserved.
 >
 > If the diff base cannot be resolved (contrast-commit/base-branch wrong or unreachable), the command returns `code=1` with a clear error. If the diff succeeds but `diffFileCount=0`, the return includes a `warning` to check the base — **do not** treat that as "no changes" immediately; check whether frontend omitted `--contrast-commit` and whether the backend default branch was detected correctly.
 
@@ -417,6 +419,8 @@ node "$SKILL_SCRIPT" submit-plan --plan-id $TEST_PLAN_ID --plan-type 2 --submit-
 ```
 
 **Extract**: `$TASK_ID`. `submit-plan` / `submit-git` already initialize content.json and register the service, so `init-content` is only needed when continuing a task whose `data/{taskId}` was removed. If `init-content` / `phase1-init` returns `remappedFrom`, overwrite `$TASK_ID` with the new `taskId` and leave the old directory untouched.
+
+> ⚠️ **Submitting registers a task; it does not start a scan.** There is no background worker — **you** are the worker. `submit-plan` / `submit-git` / `submit-skill-direct` create a task in `in_progress` and return; nothing analyses anything until you run Phase 1.2 → Phase 2 → Phase 3 yourself. A task only leaves `in_progress` when you call `complete-task` / `finalize-all` (→ `completed` / `failed`) or `force-abort-task` (→ `aborted`). If you stop mid-run, **abort the task** rather than leaving it `in_progress` forever.
 
 **>>> GATE**: `$TASK_ID` is a positive integer. On failure, silently retry once.
 

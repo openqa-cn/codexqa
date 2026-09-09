@@ -43,6 +43,16 @@ The headline 7/7 recall and 7/7 precision figures come from a single agent, a si
 
 What is missing before it could be called one: multiple models, variance across repeated runs, third-party fixtures, and defect classes we did not plant. Detection quality varies with the host model, and we have not measured that variance.
 
+## The agent is the worker, so an abandoned run stays `in_progress`
+
+There is no daemon, queue, or background scanner. `submit-plan` / `submit-git` / `submit-skill-direct` register a task and return; every subsequent stage — clone, diff, plan, per-method analysis, close — is a CLI command the host agent invokes itself, because the analysis step *is* the model's reasoning and cannot be handed to a subprocess. `phase1-init` and `finalize-all` bundle the mechanical parts of Phase 1 and Phase 3, but nothing bundles Phase 2.
+
+The consequence is that a task only reaches a terminal state (`completed` / `failed` / `aborted`) if the agent gets there. If the session ends mid-run — the model stops, the terminal is closed, the host crashes — the task keeps `status=in_progress` and there is no heartbeat, lease, or timeout reaper to notice. Nothing else is broken by this (the local `data/{taskId}` directory is intact and reusable), but the status is not evidence that anything is running. Clean up with `force-abort-task --task-id N --reason ...`, and treat a long-idle `in_progress` task as abandoned rather than active.
+
+## Stage state is not transactional
+
+Clone registration, the plan, and platform task/process state are written separately, and a failure between them leaves partial state: a task registered with no plan, or a plan whose processes were seeded but never analysed. Re-running is mostly safe because the write paths upsert — `add-test-case` merges by id, `build-detection-plan` reuses seeded processes rather than creating duplicates, and clone directories are keyed by `md5(gitUrl@branch)` — but there is no per-stage checkpoint or idempotency key, so recovery means re-running a stage rather than resuming it. For a genuinely confused task, aborting it and submitting a new one is more reliable than retrying in place.
+
 ## Platform and environment
 
 - **Windows** is structurally supported — no `/tmp` assumptions, `.cmd` shims handled, LF enforced via `.gitattributes` — but has no CI host yet. Semgrep on Windows is beta and GitNexus is untested there. Quick-start snippets assume Git Bash or WSL.

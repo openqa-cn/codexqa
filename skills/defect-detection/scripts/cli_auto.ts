@@ -324,7 +324,9 @@ export function run_get_changed_methods(args: Args): Record<string, any> {
   const _found_base: Array<string | null> = [null];
   if (!diff_files || !diff_files.length) {
     try {
-      for (const base of ["origin/master", "origin/main", "HEAD~1"]) {
+      // origin/HEAD first: it names the repo's actual default branch, so we do
+      // not diff a `main` repo against a stale `master` that happens to exist.
+      for (const base of ["origin/HEAD", "origin/main", "origin/master", "origin/develop", "HEAD~1"]) {
         const r = _spawn(["git", "-C", local_dir, "diff", "--name-only", base, "HEAD"], 60);
         if (r.returncode === 0 && r.stdout.trim()) {
           diff_files = r.stdout.trim().split("\n").map((f) => f.trim()).filter(Boolean);

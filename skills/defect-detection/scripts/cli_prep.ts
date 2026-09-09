@@ -19,7 +19,15 @@ import {
   submit_detection,
   get_exception_traces,
 } from "./platform.ts";
-import { _cli_error, _cli_result, _cli_success, _inject_strategy_codes, _require_save } from "./cli_common.ts";
+import {
+  _cli_error,
+  _cli_result,
+  _cli_success,
+  _inject_strategy_codes,
+  _require_save,
+  log_branch_normalization,
+  normalize_branch_ref,
+} from "./cli_common.ts";
 import {
   type ResolvedLanguage,
   canonicalize_language,
@@ -633,7 +641,12 @@ export function cmd_clone_and_diff(args: Args): void {
   let task_id = args.task_id;
   let batch_id = args.batch_id;
   const git_url = args.git_url;
-  const branch = args.branch;
+  const branch = normalize_branch_ref(args.branch);
+  if (!branch) {
+    _cli_error(`--branch must name a branch (got ${JSON.stringify(args.branch ?? null)})`);
+    return;
+  }
+  log_branch_normalization("clone-and-diff", "--branch", args.branch, branch);
   let iso: Record<string, any>;
   try {
     iso = isolate_if_foreign(task_id, { gitUrl: git_url, branch });
@@ -652,7 +665,8 @@ export function cmd_clone_and_diff(args: Args): void {
   }
 
   let contrast_commit = (args.contrast_commit || "").trim() || null;
-  let base_branch = (args.base_branch || "").trim() || null;
+  let base_branch = normalize_branch_ref(args.base_branch);
+  log_branch_normalization("clone-and-diff", "--base-branch", args.base_branch, base_branch);
   const diff_mode = args.diff_mode || "two-dot";
   // Before the diff exists we only know what the user or the plan said; the
   // final answer (incl. detection from changed files) is resolved after the diff.
@@ -687,24 +701,57 @@ export function cmd_clone_and_diff(args: Args): void {
     return _spawn(["git", "-C", local_dir, ...git_args], timeout);
   }
 
-  function _detect_default_branch(): string {
+  function _remote_ref_exists(name: string): boolean {
+    const r = _git_t(["rev-parse", "--verify", "--quiet", `refs/remotes/origin/${name}`], 10);
+    return r.returncode === 0 && !!r.stdout.trim();
+  }
+
+  /**
+   * Resolve the repo's default branch, most authoritative source first, and
+   * return null rather than guessing when every source fails — a wrong guess
+   * surfaces later as an unresolvable base rev with no hint of what went wrong.
+   * Candidate probing checks refs already in the clone before going to the
+   * network, so a shallow or credential-limited clone still resolves.
+   */
+  function _detect_default_branch(): string | null {
+    const attempts: string[] = [];
+
+    // We clone with `--single-branch -b <branch>`, which points the local
+    // origin/HEAD at that branch. Only trust it when it names something else,
+    // otherwise the "default branch" would come back as the branch under test
+    // and the diff against it would be empty.
     const r = _git_t(["symbolic-ref", "refs/remotes/origin/HEAD"], 15);
     if (r.returncode === 0 && r.stdout.trim()) {
-      return r.stdout.trim().split("/").pop()!;
+      const name = normalize_branch_ref(r.stdout.trim());
+      if (name && name !== branch) return name;
     }
+    attempts.push("local origin/HEAD");
+
     const r2 = _spawn(["git", "ls-remote", "--symref", git_url, "HEAD"], 60);
     if (r2.returncode === 0) {
       for (const line of r2.stdout.split(/\n/)) {
         if (line.startsWith("ref:") && line.includes("\tHEAD")) {
-          return line.split(/\s+/)[1].split("/").pop()!;
+          const name = normalize_branch_ref(line.split(/\s+/)[1]);
+          if (name && name !== branch) return name;
         }
       }
     }
-    for (const cand of ["master", "main", "develop"]) {
+    attempts.push("ls-remote --symref HEAD");
+
+    // Check refs already in the clone before the network, so a credential- or
+    // depth-limited clone still resolves.
+    const candidates = ["main", "master", "develop"].filter((c) => c !== branch);
+    for (const cand of candidates) {
+      if (_remote_ref_exists(cand)) return cand;
+    }
+    for (const cand of candidates) {
       const rr = _spawn(["git", "ls-remote", "--heads", git_url, cand], 60);
       if (rr.returncode === 0 && rr.stdout.trim()) return cand;
     }
-    return "master";
+    attempts.push(`candidates ${candidates.join("/") || "<none>"}`);
+
+    console.error(`[clone-and-diff] ⚠️ default branch not resolvable (tried: ${attempts.join(", ")})`);
+    return null;
   }
 
   if (_is_dir(join(local_dir, ".git"))) {
@@ -740,13 +787,15 @@ export function cmd_clone_and_diff(args: Args): void {
   if (is_client_repo && !contrast_commit && !base_branch) {
     console.error(`[clone-and-diff] 📝 client repo (${language}) source-branch detection: computing merge-base`);
     const default_br = _detect_default_branch();
-    const mb_result = _git_t(["merge-base", `origin/${branch}`, `origin/${default_br}`], 15);
+    const mb_result = default_br
+      ? _git_t(["merge-base", `origin/${branch}`, `origin/${default_br}`], 15)
+      : { returncode: 1, stdout: "", stderr: "" };
     if (mb_result.returncode === 0 && mb_result.stdout.trim()) {
       contrast_commit = mb_result.stdout.trim();
       console.error(`[clone-and-diff] ✓ computed merge-base as source: ${contrast_commit.slice(0, 8)}`);
     } else {
       base_branch = default_br;
-      console.error(`[clone-and-diff] ⚠️ merge-base computation failed, falling back to default branch: ${default_br}`);
+      console.error(`[clone-and-diff] ⚠️ merge-base computation failed, falling back to default branch: ${default_br ?? "<unresolved>"}`);
     }
   } else if (is_client_repo && (contrast_commit || base_branch)) {
     console.error(`[clone-and-diff] ℹ️ client repo already has an explicit base (${contrast_commit || base_branch}), skip auto-detection`);
@@ -763,6 +812,17 @@ export function cmd_clone_and_diff(args: Args): void {
   } else {
     if (!base_branch) {
       base_branch = _detect_default_branch();
+      if (!base_branch) {
+        _cli_error(
+          `could not determine a base branch to diff '${branch}' against: the remote HEAD is unreachable or points at ` +
+            `'${branch}' itself, and none of main/master/develop exist. Pass --base-branch <branch> or --contrast-commit <sha>.`,
+          {
+            gitUrl: git_url, branch, localDir: local_dir, commitId: commit_id,
+            baseSource: "default-branch(unresolved)",
+          },
+        );
+        return;
+      }
       base_source = `default-branch(${base_branch})`;
     } else {
       base_source = `base-branch(${base_branch})`;

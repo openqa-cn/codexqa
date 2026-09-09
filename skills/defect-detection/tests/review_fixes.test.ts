@@ -6,6 +6,10 @@
  * - summary normalisation stripped underscores out of identifiers
  * - a bare "batch" forbidden rule flagged "batchSize" / "batching"
  * - extract-rules-from-docs turned every hard-wrapped line into its own rule
+ * - a remote-prefixed base branch (`origin/master`) became `origin/origin/master`
+ * - default-branch detection guessed `master` instead of reporting failure, and
+ *   truncated branch names containing a slash to their last segment
+ * - "task submitted" read as "a scan is running" although the agent is the worker
  */
 
 import { spawnSync } from "node:child_process";
@@ -18,6 +22,7 @@ import assert from "node:assert/strict";
 
 import { check_summary_forbidden, normalize_summary_for_plaintext } from "../scripts/platform.ts";
 import { _rule_paragraphs_from_doc } from "../scripts/cli_auto.ts";
+import { normalize_branch_ref } from "../scripts/cli_common.ts";
 import { load_settings } from "../scripts/providers/config.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -51,10 +56,10 @@ function git(cwd: string, ...args: string[]) {
   assert.equal(proc.status, 0, `git ${args.join(" ")}\n${proc.stderr}`);
 }
 
-function makeLocalGitRepo(tmp: string) {
-  const repo = join(tmp, "src-repo");
+function makeLocalGitRepo(tmp: string, defaultBranch = "main") {
+  const repo = join(tmp, `src-repo-${defaultBranch.replace(/\W+/g, "-")}`);
   mkdirSync(join(repo, "src/main/java/com/example/order"), { recursive: true });
-  git(repo, "init", "-b", "main");
+  git(repo, "init", "-b", defaultBranch);
   git(repo, "config", "user.email", "review@example.test");
   git(repo, "config", "user.name", "review");
   writeFileSync(join(repo, FILE_PATH), [
@@ -92,7 +97,10 @@ function makeLocalGitRepo(tmp: string) {
   ].join("\n"));
   git(repo, "add", ".");
   git(repo, "commit", "-m", "add checkout and refund");
-  return { repo, gitUrl: `file://${repo}`, branch };
+  // Leave HEAD on the default branch, the way a real remote looks; otherwise
+  // default-branch detection sees the feature branch as the repo default.
+  git(repo, "checkout", defaultBranch);
+  return { repo, gitUrl: `file://${repo}`, branch, defaultBranch };
 }
 
 describe("review fixes: add-test-case upserts by id", () => {
@@ -199,6 +207,97 @@ describe("review fixes: config paths do not depend on the working directory", ()
       if (saved.data === undefined) delete process.env.DETECTION_DATA_DIR; else process.env.DETECTION_DATA_DIR = saved.data;
       if (saved.ent === undefined) delete process.env.DETECTION_ENTERPRISE_DIR; else process.env.DETECTION_ENTERPRISE_DIR = saved.ent;
     }
+  });
+});
+
+describe("review fixes: branch ref normalisation", () => {
+  it("reduces every ref spelling to a plain branch name", () => {
+    assert.equal(normalize_branch_ref("master"), "master");
+    assert.equal(normalize_branch_ref("  main  "), "main");
+    assert.equal(normalize_branch_ref("origin/master"), "master");
+    assert.equal(normalize_branch_ref("refs/heads/master"), "master");
+    assert.equal(normalize_branch_ref("refs/remotes/origin/master"), "master");
+    // Already-doubled input must collapse too, so a normalised value is stable.
+    assert.equal(normalize_branch_ref("origin/origin/master"), "master");
+    assert.equal(normalize_branch_ref(normalize_branch_ref("origin/master")), "master");
+    // Slashes inside the branch name survive; only known prefixes are stripped.
+    assert.equal(normalize_branch_ref("release/1.0"), "release/1.0");
+    assert.equal(normalize_branch_ref("origin/feature/a/b"), "feature/a/b");
+    assert.equal(normalize_branch_ref(""), null);
+    assert.equal(normalize_branch_ref(null), null);
+    assert.equal(normalize_branch_ref(undefined), null);
+  });
+
+  it("clone-and-diff resolves origin/main and refs/... the same as a bare main", { timeout: 120_000 }, () => {
+    const { tmp, env } = isolatedEnv();
+    const { gitUrl, branch } = makeLocalGitRepo(tmp);
+
+    for (const base of ["main", "origin/main", "refs/heads/main", "refs/remotes/origin/main"]) {
+      const created = expectOk(run(env, "submit-git", "--git", gitUrl, "--branch", branch, "--submit-user", "alice"));
+      const taskId = String(created.data.taskId);
+      const batchId = String(created.data.batchIds[0]);
+      assert.equal(run(env, "init-content", "--task-id", taskId, "--plan-name", "norm", "--git-url", gitUrl, "--branch", branch).status, 0);
+
+      const cloned = expectOk(
+        run(env, "clone-and-diff", "--task-id", taskId, "--batch-id", batchId, "--git-url", gitUrl, "--branch", branch, "--base-branch", base),
+        `clone-and-diff --base-branch ${base}`,
+      );
+      assert.equal(cloned.data.baseRev, "origin/main", `--base-branch ${base} produced ${cloned.data.baseRev}`);
+      assert.equal(cloned.data.baseBranch, "main");
+      assert.deepEqual(cloned.data.diffFiles, [FILE_PATH], `--base-branch ${base} diffed nothing`);
+    }
+  });
+
+  it("a remote-prefixed --branch still records and diffs the plain branch", { timeout: 60_000 }, () => {
+    const { tmp, env } = isolatedEnv();
+    const { gitUrl, branch } = makeLocalGitRepo(tmp);
+
+    const created = expectOk(run(env, "submit-git", "--git", gitUrl, "--branch", `origin/${branch}`, "--submit-user", "alice"));
+    const taskId = String(created.data.taskId);
+    const batchId = String(created.data.batchIds[0]);
+    assert.equal(run(env, "init-content", "--task-id", taskId, "--plan-name", "norm", "--git-url", gitUrl, "--branch", branch).status, 0);
+
+    const services = JSON.parse(readFileSync(join(env.CONTENT_JSON_BASE!, taskId, "meta.json"), "utf8")).services;
+    assert.deepEqual(services.map((s: any) => s.branch), [branch]);
+
+    const cloned = expectOk(
+      run(env, "clone-and-diff", "--task-id", taskId, "--batch-id", batchId, "--git-url", gitUrl, "--branch", `refs/remotes/origin/${branch}`, "--base-branch", "main"),
+      "clone-and-diff with a prefixed --branch",
+    );
+    assert.equal(cloned.data.branch, branch);
+    assert.deepEqual(cloned.data.diffFiles, [FILE_PATH]);
+  });
+
+  it("uses the repo's real default branch instead of guessing master", { timeout: 60_000 }, () => {
+    const { tmp, env } = isolatedEnv();
+    // Default branch is neither main nor master nor develop: the old code fell
+    // through to a hardcoded "master" and failed to resolve a base rev.
+    const { gitUrl, branch } = makeLocalGitRepo(tmp, "trunk");
+    const created = expectOk(run(env, "submit-git", "--git", gitUrl, "--branch", branch, "--submit-user", "alice"));
+    const taskId = String(created.data.taskId);
+    const batchId = String(created.data.batchIds[0]);
+    assert.equal(run(env, "init-content", "--task-id", taskId, "--plan-name", "trunk", "--git-url", gitUrl, "--branch", branch).status, 0);
+
+    const cloned = expectOk(
+      run(env, "clone-and-diff", "--task-id", taskId, "--batch-id", batchId, "--git-url", gitUrl, "--branch", branch),
+      "clone-and-diff without --base-branch",
+    );
+    assert.equal(cloned.data.baseRev, "origin/trunk");
+    assert.equal(cloned.data.baseSource, "default-branch(trunk)");
+  });
+});
+
+describe("review fixes: submit reports registration, not a running scan", () => {
+  it("submit-git says the task is only registered and names the next command", () => {
+    const { env } = isolatedEnv();
+    const proc = run(env, "submit-git", "--git", "git@github.com:acme/x.git", "--branch", "feature/a", "--submit-user", "alice");
+    assert.equal(proc.status, 0, proc.stderr);
+    assert.match(proc.stderr, /registered/);
+    assert.match(proc.stderr, /Nothing is scanning yet/);
+    assert.match(proc.stderr, /clone-and-diff/);
+    // The task really is still open, which is exactly why the wording matters.
+    const status = expectOk(run(env, "status", "--task-id", String(JSON.parse(proc.stdout).data.taskId)));
+    assert.equal(status.data.status, "in_progress");
   });
 });
 

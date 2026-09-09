@@ -20,13 +20,32 @@ import {
   normalize_summary_for_plaintext,
   check_summary_forbidden,
 } from "./platform.ts";
-import { _cli_result, _cli_error, _inject_strategy_codes, _require_save } from "./cli_common.ts";
+import {
+  _cli_result,
+  _cli_error,
+  _inject_strategy_codes,
+  _require_save,
+  log_branch_normalization,
+  normalize_branch_ref,
+} from "./cli_common.ts";
 import { canonicalize_language } from "./lang.ts";
 import { ContentStore } from "./store.ts";
 import { _get_local_state_path } from "./state.ts";
 import { IsolationError, isolate_if_foreign, log_isolation } from "./task_isolation.ts";
 
 type Args = Record<string, any>;
+
+/**
+ * The host agent is the worker: submitting only registers the task, and its
+ * status stays `in_progress` until the agent drives the pipeline and calls
+ * `complete-task`. Say that explicitly, because a bare "submitted" reads as
+ * "a scan is now running" and nothing would ever move the task off
+ * `in_progress`.
+ */
+function _log_task_registered(tag: string, task_id: any, extra = ""): void {
+  console.error(`✅ [${tag}] detection task registered: taskId=${task_id}, status=in_progress${extra}`);
+  console.error("   Nothing is scanning yet — this command only registers the task. Next: clone-and-diff --with-plan → per-method analysis + batch-update-process → complete-task (or finalize-all). Give up on a task with force-abort-task so it does not sit in_progress forever.");
+}
 
 export function cmd_submit_plan(args: Args): void {
   const plan_id = args.plan_id;
@@ -108,16 +127,27 @@ export function cmd_submit_plan(args: Args): void {
   if (!task_id || typeof task_id !== "number" || !Number.isInteger(task_id) || task_id <= 0) {
     console.error(`[submit-plan] ⚠️  API did not return a valid taskId (got ${JSON.stringify(task_id)}); check the response`);
   }
-  console.error(`✅ Detection task submitted! taskId=${task_id}`);
+  _log_task_registered("submit-plan", task_id);
   console.log(JSON.stringify(result, null, 2));
 }
 
 export function cmd_submit_git(args: Args): void {
+  // Store the plain branch name: clone-and-diff normalises the same way, and a
+  // mismatch here would make task isolation treat the same repo as foreign.
+  const branch = normalize_branch_ref(args.branch);
+  if (!branch) {
+    console.error(`❌ submit-git requires --branch (got ${JSON.stringify(args.branch ?? null)})`);
+    process.exit(1);
+  }
+  log_branch_normalization("submit-git", "--branch", args.branch, branch);
+  const contrast_branch = normalize_branch_ref(args.contrast_branch);
+  log_branch_normalization("submit-git", "--contrast-branch", args.contrast_branch, contrast_branch);
+
   const request_body: Record<string, any> = {
     detectType: "GIT_BRANCH",
     git: args.git,
-    developBranch: args.branch,
-    contrastBranch: args.contrast_branch,
+    developBranch: branch,
+    contrastBranch: contrast_branch,
     submitUser: args.submit_user,
   };
   const service_key = args.service_key;
@@ -158,7 +188,7 @@ export function cmd_submit_git(args: Args): void {
     const incoming: Record<string, any> = {
       userId: args.submit_user,
       gitUrl: args.git,
-      branch: args.branch,
+      branch,
     };
     let iso: Record<string, any>;
     try {
@@ -186,7 +216,7 @@ export function cmd_submit_git(args: Args): void {
     try {
       store.add_or_update_service({
         gitUrl: args.git,
-        branch: args.branch,
+        branch,
         serviceKey: args.service_key ?? null,
         batchIds: batch_ids,
         language: canonicalize_language(args.language) || null,
@@ -201,7 +231,7 @@ export function cmd_submit_git(args: Args): void {
     _require_save(store);
     console.error(`[submit-git] ✅ content initialized + service registered (services=${store.get_summary().services})`);
   }
-  console.error(`✅ Detection task submitted! taskId=${task_id}`);
+  _log_task_registered("submit-git", task_id);
   console.log(JSON.stringify(result, null, 2));
 }
 
@@ -215,9 +245,13 @@ export function cmd_submit_skill_direct(args: Args): void {
       process.exit(1);
     }
   } else if (args.git) {
-    const job_info: Record<string, any> = { git: args.git, developBranch: args.branch };
+    const branch = normalize_branch_ref(args.branch);
+    log_branch_normalization("submit-skill-direct", "--branch", args.branch, branch);
+    const job_info: Record<string, any> = { git: args.git, developBranch: branch };
     if (args.contrast_branch) {
-      job_info.deployBranch = args.contrast_branch;
+      const contrast_branch = normalize_branch_ref(args.contrast_branch);
+      log_branch_normalization("submit-skill-direct", "--contrast-branch", args.contrast_branch, contrast_branch);
+      job_info.deployBranch = contrast_branch;
     }
     const service_key = args.service_key;
     if (service_key) {
@@ -227,6 +261,16 @@ export function cmd_submit_skill_direct(args: Args): void {
   } else {
     console.error("❌ submit-skill-direct requires --git + --branch or --services-json");
     process.exit(1);
+  }
+
+  for (const job of job_infos) {
+    if (!job || typeof job !== "object") continue;
+    for (const key of ["branch", "developBranch", "deployBranch", "contrastBranch"]) {
+      if (!job[key]) continue;
+      const normalized = normalize_branch_ref(job[key]);
+      log_branch_normalization("submit-skill-direct", key, job[key], normalized);
+      job[key] = normalized;
+    }
   }
 
   const request_body: Record<string, any> = {
@@ -292,7 +336,7 @@ export function cmd_submit_skill_direct(args: Args): void {
   if (!task_id || typeof task_id !== "number" || !Number.isInteger(task_id) || task_id <= 0) {
     console.error(`[submit-skill-direct] ⚠️  API did not return a valid taskId (got ${JSON.stringify(task_id)}); check the response`);
   }
-  console.error(`✅ SKILL_DIRECT detection task submitted! taskId=${task_id} (strategy: AST scan + business detection)`);
+  _log_task_registered("submit-skill-direct", task_id, " (strategy: AST scan + business detection)");
   console.log(JSON.stringify(result, null, 2));
 }
 

@@ -33,6 +33,30 @@ export function _cli_success(data: any = undefined, msg = "", detail: Record<str
   _cli_result(0, data, msg, detail);
 }
 
+/**
+ * Reduce whatever the user pasted to a plain branch name. Callers build the
+ * remote ref themselves (`origin/<branch>`), so a `origin/master` argument used
+ * to become `origin/origin/master` and git could not resolve it. Branch names
+ * with slashes (`release/1.0`) must survive, so this strips known prefixes
+ * instead of keeping the last path segment.
+ */
+export function normalize_branch_ref(raw: string | null | undefined): string | null {
+  let name = String(raw ?? "").trim();
+  if (!name) return null;
+  name = name.replace(/^refs\/remotes\//, "").replace(/^refs\/heads\//, "");
+  // Repeat so an already-doubled `origin/origin/master` also collapses.
+  while (name.startsWith("origin/")) name = name.slice("origin/".length);
+  name = name.replace(/^\/+/, "").replace(/\/+$/, "");
+  return name || null;
+}
+
+/** Log once when normalisation actually changed the argument, so the run is traceable. */
+export function log_branch_normalization(tag: string, flag: string, raw: string | null | undefined, normalized: string | null): void {
+  const original = String(raw ?? "").trim();
+  if (!original || !normalized || original === normalized) return;
+  console.error(`[${tag}] ℹ️ normalized ${flag} '${original}' → '${normalized}'`);
+}
+
 function _should_inject_frontend_strategy(
   services: any[] | null = null,
   git_url: string | null = null,

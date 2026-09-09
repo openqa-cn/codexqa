@@ -257,6 +257,9 @@ node "$SKILL_SCRIPT" submit-git \
 ```
 
 `submit-git` also initializes the content store and registers the service (same as the content half of `phase1-init`), so `check-phase2-readiness` does not fail with an empty services list.
+
+This **registers** the task; it does not start a scan. There is no background worker: the task sits at `in_progress` until the agent runs clone → plan → analysis → `complete-task` (or `force-abort-task` to give up). A remote prefix on `--branch` / `--contrast-branch` is stripped, so `origin/feature/checkout-guard` and `feature/checkout-guard` mean the same thing.
+
 After submit, still recommended: `check-materials --git ... --branch ... --task-id $TASK_ID` — take requirements/cases if present; if the user says there are none, continue.
 
 ---
