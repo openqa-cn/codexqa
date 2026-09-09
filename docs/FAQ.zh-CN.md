@@ -48,7 +48,7 @@ OpenQA Skills 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本�
 
 ## 需要 npm 或 OpenQA 账号吗？
 
-不需要。`npx skills add` 只是从 GitHub 获取 Skill 的通用安装器。
+不需要。`npx skills add` 只是从 GitHub 获取 skill 文件的社区安装器，本地 provider 也不需要 OpenQA 账号。你的 Agent 和远程 provider 可能各有自己的账号要求。
 
 ## 安装后会自动跑工作流吗？
 
@@ -56,17 +56,27 @@ OpenQA Skills 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本�
 
 ## 代码会离开本机吗？
 
-取决于宿主 Agent/模型和 provider 配置。本地 provider 将结果写入磁盘；远程 provider、仓库克隆、文档获取以及自动安装 Semgrep/GitNexus 可能联网。
+本地 provider 把结果写在磁盘上，但这不等于「离线运行」。源码上下文怎么处理，取决于宿主 Agent / 模型；配置了 HTTP provider 会把业务材料和发现发到外部服务；接了 GitHub 问题单集成会在外部留下记录。
+
+仓库克隆和抓取公开文档同样会联网。当前分析命令可能尝试通过 pip / Homebrew 安装 Semgrep，通过 npm / pnpm 全局安装 GitNexus。分析涉密仓库前，请先确认配置和宿主权限。
+
+## defect-detection 的报告和配置存在哪里？
+
+默认写在 skill 安装目录下的 `data/`，以及本地 `enterprise/` 输入目录。运行时可用 `DETECTION_DATA_DIR`、`CONTENT_JSON_BASE`、`DETECTION_ENTERPRISE_DIR` 覆盖，细节见[运维手册](../skills/defect-detection/references/operator-manual.md)和[适配器指南](../skills/defect-detection/references/api/adapters.md)。运行数据和私有配置不要进版本库，升级前先备份。
 
 `testcase-generation` 写到工作区 `usecases/` 和可选的 `{workspace}/.ai-testcase/`。`testdata-generation` 写到工作区 `testdata/`（见该 skill 的 [README](../skills/testdata-generation/README.zh-CN.md)）。
 
 ## defect-detection 能替代测试或静态分析吗？
 
-不能。它组织上下文和证据，并输出待人工确认的候选；不证明不存在缺陷，也不替代测试执行。
+不能。它把静态分析集成和 Agent 审查组合起来，但不替代测试执行，也不能证明不存在缺陷。结构和覆盖率门禁校验的是记录是否合规，不是语义是否正确。AI 给出的候选需要人工复核。
 
-## 当前支持什么？
+## 支持哪些语言和 Agent？
 
-Skill 文档面向 Codex、Claude Code、Cursor 和 OpenClaw；完整 Agent 流程和检测准确率尚未完成独立 benchmark，详见[支持矩阵](SUPPORT_MATRIX.md)。
+Skill 指令面向 Codex、Claude Code、Cursor 和 OpenClaw。注意「装得上」「跑过运行时测试」「完整 Agent 流程验证过」是三种不同的说法，实际核对到哪一步见[支持矩阵](SUPPORT_MATRIX.zh-CN.md)。Java 有面向方法 / 调用图的处理；其他语言的表现取决于对应的抽取和扫描路径。
+
+## 检出准确率测过吗？
+
+还没有公开的 Agent benchmark。回归套件校验的是 CLI 和工作流行为；边界案例演示的是一个确定可复现的缺陷，不代表 AI 检出率或误报率。
 
 ## 产物长什么样？
 
