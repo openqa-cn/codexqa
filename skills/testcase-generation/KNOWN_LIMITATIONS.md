@@ -60,7 +60,7 @@ Tables, cache keys, and config keys absent from the PRD / technical design becom
 
 ## Runtime
 
-- POSIX `sh`; no `jq` / `uuidgen` / bash-4 associative arrays. Windows untested. [SUPPORT_MATRIX](https://github.com/openqa-cn/openqa-skills/blob/main/docs/SUPPORT_MATRIX.md)
+- POSIX `sh`; no `jq` / `uuidgen` / bash-4 associative arrays. Windows untested. [SUPPORT_MATRIX](https://github.com/openqa-cn/codexqa/blob/main/docs/SUPPORT_MATRIX.md)
 - `git` required (`prd/` baseline, `code/` diff). No non-git mode
 - Workspace layout: `prd/`, `code/`, `usecases/`. Other layouts untested
 

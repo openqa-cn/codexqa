@@ -4,9 +4,9 @@
 
 [`code-reviewer`](README.zh-CN.md) 不内置模型。它是宿主 agent 要遵循的 playbook：从本地 Git diff 判断审查表面、加载对应规则、可选跑 `tooling/` 脚本，写出 P0 / P1 / P2 报告。
 
-**输入是本地工作副本，不是克隆地址。** 在 Agent 里打开仓库，并说出分支 / PR / commit。本 skill 不会像 [`defect-detection`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/defect-detection/README.zh-CN.md) 那样去拉远程。详见 [README · 你要交什么](README.zh-CN.md#你要交什么)。
+**输入是本地工作副本，不是克隆地址。** 在 Agent 里打开仓库，并说出分支 / PR / commit。本 skill 不会像 [`defect-detection`](https://github.com/openqa-cn/codexqa/blob/main/skills/defect-detection/README.zh-CN.md) 那样去拉远程。详见 [README · 你要交什么](README.zh-CN.md#你要交什么)。
 
-Agent 运行时读 [`SKILL.md`](SKILL.md) 再读 [`review-playbook.md`](review-playbook.md)，不要读本页。能力边界见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。报告样例：[预览页](https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/cr-findings.html)。
+Agent 运行时读 [`SKILL.md`](SKILL.md) 再读 [`review-playbook.md`](review-playbook.md)，不要读本页。能力边界见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。报告样例：[预览页](https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/cr-findings.html)。
 
 ## 要解决的问题
 
@@ -41,7 +41,7 @@ Agent 运行时读 [`SKILL.md`](SKILL.md) 再读 [`review-playbook.md`](review-p
 
 ### 2. 发现不是写回
 
-没有任务库、没有 23 条写回校验、没有 HTML 平台报告。输出就是发现报告。带门禁的「需求对代码」缺陷审查是 [`defect-detection`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/defect-detection/README.zh-CN.md)。
+没有任务库、没有 23 条写回校验、没有 HTML 平台报告。输出就是发现报告。带门禁的「需求对代码」缺陷审查是 [`defect-detection`](https://github.com/openqa-cn/codexqa/blob/main/skills/defect-detection/README.zh-CN.md)。
 
 ### 3. 外部系统只认配置
 
@@ -89,4 +89,4 @@ Git 浏览链接、分层路径、HTTP 集成只来自 `tooling/load-config.js`�
 | Agent 入口 | [`SKILL.md`](SKILL.md) |
 | 审查算法 | [`review-playbook.md`](review-playbook.md) |
 | 仓库配置 | [`config/README.md`](config/README.md) |
-| 各 skill 要交什么 | [FAQ](https://github.com/openqa-cn/openqa-skills/blob/main/docs/FAQ.zh-CN.md) |
+| 各 skill 要交什么 | [FAQ](https://github.com/openqa-cn/codexqa/blob/main/docs/FAQ.zh-CN.md) |

@@ -24,7 +24,7 @@ evals/                   representative prompts; no published fixture
 
 ## Security (skill-specific)
 
-Vulnerability reporting is at the repository level: [SECURITY.md](https://github.com/openqa-cn/openqa-skills/blob/main/SECURITY.md). For this skill specifically:
+Vulnerability reporting is at the repository level: [SECURITY.md](https://github.com/openqa-cn/codexqa/blob/main/SECURITY.md). For this skill specifically:
 
 - Do not commit tokens, cookies, PEM files, or an `integrations.yaml` that contains secrets.
 - Put credentials in environment variables (`${OAUTH_CLIENT_SECRET}`, `${MTLS_CERT_PATH}`).

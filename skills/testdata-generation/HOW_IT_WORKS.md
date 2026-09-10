@@ -6,7 +6,7 @@
 
 **Inputs are not application source.** You bring a construct request, written cases, and/or an API source (OpenAPI / `planId` / `serviceId`). The skill does not read `code/` to invent table names or IDs. See [README — What you give it](README.md#what-you-give-it).
 
-Agents read [`SKILL.md`](SKILL.md), not this page. Command-level detail is in the [operator appendix](#operator-appendix) below. Gaps: [Known limitations](KNOWN_LIMITATIONS.md). Sample write-back: [preview](https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/testdata-writeback.html).
+Agents read [`SKILL.md`](SKILL.md), not this page. Command-level detail is in the [operator appendix](#operator-appendix) below. Gaps: [Known limitations](KNOWN_LIMITATIONS.md). Sample write-back: [preview](https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testdata-writeback.html).
 
 ## Problem
 
@@ -83,7 +83,7 @@ One-shot construct prints IDs in the chat. Case materials write `testdata/case-m
 | Observed failures and boundaries | [Known limitations](KNOWN_LIMITATIONS.md) |
 | Agent runtime contract | [`SKILL.md`](SKILL.md) |
 | Commands, report payloads, install, troubleshooting | [Operator appendix](#operator-appendix) below |
-| What each published skill takes | [FAQ](https://github.com/openqa-cn/openqa-skills/blob/main/docs/FAQ.md) |
+| What each published skill takes | [FAQ](https://github.com/openqa-cn/codexqa/blob/main/docs/FAQ.md) |
 
 ---
 
@@ -325,28 +325,29 @@ Point `DATA_BUILD_API_BASE` at a real gateway and the same executors write real 
 
 ## Appendix: install and environment
 
-### Pack
+### From the GitHub repository
+
+```bash
+npx skills add openqa-cn/codexqa --skill testdata-generation
+```
+
+Then start a new Agent conversation. Host flags: [INSTALL.md](INSTALL.md) and [docs/GETTING_STARTED.md](https://github.com/openqa-cn/codexqa/blob/main/docs/GETTING_STARTED.md).
+
+### Pack and unzip (local checkout)
 
 From the source directory:
 
 ```bash
 cd testdata-generation
 node scripts/pack_skills.ts --output ./dist
-```
-
-Artifact: `dist/testdata-generation.zip` (the zip root must be `testdata-generation/SKILL.md`).
-
-### Install into the Cursor user-global skill library
-
-```bash
 unzip dist/testdata-generation.zip -d ~/.cursor/skills
 ```
 
-The result should be `~/.cursor/skills/testdata-generation/SKILL.md`.
+Artifact: `dist/testdata-generation.zip` (the zip root must be `testdata-generation/SKILL.md`). The result should be `~/.cursor/skills/testdata-generation/SKILL.md`.
 If the zip was created by compressing the source directory directly, keep the `testdata-generation` folder name and remove `__MACOSX`, `dist/`, and `testdata/`.
 
 Project-level: unzip into `<project>/.cursor/skills/`.
-For Claude Code / Codex, see [INSTALL.md](INSTALL.md). The skill is discovered reliably only after you start a new Agent conversation.
+For Claude Code / Codex unzip paths, see [INSTALL.md](INSTALL.md).
 
 ### Local development setup
 
@@ -543,5 +544,5 @@ Experiments / whitelist only when the user explicitly asks and `feature_flags.ty
 | [slots/distribution/SKILL.md](slots/distribution/SKILL.md) | Distribution routing and scenes |
 | [references/case-data-material-planner/SKILL.md](references/case-data-material-planner/SKILL.md) | Case-material routing |
 | [references/case-data-material-planner/planner.md](references/case-data-material-planner/planner.md) | `pipeline.ts` host protocol |
-| [INSTALL.md](INSTALL.md) | Install into Cursor / Claude / Codex |
+| [INSTALL.md](INSTALL.md) | `npx skills add`, plus optional zip unpack |
 | [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) | Observed failure cases and boundaries |

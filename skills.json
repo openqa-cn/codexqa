@@ -1,6 +1,6 @@
 {
   "schema_version": "0.1",
-  "project": "openqa-skills",
+  "project": "codexqa",
   "skills": [
     {
       "name": "defect-detection",

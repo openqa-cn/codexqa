@@ -7,10 +7,10 @@
 登记表长什么样：
 
 <p align="center">
-  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/ra-register.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/ra-register.png" alt="需求分析缺口登记表样例" width="880"></a>
+  <a href="https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/ra-register.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/ra-register.png" alt="需求分析缺口登记表样例" width="880"></a>
 </p>
 
-**不是** [`testcase-generation`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/testcase-generation/README.zh-CN.md)。那个 skill 根据 `prd/` 写手工用例库。本 skill 审的是需求本身是否完整、一致、可测。
+**不是** [`testcase-generation`](https://github.com/openqa-cn/codexqa/blob/main/skills/testcase-generation/README.zh-CN.md)。那个 skill 根据 `prd/` 写手工用例库。本 skill 审的是需求本身是否完整、一致、可测。
 
 ## 你要交什么
 
@@ -50,7 +50,7 @@ requirements-analyzer/
 ## 安装
 
 ```bash
-npx skills add openqa-cn/openqa-skills --skill requirements-analyzer
+npx skills add openqa-cn/codexqa --skill requirements-analyzer
 ```
 
 然后**新建** Agent 会话。

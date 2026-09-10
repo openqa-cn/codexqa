@@ -7,10 +7,10 @@
 回写长什么样：
 
 <p align="center">
-  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/testdata-writeback.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/testdata-writeback.png" alt="测试数据回填占位符样例" width="880"></a>
+  <a href="https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testdata-writeback.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/testdata-writeback.png" alt="测试数据回填占位符样例" width="880"></a>
 </p>
 
-**不编造业务 ID。**「构造成功」指后端返回了 ID，不是对话里出现了一个号。也**不**根据 PRD 写测试用例——那是兄弟 skill [`testcase-generation`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/testcase-generation/README.zh-CN.md)。
+**不编造业务 ID。**「构造成功」指后端返回了 ID，不是对话里出现了一个号。也**不**根据 PRD 写测试用例——那是兄弟 skill [`testcase-generation`](https://github.com/openqa-cn/codexqa/blob/main/skills/testcase-generation/README.zh-CN.md)。
 
 ## 你要交什么
 
@@ -40,7 +40,7 @@ testdata-generation/         # 安装目录（与源码目录同名）
 ├── HOW_IT_WORKS.zh-CN.md
 ├── KNOWN_LIMITATIONS.md
 ├── KNOWN_LIMITATIONS.zh-CN.md
-├── INSTALL.md               # Cursor / Claude Code / Codex 解压路径
+├── INSTALL.md               # npx skills add，以及可选的 zip 解压路径
 ├── scripts/                 # 适配器 + 搜索 + 打包 + slot 发现
 ├── references/              # 工作流、planner、模板
 ├── assets/                  # config.example.yaml
@@ -50,14 +50,15 @@ testdata-generation/         # 安装目录（与源码目录同名）
 
 新公司场景：把 skill 丢进 `slots/`（或不在默认目录时加一行 `workspace.slot_roots`）。搜索、OpenAPI 索引、用例流水线绑定共用这份列表。关键词搜索读 `slot.yaml` 的 `description`（没有则读 `SKILL.md`）——把 `catalog` / `distributor` 这类业务名词写进去。
 
-## 安装到 Cursor / Claude Code / Codex
+## 安装
 
 ```bash
-node scripts/pack_skills.ts --output ./dist
-unzip dist/testdata-generation.zip -d ~/.cursor/skills
+npx skills add openqa-cn/codexqa --skill testdata-generation
 ```
 
-见 [INSTALL.md](INSTALL.md)。zip 根目录文件夹里必须有 `SKILL.md`。
+然后**新建** Agent 会话。安装器会把本目录拷进宿主的 skills 文件夹（Cursor、Claude Code、Codex、OpenClaw）。
+
+从本地源码打 zip 再解压也可以，见 [INSTALL.md](INSTALL.md)。zip 根目录文件夹里必须有 `SKILL.md`。
 
 ## 运行要求
 

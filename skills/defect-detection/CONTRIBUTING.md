@@ -31,7 +31,7 @@ tests/                   unit and scenario tests (not shipped)
 
 ## Security (skill-specific)
 
-Vulnerability reporting is at the repository level: [SECURITY.md](https://github.com/openqa-cn/openqa-skills/blob/main/SECURITY.md). For this skill specifically:
+Vulnerability reporting is at the repository level: [SECURITY.md](https://github.com/openqa-cn/codexqa/blob/main/SECURITY.md). For this skill specifically:
 
 - Do not commit tokens, cookies, or a `config.yaml` that contains secrets.
 - Put credentials in environment variables (`DETECTION_TOKEN`, `DETECTION_API_KEY`, `GITHUB_TOKEN`).

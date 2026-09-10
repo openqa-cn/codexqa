@@ -2,6 +2,18 @@
 
 Requires Node 22+. Runtime is Node stdlib (no `npm install` needed to run scripts).
 
+## From the GitHub repository
+
+Same command as the other skills in this repo:
+
+```bash
+npx skills add openqa-cn/codexqa --skill testdata-generation
+```
+
+Then start a **new** agent session. Host-specific flags (`--agent cursor`, `--agent claude-code`, `--agent codex`, `--global`) are documented in the [repo getting started](https://github.com/openqa-cn/codexqa/blob/main/docs/GETTING_STARTED.md).
+
+## From a local checkout (zip)
+
 This folder **is** the skill. After packaging, IDEs must see:
 
 ```

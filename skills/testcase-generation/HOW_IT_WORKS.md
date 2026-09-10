@@ -4,7 +4,7 @@
 
 `testcase-generation` is a host-agent workflow skill. It does not ship a model. Inputs are a workspace PRD / technical design / API contract (optional knowledge files and code under test). Outputs are manual cases at `usecases/cases/{module}/*.md` plus intermediates under `usecases/testdocs/`.
 
-Runtime steps: [`SKILL.md`](SKILL.md). Gaps: [Known limitations](KNOWN_LIMITATIONS.md). Install / zero-config: [README](README.md). A rendered case: [sample page](https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/testcase-sample.html).
+Runtime steps: [`SKILL.md`](SKILL.md). Gaps: [Known limitations](KNOWN_LIMITATIONS.md). Install / zero-config: [README](README.md). A rendered case: [sample page](https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testcase-sample.html).
 
 ## Problem
 
@@ -32,7 +32,7 @@ Generate is not a single PRD → cases step. Stops:
 | End of Phase 2 (always) | Module / coverage diagram, entity dependency diagram, link to `design.md` | Confirm, or edit `design.md` then confirm |
 | All registry entries `status=done` | Mermaid overview by module and `new_feature` / `regression` | Edit cases in chat, or stop |
 
-Case path: `usecases/cases/{module}/`. Format is Markdown for humans, not an automation harness. System-generated keys stay `{placeholder}` with an empty `Construction` column; backfill is [`testdata-generation`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/testdata-generation/README.md). Installing only this skill yields a complete design library, not a script against a live backend.
+Case path: `usecases/cases/{module}/`. Format is Markdown for humans, not an automation harness. System-generated keys stay `{placeholder}` with an empty `Construction` column; backfill is [`testdata-generation`](https://github.com/openqa-cn/codexqa/blob/main/skills/testdata-generation/README.md). Installing only this skill yields a complete design library, not a script against a live backend.
 
 Update: diff `prd/` (git baseline) and each `code/*` `HEAD` stored in registry `_meta` → write `change-impact-analysis.md` → confirm → patch affected cases only.
 
@@ -142,5 +142,5 @@ Reasoning is the host agent (Cursor / Claude Code / Codex / OpenClaw). Instructi
 | Generate orchestrator | `generation/generate-skill.md` |
 | Update flow | `maintenance/update-skill.md` |
 | HTTP adapter contract | [`integration-api.md`](references/integration-api.md) |
-| Repo runtime matrix | [SUPPORT_MATRIX](https://github.com/openqa-cn/openqa-skills/blob/main/docs/SUPPORT_MATRIX.md) |
-| Doc placement | [ARCHITECTURE](https://github.com/openqa-cn/openqa-skills/blob/main/docs/ARCHITECTURE.md) |
+| Repo runtime matrix | [SUPPORT_MATRIX](https://github.com/openqa-cn/codexqa/blob/main/docs/SUPPORT_MATRIX.md) |
+| Doc placement | [ARCHITECTURE](https://github.com/openqa-cn/codexqa/blob/main/docs/ARCHITECTURE.md) |

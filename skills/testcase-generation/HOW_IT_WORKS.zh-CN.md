@@ -4,7 +4,7 @@
 
 `testcase-generation` 是宿主 agent 上的工作流 skill，不内置模型。输入是工作区里的 PRD / 技术方案 / 接口契约（可选知识库、被测代码）。输出是 `usecases/cases/{module}/*.md` 手工用例，以及 `usecases/testdocs/` 下的中间产物。
 
-运行时步骤见 [`SKILL.md`](SKILL.md)。能力边界见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。安装与零配置见 [README](README.zh-CN.md)。渲染后的用例：[样例页](https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/testcase-sample.html)。
+运行时步骤见 [`SKILL.md`](SKILL.md)。能力边界见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。安装与零配置见 [README](README.zh-CN.md)。渲染后的用例：[样例页](https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testcase-sample.html)。
 
 ## 要解决的问题
 
@@ -32,7 +32,7 @@
 | Phase 2 结束（必停） | 模块/验证范围图、数据实体依赖图、`design.md` 链接 | 确认，或改 `design.md` 后确认 |
 | 全部 registry 条目 `status=done` | mermaid 总览（按模块、`new_feature` / `regression`） | 对话里增删改用例，或结束 |
 
-用例路径：`usecases/cases/{module}/`。格式是 Markdown 手工用例，不是自动化脚本。系统生成的业务主键写成 `{placeholder}`，`Construction` 列留空；回填由 [`testdata-generation`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/testdata-generation/README.zh-CN.md) 执行。只装本 skill 时，库是完整的设计产物，不能直接打真实后端。
+用例路径：`usecases/cases/{module}/`。格式是 Markdown 手工用例，不是自动化脚本。系统生成的业务主键写成 `{placeholder}`，`Construction` 列留空；回填由 [`testdata-generation`](https://github.com/openqa-cn/codexqa/blob/main/skills/testdata-generation/README.zh-CN.md) 执行。只装本 skill 时，库是完整的设计产物，不能直接打真实后端。
 
 更新：对 `prd/` git 基线和 `code/` 各仓 `HEAD`（记在 registry `_meta`）做 diff → 写 `change-impact-analysis.md` → 确认 → 只改受影响用例。
 
@@ -142,5 +142,5 @@ Agent 先读 `generation/generate-skill.md`，再按 resume 表打开**一个** 
 | 生成编排 | `generation/generate-skill.md` |
 | 更新流程 | `maintenance/update-skill.md` |
 | HTTP 适配契约 | [`integration-api.md`](references/integration-api.md) |
-| 仓库运行时矩阵 | [SUPPORT_MATRIX](https://github.com/openqa-cn/openqa-skills/blob/main/docs/SUPPORT_MATRIX.zh-CN.md) |
-| 文档放置规则 | [ARCHITECTURE](https://github.com/openqa-cn/openqa-skills/blob/main/docs/ARCHITECTURE.md) |
+| 仓库运行时矩阵 | [SUPPORT_MATRIX](https://github.com/openqa-cn/codexqa/blob/main/docs/SUPPORT_MATRIX.zh-CN.md) |
+| 文档放置规则 | [ARCHITECTURE](https://github.com/openqa-cn/codexqa/blob/main/docs/ARCHITECTURE.md) |

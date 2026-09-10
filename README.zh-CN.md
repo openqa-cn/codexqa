@@ -4,10 +4,10 @@
 
 **给 Cursor / Claude Code / Codex 用的 Agent Skill：检查 AI 写的代码是否还符合需求，并把 PRD 变成手工用例和真实测试数据。**
 
-[![CI](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml)
-[![Release](https://img.shields.io/github/v/tag/openqa-cn/openqa-skills?label=release&style=flat)](https://github.com/openqa-cn/openqa-skills/releases)
-[![GitHub stars](https://img.shields.io/github/stars/openqa-cn/openqa-skills?style=flat)](https://github.com/openqa-cn/openqa-skills/stargazers)
-[![License](https://img.shields.io/github/license/openqa-cn/openqa-skills)](LICENSE)
+[![CI](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml)
+[![Release](https://img.shields.io/github/v/tag/openqa-cn/codexqa?label=release&style=flat)](https://github.com/openqa-cn/codexqa/releases)
+[![GitHub stars](https://img.shields.io/github/stars/openqa-cn/codexqa?style=flat)](https://github.com/openqa-cn/codexqa/stargazers)
+[![License](https://img.shields.io/github/license/openqa-cn/codexqa)](LICENSE)
 
 **[English](README.md) | 简体中文**
 
@@ -48,7 +48,7 @@ Coding Agent 让「看起来能合的 PR」变得便宜。现在真正耗时间�
 
 ## 本仓库提供什么
 
-`openqa-skills` 是 OpenQA 面向 Coding Agent 的公开、本地优先 [Agent Skills](https://agentskills.io/specification) 包。五个 skill，**输入各不相同**：
+`codexqa` 是 OpenQA 面向 Coding Agent 的公开、本地优先 [Agent Skills](https://agentskills.io/specification) 包。五个 skill，**输入各不相同**：
 
 | Skill | 你要带上的 | 它做什么 |
 | --- | --- | --- |
@@ -160,11 +160,11 @@ Skill 指令面向 **Cursor、Claude Code、Codex、OpenClaw**：装完新开一
 ## 在 Cursor、Claude Code、Codex 上安装
 
 ```bash
-npx skills add openqa-cn/openqa-skills --skill defect-detection
-npx skills add openqa-cn/openqa-skills --skill code-reviewer
-npx skills add openqa-cn/openqa-skills --skill requirements-analyzer
-npx skills add openqa-cn/openqa-skills --skill testcase-generation
-npx skills add openqa-cn/openqa-skills --skill testdata-generation
+npx skills add openqa-cn/codexqa --skill defect-detection
+npx skills add openqa-cn/codexqa --skill code-reviewer
+npx skills add openqa-cn/codexqa --skill requirements-analyzer
+npx skills add openqa-cn/codexqa --skill testcase-generation
+npx skills add openqa-cn/codexqa --skill testdata-generation
 ```
 
 按提示选择 Agent。全局安装到 Codex 时加 `--agent codex --global`。每个 `--skill` 只复制一个目录。
@@ -290,8 +290,8 @@ node examples/checkout-boundary/verify.mjs
 
 ## 获取支持
 
-- 通过 [GitHub Issues](https://github.com/openqa-cn/openqa-skills/issues) 报告可复现问题
-- 在 [GitHub Discussions](https://github.com/openqa-cn/openqa-skills/discussions) 提问和讨论实现方案
+- 通过 [GitHub Issues](https://github.com/openqa-cn/codexqa/issues) 报告可复现问题
+- 在 [GitHub Discussions](https://github.com/openqa-cn/codexqa/discussions) 提问和讨论实现方案
 - 安全漏洞请按照[安全说明](SECURITY.zh-CN.md)反馈
 
 寻求帮助时，请提供 commit 或 skill 版本、操作系统、Agent、命令、预期结果和实际结果。分享前请移除凭据、私有源码和专有日志。
@@ -302,4 +302,4 @@ OpenQA 的其他去处：[官网](https://openqa.cn) · [产品](https://openqa.
 
 欢迎提交误报或漏报的最小公开复现、正常对照、新分析规则、案例和文档改进。分享前请移除凭据、私有源码和专有日志。请从[贡献指南](CONTRIBUTING.zh-CN.md)、[示例](examples/README.zh-CN.md)和[发布流程](PUBLISHING.zh-CN.md)开始。
 
-Apache-2.0 · [GitHub](https://github.com/openqa-cn/openqa-skills)
+Apache-2.0 · [GitHub](https://github.com/openqa-cn/codexqa)

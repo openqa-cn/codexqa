@@ -4,9 +4,9 @@
 
 [`code-reviewer`](README.md) does not ship a model. It is a playbook the host agent follows: detect the review surface from a local Git diff, load matching rules, optionally run `tooling/` scripts, and write a P0 / P1 / P2 report.
 
-**Input is a local checkout, not a clone URL.** Open the repository in the agent and name the branch / PR / commit. The skill does not fetch a remote the way [`defect-detection`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/defect-detection/README.md) does. See [README — What you give it](README.md#what-you-give-it).
+**Input is a local checkout, not a clone URL.** Open the repository in the agent and name the branch / PR / commit. The skill does not fetch a remote the way [`defect-detection`](https://github.com/openqa-cn/codexqa/blob/main/skills/defect-detection/README.md) does. See [README — What you give it](README.md#what-you-give-it).
 
-Agents read [`SKILL.md`](SKILL.md) then [`review-playbook.md`](review-playbook.md), not this page. Gaps: [Known limitations](KNOWN_LIMITATIONS.md). Sample report: [preview](https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/cr-findings.html).
+Agents read [`SKILL.md`](SKILL.md) then [`review-playbook.md`](review-playbook.md), not this page. Gaps: [Known limitations](KNOWN_LIMITATIONS.md). Sample report: [preview](https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/cr-findings.html).
 
 ## Problem
 
@@ -41,7 +41,7 @@ The change set chooses the surface. Always-on rules (`project-conventions`, `des
 
 ### 2. Findings are not write-backs
 
-There is no task store, no 23-rule write-back validator, and no HTML platform report. Output is the findings report. Requirement-vs-code defect hunting with gates is [`defect-detection`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/defect-detection/README.md).
+There is no task store, no 23-rule write-back validator, and no HTML platform report. Output is the findings report. Requirement-vs-code defect hunting with gates is [`defect-detection`](https://github.com/openqa-cn/codexqa/blob/main/skills/defect-detection/README.md).
 
 ### 3. External systems are config-only
 
@@ -89,4 +89,4 @@ Local git checkout + branch / PR / commit
 | Agent entry | [`SKILL.md`](SKILL.md) |
 | Review algorithm | [`review-playbook.md`](review-playbook.md) |
 | Repo config | [`config/README.md`](config/README.md) |
-| What each published skill takes | [FAQ](https://github.com/openqa-cn/openqa-skills/blob/main/docs/FAQ.md) |
+| What each published skill takes | [FAQ](https://github.com/openqa-cn/codexqa/blob/main/docs/FAQ.md) |

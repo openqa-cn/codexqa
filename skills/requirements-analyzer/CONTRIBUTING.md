@@ -17,4 +17,4 @@ This skill is a vendor-neutral, Apache-2.0 Agent Skill for requirement quality-a
 
 ## Reporting security issues
 
-See the repository [SECURITY.md](https://github.com/openqa-cn/openqa-skills/blob/main/SECURITY.md).
+See the repository [SECURITY.md](https://github.com/openqa-cn/codexqa/blob/main/SECURITY.md).

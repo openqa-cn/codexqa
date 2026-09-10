@@ -60,7 +60,7 @@ Phase 2 最多 3 路并行；Phase 3 按 `design.md` 模块各一路。R1–R4 �
 
 ## 运行环境
 
-- Shell 为 POSIX `sh`，不用 `jq` / `uuidgen` / bash 4 关联数组。Windows 未测。[SUPPORT_MATRIX](https://github.com/openqa-cn/openqa-skills/blob/main/docs/SUPPORT_MATRIX.zh-CN.md)
+- Shell 为 POSIX `sh`，不用 `jq` / `uuidgen` / bash 4 关联数组。Windows 未测。[SUPPORT_MATRIX](https://github.com/openqa-cn/codexqa/blob/main/docs/SUPPORT_MATRIX.zh-CN.md)
 - 依赖 `git`（`prd/` 基线、`code/` diff）。无非 git 模式
 - 工作区约定 `prd/`、`code/`、`usecases/`。其它目录布局未测
 

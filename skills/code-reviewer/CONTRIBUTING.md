@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve this skill. It is a vendor-neutral, MIT-licensed Agent Skill for Git-based code review, shipped inside the Apache-2.0 `openqa-skills` repository.
+Thanks for helping improve this skill. It is a vendor-neutral, MIT-licensed Agent Skill for Git-based code review, shipped inside the Apache-2.0 `codexqa` repository.
 
 ## Ways to contribute
 
@@ -39,10 +39,10 @@ After changing a `.ts` file, from `tooling/` run `npm run build` (or `npm test`,
 - If you add a file, mention it from `review-playbook.md` or `README.md` so the agent can find it, and add it to `packaging-inventory.txt`.
 - Do not commit review leftovers (`.cr-*`, `.code-review-diff.tmp`).
 - Publish a zip with `node tooling/pack-skill.js` so the archive is `code-reviewer/SKILL.md` without `.git` or `__MACOSX`.
-- Follow the repository [code of conduct](https://github.com/openqa-cn/openqa-skills/blob/main/CODE_OF_CONDUCT.md).
+- Follow the repository [code of conduct](https://github.com/openqa-cn/codexqa/blob/main/CODE_OF_CONDUCT.md).
 
 Maintainers review for correctness, portability, and whether the change raises false-positive noise in reviews.
 
 ## Reporting security issues
 
-Do not file a public issue for a vulnerability. See the repository [SECURITY.md](https://github.com/openqa-cn/openqa-skills/blob/main/SECURITY.md).
+Do not file a public issue for a vulnerability. See the repository [SECURITY.md](https://github.com/openqa-cn/codexqa/blob/main/SECURITY.md).

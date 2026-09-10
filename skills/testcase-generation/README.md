@@ -7,7 +7,7 @@ Open-source Agent Skill for generating and updating structured **manual test cas
 What a finished case looks like (Markdown rendered):
 
 <p align="center">
-  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/testcase-sample.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/testcase-sample.png" alt="Sample generated manual test case" width="880"></a>
+  <a href="https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testcase-sample.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/testcase-sample.png" alt="Sample generated manual test case" width="880"></a>
 </p>
 
 **Input is documents, not a git clone.** Generate reads `prd/` (and optional `knowledge/`). `code/` is used only on **update**, to diff what changed and decide which existing cases are affected — not to invent schemas or fill test data.
@@ -98,9 +98,17 @@ testcase-generation/
 └── evals/                  # representative prompts; no published fixture yet
 ```
 
+## Install
+
+```bash
+npx skills add openqa-cn/codexqa --skill testcase-generation
+```
+
+Start a **new** agent session. The installer copies this directory into the host skills folder (Cursor, Claude Code, Codex, OpenClaw). Packing a zip yourself is not required.
+
 ## How to use
 
-Point an agent at this skill directory and ask to generate or update test cases. The agent reads `SKILL.md`, then the generate or update document.
+Ask the agent to generate or update test cases. It reads `SKILL.md`, then the generate or update document.
 
 ```text
 Generate a manual case library with testcase-generation from the documents under prd/.

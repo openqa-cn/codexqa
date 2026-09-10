@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: Ask a question or propose an idea
-    url: https://github.com/openqa-cn/openqa-skills/discussions
+    url: https://github.com/openqa-cn/codexqa/discussions
     about: Use Discussions for questions and design conversations.
   - name: Security vulnerability
     url: mailto:security@openqa.cn

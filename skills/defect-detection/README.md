@@ -7,7 +7,7 @@ Agent-led static and business-logic defect detection for pull requests and test 
 Sample HTML report (same renderer as a local run):
 
 <p align="center">
-  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/defect-report.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/defect-report.png" alt="Sample defect-detection HTML report" width="880"></a>
+  <a href="https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/defect-report.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/defect-report.png" alt="Sample defect-detection HTML report" width="880"></a>
 </p>
 
 ## What you get
@@ -32,16 +32,16 @@ No extra npm packages are required for local mode. GitNexus / Semgrep are local 
 
 | Command | What it does |
 |---|---|
-| `npx skills add openqa-cn/openqa-skills --skill defect-detection` | Installs the skill into a coding-agent skills directory |
+| `npx skills add openqa-cn/codexqa --skill defect-detection` | Installs the skill into a coding-agent skills directory |
 | `node scripts/detect.ts …` | Runs the detection CLI (this is **not** an `npx` binary) |
 
 There is no `npx defect-detection` / package `bin`. After install, point `$SKILL_DIR` at the installed folder and run `node "$SKILL_DIR/scripts/detect.ts"`.
 
-See the [installation guide](https://github.com/openqa-cn/openqa-skills/blob/main/docs/GETTING_STARTED.md), [support matrix](https://github.com/openqa-cn/openqa-skills/blob/main/docs/SUPPORT_MATRIX.md), and [data-handling FAQ](https://github.com/openqa-cn/openqa-skills/blob/main/docs/FAQ.md).
+See the [installation guide](https://github.com/openqa-cn/codexqa/blob/main/docs/GETTING_STARTED.md), [support matrix](https://github.com/openqa-cn/codexqa/blob/main/docs/SUPPORT_MATRIX.md), and [data-handling FAQ](https://github.com/openqa-cn/codexqa/blob/main/docs/FAQ.md).
 
 ## Quick start (end-to-end on the checkout fixture)
 
-This uses the [checkout-boundary](https://github.com/openqa-cn/openqa-skills/blob/main/examples/checkout-boundary/README.md) seeded defect (`amount === 0` accepted) as a real git branch — no `acme/...` placeholder.
+This uses the [checkout-boundary](https://github.com/openqa-cn/codexqa/blob/main/examples/checkout-boundary/README.md) seeded defect (`amount === 0` accepted) as a real git branch — no `acme/...` placeholder.
 
 From the **repository root**:
 
@@ -182,7 +182,7 @@ Reviewers need a repeatable way to find code and business-logic defects in a pul
 ### Acceptance criteria
 
 - Sample plan loading and task lifecycle are reproducible through CLI tests.
-- A [known-good/seeded-defect fixture](https://github.com/openqa-cn/openqa-skills/blob/main/examples/checkout-boundary/README.md) has executable expected results; a blind agent eval on a [multi-defect JS service](https://github.com/openqa-cn/openqa-skills/blob/main/examples/inventory-service/README.md) recorded recall 7/7 and precision 7/7 under the conditions in [Known limitations](KNOWN_LIMITATIONS.md).
+- A [known-good/seeded-defect fixture](https://github.com/openqa-cn/codexqa/blob/main/examples/checkout-boundary/README.md) has executable expected results; a blind agent eval on a [multi-defect JS service](https://github.com/openqa-cn/codexqa/blob/main/examples/inventory-service/README.md) recorded recall 7/7 and precision 7/7 under the conditions in [Known limitations](KNOWN_LIMITATIONS.md).
 - Write-back validation rejects malformed findings and preserves local evidence.
 - The report states coverage, rank, and residual risk.
 

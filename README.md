@@ -4,10 +4,10 @@
 
 **Agent Skills that check whether AI-written code still matches the requirement — and turn a PRD into manual test cases and real testdata.**
 
-[![CI](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/openqa-skills/actions/workflows/repo-check.yml)
-[![Release](https://img.shields.io/github/v/tag/openqa-cn/openqa-skills?label=release&style=flat)](https://github.com/openqa-cn/openqa-skills/releases)
-[![GitHub stars](https://img.shields.io/github/stars/openqa-cn/openqa-skills?style=flat)](https://github.com/openqa-cn/openqa-skills/stargazers)
-[![License](https://img.shields.io/github/license/openqa-cn/openqa-skills)](LICENSE)
+[![CI](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml)
+[![Release](https://img.shields.io/github/v/tag/openqa-cn/codexqa?label=release&style=flat)](https://github.com/openqa-cn/codexqa/releases)
+[![GitHub stars](https://img.shields.io/github/stars/openqa-cn/codexqa?style=flat)](https://github.com/openqa-cn/codexqa/stargazers)
+[![License](https://img.shields.io/github/license/openqa-cn/codexqa)](LICENSE)
 
 **English | [简体中文](README.zh-CN.md)**
 
@@ -48,7 +48,7 @@ We have not measured and published a score per host — [what was actually check
 
 ## What this repository provides
 
-`openqa-skills` is OpenQA's public, local-first [Agent Skills](https://agentskills.io/specification) pack. Five skills; they do not share one input:
+`codexqa` is OpenQA's public, local-first [Agent Skills](https://agentskills.io/specification) pack. Five skills; they do not share one input:
 
 | Skill | You bring | It does |
 | --- | --- | --- |
@@ -160,11 +160,11 @@ Optional overlays run when the binary is installed and are skipped when it is no
 ## Install on Cursor, Claude Code, and Codex
 
 ```bash
-npx skills add openqa-cn/openqa-skills --skill defect-detection
-npx skills add openqa-cn/openqa-skills --skill code-reviewer
-npx skills add openqa-cn/openqa-skills --skill requirements-analyzer
-npx skills add openqa-cn/openqa-skills --skill testcase-generation
-npx skills add openqa-cn/openqa-skills --skill testdata-generation
+npx skills add openqa-cn/codexqa --skill defect-detection
+npx skills add openqa-cn/codexqa --skill code-reviewer
+npx skills add openqa-cn/codexqa --skill requirements-analyzer
+npx skills add openqa-cn/codexqa --skill testcase-generation
+npx skills add openqa-cn/codexqa --skill testdata-generation
 ```
 
 Choose an Agent when prompted. For a user-level Codex installation add `--agent codex --global`. Each `--skill` copies one directory.
@@ -290,8 +290,8 @@ These checks cover documentation links, translation section parity, CLI and prov
 
 ## Support
 
-- Report reproducible bugs through [GitHub Issues](https://github.com/openqa-cn/openqa-skills/issues)
-- Ask questions and discuss implementations in [GitHub Discussions](https://github.com/openqa-cn/openqa-skills/discussions)
+- Report reproducible bugs through [GitHub Issues](https://github.com/openqa-cn/codexqa/issues)
+- Ask questions and discuss implementations in [GitHub Discussions](https://github.com/openqa-cn/codexqa/discussions)
 - For security vulnerabilities, follow [SECURITY.md](SECURITY.md)
 
 When asking for help, include the commit or skill version, operating system, Agent, command, expected result, and actual result. Remove credentials, private source, and proprietary logs.
@@ -302,4 +302,4 @@ Elsewhere: [OpenQA website](https://openqa.cn) · [product](https://openqa.cn/ag
 
 Useful contributions include minimal public reproductions of false positives or missed defects, known-good controls, new analysis rules, fixtures, and documentation improvements. Remove credentials, private source, and proprietary logs before sharing. Start with [Contributing](CONTRIBUTING.md), [examples](examples/README.md), and [Publishing](PUBLISHING.md).
 
-Apache-2.0 · [GitHub](https://github.com/openqa-cn/openqa-skills)
+Apache-2.0 · [GitHub](https://github.com/openqa-cn/codexqa)

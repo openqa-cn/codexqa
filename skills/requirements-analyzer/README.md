@@ -7,10 +7,10 @@ Quality-and-risk analysis of **requirement documents**. It audits sources, finds
 What the register looks like:
 
 <p align="center">
-  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/ra-register.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/ra-register.png" alt="Sample requirements-analyzer gap register" width="880"></a>
+  <a href="https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/ra-register.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/ra-register.png" alt="Sample requirements-analyzer gap register" width="880"></a>
 </p>
 
-It is **not** [`testcase-generation`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/testcase-generation/README.md). That skill writes a manual case library from `prd/`. This skill reviews whether the requirements themselves are complete, consistent, and testable.
+It is **not** [`testcase-generation`](https://github.com/openqa-cn/codexqa/blob/main/skills/testcase-generation/README.md). That skill writes a manual case library from `prd/`. This skill reviews whether the requirements themselves are complete, consistent, and testable.
 
 ## What you give it
 
@@ -50,7 +50,7 @@ requirements-analyzer/
 ## Install
 
 ```bash
-npx skills add openqa-cn/openqa-skills --skill requirements-analyzer
+npx skills add openqa-cn/codexqa --skill requirements-analyzer
 ```
 
 Start a **new** agent session.

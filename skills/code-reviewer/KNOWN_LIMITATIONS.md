@@ -34,4 +34,4 @@ Without `code-reviewer.config.json` in the **reviewed** repository, browse-URL t
 
 ## License is MIT
 
-This skill is MIT (`LICENSE` in this directory). The rest of `openqa-skills` is Apache-2.0. Do not assume SPDX of the parent repository applies to files here.
+This skill is MIT (`LICENSE` in this directory). The rest of `codexqa` is Apache-2.0. Do not assume SPDX of the parent repository applies to files here.

@@ -44,7 +44,7 @@ docs: clarify slot.yaml scene edges
 
 ## Security (skill-specific)
 
-Vulnerability reporting is at the repository level: [SECURITY.md](https://github.com/openqa-cn/openqa-skills/blob/main/SECURITY.md). For this skill specifically:
+Vulnerability reporting is at the repository level: [SECURITY.md](https://github.com/openqa-cn/codexqa/blob/main/SECURITY.md). For this skill specifically:
 
 - Never commit tokens, cookies, private keys, or connection strings.
 - Put secrets only in environment variables or a local untracked config file.

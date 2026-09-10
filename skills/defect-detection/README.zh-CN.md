@@ -7,7 +7,7 @@
 报告样例（和本地渲染同一套）：
 
 <p align="center">
-  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/defect-report.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/defect-report.png" alt="缺陷检测 HTML 报告样例" width="880"></a>
+  <a href="https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/defect-report.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/defect-report.png" alt="缺陷检测 HTML 报告样例" width="880"></a>
 </p>
 
 ## 安装要求
@@ -19,6 +19,6 @@ export NODE_OPTIONS=--experimental-strip-types
 npm test
 ```
 
-完整说明见[英文手册](README.md)、[中文入门](https://github.com/openqa-cn/openqa-skills/blob/main/docs/GETTING_STARTED.zh-CN.md)、[中文 FAQ](https://github.com/openqa-cn/openqa-skills/blob/main/docs/FAQ.zh-CN.md)和[支持矩阵](https://github.com/openqa-cn/openqa-skills/blob/main/docs/SUPPORT_MATRIX.zh-CN.md)。
+完整说明见[英文手册](README.md)、[中文入门](https://github.com/openqa-cn/codexqa/blob/main/docs/GETTING_STARTED.zh-CN.md)、[中文 FAQ](https://github.com/openqa-cn/codexqa/blob/main/docs/FAQ.zh-CN.md)和[支持矩阵](https://github.com/openqa-cn/codexqa/blob/main/docs/SUPPORT_MATRIX.zh-CN.md)。
 
 检测方法与设计取舍见[工作原理](HOW_IT_WORKS.zh-CN.md)。工程工作流已可用，但检测效果尚未经过独立 benchmark，也不能证明不存在缺陷；具体失败场景和实现缺口见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。远程 provider 和自动工具安装可能联网。

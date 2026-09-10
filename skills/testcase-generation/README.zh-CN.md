@@ -7,7 +7,7 @@
 写出来的用例如此（Markdown 渲染）：
 
 <p align="center">
-  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/testcase-sample.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/testcase-sample.png" alt="库存预占手工用例样例" width="880"></a>
+  <a href="https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testcase-sample.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/testcase-sample.png" alt="库存预占手工用例样例" width="880"></a>
 </p>
 
 **输入是文档，不是 git 克隆。** 生成读 `prd/`（以及可选的 `knowledge/`）。`code/` **只在更新**时用来 diff、判断哪些已有用例受影响——不从代码推断 schema，也不填测试数据。
@@ -90,9 +90,17 @@ testcase-generation/
 └── evals/                  # 代表性 prompt；尚无公开 fixture
 ```
 
+## 安装
+
+```bash
+npx skills add openqa-cn/codexqa --skill testcase-generation
+```
+
+然后**新建** Agent 会话。安装器会把本目录拷进宿主的 skills 文件夹（Cursor、Claude Code、Codex、OpenClaw），不必自己打 zip。
+
 ## 怎么用
 
-把 agent 指到这个 skill 目录，让它生成或更新测试用例。Agent 先读 `SKILL.md`，再读生成或更新那份文档。
+让 Agent 生成或更新测试用例。它先读 `SKILL.md`，再读生成或更新那份文档。
 
 ```text
 用 testcase-generation 根据 prd/ 下的文档生成手工用例库。

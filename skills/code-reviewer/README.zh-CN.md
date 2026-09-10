@@ -7,10 +7,10 @@
 报告长什么样：
 
 <p align="center">
-  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/cr-findings.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/cr-findings.png" alt="代码审查 P0 / P1 发现样例" width="880"></a>
+  <a href="https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/cr-findings.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/cr-findings.png" alt="代码审查 P0 / P1 发现样例" width="880"></a>
 </p>
 
-**不是** [`defect-detection`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/defect-detection/README.zh-CN.md)。那个 skill 会按 URL 克隆仓库、抽变更方法、跑 AST / 可选调用图，并对写回做门禁。本 skill 在原地 diff，按前端 / 后端加载 playbook。
+**不是** [`defect-detection`](https://github.com/openqa-cn/codexqa/blob/main/skills/defect-detection/README.zh-CN.md)。那个 skill 会按 URL 克隆仓库、抽变更方法、跑 AST / 可选调用图，并对写回做门禁。本 skill 在原地 diff，按前端 / 后端加载 playbook。
 
 ## 你要交什么
 
@@ -50,7 +50,7 @@ code-reviewer/                 # 安装目录（与源码目录同名）
 ## 安装
 
 ```bash
-npx skills add openqa-cn/openqa-skills --skill code-reviewer
+npx skills add openqa-cn/codexqa --skill code-reviewer
 ```
 
 或者把根目录为 `code-reviewer/SKILL.md` 的 zip 解到 `~/.cursor/skills/`（或宿主的项目 skill 目录）。然后**新建** Agent 会话。

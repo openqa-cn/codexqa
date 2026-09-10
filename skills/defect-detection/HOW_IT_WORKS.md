@@ -4,7 +4,7 @@
 
 [`defect-detection`](README.md) ships no model and is not another Semgrep wrapper. It is scaffolding for a host agent: changed methods are ranked by how closely they tie to a stated requirement, the agent reviews them one at a time against the spec, and validation checks that it actually read the code and that the findings can be checked.
 
-Why the structure looks like this is below. The runtime contract is in [`SKILL.md`](SKILL.md). What the HTML report looks like: [sample page](https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/defect-report.html).
+Why the structure looks like this is below. The runtime contract is in [`SKILL.md`](SKILL.md). What the HTML report looks like: [sample page](https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/defect-report.html).
 
 ## The problem: two kinds of defects, rules only catch one
 
@@ -28,7 +28,7 @@ One premise: **the model judges meaning; the infrastructure makes that judgement
 
 ## Evidence that the split is real
 
-One blind evaluation has been run on the [`inventory-service`](https://github.com/openqa-cn/openqa-skills/blob/main/examples/inventory-service/README.md) fixture: a JavaScript repository whose feature branch hides seven business-logic defects among clean changes, plus four decoy functions that look suspicious but are correct. The agent ran the full workflow without access to the answer key.
+One blind evaluation has been run on the [`inventory-service`](https://github.com/openqa-cn/codexqa/blob/main/examples/inventory-service/README.md) fixture: a JavaScript repository whose feature branch hides seven business-logic defects among clean changes, plus four decoy functions that look suspicious but are correct. The agent ran the full workflow without access to the answer key.
 
 | Signal | Result |
 | --- | --- |
@@ -124,8 +124,8 @@ This has a direct implication for results: **detection quality varies with the h
 | Topic | Document |
 | --- | --- |
 | What the tool cannot do, with concrete failure cases | [Known limitations](KNOWN_LIMITATIONS.md) |
-| Verified runtimes, languages, and evidence | [Support matrix](https://github.com/openqa-cn/openqa-skills/blob/main/docs/SUPPORT_MATRIX.md) |
-| Runnable fixtures including the blind-eval repository | [Examples](https://github.com/openqa-cn/openqa-skills/blob/main/examples/README.md) |
-| Repository layout and documentation audiences | [Architecture](https://github.com/openqa-cn/openqa-skills/blob/main/docs/ARCHITECTURE.md) |
+| Verified runtimes, languages, and evidence | [Support matrix](https://github.com/openqa-cn/codexqa/blob/main/docs/SUPPORT_MATRIX.md) |
+| Runnable fixtures including the blind-eval repository | [Examples](https://github.com/openqa-cn/codexqa/blob/main/examples/README.md) |
+| Repository layout and documentation audiences | [Architecture](https://github.com/openqa-cn/codexqa/blob/main/docs/ARCHITECTURE.md) |
 | Agent-facing runtime contract | [`SKILL.md`](SKILL.md) |
 | Rule-by-rule validation reference | [`validation-rules.md`](references/rules/validation-rules.md) |

@@ -7,10 +7,10 @@ Vendor-neutral [Agent Skill](https://agentskills.io/specification) for construct
 What write-back looks like:
 
 <p align="center">
-  <a href="https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/testdata-writeback.html"><img src="https://raw.githubusercontent.com/openqa-cn/openqa-skills/main/docs/assets/previews/testdata-writeback.png" alt="Sample testdata write-back" width="880"></a>
+  <a href="https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testdata-writeback.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/testdata-writeback.png" alt="Sample testdata write-back" width="880"></a>
 </p>
 
-It does **not** invent business IDs. "Construct succeeded" means the backend returned an ID, not that one appeared in the chat. It also does **not** author test cases from a PRD — that is the sibling [`testcase-generation`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/testcase-generation/README.md) skill.
+It does **not** invent business IDs. "Construct succeeded" means the backend returned an ID, not that one appeared in the chat. It also does **not** author test cases from a PRD — that is the sibling [`testcase-generation`](https://github.com/openqa-cn/codexqa/blob/main/skills/testcase-generation/README.md) skill.
 
 ## What you give it
 
@@ -41,7 +41,7 @@ testdata-generation/         # install folder (same as the source directory)
 ├── KNOWN_LIMITATIONS.md     # observed failure cases and boundaries
 ├── KNOWN_LIMITATIONS.zh-CN.md
 ├── README.zh-CN.md
-├── INSTALL.md               # Cursor / Claude Code / Codex unpack paths
+├── INSTALL.md               # npx skills add, plus optional zip unpack paths
 ├── scripts/                 # adapters + search + pack + slot discovery
 ├── references/              # workflow, planner, templates
 ├── assets/                  # config.example.yaml
@@ -51,14 +51,15 @@ testdata-generation/         # install folder (same as the source directory)
 
 New company scene: drop a skill under `slots/` (or add one `workspace.slot_roots` line). Search, OpenAPI index, and case-pipeline bind share that list. Keyword search reads `slot.yaml` `description` (else the `SKILL.md` description) — put domain nouns such as `catalog` / `distributor` there.
 
-## Install in Cursor / Claude Code / Codex
+## Install
 
 ```bash
-node scripts/pack_skills.ts --output ./dist
-unzip dist/testdata-generation.zip -d ~/.cursor/skills
+npx skills add openqa-cn/codexqa --skill testdata-generation
 ```
 
-See [INSTALL.md](INSTALL.md). Do not omit `SKILL.md` from the zip root folder.
+Start a **new** agent session. The installer copies this directory into the host skills folder (Cursor, Claude Code, Codex, OpenClaw).
+
+From a local checkout you can still pack and unzip — see [INSTALL.md](INSTALL.md). Do not omit `SKILL.md` from the zip root folder.
 
 ## Requirements
 

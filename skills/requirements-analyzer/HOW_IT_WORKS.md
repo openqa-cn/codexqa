@@ -6,7 +6,7 @@
 
 **Input is requirement text, not source code.** A PRD, stories, API notes, a scope sheet — not a git clone and not `code/`. See [README — What you give it](README.md#what-you-give-it).
 
-Agents read [`SKILL.md`](SKILL.md) then [`prompts/requirements-analyzer.md`](prompts/requirements-analyzer.md), not this page. Gaps: [Known limitations](KNOWN_LIMITATIONS.md). Sample register: [preview](https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/ra-register.html).
+Agents read [`SKILL.md`](SKILL.md) then [`prompts/requirements-analyzer.md`](prompts/requirements-analyzer.md), not this page. Gaps: [Known limitations](KNOWN_LIMITATIONS.md). Sample register: [preview](https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/ra-register.html).
 
 ## Problem
 
@@ -18,7 +18,7 @@ Asking a model to “review this PRD” typically fails in three ways:
 | Invented facts | Endpoints, SLAs, or a winner on a product dispute appear from nowhere | Unknowns stay questions. Conflicts keep both views and a suggested decider |
 | Untestable P0 | “Improve completeness” with no oracle | P0/P1 need preconditions, stimulus, expected, evidence. No observable failure → `untestable` |
 
-The model judges wording and conflicts. Grids in `references/` decide what “complete” means. Writing cases is [`testcase-generation`](https://github.com/openqa-cn/openqa-skills/blob/main/skills/testcase-generation/README.md).
+The model judges wording and conflicts. Grids in `references/` decide what “complete” means. Writing cases is [`testcase-generation`](https://github.com/openqa-cn/codexqa/blob/main/skills/testcase-generation/README.md).
 
 ## Evaluation status
 
@@ -81,4 +81,4 @@ PRD / stories / API notes / optional role reports
 | Agent entry | [`SKILL.md`](SKILL.md) |
 | Quality bar | [`prompts/requirements-analyzer.md`](prompts/requirements-analyzer.md) |
 | Shortest path | [`quick-start.md`](quick-start.md) |
-| What each published skill takes | [FAQ](https://github.com/openqa-cn/openqa-skills/blob/main/docs/FAQ.md) |
+| What each published skill takes | [FAQ](https://github.com/openqa-cn/codexqa/blob/main/docs/FAQ.md) |

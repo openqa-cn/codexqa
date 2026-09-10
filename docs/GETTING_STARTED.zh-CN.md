@@ -23,13 +23,13 @@ git --version
 ## 从 GitHub 安装
 
 ```bash
-npx skills add openqa-cn/openqa-skills --skill defect-detection
+npx skills add openqa-cn/codexqa --skill defect-detection
 ```
 
 按提示选择 Agent。默认安装范围是当前项目。为 Codex 跨项目安装：
 
 ```bash
-npx skills add openqa-cn/openqa-skills --skill defect-detection --agent codex --global
+npx skills add openqa-cn/codexqa --skill defect-detection --agent codex --global
 ```
 
 想要复制而不是软链到 Agent 目录，加 `--copy`。安装位置由第三方 `skills` 安装器决定，看它的输出找已安装目录。**装得上不等于在那个 Agent 上能跑完整分析。**
@@ -82,10 +82,10 @@ npx skills remove defect-detection --agent codex
 ## 其他已发布 skill
 
 ```bash
-npx skills add openqa-cn/openqa-skills --skill code-reviewer
-npx skills add openqa-cn/openqa-skills --skill requirements-analyzer
-npx skills add openqa-cn/openqa-skills --skill testcase-generation
-npx skills add openqa-cn/openqa-skills --skill testdata-generation
+npx skills add openqa-cn/codexqa --skill code-reviewer
+npx skills add openqa-cn/codexqa --skill requirements-analyzer
+npx skills add openqa-cn/codexqa --skill testcase-generation
+npx skills add openqa-cn/codexqa --skill testdata-generation
 ```
 
 安装后新建 Agent 会话并指向该 skill。输入各不相同：

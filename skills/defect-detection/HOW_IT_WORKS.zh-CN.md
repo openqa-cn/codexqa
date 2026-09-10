@@ -4,7 +4,7 @@
 
 [`defect-detection`](README.zh-CN.md) 不内置模型，也不是又包一层 Semgrep。它给宿主 agent 搭流程：按「和需求有多相关」给变更方法排优先级，让 agent 逐个对照规格审查，再用校验规则确认它真读了代码、结论对得上源码。
 
-为什么长这样，写在下面。运行时契约看 [`SKILL.md`](SKILL.md)。HTML 报告长什么样：[样例页](https://github.com/openqa-cn/openqa-skills/blob/main/docs/assets/previews/defect-report.html)。
+为什么长这样，写在下面。运行时契约看 [`SKILL.md`](SKILL.md)。HTML 报告长什么样：[样例页](https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/defect-report.html)。
 
 ## 问题：两类缺陷，规则只擅长一类
 
@@ -28,7 +28,7 @@
 
 ## 这套分工有多少证据
 
-[`inventory-service`](https://github.com/openqa-cn/openqa-skills/blob/main/examples/inventory-service/README.md) fixture 上跑过一次盲测：一个 JavaScript 仓库，特性分支在正常改动里藏了 7 处业务逻辑缺陷，外加 4 个「看着可疑其实正确」的诱饵函数。Agent 全程看不到答案键。
+[`inventory-service`](https://github.com/openqa-cn/codexqa/blob/main/examples/inventory-service/README.md) fixture 上跑过一次盲测：一个 JavaScript 仓库，特性分支在正常改动里藏了 7 处业务逻辑缺陷，外加 4 个「看着可疑其实正确」的诱饵函数。Agent 全程看不到答案键。
 
 | 指标 | 结果 |
 | --- | --- |
@@ -124,7 +124,7 @@ OpenQA 不附带模型。推理由宿主 agent 提供——Codex、Claude Code�
 | 主题 | 文档 |
 | --- | --- |
 | 工具做不到什么，附具体失败场景 | [已知边界](KNOWN_LIMITATIONS.zh-CN.md) |
-| 已验证的运行时、语言与证据 | [支持矩阵](https://github.com/openqa-cn/openqa-skills/blob/main/docs/SUPPORT_MATRIX.zh-CN.md) |
-| 可运行 fixture，含盲测仓库 | [示例](https://github.com/openqa-cn/openqa-skills/blob/main/examples/README.zh-CN.md) |
+| 已验证的运行时、语言与证据 | [支持矩阵](https://github.com/openqa-cn/codexqa/blob/main/docs/SUPPORT_MATRIX.zh-CN.md) |
+| 可运行 fixture，含盲测仓库 | [示例](https://github.com/openqa-cn/codexqa/blob/main/examples/README.zh-CN.md) |
 | Agent 运行时契约 | [`SKILL.md`](SKILL.md) |
 | 逐条校验规则参考 | [`validation-rules.md`](references/rules/validation-rules.md) |

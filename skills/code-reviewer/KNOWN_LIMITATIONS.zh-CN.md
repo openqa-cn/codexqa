@@ -34,4 +34,4 @@ P0 要求文件:行号、运行时后果和规则引用。`tooling/` 里没有�
 
 ## 许可证是 MIT
 
-本 skill 是 MIT（本目录 `LICENSE`）。`openqa-skills` 其余部分是 Apache-2.0。不要假定父仓库的 SPDX 覆盖这里的文件。
+本 skill 是 MIT（本目录 `LICENSE`）。`codexqa` 其余部分是 Apache-2.0。不要假定父仓库的 SPDX 覆盖这里的文件。

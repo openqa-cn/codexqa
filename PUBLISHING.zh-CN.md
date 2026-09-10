@@ -23,7 +23,7 @@ npx skills add . --list
 
 ## 推送后
 
-检查远程 CI 结果，确认 `npx skills add openqa-cn/openqa-skills --list` 能发现 Skill，并在隔离项目中验证安装流程。远程安装命令无法读取尚未推送的本地修改。
+检查远程 CI 结果，确认 `npx skills add openqa-cn/codexqa --list` 能发现 Skill，并在隔离项目中验证安装流程。远程安装命令无法读取尚未推送的本地修改。
 
 创建经过审核的 GitHub release/tag，说明变更、运行要求和已知限制。可通过以下命令生成可选 ZIP 包：
 

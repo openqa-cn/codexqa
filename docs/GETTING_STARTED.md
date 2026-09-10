@@ -23,13 +23,13 @@ Analysis can attempt to install Semgrep (Python/pip or Homebrew) and GitNexus (n
 ## Install from GitHub
 
 ```bash
-npx skills add openqa-cn/openqa-skills --skill defect-detection
+npx skills add openqa-cn/codexqa --skill defect-detection
 ```
 
 Choose an agent interactively. Default scope is the current project. For Codex across projects:
 
 ```bash
-npx skills add openqa-cn/openqa-skills --skill defect-detection --agent codex --global
+npx skills add openqa-cn/codexqa --skill defect-detection --agent codex --global
 ```
 
 Use `--copy` if you prefer copies to agent-directory symlinks. Installation locations are managed by the third-party `skills` installer; use its output to locate the installed skill. Installation does not prove that a complete analysis works on that agent.
@@ -82,10 +82,10 @@ For global installations add `--global` where supported. Back up configuration a
 ## Other published skills
 
 ```bash
-npx skills add openqa-cn/openqa-skills --skill code-reviewer
-npx skills add openqa-cn/openqa-skills --skill requirements-analyzer
-npx skills add openqa-cn/openqa-skills --skill testcase-generation
-npx skills add openqa-cn/openqa-skills --skill testdata-generation
+npx skills add openqa-cn/codexqa --skill code-reviewer
+npx skills add openqa-cn/codexqa --skill requirements-analyzer
+npx skills add openqa-cn/codexqa --skill testcase-generation
+npx skills add openqa-cn/codexqa --skill testdata-generation
 ```
 
 After install, start a new agent session and point it at the skill. Inputs differ:
