@@ -2,7 +2,7 @@
 
 # codexqa
 
-**Agent Skills that check whether AI-written code still matches the requirement — and turn a PRD into manual test cases and real testdata.**
+**Agent Skills for the work after an agent writes code: requirement defects, real code review, PRD gaps, manual test cases, and the test data to run them.**
 
 [![CI](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml)
 [![Release](https://img.shields.io/github/v/tag/openqa-cn/codexqa?label=release&style=flat)](https://github.com/openqa-cn/codexqa/releases)

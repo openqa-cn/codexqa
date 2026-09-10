@@ -2,7 +2,7 @@
 
 # codexqa
 
-**给 Cursor / Claude Code / Codex 用的 Agent Skill：检查 AI 写的代码是否还符合需求，并把 PRD 变成手工用例和真实测试数据。**
+**Agent 写完代码之后的活，交给这些 Agent Skills：需求缺陷、真正的代码审查、PRD 缺口、手工用例，以及跑用例要的测试数据。**
 
 [![CI](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml)
 [![Release](https://img.shields.io/github/v/tag/openqa-cn/codexqa?label=release&style=flat)](https://github.com/openqa-cn/codexqa/releases)
