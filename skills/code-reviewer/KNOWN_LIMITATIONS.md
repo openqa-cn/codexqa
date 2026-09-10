@@ -30,7 +30,7 @@ P0 asks for file:line, a runtime consequence, and a rule citation. Nothing in `t
 
 ## HTTP integrations stay off until you enable them
 
-Without `code-reviewer.config.json` in the **reviewed** repository, browse-URL templates and all `integrations.*` are unused. The skill will not discover an internal Git browser or a notify webhook from the OpenQA repo.
+Without `code-reviewer.config.json` in the **reviewed** repository, browse-URL templates and all `integrations.*` are unused. The skill will not discover an internal Git browser or a notify webhook from the codexqa repo.
 
 ## License is MIT
 

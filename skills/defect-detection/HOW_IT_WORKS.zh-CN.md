@@ -115,7 +115,7 @@ Phase 3 — 关闭
 
 ## 模型在哪一环
 
-OpenQA 不附带模型。推理由宿主 agent 提供——Codex、Claude Code、Cursor、OpenClaw——而 `SKILL.md` 加上 `references/` 目录树提供它遵循的指令，按任务需要渐进加载。上面讲的全部内容，都是围绕**那段推理**搭的脚手架：agent 必须看什么、必须交出什么证据、做不到时会发生什么。
+codexqa 不附带模型。推理由宿主 agent 提供——Codex、Claude Code、Cursor、OpenClaw——而 `SKILL.md` 加上 `references/` 目录树提供它遵循的指令，按任务需要渐进加载。上面讲的全部内容，都是围绕**那段推理**搭的脚手架：agent 必须看什么、必须交出什么证据、做不到时会发生什么。
 
 所以**检测质量随宿主模型而变**，上面的 7/7 是一个模型在一个 fixture 上的结果。这也正是校验层值得它那份复杂度的原因——底下的模型换掉时，它是保持不变的那部分。
 

@@ -1,4 +1,4 @@
-# 安装与运行 OpenQA Skills
+# 安装与运行 codexqa
 
 [English](GETTING_STARTED.md)
 

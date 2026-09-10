@@ -79,4 +79,4 @@ node tooling/pack-skill.js
 
 ## 许可证
 
-MIT。见 [LICENSE](LICENSE)。OpenQA Skills 仓库是 Apache-2.0；本 skill 保留上游 MIT。
+MIT。见 [LICENSE](LICENSE)。codexqa 仓库是 Apache-2.0；本 skill 保留上游 MIT。

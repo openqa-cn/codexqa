@@ -1,6 +1,6 @@
 <div align="center">
 
-# OpenQA Skills
+# codexqa
 
 **给 Cursor / Claude Code / Codex 用的 Agent Skill：检查 AI 写的代码是否还符合需求，并把 PRD 变成手工用例和真实测试数据。**
 
@@ -32,7 +32,7 @@
 
 ---
 
-适用于 [Cursor](https://cursor.com)、[Claude Code](https://claude.com/claude-code)、[Codex](https://openai.com/codex) 和 OpenClaw。`npx skills add` 安装（[Agent Skills](https://agentskills.io/specification)）。本地优先，不用 OpenQA 账号。
+适用于 [Cursor](https://cursor.com)、[Claude Code](https://claude.com/claude-code)、[Codex](https://openai.com/codex) 和 OpenClaw。`npx skills add` 安装（[Agent Skills](https://agentskills.io/specification)）。本地优先，不用 codexqa 账号。
 
 Coding Agent 让「看起来能合的 PR」变得便宜。现在真正耗时间的是 **需求对不上、审查在走过场、测试工作模型做不完**：
 
@@ -48,7 +48,7 @@ Coding Agent 让「看起来能合的 PR」变得便宜。现在真正耗时间�
 
 ## 本仓库提供什么
 
-`codexqa` 是 OpenQA 面向 Coding Agent 的公开、本地优先 [Agent Skills](https://agentskills.io/specification) 包。五个 skill，**输入各不相同**：
+`codexqa` 是面向 Coding Agent 的公开、本地优先 [Agent Skills](https://agentskills.io/specification) 包。五个 skill，**输入各不相同**：
 
 | Skill | 你要带上的 | 它做什么 |
 | --- | --- | --- |
@@ -99,7 +99,7 @@ Coding Agent 让「看起来能合的 PR」变得便宜。现在真正耗时间�
            人工复核
 ```
 
-OpenQA 编排流程；语义审查由你这边的 Agent / 模型做。本地就能跑，不必连私有后端；需要时再用适配器接到外部平台。
+codexqa 编排流程；语义审查由你这边的 Agent / 模型做。本地就能跑，不必连私有后端；需要时再用适配器接到外部平台。
 
 真正起作用的是三道约束：
 
@@ -169,13 +169,13 @@ npx skills add openqa-cn/codexqa --skill testdata-generation
 
 按提示选择 Agent。全局安装到 Codex 时加 `--agent codex --global`。每个 `--skill` 只复制一个目录。
 
-无需 OpenQA 或 npm 账号。运行要求、安装范围和故障排查见[安装与入门](docs/GETTING_STARTED.zh-CN.md)。
+无需 codexqa 或 npm 账号。运行要求、安装范围和故障排查见[安装与入门](docs/GETTING_STARTED.zh-CN.md)。
 
 ## 快速开始
 
 1. 用上面的命令安装你需要的那个 skill。
 2. 新建一个 Coding Agent 会话。
-3. 把**该 skill 要的材料**交给 Agent。三者不能互相顶替。
+3. 把**该 skill 要的材料**交给 Agent。它们不能互相顶替。
 
 先跑通一个：**审查分支**（`defect-detection`）。
 
@@ -296,7 +296,7 @@ node examples/checkout-boundary/verify.mjs
 
 寻求帮助时，请提供 commit 或 skill 版本、操作系统、Agent、命令、预期结果和实际结果。分享前请移除凭据、私有源码和专有日志。
 
-OpenQA 的其他去处：[官网](https://openqa.cn) · [产品](https://openqa.cn/agent) · [Skill Hub](https://openqa.cn/skills)
+其他去处：[官网](https://openqa.cn) · [产品](https://openqa.cn/agent) · [Skill Hub](https://openqa.cn/skills)
 
 ## 参与贡献
 

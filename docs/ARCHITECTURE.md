@@ -1,15 +1,16 @@
 # Repository architecture
 
-OpenQA Skills uses a single-repository model while the interfaces are still evolving. This keeps the public installation path simple and lets the project establish shared evidence and quality standards before splitting components.
+codexqa uses a single-repository model while the interfaces are still evolving. This keeps the public installation path simple and lets the project establish shared evidence and quality standards before splitting components.
 
 ```text
 codexqa/
 ├── skills/       # Agent-facing workflows and skill contracts
 ├── schemas/      # Stable machine-readable contracts
-├── adapters/     # Tool and framework integrations (future)
+├── scripts/      # Repository checks (check-docs.py)
 ├── examples/     # Small, runnable public examples
 ├── benchmarks/   # Seeded defects and evaluation methodology
 ├── docs/         # Architecture, support, roadmap, release, and commercial boundaries
+├── skills.json   # Installer-facing skill index
 └── .github/      # CI, issue forms, contribution automation
 ```
 

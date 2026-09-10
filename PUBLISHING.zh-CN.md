@@ -2,7 +2,7 @@
 
 [English](PUBLISHING.md)
 
-Skill 从本 GitHub 仓库通过 `npx skills add` 分发，无需发布 OpenQA 自有 npm 包。
+Skill 从本 GitHub 仓库通过 `npx skills add` 分发，无需发布 codexqa 自有 npm 包。
 
 ## 推送前
 
@@ -31,7 +31,7 @@ npx skills add . --list
 bash skills/defect-detection/pack-skill.sh /absolute/output/directory
 ```
 
-版本元数据应与 release 保持一致；当前导入的 Skill 元数据版本为 0.0.2。
+版本元数据应与 release 保持一致；打 tag 前先核对 `skills/*/SKILL.md` 里的 `version` 字段。
 
 ## 分发边界
 

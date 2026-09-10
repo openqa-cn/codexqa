@@ -80,4 +80,4 @@ Edit `tooling/*.ts` only; rebuild before committing the matching `.js`.
 
 ## License
 
-MIT. See [LICENSE](LICENSE). The OpenQA Skills repository is Apache-2.0; this skill keeps the upstream MIT license.
+MIT. See [LICENSE](LICENSE). The codexqa repository is Apache-2.0; this skill keeps the upstream MIT license.

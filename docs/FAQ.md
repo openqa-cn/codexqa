@@ -1,12 +1,12 @@
-# OpenQA Skills FAQ
+# codexqa FAQ
 
 [简体中文](FAQ.zh-CN.md)
 
 This page covers installation and the published skills. Most answers below are about `defect-detection`; the others are called out where their contract differs.
 
-## What is OpenQA Skills?
+## What is codexqa?
 
-OpenQA Skills is a public, local-first [Agent Skills](https://agentskills.io/specification) pack for Cursor, Claude Code, Codex, and OpenClaw. It is for the work that stays expensive after an agent writes a green PR: requirement / business-logic bugs, rubber-stamp reviews, incomplete PRDs, manual test-case libraries, and testdata `{placeholder}`s. Five skills:
+codexqa is a public, local-first [Agent Skills](https://agentskills.io/specification) pack for Cursor, Claude Code, Codex, and OpenClaw. It is for the work that stays expensive after an agent writes a green PR: requirement / business-logic bugs, rubber-stamp reviews, incomplete PRDs, manual test-case libraries, and testdata `{placeholder}`s. Five skills:
 
 | Skill | Role |
 | --- | --- |
@@ -46,9 +46,9 @@ They do not share one input. Two skills take Git, but not the same way:
 
 Sample prompts: [root README · Quick start](../README.md#quick-start).
 
-## Do I need an npm account or an OpenQA account?
+## Do I need an npm account or a codexqa account?
 
-No. `npx skills add` runs a community installer that fetches skill files from GitHub. Local providers do not require an OpenQA account. Your agent or remote providers may have their own account requirements.
+No. `npx skills add` runs a community installer that fetches skill files from GitHub. Local providers do not require a codexqa account. Your agent or remote providers may have their own account requirements.
 
 ## Does installing a skill run the workflow?
 

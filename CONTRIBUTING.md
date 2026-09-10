@@ -1,4 +1,4 @@
-# Contributing to OpenQA Skills
+# Contributing to codexqa
 
 We welcome skills, adapters, benchmark cases, documentation, and reproducible bug reports.
 

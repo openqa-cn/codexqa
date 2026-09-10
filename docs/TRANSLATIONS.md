@@ -1,6 +1,6 @@
 # Translations
 
-OpenQA is a global open-source project. The English README is the canonical project overview; translated READMEs should keep the same structure and link back to it.
+codexqa is a global open-source project. The English README is the canonical project overview; translated READMEs should keep the same structure and link back to it.
 
 ## Current languages
 

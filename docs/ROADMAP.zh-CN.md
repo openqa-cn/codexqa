@@ -2,7 +2,7 @@
 
 [English](ROADMAP.md)
 
-OpenQA 的产品方向覆盖 AI 软件工程全生命周期的质量验证。本仓库当前提供 [`defect-detection`](../skills/defect-detection/README.zh-CN.md)、[`code-reviewer`](../skills/code-reviewer/README.zh-CN.md)、[`requirements-analyzer`](../skills/requirements-analyzer/README.zh-CN.md)、[`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) 和 [`testdata-generation`](../skills/testdata-generation/README.zh-CN.md)。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由这些工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
+codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。本仓库当前提供 [`defect-detection`](../skills/defect-detection/README.zh-CN.md)、[`code-reviewer`](../skills/code-reviewer/README.zh-CN.md)、[`requirements-analyzer`](../skills/requirements-analyzer/README.zh-CN.md)、[`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) 和 [`testdata-generation`](../skills/testdata-generation/README.zh-CN.md)。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由这些工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
 
 ## 能力地图
 
@@ -24,11 +24,11 @@ OpenQA 的产品方向覆盖 AI 软件工程全生命周期的质量验证。本
 | 本地 provider 与报告 | **已提供** | 本地优先的 JSON 持久化和报告生成，不依赖私有后端 |
 | 企业与外部系统集成 | **部分提供** | HTTP 和 GitHub 适配器已有代码，需要部署配置 |
 | 质量门禁与发布决策 | **产品方向** | 将验证结果连接到 CI 门禁和发布流程 |
-| 托管验证服务 | **产品方向** | 不在本仓库中的 OpenQA 托管工程系统 |
+| 托管验证服务 | **产品方向** | 不在本仓库中的 codexqa 托管工程系统 |
 
 ## 状态说明
 
-**已提供**表示当前仓库可用；**部分提供**表示已有工作路径，但覆盖范围或集成仍不完整；**计划中**表示尚未在本仓库交付；**产品方向**表示 OpenQA 更大的平台目标。
+**已提供**表示当前仓库可用；**部分提供**表示已有工作路径，但覆盖范围或集成仍不完整；**计划中**表示尚未在本仓库交付；**产品方向**表示 codexqa 更大的平台目标。
 
 只有实现、案例和局限性都已公开的能力，才会在本仓库标记为「已提供」。逐个组件核对到哪一步：[支持矩阵](SUPPORT_MATRIX.zh-CN.md)。这些工作流做不到什么：[已知边界](../skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md)。
 

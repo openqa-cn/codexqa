@@ -1,4 +1,4 @@
-# Install and run OpenQA Skills
+# Install and run codexqa
 
 [简体中文](GETTING_STARTED.zh-CN.md)
 

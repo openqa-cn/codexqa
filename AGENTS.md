@@ -1,6 +1,6 @@
-# Working with OpenQA Skills
+# Working with codexqa
 
-OpenQA is a verification project. Agent-assisted contributions are welcome, but every change must be reviewed by a human maintainer and supported by reproducible evidence.
+codexqa is a verification project. Agent-assisted contributions are welcome, but every change must be reviewed by a human maintainer and supported by reproducible evidence.
 
 ## Before changing a skill
 

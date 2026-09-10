@@ -1,6 +1,6 @@
-# Publish OpenQA Skills
+# Publish codexqa
 
-Skills are distributed from this GitHub repository through `npx skills add`. Publishing an OpenQA npm package is not required.
+Skills are distributed from this GitHub repository through `npx skills add`. Publishing a codexqa npm package is not required.
 
 ## Before pushing
 
@@ -23,7 +23,7 @@ npx skills add . --list
 
 Inspect hosted CI results. Confirm `npx skills add openqa-cn/codexqa --list` discovers the skill; validate installation in an isolated project before advertising it as verified. The remote command cannot install unpublished local changes.
 
-Create a reviewed GitHub release/tag and describe changes, requirements, evidence, and known limitations. Optional ZIP assets can be built with `bash skills/defect-detection/pack-skill.sh /absolute/output/directory`. Keep version metadata consistent with the selected release; the imported skill metadata currently says 0.0.2.
+Create a reviewed GitHub release/tag and describe changes, requirements, evidence, and known limitations. Optional ZIP assets can be built with `bash skills/defect-detection/pack-skill.sh /absolute/output/directory`. Keep version metadata consistent with the selected release; check the `version` fields in `skills/*/SKILL.md` before tagging.
 
 ## Distribution boundary
 

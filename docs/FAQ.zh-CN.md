@@ -1,4 +1,4 @@
-# OpenQA Skills FAQ
+# codexqa FAQ
 
 [English](FAQ.md)
 
@@ -6,7 +6,7 @@
 
 ## 这是做什么的？
 
-OpenQA Skills 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优先 [Agent Skills](https://agentskills.io/specification) 包。针对 Agent 写出绿 PR 之后仍然贵的部分：需求 / 业务逻辑缺陷、走过场的审查、不完整的 PRD、手工用例库、以及用例里的 `{placeholder}`。五个 skill：
+codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优先 [Agent Skills](https://agentskills.io/specification) 包。针对 Agent 写出绿 PR 之后仍然贵的部分：需求 / 业务逻辑缺陷、走过场的审查、不完整的 PRD、手工用例库、以及用例里的 `{placeholder}`。五个 skill：
 
 | Skill | 用途 |
 | --- | --- |
@@ -46,9 +46,9 @@ OpenQA Skills 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本�
 
 可以直接对 Agent 说的话：[仓库 README · 快速开始](../README.zh-CN.md#快速开始)。
 
-## 需要 npm 或 OpenQA 账号吗？
+## 需要 npm 或 codexqa 账号吗？
 
-不需要。`npx skills add` 只是从 GitHub 获取 skill 文件的社区安装器，本地 provider 也不需要 OpenQA 账号。你的 Agent 和远程 provider 可能各有自己的账号要求。
+不需要。`npx skills add` 只是从 GitHub 获取 skill 文件的社区安装器，本地 provider 也不需要 codexqa 账号。你的 Agent 和远程 provider 可能各有自己的账号要求。
 
 ## 安装后会自动跑工作流吗？
 

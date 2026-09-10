@@ -30,7 +30,7 @@ P0 要求文件:行号、运行时后果和规则引用。`tooling/` 里没有�
 
 ## 未开启前，HTTP 集成不会自己连上
 
-被审仓库里没有 `code-reviewer.config.json` 时，浏览链接模板和所有 `integrations.*` 都不会用。本 skill 不会从 OpenQA 仓库里猜出你们内部的 Git 浏览器或通知 webhook。
+被审仓库里没有 `code-reviewer.config.json` 时，浏览链接模板和所有 `integrations.*` 都不会用。本 skill 不会从 codexqa 仓库里猜出你们内部的 Git 浏览器或通知 webhook。
 
 ## 许可证是 MIT
 

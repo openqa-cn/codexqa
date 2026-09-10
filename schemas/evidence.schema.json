@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://openqa.cn/schemas/evidence/v0.1.json",
-  "title": "OpenQA Evidence Record",
+  "title": "codexqa Evidence Record",
   "type": "object",
   "required": ["version", "change", "verification", "decision"],
   "properties": {

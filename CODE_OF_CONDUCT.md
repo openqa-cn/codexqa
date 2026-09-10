@@ -1,6 +1,6 @@
 # Code of Conduct
 
-We are committed to making OpenQA a welcoming, respectful, and technically rigorous community.
+We are committed to making codexqa a welcoming, respectful, and technically rigorous community.
 
 Expected behavior includes constructive feedback, respect for different backgrounds, and responsible disclosure of security or privacy issues. Harassment, discrimination, doxxing, and publication of private or customer data are not acceptable.
 

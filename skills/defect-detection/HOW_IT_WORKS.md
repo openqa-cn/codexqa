@@ -115,7 +115,7 @@ The state split matters for one practical reason: `meta.json`, `plan.json`, and 
 
 ## Where the model fits
 
-OpenQA does not ship a model. The host agent — Codex, Claude Code, Cursor, OpenClaw — supplies the reasoning, and `SKILL.md` plus the `references/` tree supply the instructions it follows, loaded progressively as the task demands them. Everything in this document describes the scaffolding *around* that reasoning: what the agent is required to look at, what evidence it must produce, and what happens when it does not.
+codexqa does not ship a model. The host agent — Codex, Claude Code, Cursor, OpenClaw — supplies the reasoning, and `SKILL.md` plus the `references/` tree supply the instructions it follows, loaded progressively as the task demands them. Everything in this document describes the scaffolding *around* that reasoning: what the agent is required to look at, what evidence it must produce, and what happens when it does not.
 
 This has a direct implication for results: **detection quality varies with the host model**, and the 7/7 figure above is one model on one fixture. It is also why the validation layer is worth its complexity — it is the part that stays constant when the model underneath changes.
 

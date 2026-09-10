@@ -1,6 +1,6 @@
 <div align="center">
 
-# OpenQA Skills
+# codexqa
 
 **Agent Skills that check whether AI-written code still matches the requirement — and turn a PRD into manual test cases and real testdata.**
 
@@ -32,7 +32,7 @@
 
 ---
 
-For [Cursor](https://cursor.com), [Claude Code](https://claude.com/claude-code), [Codex](https://openai.com/codex), and OpenClaw. Install with `npx skills add` ([Agent Skills](https://agentskills.io/specification)). Local-first; no OpenQA account.
+For [Cursor](https://cursor.com), [Claude Code](https://claude.com/claude-code), [Codex](https://openai.com/codex), and OpenClaw. Install with `npx skills add` ([Agent Skills](https://agentskills.io/specification)). Local-first; no codexqa account.
 
 Coding agents make a green pull request cheap. The expensive part is now **requirement bugs, rubber-stamp reviews, and test work the model cannot finish alone**:
 
@@ -48,7 +48,7 @@ We have not measured and published a score per host — [what was actually check
 
 ## What this repository provides
 
-`codexqa` is OpenQA's public, local-first [Agent Skills](https://agentskills.io/specification) pack. Five skills; they do not share one input:
+`codexqa` is a public, local-first [Agent Skills](https://agentskills.io/specification) pack. Five skills; they do not share one input:
 
 | Skill | You bring | It does |
 | --- | --- | --- |
@@ -99,7 +99,7 @@ Repo + branch + requirements or cases
               Human review
 ```
 
-OpenQA runs the workflow. The host Agent / model does the semantic review. Local providers need no private backend; adapters can attach the same flow to an external platform.
+codexqa runs the workflow. The host Agent / model does the semantic review. Local providers need no private backend; adapters can attach the same flow to an external platform.
 
 Three controls do the real work:
 
@@ -169,7 +169,7 @@ npx skills add openqa-cn/codexqa --skill testdata-generation
 
 Choose an Agent when prompted. For a user-level Codex installation add `--agent codex --global`. Each `--skill` copies one directory.
 
-No OpenQA or npm account is required. See [Getting started](docs/GETTING_STARTED.md) for runtime requirements, installation scope, and troubleshooting.
+No codexqa or npm account is required. See [Getting started](docs/GETTING_STARTED.md) for runtime requirements, installation scope, and troubleshooting.
 
 ## Quick start
 
@@ -296,7 +296,7 @@ These checks cover documentation links, translation section parity, CLI and prov
 
 When asking for help, include the commit or skill version, operating system, Agent, command, expected result, and actual result. Remove credentials, private source, and proprietary logs.
 
-Elsewhere: [OpenQA website](https://openqa.cn) · [product](https://openqa.cn/agent) · [Skill Hub](https://openqa.cn/skills)
+Elsewhere: [Website](https://openqa.cn) · [Product](https://openqa.cn/agent) · [Skill Hub](https://openqa.cn/skills)
 
 ## Contribute
 

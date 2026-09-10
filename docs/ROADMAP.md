@@ -2,7 +2,7 @@
 
 [简体中文](ROADMAP.zh-CN.md)
 
-OpenQA's product direction covers the full AI software engineering quality lifecycle. This repository currently ships [`defect-detection`](../skills/defect-detection/README.md), [`code-reviewer`](../skills/code-reviewer/README.md), [`requirements-analyzer`](../skills/requirements-analyzer/README.md), [`testcase-generation`](../skills/testcase-generation/README.md), and [`testdata-generation`](../skills/testdata-generation/README.md). Capabilities marked **Available** or **Partial** below are delivered through those workflows unless stated otherwise. The remaining rows describe planned extensions, not features already included here.
+codexqa's product direction covers the full AI software engineering quality lifecycle. This repository currently ships [`defect-detection`](../skills/defect-detection/README.md), [`code-reviewer`](../skills/code-reviewer/README.md), [`requirements-analyzer`](../skills/requirements-analyzer/README.md), [`testcase-generation`](../skills/testcase-generation/README.md), and [`testdata-generation`](../skills/testdata-generation/README.md). Capabilities marked **Available** or **Partial** below are delivered through those workflows unless stated otherwise. The remaining rows describe planned extensions, not features already included here.
 
 ## Capability map
 
@@ -28,7 +28,7 @@ OpenQA's product direction covers the full AI software engineering quality lifec
 
 ## Status vocabulary
 
-**Available** means usable in the current repository. **Partial** means a working path exists but coverage or integration is incomplete. **Planned** means not shipped here yet. **Product direction** means a broader OpenQA platform goal.
+**Available** means usable in the current repository. **Partial** means a working path exists but coverage or integration is incomplete. **Planned** means not shipped here yet. **Product direction** means a broader codexqa platform goal.
 
 A capability is marked available in this repository only when its implementation, example, and limitations are published. What has actually been checked per component: [support matrix](SUPPORT_MATRIX.md). What the workflows cannot do: [known limitations](../skills/defect-detection/KNOWN_LIMITATIONS.md).
 
