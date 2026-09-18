@@ -26,6 +26,11 @@
       "name": "requirements-analyzer",
       "path": "skills/requirements-analyzer",
       "status": "available"
+    },
+    {
+      "name": "code-analyzer",
+      "path": "skills/code-analyzer",
+      "status": "available"
     }
   ]
 }

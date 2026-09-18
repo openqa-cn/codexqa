@@ -1,0 +1,455 @@
+{
+  "tools": [
+    {
+      "name": "find_nodes",
+      "description": "Search for symbol nodes in the code knowledge graph. Supports filtering by name (substring), kind, language, file path (fuzzy), or qualified name. Returns a list of nodes with their IDs — save IDs for follow-up queries.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "object",
+            "description": "Filter criteria. All fields are optional and ANDed together.",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Substring match on symbol name. E.g. 'parse_file' matches 'parse_file_incremental'."
+              },
+              "kind": {
+                "type": "string",
+                "description": "Symbol kind. One of: function, method, class, struct, enum, trait, interface, module, field, constant, type_alias, namespace, enum_variant"
+              },
+              "language": {
+                "type": "string",
+                "description": "Source language. One of: Rust, Python, TypeScript, JavaScript, Java, Go, C, Cpp, CSharp, Kotlin, Scala, Swift, PHP, Vue"
+              },
+              "file_path_contains": {
+                "type": "string",
+                "description": "Fuzzy match on file path substring. E.g. 'indexer/parse' matches 'crates/core/src/indexer/parse.rs'."
+              },
+              "qualified_name": {
+                "type": "string",
+                "description": "Exact qualified name (module::path::symbol). Use for precise lookup."
+              },
+              "limit": {
+                "type": "integer",
+                "description": "Max results to return. Default: 20. Increase to 50+ for broader exploration.",
+                "default": 20
+              },
+              "change_statuses": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "default",
+                    "add",
+                    "change",
+                    "delete"
+                  ]
+                },
+                "description": "Filter by change status (requires --diff-base index). Use ['add','change'] to list changed symbols. E.g. changed functions: {\"change_statuses\": [\"add\",\"change\"], \"kinds\": [\"function\",\"method\"]}"
+              }
+            }
+          }
+        },
+        "required": [
+          "filter"
+        ]
+      }
+    },
+    {
+      "name": "node_by_id",
+      "description": "Fetch a single symbol node by its UUID, with its node_tags auto-joined (empty array if the repo has no tags). Use when you already have an ID from a previous result and need fresh metadata (name, kind, file, lines, tags).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Node UUID obtained from a previous find_nodes / node_edges / graph_reach call."
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "node_edges",
+      "description": "Get all edges incident to a node: calls, extends, implements, overrides, uses, tests. Use direction='out' to see dependencies; direction='in' to find callers/users.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Node UUID"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "out",
+              "in",
+              "both"
+            ],
+            "description": "'out' = what this node calls/extends/uses; 'in' = who calls/extends/uses this node; 'both' = all edges.",
+            "default": "both"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "graph_reach",
+      "description": "Multi-hop BFS traversal from a start node. Returns nodes reachable within max_depth hops, organized by depth layer. Useful for understanding a component's full dependency fan-out or transitive callers.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Start node UUID"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "out",
+              "in",
+              "both"
+            ],
+            "description": "'out' = follow outgoing edges (dependencies); 'in' = follow incoming edges (callers); 'both' = bidirectional.",
+            "default": "out"
+          },
+          "max_depth": {
+            "type": "integer",
+            "description": "Maximum number of hops. Recommended: 2-3 for exploration, up to 6 for deep traces. Large values may return many nodes.",
+            "default": 3,
+            "minimum": 1,
+            "maximum": 10
+          },
+          "edge_kinds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "calls",
+                "extends",
+                "implements",
+                "overrides",
+                "uses",
+                "tests"
+              ]
+            },
+            "description": "Restrict traversal to these edge kinds. Empty array = all kinds.",
+            "default": []
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "shortest_path",
+      "description": "Find the shortest path between two nodes in the call/dependency graph. Returns the intermediate nodes and edges. Result hops=-1 means no path found within max_depth.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "from_id": {
+            "type": "string",
+            "description": "Start node UUID"
+          },
+          "to_id": {
+            "type": "string",
+            "description": "Target node UUID"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "out",
+              "in",
+              "both"
+            ],
+            "description": "'out' = follow call direction from→to; 'in' = reverse; 'both' = any direction.",
+            "default": "both"
+          },
+          "max_depth": {
+            "type": "integer",
+            "description": "Maximum path length to search. Default 6. Increase if hops=-1.",
+            "default": 6,
+            "minimum": 1,
+            "maximum": 10
+          }
+        },
+        "required": [
+          "from_id",
+          "to_id"
+        ]
+      }
+    },
+    {
+      "name": "node_source",
+      "description": "Get the full source code body of a symbol node. Returns the exact lines from the file where the symbol is defined.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Node UUID"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "source_at",
+      "description": "Read a slice of source lines from a file by line range (0-based). Use when you have a file path and line numbers but no node ID. Useful for reading context around a symbol.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Repo-relative file path, e.g. 'crates/parser/src/lang/rust/extract.rs'"
+          },
+          "start_line": {
+            "type": "integer",
+            "description": "First line to return (0-based, inclusive)"
+          },
+          "end_line": {
+            "type": "integer",
+            "description": "Last line to return (0-based, inclusive). Keep range under 200 lines for performance."
+          }
+        },
+        "required": [
+          "file_path",
+          "start_line",
+          "end_line"
+        ]
+      }
+    },
+    {
+      "name": "file_source",
+      "description": "Restore the full source of an entire file from the DB. Use sparingly — prefer source_at with a specific range.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Repo-relative file path"
+          }
+        },
+        "required": [
+          "file_path"
+        ]
+      }
+    },
+    {
+      "name": "file_nodes",
+      "description": "Get all symbol nodes defined in a specific file, ordered by source position (node_idx). Useful as a table-of-contents for a file.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Repo-relative file path"
+          }
+        },
+        "required": [
+          "file_path"
+        ]
+      }
+    },
+    {
+      "name": "file_imports",
+      "description": "Get file-level import/dependency edges. 'outgoing' = what this file imports; 'incoming' = which files import this file.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Repo-relative file path"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "outgoing",
+              "incoming"
+            ],
+            "description": "'outgoing' (default) = dependencies of this file; 'incoming' = files that depend on this file.",
+            "default": "outgoing"
+          }
+        },
+        "required": [
+          "file_path"
+        ]
+      }
+    },
+    {
+      "name": "list_files",
+      "description": "List files in the repository with optional filters. Returns file metadata including language, node count, and source classification.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "object",
+            "description": "Optional filters",
+            "properties": {
+              "language": {
+                "type": "string",
+                "description": "Filter by language"
+              },
+              "file_source": {
+                "type": "string",
+                "description": "Filter by source classification: local, test, generated, minified, stub"
+              },
+              "path_contains": {
+                "type": "string",
+                "description": "Fuzzy path substring filter"
+              },
+              "change_statuses": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "default",
+                    "add",
+                    "change",
+                    "delete"
+                  ]
+                },
+                "description": "Filter by change status (requires --diff-base index). ['add','change'] lists changed files."
+              }
+            }
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "repo_summary",
+      "description": "Get repository overview statistics: total files, total symbol nodes, total edges, language distribution, source classification breakdown.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "list_repos",
+      "description": "List all indexed repositories/branches with unified repo identifiers. Each row's repo_id is '{domain}/{org}/{repo}@{branch}' (e.g. 'github.com/org/repo@main') — copy it for any CLI command's repo argument. Also returns per-branch stats (nodes_total, files_total, branch, indexed_at, db_path, branch_slug). Note: agent tool calls operate on the session's bound repo; use this to help the user discover what has been indexed (or run `codexqa repos` in a terminal).",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "find_nodes_by_tag",
+      "description": "Find symbol nodes by semantic tag key/value pairs. Tags encode metadata like visibility, async, abstract, etc. Useful for questions like 'find all public async functions'.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Tag key, e.g. 'visibility', 'async', 'abstract', 'test'"
+          },
+          "value": {
+            "type": "string",
+            "description": "Tag value. E.g. for key='visibility': 'public', 'private', 'protected'. Optional — omit to match any value for the key."
+          },
+          "language": {
+            "type": "string",
+            "description": "Restrict to a specific language. Optional."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results. Default 20.",
+            "default": 20
+          }
+        },
+        "required": [
+          "key"
+        ]
+      }
+    },
+    {
+      "name": "search_code",
+      "description": "BM25 full-text search over indexed source code. Use when you don't know the exact symbol name: search by keywords, identifiers, error messages, or string literals appearing in code. Returns matching file paths with BM25 scores and snippets. Handles camelCase (partial words match: 'SearchResult' finds 'Bm25SearchResult') and Chinese comments. Combine with find_nodes/file_nodes to resolve hits to symbol nodes, or source_at to read more context. AVAILABILITY: requires `codexqa bm25 <repo>` to have been run once — if this tool is not in your tool list, the repo has no BM25 index; if a call returns an error about BM25 not enabled, tell the user to run `codexqa bm25 <repo>` and meanwhile fall back to find_nodes (name search) or list_files + source_at.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query: space-separated keywords. Rare identifiers rank highest (BM25 IDF). E.g. 'verify_jwt', 'TokenExpired retry', 'fn open'."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results. Default 20.",
+            "default": 20
+          },
+          "test_filter": {
+            "type": "string",
+            "enum": [
+              "exclude",
+              "include",
+              "only"
+            ],
+            "description": "Test-file filtering. 'exclude' (default) skips test files (fixtures, *_test.*, spec files); 'include' searches everything; 'only' restricts to test files only (useful for 'which tests cover this').",
+            "default": "exclude"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "search_wiki",
+      "description": "Semantic (vector) search over an architecture wiki. Wiki generation is temporarily unavailable — do not run `codexqa wiki` or `wiki embed`. If this tool errors with 'not enabled', fall back to search_code (BM25) or find_nodes. When a wiki already exists, returns sections ranked by similarity, each with section text, title path, and refs (source path + line range). Follow refs with source_at.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Natural-language query, e.g. '重试逻辑在哪里处理' / 'where is retry logic handled'. Works best with domain/module terms; purely abstract questions may drift."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results. Default 20.",
+            "default": 20
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "symbol_diff",
+      "description": "Render the unified diff of a changed symbol (function/method/class) against the diff-base. Requires the repo to be indexed with --diff-base. Use find_nodes with change_statuses=['add','change'] to get changed symbols and their IDs first, then call this per symbol. Output: unified diff text ('-' old lines, '+' new lines, '@@' hunk headers) plus diff_lines (true total) and truncated flag. Truncation keeps head+tail and marks the omitted middle with '... [truncated N lines]'.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Node UUID of the changed symbol (from find_nodes with change_statuses filter)"
+          },
+          "max_lines": {
+            "type": "integer",
+            "description": "Max rendered diff lines. Default 100, hard cap 500. Truncation keeps head 75% + tail 25% with a marker in between.",
+            "default": 100
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "change_groups",
+      "description": "Get the change topology: changed symbols (add/change vs diff-base) grouped by graph relations (same file / calls / file imports) into change groups. ONE call returns the full grouping — groups ordered by max fan-in (highest risk first), each group with its symbols (id/name/kind/file:line/change_status/fan-in/fan-out), files, and grouping signals, plus inter-group call edges. Use this FIRST for change review: it gives the structural map so you can budget deep-dives per group instead of querying per symbol. Requires --diff-base index; empty groups = no changes or not a diff index. Response carries `truncated: true` when symbol/edge collection hit hard limits (5000 symbols / 100k edges) — treat the topology as incomplete and say so in the report.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}
