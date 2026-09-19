@@ -6,31 +6,39 @@ This page covers installation and the published skills. Most answers below are a
 
 ## What is codexqa?
 
-codexqa is a public, local-first [Agent Skills](https://agentskills.io/specification) pack for Cursor, Claude Code, Codex, and OpenClaw. It is for the work that stays expensive after an agent writes a green PR: requirement / business-logic bugs, rubber-stamp reviews, incomplete PRDs, manual test-case libraries, and testdata `{placeholder}`s. Five skills:
+codexqa is a public, local-first [Agent Skills](https://agentskills.io/specification) pack for Cursor, Claude Code, Codex, and OpenClaw. AI makes producing code faster; codexqa focuses on the verification work that does not automatically get cheaper: clarifying requirements, understanding change impact, reviewing implementation evidence, designing cases, and preparing test data.
+
+The six skills cover different parts of the delivery lifecycle. Each has a separate input contract so the agent knows whether it should read documents, index a local checkout, clone a branch, write cases, or call a data backend:
 
 | Skill | Role |
 | --- | --- |
+| [`code-analyzer`](../skills/code-analyzer/README.md) | Index a local repository, then trace change impact, regression scope, test gaps, entries, and errors through its symbol graph |
 | [`defect-detection`](../skills/defect-detection/README.md) | Clone a git branch / PR / test plan and write gated findings |
 | [`code-reviewer`](../skills/code-reviewer/README.md) | Playbook CR of a local checkout; P0 / P1 / P2 report |
 | [`requirements-analyzer`](../skills/requirements-analyzer/README.md) | Quality-and-risk analysis of requirement documents; one gap register |
 | [`testcase-generation`](../skills/testcase-generation/README.md) | Generate and update structured manual test cases from PRD / design / specs |
 | [`testdata-generation`](../skills/testdata-generation/README.md) | Construct reusable test data and backfill `{placeholder}`s in those cases |
 
-`npx skills add … --skill <name>` copies one directory. Install the skill you need; they do not replace each other. Detection accuracy for `defect-detection` has not been independently benchmarked. `testcase-generation`, `code-reviewer`, and `requirements-analyzer` have no published host-agent score.
+`npx skills add … --skill <name>` copies one directory. Install the skill you need; they do not replace each other. Detection accuracy for `defect-detection` has not been independently benchmarked. `code-analyzer`, `testcase-generation`, `code-reviewer`, and `requirements-analyzer` have no published host-agent score.
 
 What a finished report or case looks like: [sample pages and screenshots](../README.md#what-the-output-looks-like).
+
+## Why not just use a linter or one code-review prompt?
+
+They solve different parts of the problem. Linters and static rules catch suspicious syntax and data-flow shapes. A general review prompt can comment on a diff, but it has no stable input contract or evidence gate. codexqa keeps the model you already use, then adds task-specific context collection, playbooks, symbol-graph queries, structured artifacts, and stop conditions. It is not a test runner or proof of correctness; it makes the verification work more bounded and reviewable.
 
 ## Which skill should I install?
 
 Match the request, not the wording:
 
 - Find requirement / business-logic defects with write-back gates → `defect-detection`
+- Trace changed symbols, callers, regression scope, test gaps, and reachable entries in a local repository → `code-analyzer`
 - Broader quality / security / maintainability CR on a local checkout → `code-reviewer`
 - Review whether the PRD itself is complete and consistent → `requirements-analyzer`
 - Write or update a manual case library → `testcase-generation`
 - Build data that fills case `{placeholder}`s → `testdata-generation`
 
-“Review this PR” is not enough to choose: `defect-detection` clones a URL and gates findings; `code-reviewer` diffs in place and loads playbooks. A request can also span two skills. Generate cases first; placeholders can only be backfilled after the `.md` files exist.
+“Review this PR” is not enough to choose: `code-analyzer` maps changed symbols, callers, entries, and test gaps; `defect-detection` clones a URL and gates requirement-oriented findings; `code-reviewer` diffs in place and loads review playbooks. A request can span skills: use `code-analyzer` to bound the impact, then `code-reviewer` for concrete P0 / P1 / P2 findings. Generate cases first; placeholders can only be backfilled after the `.md` files exist.
 
 ## What do I have to give each skill?
 
@@ -38,6 +46,7 @@ They do not share one input. Two skills take Git, but not the same way:
 
 | Skill | You bring | Not used as input |
 |---|---|---|
+| `code-analyzer` | A local repository; for change review, the baseline ref | Requirements or a clone task. It indexes the checkout already on disk and queries its symbol graph |
 | `defect-detection` | Git URL + branch (plus requirements or test cases if you have them) | — |
 | `code-reviewer` | A local Git checkout + the branch / PR / commit to review | A clone URL. This skill diffs in place |
 | `requirements-analyzer` | Requirement documents (PRD, stories, API notes, optional role reports) | Application source. It does not write cases |
@@ -48,7 +57,13 @@ Sample prompts: [root README · Quick start](../README.md#quick-start).
 
 ## Do I need an npm account or a codexqa account?
 
-No. `npx skills add` runs a community installer that fetches skill files from GitHub. Local providers do not require a codexqa account. Your agent or remote providers may have their own account requirements.
+No. `npx skills add` runs a community installer that fetches skill files from GitHub. Local providers do not require a codexqa account. `code-analyzer` additionally installs the separately distributed npm package `@openqa-cn/codexqa`, but no npm account is required. Your agent or remote providers may have their own account requirements.
+
+## What is the relationship between the code-analyzer Skill and the codexqa CLI?
+
+The `code-analyzer` Skill, playbook, query schemas, and examples are published in this repository. The `@openqa-cn/codexqa` npm package is a separately distributed, closed-source local code-analysis engine. The Skill tells the agent when to invoke it, which graph evidence to collect, and how to report the result.
+
+Indexing and graph queries run on the user's machine and do not require an LLM. Indexes and sessions are stored under `~/.codexqa/`. The engine is not installed or executed by this repository's CI; see the [`code-analyzer` known limitations](../skills/code-analyzer/KNOWN_LIMITATIONS.md) and [support matrix](SUPPORT_MATRIX.md) for the current verification status.
 
 ## Does installing a skill run the workflow?
 
@@ -64,7 +79,7 @@ Repository cloning and fetching public documents can also use the network. Curre
 
 Defaults include `data/` under the skill installation and local `enterprise/` inputs. Runtime overrides include `DETECTION_DATA_DIR`, `CONTENT_JSON_BASE`, and `DETECTION_ENTERPRISE_DIR`; consult the [operator manual](../skills/defect-detection/references/operator-manual.md) and [adapter guide](../skills/defect-detection/references/api/adapters.md). Keep runtime data and private configuration outside version control and back them up before upgrading.
 
-`testcase-generation` writes under the workspace `usecases/` and optional `{workspace}/.ai-testcase/`. `testdata-generation` writes under the workspace `testdata/` (see that skill's README).
+`testcase-generation` writes under the workspace `usecases/` and optional `{workspace}/.ai-testcase/`. `testdata-generation` writes under the workspace `testdata/` (see that skill's README). `code-analyzer` stores local indexes under `~/.codexqa/`; indexing and graph queries do not require an LLM.
 
 ## Is defect-detection a replacement for static analysis or testing?
 

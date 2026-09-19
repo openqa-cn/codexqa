@@ -20,9 +20,8 @@
 | 本地 provider | 任务、报告、写回测试 | 未认证多人并发 |
 | HTTP / GitHub provider | 有适配器和协议测试 | 真实凭据集成待验证 |
 | ZIP 打包 | 打包 / 解包冒烟测试 | 需要 Bash、rsync、zip、unzip |
-| Windows（defect-detection） | 运行时路径全部来自数据目录（不再依赖 `/tmp`），`.cmd` 垫片由 `scripts/sys.ts` 处理，fixture 构建脚本为纯 Node，`.gitattributes` 强制 LF | 尚未在 Windows CI 上跑过；Semgrep 的 Windows 版本为 beta，GitNexus 未测；Quick start 片段需 Git Bash / WSL |
-| Windows（仓库整体） | 未验证 | shell 命令和测试脚本目前面向 POSIX |
 | 证据 schema | 仓库内提供 schema | 不宣称 skill 输出自动符合该 schema |
+| `code-analyzer` 符号图工作流 | 已发布路由契约、查询 schema、分析 playbook、证据图示例和已知边界文档；本地建索引与查询需要 Node.js 18+ 和单独分发的闭源 `@openqa-cn/codexqa` 引擎 | 本仓库 CI 不安装或执行该引擎；没有公开宿主 Agent 运行；图完整性受 parser 覆盖、stub 和符号碰撞影响 |
 | `testcase-generation` 脚本 | `validate_integrations.ts`、`call_integration.ts`、`lint_case_documents.ts` 在 Node 22.6+ 上用 TypeScript stripping 运行；不装 npm 包 | 无公开 fixture、无已记录 agent 运行；Windows 未测；无子 agent 的宿主未测 |
 | `testdata-generation` 脚本 | 打包、slot 检索和本地 catalog mock 见该 skill 文档 | 运行依赖已配置的 adapter 与 slot；不在 defect-detection CLI 套件覆盖范围内 |
 | `code-reviewer` playbook | `tooling/` 离线契约检查（在 `tooling/` 里 `npm test`） | 没有公开 fixture 或已记录的宿主 agent 运行；报告质量未测量 |

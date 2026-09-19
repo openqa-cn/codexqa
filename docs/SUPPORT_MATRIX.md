@@ -20,9 +20,9 @@ Installation compatibility does not establish analysis quality. Record agent/mod
 | Local providers | Task lifecycle, fixtures, reports, and writeback tests | Concurrent or multi-user operation is not certified |
 | HTTP / GitHub providers | Adapter implementation and selected HTTP contract tests | Real deployment credentials and integration verification required |
 | ZIP packaging | Pack/unpack smoke test | Requires Bash, rsync, zip, unzip |
-| Windows (defect-detection) | Runtime paths come from the data dir (no `/tmp`), `.cmd` shims handled in `scripts/sys.ts`, fixture builder is plain Node, `.gitattributes` forces LF | Not yet run on a Windows CI host; Semgrep on Windows is beta, GitNexus untested; Quick-start snippets assume Git Bash / WSL |
-| Windows | Not verified | Shell commands and test script are currently POSIX-oriented |
+| Windows | `defect-detection` avoids hardcoded `/tmp`, handles `.cmd` shims, and uses a plain-Node fixture builder | No Windows CI run yet; Semgrep on Windows is beta, GitNexus is untested, and shell snippets assume Git Bash / WSL. Other skills remain unverified |
 | Evidence schema | Repository schema available | Skill output is not claimed to conform automatically |
+| `code-analyzer` symbol-graph workflow | Published routing contract, query schemas, analysis playbook, example evidence diagram, and known-limitations document; local index/query require Node.js 18+ and the separately distributed closed-source `@openqa-cn/codexqa` engine | Engine is not installed or exercised by this repository's CI; no public host-agent run; graph completeness depends on parser coverage, stubs, and symbol collisions |
 | `testcase-generation` scripts | `validate_integrations.ts`, `call_integration.ts`, `lint_case_documents.ts` run on Node 22.6+ with TypeScript stripping; no npm install | No public fixture or recorded agent run; Windows untested; hosts without subagents untested |
 | `testdata-generation` scripts | Packer, slot search, and local catalog mock documented in that skill | Runtime depends on the configured adapters and slots; not covered by the defect-detection CLI suite |
 | `code-reviewer` playbooks | Offline `tooling/` contract checks (`npm test` in `tooling/`) | No public fixture or recorded host-agent run; report quality is unmeasured |

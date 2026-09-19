@@ -2,7 +2,7 @@
 
 [English](HOW_IT_WORKS.md)
 
-索引页。`npx skills add … --skill <name>` 只复制 `skills/<name>/`，因此原理文档必须放在对应 skill 目录。安装后读该目录下的「工作原理」，不要依赖本页正文。
+索引页。`npx skills add … --skill <name>` 只复制 `skills/<name>/`，因此原理文档必须放在对应 skill 目录。每个已发布 skill 都有人读的工作流和边界文档，以及 Agent 运行时使用的 `SKILL.md`。安装后读表中链接的 skill 内文档，不要依赖本页正文。
 
 | 文档 | 用途 |
 | --- | --- |
@@ -12,6 +12,7 @@
 
 | Skill | 人读 | Agent |
 | --- | --- | --- |
+| `code-analyzer` | [工作流](../skills/code-analyzer/README.zh-CN.md) · [已知边界](../skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md) · [分析 playbook](../skills/code-analyzer/references/playbook.md) | [`SKILL.md`](../skills/code-analyzer/SKILL.md) |
 | `defect-detection` | [工作原理](../skills/defect-detection/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/defect-detection/SKILL.md) |
 | `code-reviewer` | [工作原理](../skills/code-reviewer/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/code-reviewer/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/code-reviewer/SKILL.md) |
 | `requirements-analyzer` | [工作原理](../skills/requirements-analyzer/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/requirements-analyzer/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/requirements-analyzer/SKILL.md) |

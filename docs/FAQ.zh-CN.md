@@ -6,31 +6,39 @@
 
 ## 这是做什么的？
 
-codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优先 [Agent Skills](https://agentskills.io/specification) 包。针对 Agent 写出绿 PR 之后仍然贵的部分：需求 / 业务逻辑缺陷、走过场的审查、不完整的 PRD、手工用例库、以及用例里的 `{placeholder}`。五个 skill：
+codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优先 [Agent Skills](https://agentskills.io/specification) 包。AI 让产出代码更快；codexqa 聚焦那些不会自动变便宜的验证工作：澄清需求、理解变更影响、拿证据审实现、设计用例、准备测试数据。
+
+六个 skill 分别覆盖交付生命周期中的不同工作。每个 skill 都有独立输入契约，Agent 能明确知道这次该读文档、索引本地 checkout、克隆分支、写用例，还是调用造数后端：
 
 | Skill | 用途 |
 | --- | --- |
+| [`code-analyzer`](../skills/code-analyzer/README.zh-CN.md) | 给本地仓库建符号图，再分析变更影响、回归范围、测试缺口、入口和报错 |
 | [`defect-detection`](../skills/defect-detection/README.zh-CN.md) | 克隆 git 分支 / PR / 测试计划，写出带门禁的发现 |
 | [`code-reviewer`](../skills/code-reviewer/README.zh-CN.md) | 对本地工作副本做 playbook CR，产出 P0 / P1 / P2 报告 |
 | [`requirements-analyzer`](../skills/requirements-analyzer/README.zh-CN.md) | 审需求文档的质量与风险，出一份缺口登记表 |
 | [`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) | 从 PRD / 技术方案 / 规格生成并更新手工测试用例 |
 | [`testdata-generation`](../skills/testdata-generation/README.zh-CN.md) | 构造可复用测试数据，回填用例里的 `{placeholder}` |
 
-`npx skills add … --skill <name>` 一次只复制一个目录。按任务安装，彼此不互相替代。`defect-detection` 的检出效果尚未独立 benchmark。`testcase-generation`、`code-reviewer` 和 `requirements-analyzer` 没有公开的宿主 agent 成绩。
+`npx skills add … --skill <name>` 一次只复制一个目录。按任务安装，彼此不互相替代。`defect-detection` 的检出效果尚未独立 benchmark。`code-analyzer`、`testcase-generation`、`code-reviewer` 和 `requirements-analyzer` 没有公开的宿主 agent 成绩。
 
 报告、用例长什么样：[样例页和截图](../README.zh-CN.md#产物长什么样)。
+
+## 为什么不只用 linter 或一次代码审查 prompt？
+
+它们解决的问题不同。linter 和静态规则擅长抓可疑语法与数据流形态；通用审查 prompt 可以评论 diff，但没有稳定的输入契约和证据门禁。codexqa 保留你已经在用的模型，再补上按任务收集上下文、playbook、符号图查询、结构化产物和停点。它不是测试执行器，也不能证明实现正确；它的价值是让验证工作边界更清楚、结果更容易复核。
 
 ## 该装哪一个？
 
 按任务选，不要按措辞选：
 
 - 找需求 / 业务逻辑缺陷，并且要写回门禁 → `defect-detection`
+- 在本地仓库追变更符号、调用方、回归范围、测试缺口和可达入口 → `code-analyzer`
 - 对本地工作副本做质量 / 安全 / 可维护性 CR → `code-reviewer`
 - 审 PRD 本身是否完整、一致 → `requirements-analyzer`
 - 写或更新手工用例库 → `testcase-generation`
 - 构造数据、填用例 `{placeholder}` → `testdata-generation`
 
-只说「审这个 PR」不够选：`defect-detection` 按 URL 克隆并对发现做门禁；`code-reviewer` 原地 diff 再加载 playbook。一个请求也可以跨两个 skill。先生成用例；占位符只能在 `.md` 落盘后再回填。
+只说「审这个 PR」不够选：`code-analyzer` 负责画出变更符号、调用方、入口和测试缺口；`defect-detection` 按 URL 克隆并对需求类发现做门禁；`code-reviewer` 原地 diff 再加载审查 playbook。一个请求可以串联多个 skill：先用 `code-analyzer` 收敛影响面，再用 `code-reviewer` 找具体 P0 / P1 / P2 问题。先生成用例；占位符只能在 `.md` 落盘后再回填。
 
 ## 每个 skill 要我交什么？
 
@@ -38,6 +46,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 
 | Skill | 你要带上的 | 不会当输入用的 |
 |---|---|---|
+| `code-analyzer` | 本地仓库；审变更时再给基线 ref | 需求文档或克隆任务。它给磁盘上的现有 checkout 建索引并查询符号图 |
 | `defect-detection` | Git 地址 + 分支（有需求或用例更好） | — |
 | `code-reviewer` | 本地 Git 工作副本 + 要审的分支 / PR / commit | 克隆地址。本 skill 原地 diff |
 | `requirements-analyzer` | 需求文档（PRD、故事、接口说明，可选角色报告） | 被测源码。它不写用例 |
@@ -48,7 +57,13 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 
 ## 需要 npm 或 codexqa 账号吗？
 
-不需要。`npx skills add` 只是从 GitHub 获取 skill 文件的社区安装器，本地 provider 也不需要 codexqa 账号。你的 Agent 和远程 provider 可能各有自己的账号要求。
+不需要。`npx skills add` 只是从 GitHub 获取 skill 文件的社区安装器，本地 provider 也不需要 codexqa 账号。`code-analyzer` 还要安装单独分发的 npm 包 `@openqa-cn/codexqa`，但不需要 npm 账号。你的 Agent 和远程 provider 可能各有自己的账号要求。
+
+## code-analyzer Skill 和 codexqa CLI 是什么关系？
+
+`code-analyzer` 的 Skill、playbook、查询 schema 和示例发布在本仓库中。npm 包 `@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎。Skill 负责告诉 Agent 何时调用引擎、查询哪些图证据，以及如何组织报告。
+
+建索引和图查询在用户机器上完成，不需要 LLM；索引和会话写在 `~/.codexqa/`。本仓库 CI 不安装或执行该引擎，当前验证状态见 [`code-analyzer` 已知边界](../skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)和[支持矩阵](SUPPORT_MATRIX.zh-CN.md)。
 
 ## 安装后会自动跑工作流吗？
 
@@ -64,7 +79,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 
 默认写在 skill 安装目录下的 `data/`，以及本地 `enterprise/` 输入目录。运行时可用 `DETECTION_DATA_DIR`、`CONTENT_JSON_BASE`、`DETECTION_ENTERPRISE_DIR` 覆盖，细节见[运维手册](../skills/defect-detection/references/operator-manual.md)和[适配器指南](../skills/defect-detection/references/api/adapters.md)。运行数据和私有配置不要进版本库，升级前先备份。
 
-`testcase-generation` 写到工作区 `usecases/` 和可选的 `{workspace}/.ai-testcase/`。`testdata-generation` 写到工作区 `testdata/`（见该 skill 的 [README](../skills/testdata-generation/README.zh-CN.md)）。
+`testcase-generation` 写到工作区 `usecases/` 和可选的 `{workspace}/.ai-testcase/`。`testdata-generation` 写到工作区 `testdata/`（见该 skill 的 [README](../skills/testdata-generation/README.zh-CN.md)）。`code-analyzer` 的本地索引写到 `~/.codexqa/`；建索引和图查询不需要 LLM。
 
 ## defect-detection 能替代测试或静态分析吗？
 

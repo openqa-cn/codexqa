@@ -2,17 +2,18 @@
 
 [English](GETTING_STARTED.md)
 
-在 Cursor、Claude Code、Codex 或 OpenClaw 上一次只装一个 skill。本页以 [`defect-detection`](../skills/defect-detection/README.zh-CN.md) 为例，因为它有可冒烟的 CLI。同一条命令也可以加 `--skill code-reviewer`、`--skill requirements-analyzer`、`--skill testcase-generation`、`--skill testdata-generation`——那四个没有 `detect.ts` 套件。
+在 Cursor、Claude Code、Codex 或 OpenClaw 上一次只装一个 skill。本页以 [`defect-detection`](../skills/defect-detection/README.zh-CN.md) 为例，因为它有可冒烟的 CLI。同一条命令也可以加 `--skill code-analyzer`、`--skill code-reviewer`、`--skill requirements-analyzer`、`--skill testcase-generation`、`--skill testdata-generation`。`code-analyzer` 使用单独的 `codexqa` 符号图 CLI；另外四个没有 `detect.ts` 套件。
 
 每个 skill 要交的材料不一样（[FAQ](FAQ.zh-CN.md#每个-skill-要我交什么)）。跑完长什么样见 [README · 产物长什么样](../README.zh-CN.md#产物长什么样)。
 
 ## 环境要求
 
-需要 Node.js、npm/npx、Git，以及能够读取 skill 文件并执行命令的 Coding Agent。CLI 测试在 macOS、Node 22.15.0 上通过，运行 TypeScript 需要：
+需要 Node.js、npm/npx、Git，以及能够读取 skill 文件并执行命令的 Coding Agent。`code-analyzer` 要求 Node.js 18 或更高版本。`defect-detection` CLI 测试在 macOS、Node 22.15.0 上通过，运行 TypeScript 需要：
 
 ```bash
 export NODE_OPTIONS=--experimental-strip-types
 node --version
+npx --version
 git --version
 ```
 
@@ -82,14 +83,30 @@ npx skills remove defect-detection --agent codex
 ## 其他已发布 skill
 
 ```bash
+npx skills add openqa-cn/codexqa --skill code-analyzer
+npm install -g @openqa-cn/codexqa
+
 npx skills add openqa-cn/codexqa --skill code-reviewer
 npx skills add openqa-cn/codexqa --skill requirements-analyzer
 npx skills add openqa-cn/codexqa --skill testcase-generation
 npx skills add openqa-cn/codexqa --skill testdata-generation
 ```
 
+`code-analyzer` Skill 发布在本仓库中；`@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎，索引和会话写在 `~/.codexqa/`。详见[已知边界](../skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)。
+
+只做 `code-analyzer` 冒烟时不需要模型：给本地 checkout 建索引，再查看摘要。
+
+```bash
+codexqa --help
+codexqa index /path/to/repo
+codexqa stats /path/to/repo
+```
+
+`--help` 应列出 CLI 命令；成功的 `stats` 应显示已索引的文件、符号和语言。审变更时要用 `--diff-base <ref>` 重新建索引；没有 diff 基线时，符号的变更状态都是 `default`，没有可审的变更集。
+
 安装后新建 Agent 会话并指向该 skill。输入各不相同：
 
+- `code-analyzer` 需要本地仓库。审变更时用 `origin/main` 等基线建索引；索引写在 `~/.codexqa/`。见其 [README](../skills/code-analyzer/README.zh-CN.md)。
 - `code-reviewer` 需要本地 Git 工作副本，再加上分支 / PR / commit。它不克隆。见 [README · 你要交什么](../skills/code-reviewer/README.zh-CN.md#你要交什么)。
 - `requirements-analyzer` 需要需求文档，不要交仓库。见 [README · 你要交什么](../skills/requirements-analyzer/README.zh-CN.md#你要交什么)。
 - `testcase-generation` 需要 `prd/`（PRD / 技术方案 / 契约）。`code/` 可选，且只在更新时用。见其 [README](../skills/testcase-generation/README.zh-CN.md)。
@@ -108,6 +125,7 @@ npx skills add openqa-cn/codexqa --skill testdata-generation
 | 报 `.ts` 扩展名无法识别 | 该命令的 Node 版本和 TypeScript stripping 环境 |
 | 没有检测计划 | 补上仓库 / 分支和业务材料；降级加载成功不等于材料够 |
 | 静态分析或调用图不可用 | 工具安装结果、PATH、权限和网络 |
+| 找不到 `codexqa` 或图查询为空 | 安装 `@openqa-cn/codexqa`、检查 PATH、确认仓库已建索引；审变更时要加 `--diff-base` |
 | 本地报告链接打不开 | 直接用浏览器打开返回的 HTML 文件 |
 
 求助时请附上 commit、Node 版本、操作系统、Agent 及版本、命令和脱敏后的报错。不要上传源码或含私有数据的任务目录。

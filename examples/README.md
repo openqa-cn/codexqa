@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md)
 
-Small fixtures you can run without an agent. For what a finished report looks like, see the [sample pages in the root README](../README.md#what-the-output-looks-like).
+Small fixtures you can run without an agent. The [root README](../README.md) shows a sample report and the shortest first-success paths.
 
 Start with [checkout boundary](checkout-boundary/README.md): a small positive-amount requirement, a known-good implementation, and a seeded boundary defect. Its verifier exercises both implementations.
 

@@ -2,7 +2,7 @@
 
 [简体中文](HOW_IT_WORKS.zh-CN.md)
 
-Index only. `npx skills add … --skill <name>` copies `skills/<name>/`, so method docs must live in that directory. After install, read the skill’s How it works page, not this file.
+Index only. `npx skills add … --skill <name>` copies `skills/<name>/`, so method documentation must stay in that directory. Each published skill has human-facing workflow and limitation documents plus an agent-facing `SKILL.md`. After install, read the linked documents in the skill directory, not this page.
 
 | Doc | Role |
 | --- | --- |
@@ -12,6 +12,7 @@ Index only. `npx skills add … --skill <name>` copies `skills/<name>/`, so meth
 
 | Skill | Human | Agent |
 | --- | --- | --- |
+| `code-analyzer` | [Workflow](../skills/code-analyzer/README.md) · [Known limitations](../skills/code-analyzer/KNOWN_LIMITATIONS.md) · [Playbook](../skills/code-analyzer/references/playbook.md) | [`SKILL.md`](../skills/code-analyzer/SKILL.md) |
 | `defect-detection` | [How it works](../skills/defect-detection/HOW_IT_WORKS.md) · [Known limitations](../skills/defect-detection/KNOWN_LIMITATIONS.md) | [`SKILL.md`](../skills/defect-detection/SKILL.md) |
 | `code-reviewer` | [How it works](../skills/code-reviewer/HOW_IT_WORKS.md) · [Known limitations](../skills/code-reviewer/KNOWN_LIMITATIONS.md) | [`SKILL.md`](../skills/code-reviewer/SKILL.md) |
 | `requirements-analyzer` | [How it works](../skills/requirements-analyzer/HOW_IT_WORKS.md) · [Known limitations](../skills/requirements-analyzer/KNOWN_LIMITATIONS.md) | [`SKILL.md`](../skills/requirements-analyzer/SKILL.md) |

@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md) · [How it works](HOW_IT_WORKS.md) · [Known limitations](KNOWN_LIMITATIONS.md)
 
-Agent-led static and business-logic defect detection for pull requests and test plans. **Input is a git repository and branch** (plus any requirements or test cases you can share). Local-first: CLI, static rules, and pluggable providers. The workflow is usable; detection accuracy is not independently benchmarked.
+`defect-detection` clones a git repository and branch, extracts changed methods, runs static rules and optional call-graph analysis, then asks the agent to compare the implementation with requirements and test cases. Candidate findings must pass structured write-back rules and a close gate before they reach the report. Local-first: CLI, static rules, and pluggable providers. The workflow is usable; detection accuracy is not independently benchmarked.
 
 Sample HTML report (same renderer as a local run):
 

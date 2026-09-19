@@ -2,24 +2,25 @@
 
 [English](ROADMAP.md)
 
-codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。本仓库当前提供 [`defect-detection`](../skills/defect-detection/README.zh-CN.md)、[`code-reviewer`](../skills/code-reviewer/README.zh-CN.md)、[`requirements-analyzer`](../skills/requirements-analyzer/README.zh-CN.md)、[`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) 和 [`testdata-generation`](../skills/testdata-generation/README.zh-CN.md)。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由这些工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
+codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。当前价值更具体、范围也更克制：六个本地优先的 skill，把需求、代码变更、审查、用例和测试数据拆成独立、可核查的工作流，而不是交给一次没有约束的 AI 对话。本仓库当前提供 [`code-analyzer`](../skills/code-analyzer/README.zh-CN.md)、[`defect-detection`](../skills/defect-detection/README.zh-CN.md)、[`code-reviewer`](../skills/code-reviewer/README.zh-CN.md)、[`requirements-analyzer`](../skills/requirements-analyzer/README.zh-CN.md)、[`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) 和 [`testdata-generation`](../skills/testdata-generation/README.zh-CN.md)。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由这些工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
 
 ## 能力地图
 
 | 能力 | 当前仓库状态 | 范围 |
 | --- | --- | --- |
 | 缺陷检测 | **已提供** | 面向代码变更、测试计划和交付任务的 Agent 静态与业务逻辑审查 |
-| 代码分析 | **部分提供** | 基于 AST 规则和变更方法分析；更多语言和框架仍在扩展 |
+| 代码分析 | **已提供** | `code-analyzer` 为支持的语言建立本地符号图，`defect-detection` 另有 AST 规则和变更方法分析；parser 与框架覆盖仍有差异 |
 | 需求评审 | **已提供** | 对需求文档做缺口/冲突分析（`requirements-analyzer`）；实现是否符合需求仍是计划中 |
 | 规格评审 | **计划中** | 检查技术规格的完整性、一致性和可测试性 |
 | AI Code Review | **已提供** | Playbook 驱动的 PR / 分支 / commit 审查（`code-reviewer`）；尚无公开 fixture |
-| 变更影响分析 | **部分提供** | 通过 GitNexus 提供 Java 调用图路径，并有降级行为；跨仓影响分析仍在规划 |
+| 变更影响分析 | **已提供** | `code-analyzer` 在单个已索引仓库内从变更符号追到调用方及 HTTP / RPC / MQ / 定时任务入口；跨仓影响分析仍在规划 |
+| 测试缺口分析 | **已提供** | `code-analyzer` 核验符号级 `tests` 边，报告没有图关系测试罩住的已变更生产符号 |
 | 测试执行编排 | **计划中** | 在验证工作流中运行现有测试框架并采集结果 |
-| 代码覆盖率分析 | **计划中** | 覆盖率质量信号和需求到测试的覆盖分析 |
+| 代码覆盖率分析 | **计划中** | 运行时覆盖率信号和需求到测试的覆盖分析；符号级测试缺口已由 `code-analyzer` 提供 |
 | UI 端到端测试 | **计划中** | 浏览器和 UI 工作流生成、执行与结果集成 |
 | 测试用例生成 | **已提供** | 根据 PRD、技术方案、接口契约和知识库生成并增量更新结构化手工用例 |
 | 测试数据构造 | **已提供** | 通过 domain slot、工具、API 和生成脚本构造可复用测试数据，并回写到用例前置条件 |
-| 问题定位与诊断 | **部分提供** | 发现结果包含位置、触发条件、分析依据和修复建议；更深入的根因诊断仍在建设 |
+| 问题定位与诊断 | **部分提供** | `code-analyzer` 可把日志、堆栈和错误文案落到符号与调用方；`defect-detection` 发现项包含位置、触发条件、依据和修复建议；自动根因诊断仍有限 |
 | 证据采集与结构化发现 | **已提供** | 发现校验、写回、排序、标签和可追踪 HTML 报告 |
 | 本地 provider 与报告 | **已提供** | 本地优先的 JSON 持久化和报告生成，不依赖私有后端 |
 | 企业与外部系统集成 | **部分提供** | HTTP 和 GitHub 适配器已有代码，需要部署配置 |
@@ -35,7 +36,7 @@ codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。�
 ## 顺序
 
 - **现在：** 加固干净环境安装、Agent 兼容性、公开案例和开发者文档。
-- **下一步：** 按同一套「证据 + 人工复核」约定，增加规格评审、需求评审和更广泛的分析 skill。
+- **下一步：** 增加规格评审，扩展符号图的 parser 与框架覆盖，并按同一套「证据 + 人工复核」约定发布更多 fixture。
 - **之后：** 接入跨仓影响分析、AI Code Review、CI 质量门禁和托管工程系统。
 
 进度见[公开路线图](https://openqa.cn/roadmap)。已发布的变更见[更新日志](../CHANGELOG.md)。

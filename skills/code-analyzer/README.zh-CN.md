@@ -1,4 +1,4 @@
-[English](README.md) · **简体中文**
+[English](README.md) · **简体中文** · [已知边界](KNOWN_LIMITATIONS.zh-CN.md)
 
 # CodexQA Skill
 
@@ -11,7 +11,11 @@ CodexQA 先把仓库解析成仓库代码关系符号图，再按固定路径回
 - **找测试缺口** —— 看生产符号有没有图上的 `tests` 边罩住，不是「仓库里有测试目录」
 - **追报错** —— 用日志、堆栈、错误文案落到符号，再看谁调用、测没测到
 
+`code-analyzer` 用图证据回答的是**结构和影响面**问题；它不判断实现是否符合业务需求，也不产出 P0 / P1 / P2 审查结论。需求类缺陷发现和门禁写回用 `defect-detection`，playbook 驱动的具体实现问题用 `code-reviewer`。三者可以串联：先在这里圈影响面，再把深审聚焦到高风险路径。
+
 索引支持 **TypeScript、JavaScript、Vue、Java、C/C++、C#、Python、Go、PHP、Rust**。`stats` / `summary` 里能看到本仓库的语言分布。
+
+Skill、playbook、schema 和示例发布在本仓库中；依赖的 `@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎。建索引和图查询在用户机器上完成，不需要 LLM；索引和会话写在 `~/.codexqa/`。验证状态和图完整性边界见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。
 
 ```bash
 npm install -g @openqa-cn/codexqa --registry https://registry.npmjs.org/
@@ -507,4 +511,3 @@ code-analyzer/
     ├── cli.md                # 安装 / 仓库 / LLM / 维护
     └── mcp.json              # 图查询工具声明
 ```
-

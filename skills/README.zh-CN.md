@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-每个 skill 各自独立成文。已发布的 skill 都有一份给 Agent 读的 `SKILL.md` 和一份给人读的 `README.md`。报告和用例样例：[仓库 README · 产物长什么样](../README.zh-CN.md#产物长什么样)。
+每个 skill 各自独立成文。已发布的 skill 都有一份给 Agent 读的 `SKILL.md` 和一份给人读的 `README.md`。[仓库 README](../README.zh-CN.md)提供报告样例、快速开始和各 skill 文档入口。
 
 ## 已发布的 skill
 

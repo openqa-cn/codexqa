@@ -32,3 +32,5 @@ jobs:
       - name: Run skill tests
         working-directory: skills/defect-detection
         run: npm test
+      - name: Run code-reviewer tooling checks
+        run: npm ci --prefix skills/code-reviewer/tooling && npm test --prefix skills/code-reviewer/tooling

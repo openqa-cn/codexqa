@@ -2,7 +2,7 @@
 
 # codexqa
 
-**Agent Skills for the work after an agent writes code: requirement defects, real code review, PRD gaps, manual test cases, and the test data to run them.**
+**Six local-first Agent Skills for requirements, test design, test data, change impact, requirement defects, and code review.**
 
 [![CI](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml)
 [![Release](https://img.shields.io/github/v/tag/openqa-cn/codexqa?label=release&style=flat)](https://github.com/openqa-cn/codexqa/releases)
@@ -12,10 +12,10 @@
 **English | [简体中文](README.zh-CN.md)**
 
 <a href="#quick-start"><strong>Quick Start</strong></a> ·
-<a href="#what-the-output-looks-like"><strong>What it looks like</strong></a> ·
+<a href="docs/assets/previews/defect-report.html"><strong>Sample report</strong></a> ·
 <a href="docs/HOW_IT_WORKS.md"><strong>How It Works</strong></a> ·
 <a href="examples/inventory-service/README.md"><strong>Blind Evaluation</strong></a> ·
-<a href="skills/defect-detection/KNOWN_LIMITATIONS.md"><strong>Limitations</strong></a> ·
+<a href="#evidence-and-limitations"><strong>Evidence & Limits</strong></a> ·
 <a href="docs/GETTING_STARTED.md"><strong>Getting Started</strong></a> ·
 <a href="docs/FAQ.md"><strong>FAQ</strong></a> ·
 <a href="docs/SUPPORT_MATRIX.md"><strong>Support Matrix</strong></a>
@@ -27,145 +27,69 @@
 </p>
 
 <p align="center">
-  <sub><em>Coding agents write the change. These skills check the requirement, the review, the cases, and the testdata.<br>(Above is a sample page: same renderer as a local run, canned findings.)</em></sub>
+  <sub><em>Coding agents write the change. codexqa makes the intent, impact, review evidence, cases, and test data checkable.<br>(Above: one of six outputs, a defect-detection sample page with canned findings.)</em></sub>
 </p>
 
 ---
 
-For [Cursor](https://cursor.com), [Claude Code](https://claude.com/claude-code), [Codex](https://openai.com/codex), and OpenClaw. Install with `npx skills add` ([Agent Skills](https://agentskills.io/specification)). Local-first; no codexqa account.
+AI can produce a green pull request quickly. Teams still have to check whether the implementation matches the requirement, identify affected callers and entries, review the evidence, and prepare runnable tests. codexqa splits that verification work into six Agent Skills.
 
-Coding agents make a green pull request cheap. The expensive part is now **requirement bugs, rubber-stamp reviews, and test work the model cannot finish alone**:
+`codexqa` is a public, local-first [Agent Skills](https://agentskills.io/specification) pack for [Cursor](https://cursor.com), [Claude Code](https://claude.com/claude-code), [Codex](https://openai.com/codex), and OpenClaw. Install only the workflow you need with `npx skills add`; there is no codexqa account, gateway, or platform migration.
 
-| What goes wrong after the agent writes code | Skill |
-| --- | --- |
-| The PR looks right and CI is green; the spec said “discount at 10 items” and the code used `>` | [`defect-detection`](skills/defect-detection/README.md) — business-logic / requirement defects, not only Semgrep shape |
-| You need AI code review of a local branch or PR: file:line, runtime impact, a fix — not “LGTM” | [`code-reviewer`](skills/code-reviewer/README.md) |
-| The PRD contradicts the API note, or a P0 has no way to fail | [`requirements-analyzer`](skills/requirements-analyzer/README.md) |
-| QA still writes the manual test-case library from the PRD by hand | [`testcase-generation`](skills/testcase-generation/README.md) |
-| Cases are full of `{placeholder}` and nobody created the real IDs on a backend | [`testdata-generation`](skills/testdata-generation/README.md) |
+## How the six skills fit together
 
-We have not measured and published a score per host — [what was actually checked is in the support matrix](docs/SUPPORT_MATRIX.md). Findings are candidates for a human.
+| Stage | Skill | Question it answers | Checkable output |
+| --- | --- | --- | --- |
+| Requirement review | [`requirements-analyzer`](skills/requirements-analyzer/README.md) | Is the PRD complete, consistent, and testable? | One gap/conflict register with P0 / P1 verification |
+| Test design | [`testcase-generation`](skills/testcase-generation/README.md) | What manual cases follow from the PRD and design? | A structured case library with unknowns marked, not invented |
+| Test data | [`testdata-generation`](skills/testdata-generation/README.md) | What real IDs and preconditions make those cases runnable? | Backend-returned values written back into case preconditions |
+| Change impact | [`code-analyzer`](skills/code-analyzer/README.md) | What changed, who calls it, which entries are hit, and what is untested? | Symbol-graph evidence, regression scope, test gaps, and diagrams |
+| Requirement defects | [`defect-detection`](skills/defect-detection/README.md) | Does the changed implementation violate a requirement or case? | Structured candidate findings that pass write-back gates |
+| Code review | [`code-reviewer`](skills/code-reviewer/README.md) | What concrete quality, security, or maintainability problems are in this diff? | Playbook-driven P0 / P1 / P2 findings with file:line and fixes |
 
-## What this repository provides
+The skills use different inputs by design. The Agent can tell whether it should read documents, index a local checkout, clone a branch, write cases, or call a data backend.
 
-`codexqa` is a public, local-first [Agent Skills](https://agentskills.io/specification) pack. Five skills; they do not share one input:
+## Why codexqa?
 
-| Skill | You bring | It does |
-| --- | --- | --- |
-| [`defect-detection`](skills/defect-detection/README.md) | Git URL + branch (plus requirements or cases) | Clone, analyze changed methods, write gated findings |
-| [`code-reviewer`](skills/code-reviewer/README.md) | A local Git checkout + branch / PR / commit | Playbook CR with a P0 / P1 / P2 report; does not clone |
-| [`requirements-analyzer`](skills/requirements-analyzer/README.md) | PRD / stories / API notes (documents) | One gap/conflict register with P0 / P1 verification |
-| [`testcase-generation`](skills/testcase-generation/README.md) | PRD / design / specs under `prd/` | Write and update a manual case library. `code/` is update-only |
-| [`testdata-generation`](skills/testdata-generation/README.md) | A construct request, cases, and/or OpenAPI | Call a backend (or local mock) and return real IDs; not a git clone |
+- `defect-detection` compares changed code with requirements and test cases; those mismatches often cannot be found by static rules alone.
+- `code-analyzer` uses a local symbol graph to trace changed symbols to callers, entries, and graph-backed test relationships.
+- The document and test skills keep requirement review, case design, and data construction separate instead of asking one prompt to do everything.
+- Each skill has a narrow input contract, evidence format, and stop conditions. The skills install into the Agent you already use; findings remain candidates for human review.
 
-[`defect-detection`](skills/defect-detection/README.md) workflow:
+## Choose the right code workflow
 
-- Task creation, repository cloning, branch and diff context collection
-- Changed-method analysis with AST rules and optional Java call-graph analysis
-- Local JSON providers plus optional HTTP, GitHub, test-case, document, issue, and trace adapters
-- Structured finding validation, write-back, ranking, tagging, and HTML reports
-- A deterministic known-good/seeded-defect fixture and an automated CLI test suite
+The three code-facing skills overlap on the same repository but answer different questions:
 
-Method write-ups live in each skill: [defect-detection](skills/defect-detection/HOW_IT_WORKS.md), [code-reviewer](skills/code-reviewer/HOW_IT_WORKS.md), [requirements-analyzer](skills/requirements-analyzer/HOW_IT_WORKS.md), [testcase-generation](skills/testcase-generation/HOW_IT_WORKS.md), [testdata-generation](skills/testdata-generation/HOW_IT_WORKS.md). Index: [docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md).
+| Skill | Primary question | Input | It does not replace |
+| --- | --- | --- | --- |
+| [`code-analyzer`](skills/code-analyzer/README.md) | What changed, what can it reach, and where are the test gaps? | Local repository + optional diff base | Requirement judgement or P0 / P1 / P2 review |
+| [`defect-detection`](skills/defect-detection/README.md) | Does the implementation contradict a requirement or test case? | Git URL + branch + available requirements/cases | General maintainability review or test execution |
+| [`code-reviewer`](skills/code-reviewer/README.md) | What concrete implementation problems deserve review findings? | Local checkout + branch / PR / commit | Symbol-graph impact mapping or requirement-document review |
 
-## How defect-detection works
-
-Static rules catch bugs you can recognise by *shape*: a swallowed exception, a hardcoded secret, a missing null check. The bugs that survive review are usually different: the code looks fine, the tests are green, and it still does not match the requirement.
-
-- Spec says “discount at 10 items”; the code uses `>`, so 10 items get no discount.
-- A refund pays the requested amount and never caps it at the remaining balance.
-- One function updates a counter; the cache that reads the same data is never invalidated.
-
-Those bugs are not in the syntax tree. They sit in the **gap between code and intent**, and the intent lives in requirements and test cases. A model can compare the two. Left unconstrained, it also invents methods it never read, stamps “looks good” on hundreds of methods, and files so much noise that people stop reading.
-
-So the split is: **the model judges meaning; the infrastructure makes that judgement checkable.**
-
-```text
-Repo + branch + requirements or cases
-                  │
-                  ▼
-     Collect context, analyse the change
-                  │
-                  ▼
-     AST rules + optional call graph
-                  │
-                  ▼
-     Agent review, findings validated
-                  │
-                  ▼
-     Structured findings + HTML report
-                  │
-                  ▼
-              Human review
-```
-
-codexqa runs the workflow. The host Agent / model does the semantic review. Local providers need no private backend; adapters can attach the same flow to an external platform.
-
-Three controls do the real work:
-
-1. **Tiers.** Methods tied to a stated requirement or case get deeper analysis; the rest are not treated equally.
-2. **23 write-back rules.** Rejected if the code was never read, the method name is not in the source, or the batch looks like autopilot output.
-3. **A close gate.** Coverage, report consistency, and evidence depth are checked again before the task can finish.
-
-On the [inventory-service](examples/inventory-service/README.md) blind fixture, seven business-logic defects sit inside ordinary feature work, plus four decoys that look wrong but are correct. One recorded agent run found 7/7 with 0 false positives, and none of the seven came from the 102 Semgrep seed rules. That is one model, one run, one in-house fixture — not a benchmark. [Methodology](benchmarks/README.md), [design](skills/defect-detection/HOW_IT_WORKS.md), [known limitations](skills/defect-detection/KNOWN_LIMITATIONS.md).
-
-## What the output looks like
-
-These are all **sample pages** (same renderer as a local run, canned findings). Open the HTML if an image is stale.
-
-<p align="center">
-  <a href="docs/assets/previews/testcase-sample.html"><img src="docs/assets/previews/testcase-sample.png" alt="Sample generated manual test case for inventory hold" width="880"></a>
-</p>
-
-<p align="center"><em>testcase-generation writes Markdown cases. This is that file rendered: steps, expected results, empty Construction column. <a href="docs/assets/previews/testcase-sample.html">Open the page</a>.</em></p>
-
-<p align="center">
-  <a href="docs/assets/previews/cr-findings.html"><img src="docs/assets/previews/cr-findings.png" alt="Sample code-reviewer P0 and P1 findings" width="880"></a>
-</p>
-
-<p align="center"><em>code-reviewer report: each finding has location, rule, runtime impact, and a fix. <a href="docs/assets/previews/cr-findings.html">Open the page</a>.</em></p>
-
-<p align="center">
-  <a href="docs/assets/previews/ra-register.html"><img src="docs/assets/previews/ra-register.png" alt="Sample requirements-analyzer gap register" width="880"></a>
-</p>
-
-<p align="center"><em>requirements-analyzer: one gap / conflict register with an executable check per row. <a href="docs/assets/previews/ra-register.html">Open the page</a>.</em></p>
-
-<p align="center">
-  <a href="docs/assets/previews/testdata-writeback.html"><img src="docs/assets/previews/testdata-writeback.png" alt="Sample testdata write-back replacing placeholders" width="880"></a>
-</p>
-
-<p align="center"><em>testdata-generation fills <code>{placeholder}</code> with IDs the backend actually returned. <a href="docs/assets/previews/testdata-writeback.html">Open the page</a>.</em></p>
-
-The defect-detection report is the page at the top; you can also [open it directly](docs/assets/previews/defect-report.html).
-
-## Hosts and language support
-
-The skill instructions target **Cursor, Claude Code, Codex, and OpenClaw**: install, start a new session, hand over the material. Installing is not the same as a complete run on that host; per-component status is in the [support matrix](docs/SUPPORT_MATRIX.md).
-
-`defect-detection` does language-aware method extraction for the languages below, each with its own Semgrep seed pack (102 seed rules in total). The extractors are regex / brace / indentation based, not full parsers:
-
-| Language | Method-level extraction | Extra |
-| --- | --- | --- |
-| Java | ✓ | Optional GitNexus call graph |
-| Kotlin · Scala | ✓ | — |
-| JavaScript · TypeScript | ✓ | Where the one recorded blind-eval sample (7/7) ran |
-| Python | ✓ | 17 seed rules; method bounds from indentation |
-| Go | ✓ | Optional go vet / staticcheck overlays |
-| C · C++ | ✓ | Macro-heavy code is approximated |
-| C# | ✓ | — |
-
-Optional overlays run when the binary is installed and are skipped when it is not: gitleaks, trivy / grype, bandit, gosec, cppcheck, eslint, detekt.
+Detailed workflow and boundary documents live with each skill: [code-analyzer](skills/code-analyzer/README.md) ([limitations](skills/code-analyzer/KNOWN_LIMITATIONS.md)), [defect-detection](skills/defect-detection/HOW_IT_WORKS.md), [code-reviewer](skills/code-reviewer/HOW_IT_WORKS.md), [requirements-analyzer](skills/requirements-analyzer/HOW_IT_WORKS.md), [testcase-generation](skills/testcase-generation/HOW_IT_WORKS.md), and [testdata-generation](skills/testdata-generation/HOW_IT_WORKS.md). Host, language, and verification status are tracked in the [support matrix](docs/SUPPORT_MATRIX.md).
 
 ## Install on Cursor, Claude Code, and Codex
 
+Check the basic tools first. `code-analyzer` requires Node.js 18+; the `defect-detection` CLI suite is tested on Node.js 22.15.0.
+
 ```bash
+node --version
+npx --version
+git --version
+```
+
+Install only the skill needed for the current task:
+
+```bash
+npx skills add openqa-cn/codexqa --skill code-analyzer
 npx skills add openqa-cn/codexqa --skill defect-detection
 npx skills add openqa-cn/codexqa --skill code-reviewer
 npx skills add openqa-cn/codexqa --skill requirements-analyzer
 npx skills add openqa-cn/codexqa --skill testcase-generation
 npx skills add openqa-cn/codexqa --skill testdata-generation
 ```
+
+`code-analyzer` also requires Node.js 18+ and `npm install -g @openqa-cn/codexqa`. This package is the separately distributed, closed-source local code-analysis engine; index and query run on the user's machine without an LLM. [Details and limitations](skills/code-analyzer/KNOWN_LIMITATIONS.md).
 
 Choose an Agent when prompted. For a user-level Codex installation add `--agent codex --global`. Each `--skill` copies one directory.
 
@@ -177,26 +101,50 @@ No codexqa or npm account is required. See [Getting started](docs/GETTING_STARTE
 2. Start a new Coding Agent session.
 3. Give the agent the material **that** skill expects. They are not interchangeable.
 
-Start with one: **review a branch** (`defect-detection`).
+### Path A: find requirement defects in a branch
 
 ```text
-Review REPOSITORY_URL at BRANCH_NAME with defect-detection.
-Requirement: checkout amounts must be greater than zero.
+Review https://github.com/<ORG>/<REPO>.git at feature/refund-limit with defect-detection.
+Requirement: a refund must not exceed the order's remaining refundable balance.
 For each suspected defect, report the location, trigger, evidence, and fix.
 ```
 
-Replace the uppercase placeholders. The workflow collects context, analyzes changed methods, validates findings, and produces a report for human review.
+HTTPS and SSH Git URLs are accepted. Use a branch name such as `main` or `feature/refund-limit`; requirements can be pasted into the request or provided as documents.
 
-A model-free fixture of the contract (not a detection-accuracy claim):
+**Installation acceptance check, no model required:**
 
 ```bash
 node examples/checkout-boundary/verify.mjs
 ```
 
+Expected ending:
+
+```text
+PASS: known-good implementation satisfies sampled contract
+EXPECTED FAILURE: defective implementation accepts zero
+Fixture verified; no AI detection claim.
+```
+
+### Path B: map change impact in a local checkout
+
+```bash
+npm install -g @openqa-cn/codexqa
+codexqa --help
+codexqa index /path/to/repo --diff-base origin/main
+codexqa stats /path/to/repo
+```
+
+`codexqa --help` should list the CLI commands; `stats` should report indexed files, symbols, and languages. Then open the repository in the agent and ask:
+
+```text
+Use code-analyzer to review this repository against origin/main.
+Show the highest-risk change groups, affected callers and entries, and changed symbols with no graph-backed test relationship.
+```
+
+This path uses the separately distributed closed-source local analysis engine. The current engine is not installed or exercised by this repository's CI; see [known limitations](skills/code-analyzer/KNOWN_LIMITATIONS.md).
+
 <details>
 <summary><b>What to say to the other four skills</b></summary>
-
-<br/>
 
 **Review a local checkout (`code-reviewer`)** — open the repository in the agent. This skill diffs in place; it does not clone.
 
@@ -243,23 +191,36 @@ Default backend is the bundled mock on `http://127.0.0.1:8765`. A demo ID is not
 
 </details>
 
-## Why a skill, not another platform
+## What the output looks like
 
-What you install is files, not a service. `npx skills add … --skill <name>` copies one directory, and the agent you already use reads it — **no account, no gateway, no workflow to migrate**.
+The large image at the top is the `defect-detection` HTML report. Other sample artifacts:
 
-- **Semantic judgement stays with the model you already pay for.** This repository ships no model and does not rank them. It organizes the context, then makes the model's conclusion checkable: 23 write-back rules, tiers, a close gate.
-- **Local-first is literal.** Local JSON providers persist to disk and the report is an HTML file you can double-click. Configure the HTTP / GitHub adapters only when you want an external system attached.
-- **Install one at a time.** The five skills do not share an input; installing all of them mostly helps the agent pick the wrong one. Install for the task in front of you.
-- **Capabilities and claims are written down separately.** What ships versus what is planned: [capability map and roadmap](docs/ROADMAP.md). What was actually checked per component: [support matrix](docs/SUPPORT_MATRIX.md). What it cannot do: [known limitations](skills/defect-detection/KNOWN_LIMITATIONS.md).
+| Skill | Sample |
+| --- | --- |
+| `code-analyzer` | [Change-impact graph](skills/code-analyzer/assets/checkout-change-impact.svg) |
+| `code-reviewer` | [P0 / P1 findings](docs/assets/previews/cr-findings.html) |
+| `requirements-analyzer` | [Gap/conflict register](docs/assets/previews/ra-register.html) |
+| `testcase-generation` | [Structured manual case](docs/assets/previews/testcase-sample.html) |
+| `testdata-generation` | [Backend values written into case preconditions](docs/assets/previews/testdata-writeback.html) |
 
-## Scope and limitations
+These pages use the project renderers and prepared sample data. They are illustrations, not recorded Agent runs.
 
-> [!IMPORTANT]
-> The current defect-detection workflow is a usable engineering tool, not an experiment-only prototype. It produces candidates for human confirmation and does not replace tests, static analysis, security review, or maintainer judgment.
+## Evidence and limitations
 
-This project helps organize code context and evidence; it does not replace tests, static analysis, security review, or maintainer judgment. It cannot prove the absence of defects or infer business rules that were not provided. Findings are candidates, not automatic merge decisions.
+The workflows do not have the same public evidence maturity:
 
-Local providers write data to disk. Repository cloning, document fetching, remote providers, automatic Semgrep/GitNexus installation, and the host Agent/model may use the network. Review [FAQ](docs/FAQ.md), [support matrix](docs/SUPPORT_MATRIX.md), and [security policy](SECURITY.md) before using private source.
+| Skill | Public evidence today |
+| --- | --- |
+| `defect-detection` | Repository CLI tests, reproducible fixtures, and one recorded Agent run: 7/7 planted defects, 0 false positives; one model and one in-house fixture, not a benchmark |
+| `code-analyzer` | Published Skill contract, schemas, playbook, example diagram, and limitations; the separately distributed closed-source engine is not run by this repository's CI |
+| `code-reviewer` | Offline tooling contract checks; no public fixture or recorded host-Agent run |
+| `requirements-analyzer` | Evaluation cases and parse/convert scripts; no recorded host-Agent score |
+| `testcase-generation` | Integration validators and case-document linting; no public fixture or recorded Agent run |
+| `testdata-generation` | Packer, slot search, and local catalog mock; runtime depends on configured adapters and slots |
+
+Findings are candidates for human review. codexqa does not replace tests, static analysis, security review, or maintainer judgment, and it cannot infer business rules that were not supplied. Local workflows write data to disk; cloning, document fetching, external providers, tool installation, and the host Agent/model may use the network.
+
+See the [support matrix](docs/SUPPORT_MATRIX.md), [FAQ](docs/FAQ.md), per-skill limitations, and [benchmark methodology](benchmarks/README.md) before using private source or comparing quality claims.
 
 ## Developer verification
 
@@ -272,7 +233,7 @@ export NODE_OPTIONS=--experimental-strip-types
 node examples/checkout-boundary/verify.mjs
 ```
 
-These checks cover documentation links, translation section parity, CLI and provider behavior, packaging, isolation, write-back validation, and the bundled boundary fixture. They do not prove that every defect will be found.
+These checks cover documentation links, translation section parity, the repository's `defect-detection` CLI and provider behavior, packaging, isolation, write-back validation, and the bundled boundary fixture. They do not execute the separately distributed `code-analyzer` engine or prove that every defect will be found.
 
 ## Documentation
 
@@ -280,7 +241,7 @@ These checks cover documentation links, translation section parity, CLI and prov
 | --- | --- |
 | Run a review today | [Getting Started](docs/GETTING_STARTED.md) · [Quick start](#quick-start) |
 | Understand how it reaches a conclusion, and what stops autopilot output | [How the skills work](docs/HOW_IT_WORKS.md) · [defect-detection method](skills/defect-detection/HOW_IT_WORKS.md) |
-| Know what it misses and when not to trust it | [Known Limitations](skills/defect-detection/KNOWN_LIMITATIONS.md) · [Support Matrix](docs/SUPPORT_MATRIX.md) |
+| Know what a skill misses and when not to trust it | [How the skills work](docs/HOW_IT_WORKS.md) · [code-analyzer limitations](skills/code-analyzer/KNOWN_LIMITATIONS.md) · [defect-detection limitations](skills/defect-detection/KNOWN_LIMITATIONS.md) · [Support Matrix](docs/SUPPORT_MATRIX.md) |
 | Check whether code or data leaves my machine | [FAQ](docs/FAQ.md) · [Security Policy](SECURITY.md) |
 | Reproduce the 7/7 blind evaluation myself | [Examples](examples/README.md) · [inventory-service](examples/inventory-service/README.md) · [Methodology](benchmarks/README.md) |
 | See what is next and what is only planned | [Capability map and roadmap](docs/ROADMAP.md) · [Changelog](CHANGELOG.md) |

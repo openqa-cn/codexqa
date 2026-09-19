@@ -1,5 +1,5 @@
 <p align="center">
-  <strong>English</strong> · <a href="README.zh-CN.md">简体中文</a>
+  <strong>English</strong> · <a href="README.zh-CN.md">简体中文</a> · <a href="KNOWN_LIMITATIONS.md">Known limitations</a>
 </p>
 
 # CodexQA Skill
@@ -13,7 +13,11 @@ CodexQA parses a repo into a local symbol graph, then answers “what changed, w
 - **Find test gaps** — coverage is a `tests` edge on the production symbol, not “the repo has a tests directory”
 - **Trace errors** — land logs, stacks, and error text on a symbol, then see who calls it and whether it is tested
 
+`code-analyzer` answers **structure and impact** questions from graph evidence; it does not decide whether the implementation matches a business requirement or assign P0 / P1 / P2 review findings. Use `defect-detection` for requirement-oriented defect discovery and gated write-back, and `code-reviewer` for playbook-driven implementation findings. They can be chained: map the impact here, then focus the deeper review.
+
 Indexing supports **TypeScript, JavaScript, Vue, Java, C/C++, C#, Python, Go, PHP, and Rust**. Language mix for this repo shows up in `stats` / `summary`.
+
+The Skill, playbook, schemas, and examples are published in this repository. The required `@openqa-cn/codexqa` package is a separately distributed, closed-source local analysis engine. Indexing and graph queries run on the user's machine without an LLM; indexes and sessions live under `~/.codexqa/`. See [known limitations](KNOWN_LIMITATIONS.md) for verification status and graph-completeness boundaries.
 
 ```bash
 npm install -g @openqa-cn/codexqa --registry https://registry.npmjs.org/

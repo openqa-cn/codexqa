@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md)
 
-Each skill is independently documented. Every published skill has an agent-facing `SKILL.md` and a human-facing `README.md`. Sample reports and cases: [root README · What the output looks like](../README.md#what-the-output-looks-like).
+Each skill is independently documented. Every published skill has an agent-facing `SKILL.md` and a human-facing `README.md`. The [root README](../README.md) links the sample report, quick starts, and per-skill documentation.
 
 ## Available skills
 
