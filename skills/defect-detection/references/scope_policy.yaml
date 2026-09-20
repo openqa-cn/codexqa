@@ -1,0 +1,142 @@
+# Scan scope policy — synthesized from industry best practices (NOT ad-hoc).
+#
+# Sources (algorithms mapped 1:1 in scripts/scope_planner.py):
+#   - SonarQube analysis scope: sonar.sources / sonar.inclusions / sonar.exclusions
+#     only REDUCE analyzable set; separate main vs test scope.
+#     https://docs.sonarsource.com/sonarqube-server/latest/project-administration/analysis-scope/
+#   - Semgrep monorepo: --include / --subdir to scan application modules only.
+#     https://semgrep.dev/docs/kb/semgrep-ci/scan-monorepo-in-parts
+#   - GitHub CodeQL: paths / paths-ignore for first-party application source;
+#     exclude tests, vendor, generated, node_modules.
+#     https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/customizing-your-advanced-setup-for-code-scanning
+#   - Sonatype reachability: --reachability-js-sources (app) vs
+#     --reachability-js-excludes (tests, node_modules).
+#     https://help.sonatype.com/en/reachability-analysis-cli.html
+#   - Polyglot project roots: deepest manifest root owns files (Cascade / projectdetect).
+#     Manifest markers: package.json, pom.xml, go.mod, Cargo.toml, pyproject.toml, etc.
+#
+# Policy version — bump when exclusion/include semantics change.
+version: "1.0.1"
+
+# Global exclusions (SonarQube sonar.exclusions + Semgrep default ignore + CodeQL paths-ignore)
+global_exclude_globs:
+  - node_modules/**
+  - vendor/**
+  - third_party/**
+  - third-party/**
+  - dist/**
+  - build/**
+  - target/**
+  - out/**
+  - generated/**
+  - .git/**
+  - "**/*.min.js"
+  - "**/*.lock"
+  - "**/__pycache__/**"
+  - "**/.next/**"
+  - "**/coverage/**"
+  # Skill runtime adhoc workspaces (intentional vuln fixtures from paste/upload tests)
+  - "**/data/adhoc/**"
+  - "data/adhoc/**"
+
+# Test / fixture scope (SonarQube sonar.test.exclusions; CodeQL **/test/**; Sonatype JS excludes)
+test_exclude_globs:
+  - "**/test/**"
+  - "**/tests/**"
+  - "**/__tests__/**"
+  - "**/spec/**"
+  - "**/specs/**"
+  - "**/fixtures/**"
+  - "**/fixture/**"
+  - "**/mocks/**"
+  - "**/mock/**"
+  - "**/testdata/**"
+  - "**/*.test.js"
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.js"
+  - "**/*.spec.ts"
+  - "**/*.spec.tsx"
+  - "**/*_test.go"
+  - "**/test_*.py"
+
+# Non-application repo areas (docs, deploy-only, samples) — CodeQL/NHIM ignore-pattern guidance
+non_app_path_prefixes:
+  - docs/
+  - doc/
+  - documentation/
+  - deploy-scripts/
+  - deployment/
+  - docker/
+  - .github/
+  - .agents/
+  - .cursor/
+  - .codex/
+  - .claude/
+  - .gemini/
+  - examples/
+  - example/
+  - samples/
+  - sample/
+  - demos/
+  - demo/
+  - _legacy/
+  - legacy/
+  - tools/ci/
+  - scripts/ci/
+
+# First-party application source globs INSIDE a deployable project (CodeQL paths / Sonar sources)
+application_source_globs:
+  - src/**
+  - app/**
+  - apps/**
+  - lib/**
+  - server/**
+  - api/**
+  - services/**
+  - handlers/**
+  - controllers/**
+  - domain/**
+  - core/**
+  - internal/**
+  - pkg/**
+  - cmd/**
+
+# Project manifest markers → ecosystem (projectdetect / Cascade PROJECT_DETECTION)
+manifest_markers:
+  node:
+    files: [package.json]
+  jvm:
+    files: [pom.xml, build.gradle, build.gradle.kts]
+  go:
+    files: [go.mod]
+  rust:
+    files: [Cargo.toml]
+  python:
+    files: [pyproject.toml, setup.py, Pipfile]
+  php:
+    files: [composer.json]
+  dotnet:
+    files: ["*.csproj", "*.sln"]
+
+# Workspace orchestrators — expand member paths (Semgrep monorepo / npm workspaces)
+workspace_markers:
+  - pnpm-workspace.yaml
+  - lerna.json
+  - nx.json
+  - turbo.json
+  - rush.json
+  - go.work
+
+# Role → include in defect scan (Sonatype: restrict to application namespaces)
+role_include:
+  application: true
+  service: true
+  library: true          # first-party shared packages (packages/* in monorepos)
+  workspace_root: false  # container-only root package.json
+  docs: false
+  infra: false
+  legacy: false
+  tooling: false
+  test: false
+  unknown: false

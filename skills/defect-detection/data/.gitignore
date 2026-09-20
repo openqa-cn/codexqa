@@ -1,0 +1,12 @@
+*
+!.gitignore
+!.gitkeep
+!baseline/
+!baseline/.gitkeep
+# generated upload/paste workspaces + caches + audits
+adhoc/
+cache/
+policy_fixture_audit.json
+feedback.jsonl
+vectors.jsonl
+metrics_dashboard.md

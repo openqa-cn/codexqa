@@ -1,0 +1,36 @@
+id: AUTH-001
+version: 1
+status: active
+category: security
+severity_default: P0
+title: Object-level IDOR — lookup by client id without ownership check
+look_for: |
+  Fetch/update/delete by request-supplied resource id (order_id, user_id, file_id)
+  without scoping to the authenticated principal (or with a check on the wrong
+  object). Residual after SAST: a check exists but authorizes the wrong resource
+  or is skipped on an error/retry path.
+do_not_report: |
+  Query already includes owner_id/current_user; admin paths with explicit
+  permission check; public resources documented as such.
+suggestion_hint: Scope the query by authenticated user (AND owner_id = current_user); return 404 for both missing and forbidden.
+fixtures:
+  positive:
+    - name: find_by_id_only
+      language: python
+      file: svc/order.py
+      code: |
+        def get_order(db, order_id):
+            return db.orders.find_by_id(order_id)
+      expect:
+        should_find: true
+        category: security
+        min_severity: P1
+  negative:
+    - name: scoped_to_user
+      language: python
+      file: svc/order.py
+      code: |
+        def get_order(db, order_id, user):
+            return db.orders.find_one(id=order_id, owner_id=user.id)
+      expect:
+        should_find: false

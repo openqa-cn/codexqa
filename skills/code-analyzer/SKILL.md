@@ -6,7 +6,7 @@ description: >
   code-analyzer, codexqa, 符号图, 代码知识图谱, 建索引, 查调用, 影响面,
   --diff-base, 变更审查, 回归范围, 测试缺口, or asks to install / run the
   codexqa CLI (index, query). Not a P0/P1/P2 playbook CR (that is
-  code-reviewer), not clone-and-detect write-back (that is defect-detection),
+  code-reviewer), not SAST+agent code-risk scan reports (that is defect-detection),
   and not full exception RCA reports (that is root-cause-diagnosis).
 license: Apache-2.0
 compatibility: >

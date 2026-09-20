@@ -6,7 +6,7 @@ description: >
   the user mentions root-cause-diagnosis, exception RCA, crash analysis, AI code
   diagnosis, stack diagnosis, 异常根因, 堆栈诊断, 崩溃分析, 异常诊断, or asks to
   turn an exception into a root-cause report. Not structure/impact analysis
-  (that is code-analyzer), not requirement-oriented defect write-back (that is
+  (that is code-analyzer), not SAST+agent code-risk scan reports (that is
   defect-detection), and not a P0/P1/P2 playbook CR (that is code-reviewer).
 license: Apache-2.0
 compatibility: >
@@ -33,7 +33,7 @@ CLI: `node {baseDir}/scripts/diagnose.ts` (`$SKILL_SCRIPT`). Task data: `{baseDi
 |---|---|
 | Symbol-graph change impact, callers, test gaps, entry risk | `code-analyzer` |
 | Exception RCA from stacks/logs on top of CLI analysis | **this skill** |
-| Requirement-vs-code defects with write-back gates | `defect-detection` |
+| SAST + agent-inline code-risk scan → `report_scan.*` | `defect-detection` |
 | P0/P1/P2 playbook review of a local checkout | `code-reviewer` |
 
 ## Split of work

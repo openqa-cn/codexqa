@@ -1,0 +1,37 @@
+id: AUTH-002
+version: 1
+status: active
+category: security
+severity_default: P0
+title: Trust client-supplied identity or role in authorization
+look_for: |
+  role, userId, isAdmin, tenant from header/body/query used as the principal
+  for authz (including after being copied into a local variable). Prefer
+  session/JWT claims established server-side.
+do_not_report: |
+  Role taken from verified token/session; client value used only as a selector
+  then re-checked against membership.
+suggestion_hint: Derive identity from authenticated session/JWT; treat client role fields as untrusted.
+fixtures:
+  positive:
+    - name: body_is_admin
+      language: python
+      file: api/admin.py
+      code: |
+        def delete_user(req, db):
+            if req.body.get("isAdmin"):
+                db.users.delete(req.body["userId"])
+      expect:
+        should_find: true
+        category: security
+  negative:
+    - name: session_role
+      language: python
+      file: api/admin.py
+      code: |
+        def delete_user(req, db):
+            if req.session.role != "admin":
+                raise Forbidden()
+            db.users.delete(req.body["userId"])
+      expect:
+        should_find: false

@@ -7,3 +7,6 @@ dist/
 coverage/
 .pytest_cache/
 __pycache__/
+# Local scan report artifacts (e.g. defect-detection full/incremental outputs)
+reports/
+缺陷检测报告.md

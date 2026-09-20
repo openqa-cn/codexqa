@@ -1,0 +1,35 @@
+id: TXN-001
+version: 1
+status: active
+category: transaction
+severity_default: P1
+title: Multi-step write outside transaction boundary
+look_for: |
+  Multiple DB writes that must succeed/fail together without begin/commit;
+  partial updates on error; reading uncommitted state across services as if atomic.
+do_not_report: |
+  Single-statement writes; explicit transaction context already wrapping the unit of work.
+suggestion_hint: Wrap related writes in one transaction; compensate or rollback on failure.
+fixtures:
+  positive:
+    - name: two_writes_no_txn
+      language: python
+      file: svc/pay.py
+      code: |
+        def transfer(db, a, b, amount):
+            db.execute("UPDATE accounts SET bal = bal - %s WHERE id=%s", (amount, a))
+            db.execute("UPDATE accounts SET bal = bal + %s WHERE id=%s", (amount, b))
+      expect:
+        should_find: true
+        category: transaction
+  negative:
+    - name: explicit_txn
+      language: python
+      file: svc/pay.py
+      code: |
+        def transfer(db, a, b, amount):
+            with db.transaction():
+                db.execute("UPDATE accounts SET bal = bal - %s WHERE id=%s", (amount, a))
+                db.execute("UPDATE accounts SET bal = bal + %s WHERE id=%s", (amount, b))
+      expect:
+        should_find: false

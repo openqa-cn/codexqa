@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Always run defect-detection scripts with Python 3.10+.
+set -euo pipefail
+HERE="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=python_resolve.sh
+source "$HERE/python_resolve.sh"
+PY="$(aid_resolve_python)" || {
+  echo "FATAL: Python 3.10+ not found on PATH" >&2
+  exit 1
+}
+if [[ $# -lt 1 ]]; then
+  echo "Usage: $0 <script.py|module args...>  e.g. $0 run_scan.py full --repo ." >&2
+  exit 2
+fi
+target="$1"; shift
+if [[ "$target" != /* && "$target" != ./* && "$target" != ../* ]]; then
+  if [[ -f "$HERE/$target" ]]; then
+    target="$HERE/$target"
+  fi
+fi
+exec "$PY" "$target" "$@"

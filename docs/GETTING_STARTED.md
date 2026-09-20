@@ -2,24 +2,22 @@
 
 [简体中文](GETTING_STARTED.zh-CN.md)
 
-Install one skill at a time on Cursor, Claude Code, Codex, or OpenClaw. This page walks [`defect-detection`](../skills/defect-detection/README.md) because it has a CLI you can smoke-test. The same command also takes `--skill code-analyzer`, `--skill root-cause-diagnosis`, `--skill code-reviewer`, `--skill requirements-analyzer`, `--skill testcase-generation`, and `--skill testdata-generation`. `code-analyzer` and `root-cause-diagnosis` use the separate `codexqa` symbol-graph CLI; the other four (aside from `defect-detection`) have no `detect.ts` suite.
+Install one skill at a time on Cursor, Claude Code, Codex, or OpenClaw. This page walks [`defect-detection`](../skills/defect-detection/README.md) because it has a CLI you can smoke-test. The same command also takes `--skill code-analyzer`, `--skill root-cause-diagnosis`, `--skill code-reviewer`, `--skill requirements-analyzer`, `--skill testcase-generation`, and `--skill testdata-generation`. `code-analyzer` and `root-cause-diagnosis` use the separate `codexqa` symbol-graph CLI; `defect-detection` is Python-orchestrated and also uses that CLI for live graphs.
 
 What you give each skill is different ([FAQ](FAQ.md#what-do-i-have-to-give-each-skill)). What a finished report looks like: [README · What the output looks like](../README.md#what-the-output-looks-like).
 
 ## Requirements
 
-Use Node.js, npm/npx, Git, and a coding agent able to read skill files and run commands. `code-analyzer` requires Node.js 18 or newer. The `defect-detection` CLI suite has been run locally on macOS with Node 22.15.0 using TypeScript stripping:
+Use Node.js, npm/npx, Git, and a coding agent able to read skill files and run commands. `code-analyzer` requires Node.js 18 or newer. The `defect-detection` Python pipeline is exercised with Python 3.11 locally and in CI:
 
 ```bash
-export NODE_OPTIONS=--experimental-strip-types
-node --version
+python3 --version   # 3.10+; 3.11 recommended
+node --version      # for CodexQA CLI / other skills
 npx --version
 git --version
 ```
 
-Apply this environment setting to the shell that runs the agent's CLI commands. Desktop agents may not inherit an unrelated terminal's environment. If a `.ts` command reports `ERR_UNKNOWN_FILE_EXTENSION`, check that command's Node version and environment. This example replaces any existing `NODE_OPTIONS`; preserve options you need.
-
-Analysis can attempt to install Semgrep (Python/pip or Homebrew) and GitNexus (npm/pnpm). Packaging tests also require Bash, rsync, zip, and unzip. See [data and network behavior](FAQ.md).
+`defect-detection` may install optional SAST tools via `scripts/install_sast_tools.sh` / `ensure_tools.py`. Live graph analysis needs `@openqa-cn/codexqa` on PATH. Packaging tests for other skills may still require Bash, rsync, zip, and unzip. See [data and network behavior](FAQ.md).
 
 ## Install from GitHub
 
@@ -52,20 +50,19 @@ npx skills add . --skill defect-detection --agent codex --copy
 For a CLI-only smoke check, no model or private platform is needed:
 
 ```bash
-export NODE_OPTIONS=--experimental-strip-types
-node skills/defect-detection/scripts/detect.ts --help
-node --test skills/defect-detection/tests/cli_smoke.test.ts
+python3 skills/defect-detection/scripts/run_scan.py --help
+(cd skills/defect-detection && npm test)
 ```
 
-The smoke suite verifies sample-plan loading, task creation, and missing-material handling. The included `acme` repository addresses are sample data; this test does not clone them. [Run the boundary-case example](../examples/checkout-boundary/README.md) for a known-good and seeded-defect pair.
+`npm test` runs the Python pipeline and policy-fixture suites (prefers Python 3.11). It does not run a live agent Stage1/Stage2 scan. [Run the boundary-case example](../examples/checkout-boundary/README.md) for a known-good and seeded-defect pair (fixture verification only).
 
 ## Start the agent workflow
 
-Open a new session after installation. Provide an accessible repository URL and branch, plus any requirements or test cases you can share. Example request:
+Open a new session after installation. Provide a local repo path, PR/diff intent, upload, or paste. Example request:
 
-> Use defect-detection to review my repository at REPOSITORY_URL, branch BRANCH_NAME. Check the changed implementation against these requirements: REQUIREMENTS. Return suspected defects with code locations, trigger conditions, and supporting evidence.
+> Use defect-detection to scan my repository at /abs/path/to/repo for this PR. Run the agent-inline Stage1/Stage2 flow and return `report_scan.json` findings ordered P0–P3.
 
-Replace uppercase placeholders. Expect a task, analysis records, and a report link if the workflow completes. Inspect incomplete services and unavailable tools before accepting the report. Keep suspected findings under human review.
+Expect deterministic collect + agent handoff, then `report_scan.json` / `.md` / `.html`. Inspect `tooling_status.missing` when scanners are absent. Keep findings under human review.
 
 ## Update and remove
 
@@ -93,7 +90,7 @@ npx skills add openqa-cn/codexqa --skill testcase-generation
 npx skills add openqa-cn/codexqa --skill testdata-generation
 ```
 
-The `code-analyzer` and `root-cause-diagnosis` Skills are published in this repository. `@openqa-cn/codexqa` is the separately distributed, closed-source local code-analysis engine; indexes and sessions live under `~/.codexqa/`. See [`code-analyzer` known limitations](../skills/code-analyzer/KNOWN_LIMITATIONS.md) and [`root-cause-diagnosis` known limitations](../skills/root-cause-diagnosis/KNOWN_LIMITATIONS.md).
+The `code-analyzer`, `root-cause-diagnosis`, and `defect-detection` Skills are published in this repository. `@openqa-cn/codexqa` is the separately distributed, closed-source local code-analysis engine; indexes and sessions live under `~/.codexqa/`. See [`code-analyzer` known limitations](../skills/code-analyzer/KNOWN_LIMITATIONS.md), [`root-cause-diagnosis` known limitations](../skills/root-cause-diagnosis/KNOWN_LIMITATIONS.md), and [`defect-detection` known limitations](../skills/defect-detection/KNOWN_LIMITATIONS.md).
 
 For a model-free `code-analyzer` smoke check, index a local checkout and inspect its summary:
 
@@ -109,6 +106,7 @@ After install, start a new agent session and point it at the skill. Inputs diffe
 
 - `code-analyzer` needs a local repository. For change review, index it with a baseline such as `origin/main`; indexes live under `~/.codexqa/`. See its [README](../skills/code-analyzer/README.md).
 - `root-cause-diagnosis` needs exception evidence (stack / log / dump) plus a git URL, local dir, file, or already-open workspace. See its [README](../skills/root-cause-diagnosis/README.md).
+- `defect-detection` needs a diff, repo, upload, or paste for a code-risk scan. See its [README](../skills/defect-detection/README.md).
 - `code-reviewer` needs a local Git checkout plus the branch / PR / commit. It does not clone. See [What you give it](../skills/code-reviewer/README.md#what-you-give-it).
 - `requirements-analyzer` needs requirement documents, not a repo. See [What you give it](../skills/requirements-analyzer/README.md#what-you-give-it).
 - `testcase-generation` needs `prd/` (PRD / design / specs). `code/` is optional and used on update only. See its [README](../skills/testcase-generation/README.md).

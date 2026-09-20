@@ -1,0 +1,37 @@
+id: PERF-001
+version: 1
+status: active
+category: architecture
+severity_default: P2
+title: N+1 query hidden behind a loop or repository
+look_for: |
+  Per-item DB/RPC inside a loop (including via repository/service helpers)
+  that could be a single batched query.
+do_not_report: |
+  Prefetch/select_related/IN query; bounded tiny lists with documented reason;
+  cache hit path that does not hit DB.
+suggestion_hint: Batch ids and load in one query; use join/prefetch.
+fixtures:
+  positive:
+    - name: loop_get
+      language: python
+      file: svc/feed.py
+      code: |
+        def titles(ids, db):
+            out = []
+            for i in ids:
+                out.append(db.posts.get(i).title)
+            return out
+      expect:
+        should_find: true
+        category: architecture
+  negative:
+    - name: batch_in
+      language: python
+      file: svc/feed.py
+      code: |
+        def titles(ids, db):
+            rows = db.posts.find(id__in=ids)
+            return [r.title for r in rows]
+      expect:
+        should_find: false

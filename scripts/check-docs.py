@@ -56,7 +56,6 @@ for skill_dir in sorted((root / 'skills').iterdir()):
 # stays visible instead of disappearing.
 translation_gaps = {
     'CONTRIBUTING.zh-CN.md': 'short summary; the full process is English-only',
-    'skills/defect-detection/README.zh-CN.md': 'operator sections not translated yet',
     'skills/testdata-generation/HOW_IT_WORKS.zh-CN.md': 'appendices not translated yet',
 }
 declared_gaps = 0

@@ -55,23 +55,15 @@ node examples/inventory-service/make-git-fixture.mjs      # prints the repo path
 
 ## Run defect-detection against it
 
-From `skills/defect-detection` (see its README Quick start for environment variables):
+The published `defect-detection` skill is now the Python `run_scan.py` SAST+agent pipeline (see its [README](../../skills/defect-detection/README.md)). This fixture remains useful as a planted-defect corpus and answer key via `node examples/inventory-service/verify.mjs`.
+
+Example adhoc/repo scan (agent-inline handoff; agent-inline handoff via `run_scan.py`):
 
 ```bash
-REPO=$(node ../../examples/inventory-service/make-git-fixture.mjs)
-node scripts/detect.ts submit-git --git "file://$REPO" --branch feature/reservation-v2 --submit-user you
-# → taskId / batchId
-node scripts/detect.ts clone-and-diff --task-id $TASK_ID --batch-id $BATCH_ID --git-url "file://$REPO" \
-  --branch feature/reservation-v2 --base-branch main --with-plan
+cd skills/defect-detection
+python3 scripts/run_scan.py incremental --repo "$REPO" --intent "reservation-v2 blind eval" --fresh -o /tmp/aid_report
 ```
 
-Supplying the specification is what makes this a meaningful run — without it every plan item stays at T3 and the depth requirements do not apply (see [known limitations](../../skills/defect-detection/KNOWN_LIMITATIONS.md)):
-
-```bash
-node scripts/detect.ts add-document --task-id $TASK_ID --doc-type requirementDocs \
-  --title "Reservation & Refund Requirements v2" --file-path "$LOCAL_DIR/docs/requirements.md"
-node scripts/detect.ts check-phase2-readiness --task-id $TASK_ID     # re-stamps tiers upward
-```
 
 ## Blind evaluation protocol
 

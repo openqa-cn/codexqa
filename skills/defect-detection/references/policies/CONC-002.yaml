@@ -1,0 +1,45 @@
+id: CONC-002
+version: 1
+status: active
+category: concurrency
+severity_default: P1
+title: Inconsistent lock order / nested lock deadlock risk
+look_for: |
+  Two or more locks acquired in different orders across functions
+  (lock A then B vs B then A); nested locks without a documented global order.
+do_not_report: |
+  Single lock; consistent lock hierarchy comments plus matching acquisition;
+  lock-free immutable snapshots.
+suggestion_hint: Define a global lock rank and always acquire in that order; avoid holding lock A while taking B in the reverse path.
+fixtures:
+  positive:
+    - name: crossed_locks
+      language: python
+      file: svc/wallet.py
+      code: |
+        def move_ab(a, b, n):
+            with a.lock:
+                with b.lock:
+                    a.qty -= n
+                    b.qty += n
+        def move_ba(a, b, n):
+            with b.lock:
+                with a.lock:
+                    b.qty -= n
+                    a.qty += n
+      expect:
+        should_find: true
+        category: concurrency
+  negative:
+    - name: ranked_locks
+      language: python
+      file: svc/wallet.py
+      code: |
+        def move(a, b, n):
+            first, second = (a, b) if a.id < b.id else (b, a)
+            with first.lock:
+                with second.lock:
+                    a.qty -= n
+                    b.qty += n
+      expect:
+        should_find: false

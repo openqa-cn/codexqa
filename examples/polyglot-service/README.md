@@ -1,6 +1,6 @@
 # Polyglot service: Python + Go + TypeScript in one change set
 
-A small repository with three languages and a feature branch that plants one or two seeded defects per language. It exercises the language-aware path of `defect-detection`: language detection from `diff.files`, per-language method extraction, per-language Semgrep packs on a single `run-ast-scan`, and write-back conventions that never fall back to `src/main/java`.
+A small repository with three languages and a feature branch that plants one or two seeded defects per language. It remains a polyglot fixture for local experiments with `defect-detection` (`run_scan.py`) or other code skills.
 
 ## Seeded defects (`feature/polyglot-defects` vs `main`)
 
@@ -22,26 +22,12 @@ node examples/polyglot-service/make-git-fixture.mjs      # prints the repo path
 
 ## Run the skill against it
 
-From `skills/defect-detection` (see its README Quick start for the environment variables):
+From `skills/defect-detection`:
 
 ```bash
-REPO=$(node ../../examples/polyglot-service/make-git-fixture.mjs)
-node scripts/detect.ts submit-git --git "file://$REPO" --branch feature/polyglot-defects --submit-user you
-# → taskId / batchId
-node scripts/detect.ts clone-and-diff --task-id $TASK_ID --batch-id $BATCH_ID --git-url "file://$REPO" \
-  --branch feature/polyglot-defects --base-branch main
+python3 scripts/run_scan.py incremental --repo "$REPO" --intent "polyglot seeded defects" --fresh -o /tmp/aid_report
 ```
 
-`clone-and-diff` reports `languageSource: "detected"`, `polyglot: true`, `languageBreakdown: {python:1, go:1, typescript:1}` and `gotchasDocs` pointing at `python-gotchas.md`, `go-gotchas.md`, `frontend-gotchas.md`. Then:
-
-```bash
-node scripts/detect.ts get-changed-methods --task-id $TASK_ID --local-dir "$LOCAL_DIR"   # units for all three files, language on each
-node scripts/detect.ts build-detection-plan --task-id $TASK_ID --batch-ids $BATCH_ID     # get_name trivial=true, the rest deep
-node scripts/detect.ts run-ast-scan --code-dir "$LOCAL_DIR" --rules-json "$RULES" --task-id $TASK_ID
-# languages: [go, python, typescript]; ruleCount covers the Go + Python + JS + TS packs
-node scripts/detect.ts run-optional-overlays --code-dir "$LOCAL_DIR" --task-id $TASK_ID   # bandit / gosec / eslint when installed
-```
-
-The same flow is asserted end to end by `skills/defect-detection/tests/multilang_e2e.test.ts`.
+Use `npm test` in `skills/defect-detection` for pipeline/policy regressions.
 
 This is a hand-authored fixture: it proves the pipeline handles a non-Java, multi-language change set; it is not an agent-generated report or an accuracy claim.

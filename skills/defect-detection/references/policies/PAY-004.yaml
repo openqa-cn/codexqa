@@ -1,0 +1,35 @@
+id: PAY-004
+version: 1
+status: active
+category: transaction
+severity_default: P1
+title: Payment webhook signature missing or duplicate delivery double-credits
+look_for: |
+  Webhook handler that trusts body without verifying provider signature, or
+  credits ledger on every delivery without idempotent event id.
+do_not_report: |
+  HMAC/signature verified against provider secret; event_id unique constraint
+  before credit.
+suggestion_hint: Verify signature first; persist event_id uniquely then credit once.
+fixtures:
+  positive:
+    - name: webhook_no_verify
+      language: python
+      file: pay/webhook.py
+      code: |
+        def on_paid(req):
+            db.credit(req.json["user"], req.json["amount"])
+      expect:
+        should_find: true
+        category: transaction
+  negative:
+    - name: verify_then_once
+      language: python
+      file: pay/webhook.py
+      code: |
+        def on_paid(req):
+            provider.verify_signature(req)
+            if db.events.insert_once(req.json["event_id"]):
+                db.credit(req.json["user"], req.json["amount"])
+      expect:
+        should_find: false

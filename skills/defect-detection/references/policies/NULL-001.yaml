@@ -1,0 +1,36 @@
+id: NULL-001
+version: 1
+status: active
+category: null_safety
+severity_default: P1
+title: Unchecked dereference after map/optional/JSON lookup
+look_for: |
+  Values from dict.get / Optional / JSON fields used without null/None/undefined check,
+  especially after early-return refactors that removed a previous guard.
+do_not_report: |
+  Obvious NPE already flagged clearly by SAST; guarded with explicit if/Optional unwrap.
+suggestion_hint: Guard before use; use Optional helpers or default values.
+fixtures:
+  positive:
+    - name: map_get_deref
+      language: python
+      file: svc/user.py
+      code: |
+        def name_of(users, uid):
+            u = users.get(uid)
+            return u["name"].upper()
+      expect:
+        should_find: true
+        category: null_safety
+  negative:
+    - name: guarded_get
+      language: python
+      file: svc/user.py
+      code: |
+        def name_of(users, uid):
+            u = users.get(uid)
+            if not u:
+                return ""
+            return u["name"].upper()
+      expect:
+        should_find: false

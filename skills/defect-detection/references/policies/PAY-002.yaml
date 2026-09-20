@@ -1,0 +1,36 @@
+id: PAY-002
+version: 1
+status: active
+category: transaction
+severity_default: P0
+title: Charge amount/currency taken from client without server-side recompute
+look_for: |
+  Request body amount/currency passed to acquirer or ledger without
+  recomputing from cart/order/price list on the server.
+do_not_report: |
+  Amount derived from server-side order snapshot; client amount only compared
+  then rejected on mismatch.
+suggestion_hint: Recompute payable from trusted order lines; reject client amount if it differs.
+fixtures:
+  positive:
+    - name: client_amount_to_acquirer
+      language: python
+      file: pay/checkout.py
+      code: |
+        def checkout(req):
+            acquirer.charge(req.body["amount"], req.body["currency"])
+      expect:
+        should_find: true
+        category: transaction
+  negative:
+    - name: server_recompute
+      language: python
+      file: pay/checkout.py
+      code: |
+        def checkout(req, order):
+            amount, currency = price_service.total(order)
+            if req.body.get("amount") not in (None, amount):
+                raise AmountMismatch()
+            acquirer.charge(amount, currency)
+      expect:
+        should_find: false

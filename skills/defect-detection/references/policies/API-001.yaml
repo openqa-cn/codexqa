@@ -1,0 +1,34 @@
+id: API-001
+version: 1
+status: active
+category: architecture
+severity_default: P2
+title: Breaking public API contract without versioning
+look_for: |
+  Renamed/removed response fields or enum values on an existing public
+  endpoint without a version bump or compatibility shim.
+do_not_report: |
+  Additive optional fields; internal-only DTOs; explicit /v2 new route
+  leaving /v1 unchanged.
+suggestion_hint: Add fields as optional; deprecate then remove behind a new version path.
+fixtures:
+  positive:
+    - name: rename_field_inplace
+      language: python
+      file: api/user_dto.py
+      code: |
+        # was: {"user_id": ..., "name": ...}
+        def to_json(user):
+            return {"uid": user.id, "fullName": user.name}
+      expect:
+        should_find: true
+        category: architecture
+  negative:
+    - name: additive_field
+      language: python
+      file: api/user_dto.py
+      code: |
+        def to_json(user):
+            return {"user_id": user.id, "name": user.name, "avatar": user.avatar}
+      expect:
+        should_find: false

@@ -1,0 +1,34 @@
+id: TEN-006
+version: 1
+status: active
+category: security
+severity_default: P1
+title: Support/admin cross-tenant access without mandatory audit
+look_for: |
+  Impersonation or cross-tenant admin queries without writing an audit
+  record (who, which tenant, which objects, why).
+do_not_report: |
+  Every cross-tenant path calls audit.log(...) before data access;
+  break-glass with ticket id required.
+suggestion_hint: Require ticket/reason and append an audit row before any cross-tenant read or write.
+fixtures:
+  positive:
+    - name: admin_raw_query
+      language: python
+      file: saas/support.py
+      code: |
+        def peek(tenant_id, user_id):
+            return db.users.get(tenant_id=tenant_id, id=user_id)
+      expect:
+        should_find: true
+        category: security
+  negative:
+    - name: audited_peek
+      language: python
+      file: saas/support.py
+      code: |
+        def peek(actor, tenant_id, user_id, ticket):
+            audit.log(actor, "peek", tenant_id, user_id, ticket)
+            return db.users.get(tenant_id=tenant_id, id=user_id)
+      expect:
+        should_find: false

@@ -1,0 +1,40 @@
+id: PAY-001
+version: 1
+status: active
+category: transaction
+severity_default: P0
+title: Payment idempotency TOCTOU — check then insert races to double charge
+look_for: |
+  Lookup idempotency_key / payment_id, then insert and call acquirer if missing
+  (SELECT then INSERT) without unique constraint / INSERT ON CONFLICT.
+do_not_report: |
+  Atomic INSERT ... ON CONFLICT; unique (merchant, key); in_progress/completed
+  state machine for concurrent retries.
+suggestion_hint: Insert the idempotency row atomically first; on conflict replay stored response; never charge twice.
+fixtures:
+  positive:
+    - name: select_then_insert
+      language: python
+      file: pay/idem.py
+      code: |
+        def charge(key, amount):
+            if db.idem.get(key):
+                return db.idem.get(key)
+            acquirer.capture(amount)
+            db.idem.put(key, amount)
+      expect:
+        should_find: true
+        category: transaction
+  negative:
+    - name: insert_on_conflict
+      language: python
+      file: pay/idem.py
+      code: |
+        def charge(key, amount):
+            inserted = db.idem.insert_on_conflict_do_nothing(key)
+            if not inserted:
+                return db.idem.get(key)
+            acquirer.capture(amount)
+            db.idem.complete(key, amount)
+      expect:
+        should_find: false

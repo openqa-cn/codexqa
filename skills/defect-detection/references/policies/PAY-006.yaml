@@ -1,0 +1,37 @@
+id: PAY-006
+version: 1
+status: active
+category: transaction
+severity_default: P1
+title: Refund/void from an illegal payment state
+look_for: |
+  Refund or cancel without checking captured/authorized (refund unpaid;
+  double refund; void after capture without reverse).
+do_not_report: |
+  WHERE status IN allowed set; remaining_refundable tracked; provider
+  rejects invalid state and local status matches.
+suggestion_hint: Only refund captured amounts remaining; forbid refund of unpaid or already fully refunded payments.
+fixtures:
+  positive:
+    - name: refund_always
+      language: python
+      file: pay/refund.py
+      code: |
+        def refund(p, amount):
+            psp.refund(p.tid, amount)
+            p.status = "refunded"
+      expect:
+        should_find: true
+        category: transaction
+  negative:
+    - name: refund_if_captured
+      language: python
+      file: pay/refund.py
+      code: |
+        def refund(p, amount):
+            if p.status != "captured" or amount > p.remaining:
+                raise InvalidState()
+            psp.refund(p.tid, amount)
+            p.remaining -= amount
+      expect:
+        should_find: false
