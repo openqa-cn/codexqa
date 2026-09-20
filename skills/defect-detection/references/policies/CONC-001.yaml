@@ -1,0 +1,40 @@
+id: CONC-001
+version: 1
+status: active
+category: concurrency
+severity_default: P1
+title: Check-then-act / non-atomic read-modify-write on shared state
+look_for: |
+  Read stock/balance/flag then write without atomic compare-and-swap or
+  UPDATE ... WHERE qty >= n; lock ordering changes; shared mutable state across threads.
+do_not_report: |
+  Atomic DB UPDATE with WHERE guard; properly locked critical sections; immutable values.
+suggestion_hint: Use atomic UPDATE ... WHERE; or single lock covering check+act.
+fixtures:
+  positive:
+    - name: check_then_act_stock
+      language: python
+      file: svc/order.py
+      code: |
+        def debit(stock, n):
+            if stock.qty >= n:
+                stock.qty -= n
+                return True
+            return False
+      expect:
+        should_find: true
+        category: concurrency
+        min_severity: P1
+  negative:
+    - name: atomic_comment_intent
+      language: python
+      file: svc/order.py
+      code: |
+        def debit(db, sku, n):
+            # atomic: single statement with guard
+            return db.execute(
+                "UPDATE stock SET qty = qty - %s WHERE sku=%s AND qty >= %s",
+                (n, sku, n),
+            )
+      expect:
+        should_find: false

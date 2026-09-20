@@ -1,0 +1,34 @@
+id: TEN-005
+version: 1
+status: active
+category: security
+severity_default: P0
+title: Cross-tenant IDOR — valid object id from another tenant is accepted
+look_for: |
+  Authenticated user A can read/write an object by id that belongs to tenant B
+  because authorization checks login but not tenant membership of the object.
+do_not_report: |
+  Composite (tenant_id, id) enforced; 404 when tenant mismatches.
+suggestion_hint: After authn, verify the resource's tenant equals the caller's current tenant.
+fixtures:
+  positive:
+    - name: any_logged_in_get
+      language: python
+      file: saas/api.py
+      code: |
+        def get_invoice(req, invoice_id):
+            require_login(req)
+            return db.invoices.get(id=invoice_id)
+      expect:
+        should_find: true
+        category: security
+  negative:
+    - name: tenant_match
+      language: python
+      file: saas/api.py
+      code: |
+        def get_invoice(req, invoice_id):
+            require_login(req)
+            return db.invoices.get(id=invoice_id, tenant_id=req.tenant_id)
+      expect:
+        should_find: false

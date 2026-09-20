@@ -1,0 +1,33 @@
+{
+  "exclude_paths": ["vendor/", "node_modules/", "dist/", "build/", ".git/", "generated/", "*.lock", "*.min.js", "third_party/", "testdata/"],
+  "incremental_token_budget": 20000,
+  "full_token_budget": 200000,
+  "hot_score_threshold": 70,
+  "max_lines_per_file": 500,
+  "max_files_per_shard": 200,
+  "embedding_similarity_threshold": 0.9,
+  "cache_enabled": true,
+  "graph_provider": "codexqa",
+  "codexqa": {"auto_install": true, "require_for_scan": true},
+  "tooling": {
+    "auto_install": true,
+    "require_for_scan": false,
+    "repair_max_attempts": 3,
+    "continue_on_failure": true
+  },
+  "model_routing": [
+    {"match": ["style", "naming", "simple_null_check", "secret", "todo", "hygiene"], "model": "small"},
+    {"match": ["logic", "concurrency", "transaction", "security_design", "architecture", "security", "null_safety", "resource_leak"], "model": "large"},
+    {"default": true, "model": "small"}
+  ],
+  "force_large_severities": ["P0", "P1"],
+  "severity_order": ["P0", "P1", "P2", "P3"],
+  "sast_adapters": {
+    "semgrep": true,
+    "bandit": true,
+    "gosec": true,
+    "secrets": true,
+    "sca": true,
+    "lint": true
+  }
+}

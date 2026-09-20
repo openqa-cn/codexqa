@@ -1,0 +1,39 @@
+id: SEC-001
+version: 1
+status: active
+category: security
+severity_default: P0
+title: Injection or authz bypass via unsafe dynamic execution
+look_for: |
+  String-concatenated SQL/commands, eval/exec on user-controlled input,
+  second-order SQL injection (DB-sourced values concatenated into later SQL),
+  path traversal via user-influenced file paths (File/Paths with untrusted segments),
+  LDAP/command injection, new HTTP/RPC endpoints missing authz checks,
+  trust of client-supplied role flags.
+do_not_report: |
+  Parameterized queries already used; eval on compile-time constants;
+  path/SQL/LDAP/injection already listed in Clear deterministic findings for the same line.
+  Do not duplicate the same vulnerability class already present in clear SAST list.
+suggestion_hint: Use parameterized APIs; require authz on every non-health route.
+fixtures:
+  positive:
+    - name: eval_user_input
+      language: python
+      file: svc/run.py
+      code: |
+        def run(user_expr):
+            # user_expr comes from request body
+            return eval(user_expr)
+      expect:
+        should_find: true
+        category: security
+        min_severity: P1
+  negative:
+    - name: parameterized_sql
+      language: python
+      file: svc/db.py
+      code: |
+        def get_user(cur, user_id):
+            return cur.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+      expect:
+        should_find: false

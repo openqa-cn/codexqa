@@ -10,7 +10,7 @@
 | Linux / Node 22 | 本仓库已配置 CI job | 推送后需要核对托管环境的实际结果 |
 | Codex、Claude Code、Cursor、OpenClaw | Skill 指令覆盖 | 尚未逐一完成完整 Agent 流程验证 |
 | Java / GitNexus | 有集成代码和测试 | 依赖外部工具版本和环境 |
-| 多语言流水线（Java、Kotlin、Scala、JS、TS、Python、Go、C、C++、C#） | 统一语言注册表 `scripts/lang.ts` 驱动语言解析（`languageSource` explicit / declared / detected）、按语言的方法抽取与 Semgrep 精化范围（`scripts/lang_methods.ts`）、平凡方法约定、className / filePath / 代码围栏约定以及各语言检测须知（`references/rules/*-gotchas.md`）；多语言 E2E（`tests/multilang_e2e.test.ts`：Python + Go + TS 仓库走完 submit → clone → plan → read → verify → template）及各语言抽取器单测 | 抽取器基于正则/括号/缩进而非完整解析器；嵌套/匿名函数与宏密集 C 为近似；除 GitNexus 外无语言专属调用图 |
+| 多语言流水线（历史 TS skill 说明）（Java、Kotlin、Scala、JS、TS、Python、Go、C、C++、C#） | 统一语言注册表 `scripts/lang.ts` 驱动语言解析（`languageSource` explicit / declared / detected）、按语言的方法抽取与 Semgrep 精化范围（`scripts/lang_methods.ts`）、平凡方法约定、className / filePath / 代码围栏约定以及各语言检测须知（`references/rules/*-gotchas.md`）；多语言 E2E（`tests/multilang_e2e.test.ts`：Python + Go + TS 仓库走完 submit → clone → plan → read → verify → template）及各语言抽取器单测 | 抽取器基于正则/括号/缩进而非完整解析器；嵌套/匿名函数与宏密集 C 为近似；除 GitNexus 外无语言专属调用图 |
 | Semgrep 种子包（10 种语言） | 102 条规则，带 CWE / OWASP Top 10 2025 / ASVS 5.0 元数据；在 Semgrep 1.99 上用 10 语言 fixture 验证（67 命中、0 解析错误）；按扫描文件的语言集合过滤规则；旧版 Semgrep 拒绝的规则按版本剔除并在 `droppedRules` 中报告 | 污点规则仅函数内（社区版）；Semgrep 0.8x 只能加载非污点子集；种子规则只覆盖浅层模式，不能替代方法级分析 |
 | 可选叠加扫描 | `scripts/overlays.ts` 注册表：gitleaks、trivy / grype、bandit、gosec、go vet、staticcheck、cppcheck、eslint、detekt；解析器与运行器有桩二进制单测 | 尚无真实二进制的 CI 运行；原生工具依赖项目自身配置（eslint）或工具链（go） |
 | JS / TS AST | 本地 Semgrep 种子规则 + checkout-boundary fixture 单测 | 种子规则只覆盖浅层模式，不能替代方法级业务分析 |
@@ -23,6 +23,7 @@
 | 证据 schema | 仓库内提供 schema | 不宣称 skill 输出自动符合该 schema |
 | `code-analyzer` 符号图工作流 | 已发布路由契约、查询 schema、分析 playbook、证据图示例和已知边界文档；本地建索引与查询需要 Node.js 18+ 和单独分发的闭源 `@openqa-cn/codexqa` 引擎 | 本仓库 CI 不安装或执行该引擎；没有公开宿主 Agent 运行；图完整性受 parser 覆盖、stub 和符号碰撞影响 |
 | `root-cause-diagnosis` CLI / 脚本 | `skills/root-cause-diagnosis` 本地 `npm test`（解析、落地、草稿、冒烟）；用 `@openqa-cn/codexqa` CLI 做 index/query；Node.js 22+ + TypeScript stripping | 引擎不在本仓库 CI 中运行；RCA 叙事由模型判断；无公开宿主 agent 成绩；图缺口会削弱证据 |
+| `defect-detection` 流水线 | `skills/defect-detection` 本地 `npm test`（Python 流水线 + 策略夹具，优先 3.11）；可选 SAST/lint/secrets；实图用 CodexQA CLI | CI 不强制完整 agent Stage1/Stage2 与全部 SAST 二进制；语义发现由模型判断；无公开宿主 agent 成绩 |
 | `testcase-generation` 脚本 | `validate_integrations.ts`、`call_integration.ts`、`lint_case_documents.ts` 在 Node 22.6+ 上用 TypeScript stripping 运行；不装 npm 包 | 无公开 fixture、无已记录 agent 运行；Windows 未测；无子 agent 的宿主未测 |
 | `testdata-generation` 脚本 | 打包、slot 检索和本地 catalog mock 见该 skill 文档 | 运行依赖已配置的 adapter 与 slot；不在 defect-detection CLI 套件覆盖范围内 |
 | `code-reviewer` playbook | `tooling/` 离线契约检查（在 `tooling/` 里 `npm test`） | 没有公开 fixture 或已记录的宿主 agent 运行；报告质量未测量 |

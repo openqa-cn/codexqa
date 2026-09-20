@@ -1,9 +1,8 @@
-data/
-config.yaml
-node_modules/
-*.tmp
-*.zip
-*.jar
+__pycache__/
+*.py[cod]
 .DS_Store
-__MACOSX/
-._*
+.venv/
+venv/
+*.egg-info/
+/tmp/
+.aid_*/

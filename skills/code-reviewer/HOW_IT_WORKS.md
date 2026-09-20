@@ -4,7 +4,7 @@
 
 [`code-reviewer`](README.md) does not ship a model. It is a playbook the host agent follows: detect the review surface from a local Git diff, load matching rules, optionally run `tooling/` scripts, and write a P0 / P1 / P2 report.
 
-**Input is a local checkout, not a clone URL.** Open the repository in the agent and name the branch / PR / commit. The skill does not fetch a remote the way [`defect-detection`](https://github.com/openqa-cn/codexqa/blob/main/skills/defect-detection/README.md) does. See [README — What you give it](README.md#what-you-give-it).
+**Input is a local checkout, not a clone URL.** Open the repository in the agent and name the branch / PR / commit. This skill diffs in place; it does not run the [`defect-detection`](https://github.com/openqa-cn/codexqa/blob/main/skills/defect-detection/README.md) SAST+agent scan pipeline. See [README — What you give it](README.md#what-you-give-it).
 
 Agents read [`SKILL.md`](SKILL.md) then [`review-playbook.md`](review-playbook.md), not this page. Gaps: [Known limitations](KNOWN_LIMITATIONS.md). Sample report: [preview](https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/cr-findings.html).
 
@@ -22,7 +22,7 @@ The model judges. The playbook decides which rules apply and what a valid findin
 
 ## Evaluation status
 
-No public fixture, no answer key, no recorded number comparable to the defect-detection inventory-service 7/7. `tooling/` has offline contract checks. Treat a finished report as the intended design, not as a measured false-positive rate. See [Known limitations](KNOWN_LIMITATIONS.md).
+No public fixture, no answer key, no recorded host-agent score comparable to a published scan accuracy number. `tooling/` has offline contract checks. Treat a finished report as the intended design, not as a measured false-positive rate. See [Known limitations](KNOWN_LIMITATIONS.md).
 
 ## What you will see
 
@@ -41,7 +41,7 @@ The change set chooses the surface. Always-on rules (`project-conventions`, `des
 
 ### 2. Findings are not write-backs
 
-There is no task store, no 23-rule write-back validator, and no HTML platform report. Output is the findings report. Requirement-vs-code defect hunting with gates is [`defect-detection`](https://github.com/openqa-cn/codexqa/blob/main/skills/defect-detection/README.md).
+There is no task store, no 23-rule write-back validator, and no HTML platform report. Output is the findings report. SAST+agent code-risk scanning (`report_scan.*`) is [`defect-detection`](https://github.com/openqa-cn/codexqa/blob/main/skills/defect-detection/README.md).
 
 ### 3. External systems are config-only
 

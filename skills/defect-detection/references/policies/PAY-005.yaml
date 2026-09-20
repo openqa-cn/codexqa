@@ -1,0 +1,36 @@
+id: PAY-005
+version: 1
+status: active
+category: transaction
+severity_default: P1
+title: Acquirer call and local ledger not atomic (crash double-charge or drop)
+look_for: |
+  Charge the PSP then write local payment row (or reverse) without outbox /
+  reconciliation; crash between the two steps retries unsafely.
+do_not_report: |
+  Outbox/inbox pattern; PSP idempotency key plus reconcile job; single
+  recorded intent before calling PSP.
+suggestion_hint: Record intent first; call PSP with that id; reconcile; do not charge then hope the INSERT succeeds.
+fixtures:
+  positive:
+    - name: capture_then_insert
+      language: python
+      file: pay/psp.py
+      code: |
+        def pay(order):
+            psp.capture(order.card, order.amount)
+            db.payments.insert(order.id, "paid")
+      expect:
+        should_find: true
+        category: transaction
+  negative:
+    - name: intent_outbox
+      language: python
+      file: pay/psp.py
+      code: |
+        def pay(order):
+            db.intents.insert(order.id, "pending")
+            psp.capture(order.card, order.amount, idempotency_key=order.id)
+            db.intents.mark_paid(order.id)
+      expect:
+        should_find: false

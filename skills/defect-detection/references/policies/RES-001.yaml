@@ -1,0 +1,35 @@
+id: RES-001
+version: 1
+status: active
+category: resource_leak
+severity_default: P1
+title: Resource not closed on all paths
+look_for: |
+  Opened files/sockets/DB cursors/HTTP clients not closed on error paths;
+  missing with/try-finally/defer; listeners registered without unregister.
+do_not_report: |
+  Context-managed resources (with open, defer Close, try-with-resources) already correct.
+suggestion_hint: Use context managers / defer / try-with-resources; close in finally.
+fixtures:
+  positive:
+    - name: bare_open
+      language: python
+      file: svc/io_util.py
+      code: |
+        def read_cfg(path):
+            f = open(path)
+            data = f.read()
+            return data
+      expect:
+        should_find: true
+        category: resource_leak
+  negative:
+    - name: with_open
+      language: python
+      file: svc/io_util.py
+      code: |
+        def read_cfg(path):
+            with open(path) as f:
+                return f.read()
+      expect:
+        should_find: false

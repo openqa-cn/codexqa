@@ -1,0 +1,37 @@
+id: BIZ-003
+version: 1
+status: active
+category: logic
+severity_default: P2
+title: Business boundary ignored (amount, quantity, timezone cutoff)
+look_for: |
+  Monetary/quantity operations that accept <=0, overflow, or mix timezones
+  without converting to a canonical cutoff (day-end settlement).
+do_not_report: |
+  Explicit min/max validators; decimal types with scale checks; documented
+  UTC-only timestamps.
+suggestion_hint: Reject non-positive amounts; use decimal money; convert to a single timezone before day-cut.
+fixtures:
+  positive:
+    - name: negative_amount_ok
+      language: python
+      file: svc/transfer.py
+      code: |
+        def transfer(src, dst, amount):
+            src.bal -= amount
+            dst.bal += amount
+      expect:
+        should_find: true
+        category: logic
+  negative:
+    - name: amount_must_be_positive
+      language: python
+      file: svc/transfer.py
+      code: |
+        def transfer(src, dst, amount):
+            if amount <= 0:
+                raise ValueError("amount")
+            src.bal -= amount
+            dst.bal += amount
+      expect:
+        should_find: false

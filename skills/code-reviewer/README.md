@@ -10,7 +10,7 @@ Sample findings shape:
   <a href="https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/cr-findings.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/cr-findings.png" alt="Sample code-reviewer P0 / P1 findings" width="880"></a>
 </p>
 
-It is **not** [`defect-detection`](https://github.com/openqa-cn/codexqa/blob/main/skills/defect-detection/README.md). That skill clones a remote URL, extracts changed methods, runs AST / optional call-graph analysis, and gates write-backs. This skill diffs in place and loads frontend / backend playbooks.
+It is **not** [`defect-detection`](https://github.com/openqa-cn/codexqa/blob/main/skills/defect-detection/README.md). That skill runs SAST/lint/secrets/SCA plus agent-inline semantic review into `report_scan.*` (P0–P3). This skill diffs in place and loads frontend / backend playbooks.
 
 ## What you give it
 

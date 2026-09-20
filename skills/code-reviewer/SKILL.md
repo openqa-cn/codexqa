@@ -6,7 +6,7 @@ description: >
   JavaScript, React Native, mini-program. Backend: Java, Kotlin, Go, Python, C, C++,
   Groovy, SQL / service-layer. Requires a local Git checkout — not a pasted snippet.
   Do not use for how-to questions, debugging a known bug, explaining or rewriting code,
-  method-level requirement defect hunting with write-back gates (that is defect-detection),
+  SAST+agent code-risk scan reports (that is defect-detection),
   writing test cases (testcase-generation), or constructing test data (testdata-generation).
 license: MIT
 metadata:

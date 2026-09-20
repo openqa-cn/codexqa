@@ -1,0 +1,40 @@
+id: ARCH-001
+version: 2
+status: active
+category: architecture
+severity_default: P2
+title: Layering violation or auth bypass path
+look_for: |
+  New cross-layer imports (UI→DB, handler→raw SQL skipping repository);
+  circular deps; middleware skipping auth on OPTIONS, debug flags, or internal
+  headers without a strict allowlist (semantic auth-bypass branches, not just
+  missing @auth annotations).
+do_not_report: |
+  Intentional adapter/facade with documented boundary; health/readiness
+  endpoints explicitly public; CORS preflight that still authenticates the
+  real method.
+suggestion_hint: Keep calls within service/repository boundaries; require auth for all non-health routes; never skip auth based on client-supplied internal headers.
+fixtures:
+  positive:
+    - name: skip_auth_header
+      language: python
+      file: auth/mw.py
+      code: |
+        def require_auth(req):
+            if req.method == "OPTIONS" or req.headers.get("X-Internal") == "1":
+                return True  # skips auth
+            return bool(req.user)
+      expect:
+        should_find: true
+        category: architecture
+  negative:
+    - name: health_only_public
+      language: python
+      file: auth/mw.py
+      code: |
+        def require_auth(req):
+            if req.path in ("/health", "/ready"):
+                return True
+            return bool(req.user)
+      expect:
+        should_find: false

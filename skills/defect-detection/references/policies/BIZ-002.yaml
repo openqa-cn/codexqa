@@ -1,0 +1,38 @@
+id: BIZ-002
+version: 1
+status: active
+category: logic
+severity_default: P1
+title: Illegal domain state-machine transition
+look_for: |
+  Capture/refund/ship/cancel allowed from terminal or incompatible states
+  (capture after cancel; refund before paid; reopen after closed) without
+  a guarded transition table.
+do_not_report: |
+  Explicit allowed-transition map; DB CHECK / WHERE status IN (...);
+  compensating actions that are themselves valid transitions.
+suggestion_hint: Enforce a finite set of (from, to) transitions in one place; reject others.
+fixtures:
+  positive:
+    - name: capture_cancelled
+      language: python
+      file: pay/capture.py
+      code: |
+        def capture(payment, amount):
+            acquirer.capture(payment.tid, amount)
+            payment.status = "captured"
+      expect:
+        should_find: true
+        category: logic
+  negative:
+    - name: capture_only_authorized
+      language: python
+      file: pay/capture.py
+      code: |
+        def capture(payment, amount):
+            if payment.status != "authorized":
+                raise InvalidState(payment.status)
+            acquirer.capture(payment.tid, amount)
+            payment.status = "captured"
+      expect:
+        should_find: false

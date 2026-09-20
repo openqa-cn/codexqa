@@ -1,0 +1,38 @@
+id: BIZ-001
+version: 1
+status: active
+category: logic
+severity_default: P1
+title: Mutating API missing idempotency for retryable money/state changes
+look_for: |
+  Create-order, charge, grant-coupon, inventory-debit handlers that can be
+  retried (HTTP, MQ, gateway) but have no idempotency key / unique business id
+  guarding the side effect.
+do_not_report: |
+  GET/list endpoints; already unique-constrained on payment_id/request_id;
+  explicitly documented one-shot internal jobs.
+suggestion_hint: Require a client or gateway idempotency key and persist it atomically with the side effect.
+fixtures:
+  positive:
+    - name: charge_no_key
+      language: python
+      file: pay/charge.py
+      code: |
+        def charge(card, amount):
+            acquirer.capture(card, amount)
+            db.insert_payment(amount=amount)
+      expect:
+        should_find: true
+        category: logic
+  negative:
+    - name: charge_with_idempotency_key
+      language: python
+      file: pay/charge.py
+      code: |
+        def charge(card, amount, idempotency_key):
+            if db.payments.get(idempotency_key):
+                return db.payments.get(idempotency_key)
+            acquirer.capture(card, amount)
+            db.insert_payment(key=idempotency_key, amount=amount)
+      expect:
+        should_find: false

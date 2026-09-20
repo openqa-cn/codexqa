@@ -1,0 +1,37 @@
+id: LOGIC-001
+version: 1
+status: active
+category: logic
+severity_default: P2
+title: Off-by-one / inverted condition / wrong variable in changed logic
+look_for: |
+  Loop bounds off-by-one after edit; inverted if conditions; copy-paste using wrong
+  variable; comparison operators flipped (< vs <=) on boundary values.
+do_not_report: |
+  Style-only renames; intentional inclusive/exclusive ranges documented in comments.
+suggestion_hint: Add boundary tests; re-read condition against the requirement.
+fixtures:
+  positive:
+    - name: inverted_empty_check
+      language: python
+      file: svc/list_util.py
+      code: |
+        def first_or_none(items):
+            # bug: returns first when empty
+            if not items:
+                return items[0]
+            return None
+      expect:
+        should_find: true
+        category: logic
+  negative:
+    - name: correct_empty_check
+      language: python
+      file: svc/list_util.py
+      code: |
+        def first_or_none(items):
+            if not items:
+                return None
+            return items[0]
+      expect:
+        should_find: false

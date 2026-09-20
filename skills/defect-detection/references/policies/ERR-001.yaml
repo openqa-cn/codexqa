@@ -1,0 +1,42 @@
+id: ERR-001
+version: 1
+status: active
+category: hygiene
+severity_default: P2
+title: Swallow exception then continue as success
+look_for: |
+  Bare except/pass or catch-and-ignore on paths that persist money, auth,
+  or messages, then return OK / commit anyway.
+do_not_report: |
+  Logged and re-raised; expected probe errors with explicit fallback;
+  closed-over cleanup that does not claim success.
+suggestion_hint: Fail the unit of work; log with context; do not return success after a swallowed critical error.
+fixtures:
+  positive:
+    - name: except_pass_then_ok
+      language: python
+      file: svc/notify.py
+      code: |
+        def send(msg):
+            try:
+                broker.publish(msg)
+            except Exception:
+                pass
+            return {"ok": True}
+      expect:
+        should_find: true
+        category: hygiene
+  negative:
+    - name: except_reraise
+      language: python
+      file: svc/notify.py
+      code: |
+        def send(msg):
+            try:
+                broker.publish(msg)
+            except Exception:
+                log.exception("publish failed")
+                raise
+            return {"ok": True}
+      expect:
+        should_find: false

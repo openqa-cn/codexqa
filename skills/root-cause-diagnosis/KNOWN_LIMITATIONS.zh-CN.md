@@ -26,4 +26,4 @@ TypeScript 抽出 facts，并拒绝机械 `storyGaps`。可选叙事（竞态、
 
 ## 工作流边界
 
-本 skill 诊断**异常**。它不替代 `code-analyzer` 的变更影响审查、`defect-detection` 的需求写回，也不替代 `code-reviewer` 的 P0/P1/P2 发现。
+本 skill 诊断**异常**。它不替代 `code-analyzer` 的变更影响审查、`defect-detection` 的代码风险扫描，也不替代 `code-reviewer` 的 P0/P1/P2 发现。

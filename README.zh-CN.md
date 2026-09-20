@@ -2,7 +2,7 @@
 
 # codexqa
 
-**七个本地优先的 Agent Skills，覆盖需求、测试设计、测试数据、变更影响、异常根因、需求缺陷和代码审查。**
+**七个本地优先的 Agent Skills，覆盖需求、测试设计、测试数据、变更影响、异常根因、代码风险扫描和代码审查。**
 
 [![CI](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml)
 [![Release](https://img.shields.io/github/v/tag/openqa-cn/codexqa?label=release&style=flat)](https://github.com/openqa-cn/codexqa/releases)
@@ -45,14 +45,14 @@ AI 能很快产出一个绿 PR，但需求是否对齐、影响了谁、审查�
 | 测试数据 | [`testdata-generation`](skills/testdata-generation/README.zh-CN.md) | 哪些真实 ID 和前置条件能让用例跑起来？ | 后端实际返回值回写到用例前置条件 |
 | 变更影响 | [`code-analyzer`](skills/code-analyzer/README.zh-CN.md) | 改了什么、谁在调用、影响哪些入口、哪里没测试？ | 符号图证据、回归范围、测试缺口和关系图 |
 | 异常根因 | [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.zh-CN.md) | 这条堆栈 / 日志 / 崩溃的仓内根因是什么？ | 基于 CodexQA CLI facts 的带门禁英文 RCA 报告 |
-| 需求缺陷 | [`defect-detection`](skills/defect-detection/README.zh-CN.md) | 变更实现是否违反需求或用例？ | 通过写回门禁的结构化疑似缺陷 |
+| 代码风险扫描 | [`defect-detection`](skills/defect-detection/README.zh-CN.md) | 这个 diff / 仓库 / 粘贴里有哪些 SAST / 密钥 / 逻辑风险？ | 按 P0–P3 排序的 `report_scan.json` / `.md` / `.html` |
 | 代码审查 | [`code-reviewer`](skills/code-reviewer/README.zh-CN.md) | 这次 diff 有哪些具体质量、安全或可维护性问题？ | 带文件:行号、影响和改法的 P0 / P1 / P2 发现 |
 
 这些 Skill 的输入不同，这是设计选择。Agent 能明确判断这次该读文档、索引本地 checkout、克隆分支、写用例，还是调用造数后端。
 
 ## 为什么用 codexqa？
 
-- `defect-detection` 对照需求和用例检查变更代码；这类偏差通常不能只靠静态规则发现。
+- `defect-detection` 把确定性 SAST/lint/secrets/SCA 与 agent 内联语义审查合成 P0–P3 `report_scan.*`。
 - `code-analyzer` 用本地符号图把变更符号追到调用方、入口和图关系测试。
 - `root-cause-diagnosis` 在同一套 CodexQA CLI 之上，把异常证据变成带门禁的英文 RCA 报告。
 - 文档与测试类 Skill 把需求评审、用例设计和测试数据构造分开，不让一次 prompt 包办所有事情。
@@ -65,15 +65,15 @@ AI 能很快产出一个绿 PR，但需求是否对齐、影响了谁、审查�
 | Skill | 核心问题 | 输入 | 它不替代什么 |
 | --- | --- | --- | --- |
 | [`code-analyzer`](skills/code-analyzer/README.zh-CN.md) | 改了什么、能打到哪里、有哪些测试缺口？ | 本地仓库 + 可选 diff 基线 | 需求语义判断、异常 RCA 或 P0 / P1 / P2 审查 |
-| [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.zh-CN.md) | 这条异常的仓内根因是什么？ | 异常证据 + git / 目录 / 文件 / 已打开工作区 | 结构/影响面映射或需求写回 |
-| [`defect-detection`](skills/defect-detection/README.zh-CN.md) | 实现是否和需求或用例冲突？ | Git 地址 + 分支 + 可提供的需求/用例 | 通用可维护性审查或测试执行 |
+| [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.zh-CN.md) | 这条异常的仓内根因是什么？ | 异常证据 + git / 目录 / 文件 / 已打开工作区 | 结构/影响面映射或代码风险扫描 |
+| [`defect-detection`](skills/defect-detection/README.zh-CN.md) | 哪些代码风险 / 安全 / 逻辑发现该进扫描报告？ | Diff / 仓库 / 上传 / 粘贴 | playbook CR 或异常 RCA |
 | [`code-reviewer`](skills/code-reviewer/README.zh-CN.md) | 哪些具体实现问题值得形成审查发现？ | 本地 checkout + 分支 / PR / commit | 符号图影响分析或需求文档评审 |
 
-各 Skill 的详细工作流和边界放在各自目录中：[代码分析](skills/code-analyzer/README.zh-CN.md)（[已知边界](skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)）、[异常根因](skills/root-cause-diagnosis/HOW_IT_WORKS.zh-CN.md)、[缺陷检测](skills/defect-detection/HOW_IT_WORKS.zh-CN.md)、[代码审查](skills/code-reviewer/HOW_IT_WORKS.zh-CN.md)、[需求分析](skills/requirements-analyzer/HOW_IT_WORKS.zh-CN.md)、[用例生成](skills/testcase-generation/HOW_IT_WORKS.zh-CN.md)和[数据构造](skills/testdata-generation/HOW_IT_WORKS.zh-CN.md)。宿主、语言和验证状态统一见[支持矩阵](docs/SUPPORT_MATRIX.zh-CN.md)。
+各 Skill 的详细工作流和边界放在各自目录中：[代码分析](skills/code-analyzer/README.zh-CN.md)（[已知边界](skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)）、[异常根因](skills/root-cause-diagnosis/HOW_IT_WORKS.zh-CN.md)、[代码风险扫描](skills/defect-detection/HOW_IT_WORKS.zh-CN.md)、[代码审查](skills/code-reviewer/HOW_IT_WORKS.zh-CN.md)、[需求分析](skills/requirements-analyzer/HOW_IT_WORKS.zh-CN.md)、[用例生成](skills/testcase-generation/HOW_IT_WORKS.zh-CN.md)和[数据构造](skills/testdata-generation/HOW_IT_WORKS.zh-CN.md)。宿主、语言和验证状态统一见[支持矩阵](docs/SUPPORT_MATRIX.zh-CN.md)。
 
 ## 在 Cursor、Claude Code、Codex 上安装
 
-先检查基础工具。`code-analyzer` 要求 Node.js 18+；`defect-detection` CLI 套件当前在 Node.js 22.15.0 上验证。
+先检查基础工具。`code-analyzer` 要求 Node.js 18+；`defect-detection` 要求 Python 3.10+（推荐 3.11），实图可选 CodexQA CLI。
 
 ```bash
 node --version
@@ -93,7 +93,7 @@ npx skills add openqa-cn/codexqa --skill testcase-generation
 npx skills add openqa-cn/codexqa --skill testdata-generation
 ```
 
-`code-analyzer` 与 `root-cause-diagnosis` 还分别需要 Node.js 18+ / 22+，以及 `npm install -g @openqa-cn/codexqa`。该 npm 包是单独分发的闭源本地代码分析引擎；建索引和查询在用户机器上完成，不需要 LLM。[code-analyzer 边界](skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md) · [root-cause-diagnosis 边界](skills/root-cause-diagnosis/KNOWN_LIMITATIONS.zh-CN.md)。
+`code-analyzer` 与 `root-cause-diagnosis` 需要 Node.js 与 `@openqa-cn/codexqa`；`defect-detection` 需要 Python 3.10+（推荐 3.11）与可选的 CodexQA CLI。详见 [code-analyzer 边界](skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md) · [root-cause-diagnosis 边界](skills/root-cause-diagnosis/KNOWN_LIMITATIONS.zh-CN.md) · [defect-detection 边界](skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md)。
 
 按提示选择 Agent。全局安装到 Codex 时加 `--agent codex --global`。每个 `--skill` 只复制一个目录。
 
@@ -168,7 +168,7 @@ codexqa stats /path/to/repo
 每条发现给出严重级别、文件:行号、规则、运行时影响和修复建议。
 ```
 
-目前没有公开 fixture。要做带写回门禁的方法级需求缺陷审查，用 `defect-detection`。
+目前没有公开端到端扫描准确率 fixture。要做 SAST+agent 代码风险扫描，用 `defect-detection`。
 
 **分析需求（`requirements-analyzer`）** — 交文档，不要交仓库。
 
@@ -228,9 +228,9 @@ Agent 停在 PRD 与技术方案冲突时，回复 `Confirm follow PRD` 或 `Ite
 
 | Skill | 当前公开证据 |
 | --- | --- |
-| `defect-detection` | 仓库 CLI 测试、可复现 fixture 和一次记录的 Agent 运行：7/7 个预置缺陷、0 误报；单模型、单次、自建样例，不是 benchmark |
 | `code-analyzer` | 已公开 Skill 契约、schema、playbook、示例图和已知边界；单独分发的闭源引擎不在本仓库 CI 中运行 |
 | `root-cause-diagnosis` | 本地 CLI 测试（解析、落地、草稿、冒烟）；依赖 `@openqa-cn/codexqa`；无公开宿主 agent 成绩；RCA 叙事由模型判断 |
+| `defect-detection` | 本地 Python 流水线/策略夹具测试；可选 SAST 与闭源 CodexQA CLI；无公开宿主 agent 成绩；Stage1/Stage2 由模型判断 |
 | `code-reviewer` | 离线 tooling 契约检查；没有公开 fixture 或已记录宿主 Agent 运行 |
 | `requirements-analyzer` | eval 用例和解析/转换脚本；没有已记录宿主 Agent 成绩 |
 | `testcase-generation` | 集成校验和用例文档 lint；没有公开 fixture 或已记录 Agent 运行 |
@@ -251,7 +251,7 @@ export NODE_OPTIONS=--experimental-strip-types
 node examples/checkout-boundary/verify.mjs
 ```
 
-这些检查覆盖文档链接、中英章节对齐、仓库内 `defect-detection` CLI 与 provider 行为、打包、任务隔离、写回校验和边界案例。它们不执行单独分发的 `code-analyzer` / `root-cause-diagnosis` 引擎路径，也不能证明所有缺陷都会被发现。
+这些检查覆盖文档链接、中英章节对齐、`defect-detection` Python 流水线/策略夹具、打包和边界 fixture。它们不执行完整实 agent Stage1/Stage2 扫描，也不执行单独分发的 `code-analyzer` / `root-cause-diagnosis` 引擎路径，也不能证明所有缺陷都会被发现。
 
 ## 文档
 

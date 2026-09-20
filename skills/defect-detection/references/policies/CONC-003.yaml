@@ -1,0 +1,37 @@
+id: CONC-003
+version: 1
+status: active
+category: concurrency
+severity_default: P1
+title: Shared mutable state used across threads/coroutines without sync
+look_for: |
+  Module-level dict/list/counter mutated from request handlers or workers
+  without a lock, concurrent map, or confinement to one actor.
+do_not_report: |
+  threading.Lock / mutex / concurrent_map / immutable copy-on-write;
+  thread-local or request-scoped objects.
+suggestion_hint: Protect shared mutation with a lock or use a concurrent collection; prefer per-request state.
+fixtures:
+  positive:
+    - name: global_cache_race
+      language: python
+      file: svc/cache.py
+      code: |
+        CACHE = {}
+        def put(k, v):
+            CACHE[k] = v
+      expect:
+        should_find: true
+        category: concurrency
+  negative:
+    - name: locked_cache
+      language: python
+      file: svc/cache.py
+      code: |
+        CACHE = {}
+        LOCK = threading.Lock()
+        def put(k, v):
+            with LOCK:
+                CACHE[k] = v
+      expect:
+        should_find: false

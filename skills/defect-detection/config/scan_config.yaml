@@ -1,0 +1,75 @@
+exclude_paths:
+  - vendor/
+  - node_modules/
+  - dist/
+  - build/
+  - .git/
+  - generated/
+  - "*.lock"
+  - "*.min.js"
+  - third_party/
+  - testdata/
+
+incremental_token_budget: 20000
+full_token_budget: 200000
+hot_score_threshold: 70
+max_lines_per_file: 500
+max_files_per_shard: 200
+embedding_similarity_threshold: 0.9
+cache_enabled: true
+code_metrics_incremental: true
+merge_line_window: 3
+
+# Optional override when auto primary-language detection is wrong (null = auto).
+# Also overridable via --language / AID_PRIMARY_LANGUAGE.
+primary_language: null
+
+# Code graph / call-chain / cross-file correlation MUST use CodexQA CLI only.
+# Polyglot mandate: Java / Go / Python / TS / … — no language-specific graph engine.
+# See references/codexqa-cli.md — install: bash scripts/install_codexqa.sh
+graph_provider: codexqa
+codexqa:
+  auto_install: true
+  require_for_scan: true
+  polyglot_mandate: true    # all languages → CodexQA for underlying code analysis
+  rag_cache_enabled: true       # one CodexQA RAG pass for all shards; per-shard filter by prefix
+  rag_cache_max_items: 32
+  rag_shard_max_items: 8
+  rag_max_workers: 3            # parallel context_builder --rag (ThreadPoolExecutor)
+
+# Deterministic tools: auto-install + repair loop; degrade-and-continue if still missing.
+# OOTB only — no SonarQube / CodeQL (need server tokens or SARIF env).
+tooling:
+  auto_install: true
+  require_for_scan: false   # false = warn + continue; true = --strict abort
+  repair_max_attempts: 3
+  continue_on_failure: true
+
+model_routing:
+  - match: [style, naming, simple_null_check, secret, todo, hygiene]
+    model: small
+  - match: [logic, concurrency, transaction, security_design, architecture, security, null_safety, resource_leak]
+    model: large
+  - default: true
+    model: small
+
+force_large_severities: [P0, P1]
+severity_order: [P0, P1, P2, P3]
+
+sast_adapters:
+  semgrep: true          # multi-lang SAST (p/auto), primary
+  bandit: true           # Python security (pip) — when .py present
+  gosec: true            # Go security (brew/go) — when .go present
+  secrets: true          # gitleaks (primary) → trufflehog → detect-secrets
+  sca: true              # OSV-first: osv-scanner → OSV HTTP API (pom.xml) → npm audit (no Trivy)
+  lint: true             # ruff / eslint / golangci-lint
+
+# Baseline CodexQA full rebuild when true / collect_full --full-index
+full_codexqa_index: false
+
+# Scan scope planning (SonarQube + Semgrep + CodeQL + Sonatype synthesis — see references/scope_policy.yaml)
+scope_planning:
+  enabled: true
+  # manual_include: [apps/, packages/]   # Semgrep --include override
+  # manual_exclude: []
+  # strict_application_source_globs: false # when true, require application_source_globs inside projects

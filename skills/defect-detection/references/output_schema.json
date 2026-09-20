@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["findings"],
+  "properties": {
+    "tooling_status": {
+      "type": "object",
+      "description": "Deterministic scanner readiness from ensure_tools",
+      "properties": {
+        "ready": {"type": "array", "items": {"type": "string"}},
+        "missing": {"type": "array", "items": {"type": "string"}},
+        "degraded": {"type": "boolean"},
+        "repair_attempts": {},
+        "diagnostics": {"type": "array"}
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "line", "category", "severity", "title", "evidence", "suggestion"],
+        "properties": {
+          "id":       {"type": "string"},
+          "file":     {"type": "string"},
+          "line":     {"type": "integer", "minimum": 1},
+          "category": {"type": "string", "enum": ["security","null_safety","resource_leak","concurrency","transaction","logic","architecture","secret","hygiene","style","naming","simple_null_check","todo","security_design"]},
+          "severity": {"type": "string", "enum": ["P0","P1","P2","P3"]},
+          "source":   {"type": "string", "enum": ["llm_judged","sast_confirmed","sast_only"]},
+          "rule_id":  {"type": "string", "description": "LLM policy id e.g. CONC-001"},
+          "title":    {"type": "string"},
+          "evidence": {"type": "string"},
+          "suggestion": {"type": "string"},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "dismissed": {"type": "boolean", "description": "Stage2: drop matching ambiguous SAST residue"},
+          "verdict": {"type": "string", "description": "Stage2: dismiss|false_positive to drop ambiguous SAST"}
+        }
+      }
+    },
+    "dismissals": {
+      "type": "array",
+      "description": "Stage2: omit matching ambiguous SAST residue from the final report (clear SAST ignored)",
+      "items": {
+        "type": "object",
+        "required": ["file", "line"],
+        "properties": {
+          "file": {"type": "string"},
+          "line": {"type": "integer", "minimum": 1},
+          "reason": {"type": "string"}
+        }
+      }
+    }
+  }
+}

@@ -19,6 +19,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22.15.0'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - name: Install packaging prerequisites
         run: sudo apt-get update && sudo apt-get install -y rsync zip unzip
       - name: Check documentation and skill registry
@@ -29,7 +32,7 @@ jobs:
         run: node examples/inventory-service/verify.mjs
       - name: Build polyglot fixture
         run: node examples/polyglot-service/make-git-fixture.mjs
-      - name: Run skill tests
+      - name: Run defect-detection Python checks
         working-directory: skills/defect-detection
         run: npm test
       - name: Run code-reviewer tooling checks

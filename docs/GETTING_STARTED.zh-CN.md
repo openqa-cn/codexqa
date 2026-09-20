@@ -2,7 +2,7 @@
 
 [English](GETTING_STARTED.md)
 
-在 Cursor、Claude Code、Codex 或 OpenClaw 上一次只装一个 skill。本页以 [`defect-detection`](../skills/defect-detection/README.zh-CN.md) 为例，因为它有可冒烟的 CLI。同一条命令也可以加 `--skill code-analyzer`、`--skill root-cause-diagnosis`、`--skill code-reviewer`、`--skill requirements-analyzer`、`--skill testcase-generation`、`--skill testdata-generation`。`code-analyzer` 与 `root-cause-diagnosis` 使用单独的 `codexqa` 符号图 CLI；除 `defect-detection` 外另外四个没有 `detect.ts` 套件。
+在 Cursor、Claude Code、Codex 或 OpenClaw 上一次只装一个 skill。本页以 [`defect-detection`](../skills/defect-detection/README.zh-CN.md) 为例，因为它有可冒烟的 CLI。同一条命令也可以加 `--skill code-analyzer`、`--skill root-cause-diagnosis`、`--skill code-reviewer`、`--skill requirements-analyzer`、`--skill testcase-generation`、`--skill testdata-generation`。`code-analyzer` 与 `root-cause-diagnosis` 使用单独的 `codexqa` 符号图 CLI；`defect-detection` 由 Python 编排，实图同样使用该 CLI。
 
 每个 skill 要交的材料不一样（[FAQ](FAQ.zh-CN.md#每个-skill-要我交什么)）。跑完长什么样见 [README · 产物长什么样](../README.zh-CN.md#产物长什么样)。
 
@@ -52,9 +52,8 @@ npx skills add . --skill defect-detection --agent codex --copy
 只做 CLI 冒烟，不需要模型也不需要私有平台：
 
 ```bash
-export NODE_OPTIONS=--experimental-strip-types
-node skills/defect-detection/scripts/detect.ts --help
-node --test skills/defect-detection/tests/cli_smoke.test.ts
+python3 skills/defect-detection/scripts/run_scan.py --help
+(cd skills/defect-detection && npm test)
 ```
 
 冒烟套件验证样例计划加载、任务创建和材料缺失时的处理。里面的 `acme` 仓库地址是样例数据，这个测试不会去克隆它们。想看一组「正常实现 + 预置缺陷」的对照，跑[边界案例](../examples/checkout-boundary/README.md)。
@@ -93,7 +92,7 @@ npx skills add openqa-cn/codexqa --skill testcase-generation
 npx skills add openqa-cn/codexqa --skill testdata-generation
 ```
 
-`code-analyzer` 与 `root-cause-diagnosis` Skill 发布在本仓库中；`@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎，索引和会话写在 `~/.codexqa/`。详见 [`code-analyzer` 已知边界](../skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md) 和 [`root-cause-diagnosis` 已知边界](../skills/root-cause-diagnosis/KNOWN_LIMITATIONS.zh-CN.md)。
+`code-analyzer`、`root-cause-diagnosis` 与 `defect-detection` Skill 发布在本仓库中；`@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎，索引和会话写在 `~/.codexqa/`。详见 [`code-analyzer` 已知边界](../skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)、[`root-cause-diagnosis` 已知边界](../skills/root-cause-diagnosis/KNOWN_LIMITATIONS.zh-CN.md) 和 [`defect-detection` 已知边界](../skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md)。
 
 只做 `code-analyzer` 冒烟时不需要模型：给本地 checkout 建索引，再查看摘要。
 
@@ -109,6 +108,7 @@ codexqa stats /path/to/repo
 
 - `code-analyzer` 需要本地仓库。审变更时用 `origin/main` 等基线建索引；索引写在 `~/.codexqa/`。见其 [README](../skills/code-analyzer/README.zh-CN.md)。
 - `root-cause-diagnosis` 需要异常证据（堆栈 / 日志 / dump），外加 git 地址、本地目录、文件，或已打开的工作区。见其 [README](../skills/root-cause-diagnosis/README.zh-CN.md)。
+- `defect-detection` 需要对 diff / 仓库 / 上传 / 粘贴做代码风险扫描。见其 [README](../skills/defect-detection/README.zh-CN.md)。
 - `code-reviewer` 需要本地 Git 工作副本，再加上分支 / PR / commit。它不克隆。见 [README · 你要交什么](../skills/code-reviewer/README.zh-CN.md#你要交什么)。
 - `requirements-analyzer` 需要需求文档，不要交仓库。见 [README · 你要交什么](../skills/requirements-analyzer/README.zh-CN.md#你要交什么)。
 - `testcase-generation` 需要 `prd/`（PRD / 技术方案 / 契约）。`code/` 可选，且只在更新时用。见其 [README](../skills/testcase-generation/README.zh-CN.md)。

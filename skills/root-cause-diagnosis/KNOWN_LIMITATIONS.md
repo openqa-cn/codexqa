@@ -26,4 +26,4 @@ There is no public answer-key fixture and no recorded host-agent score comparabl
 
 ## Workflow boundary
 
-This skill diagnoses **exceptions**. It does not replace `code-analyzer` for change-impact review, `defect-detection` for requirement write-back, or `code-reviewer` for P0/P1/P2 findings.
+This skill diagnoses **exceptions**. It does not replace `code-analyzer` for change-impact review, `defect-detection` for code-risk scan reports, or `code-reviewer` for P0/P1/P2 findings.

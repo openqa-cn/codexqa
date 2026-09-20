@@ -1,0 +1,54 @@
+# LLM semantic policy pack version (semver).
+# Bump MINOR when adding rules; MAJOR when changing rule_id meaning or removing rules.
+version: "1.1.0"
+pack_id: ai-defect-detection-default
+updated: "2026-09-15"
+description: >
+  LLM judgment policies. SAST owns clear pattern hits; this pack covers residual
+  authz, business correctness, concurrency, payment, and multi-tenant semantics.
+  No AUTH-003 id — auth-bypass paths live under ARCH-001.
+status_allowed: [active, deprecated, retired]
+prefixes:
+  SEC: security
+  NULL: null_safety
+  RES: resource_leak
+  CONC: concurrency
+  TXN: transaction
+  LOGIC: logic
+  ARCH: architecture
+  HYG: hygiene
+  AUTH: security
+  BIZ: logic
+  API: architecture
+  ERR: hygiene
+  PERF: architecture
+  PAY: transaction
+  TEN: security
+rules:
+  - SEC-001
+  - NULL-001
+  - RES-001
+  - CONC-001
+  - CONC-002
+  - CONC-003
+  - TXN-001
+  - LOGIC-001
+  - ARCH-001
+  - HYG-001
+  - AUTH-001
+  - AUTH-002
+  - BIZ-001
+  - BIZ-002
+  - BIZ-003
+  - API-001
+  - ERR-001
+  - PERF-001
+  - PAY-001
+  - PAY-002
+  - PAY-004
+  - PAY-005
+  - PAY-006
+  - TEN-002
+  - TEN-004
+  - TEN-005
+  - TEN-006

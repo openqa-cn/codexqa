@@ -1,0 +1,37 @@
+id: TEN-004
+version: 1
+status: active
+category: security
+severity_default: P1
+title: Async job / MQ payload drops tenant context
+look_for: |
+  Enqueue handler that later loads data without tenant (or takes tenant from
+  the message without re-validating membership). Worker uses a privileged
+  DB role and forgets the original tenant.
+do_not_report: |
+  Job payload includes tenant_id and worker re-binds context; separate
+  credentials per tenant.
+suggestion_hint: Persist tenant_id on the job; restore and authorize it before any data access.
+fixtures:
+  positive:
+    - name: job_by_id_only
+      language: python
+      file: saas/worker.py
+      code: |
+        def export_doc(doc_id):
+            doc = db.docs.get(id=doc_id)
+            upload(doc.body)
+      expect:
+        should_find: true
+        category: security
+  negative:
+    - name: job_with_tenant
+      language: python
+      file: saas/worker.py
+      code: |
+        def export_doc(doc_id, tenant_id):
+            bind_tenant(tenant_id)
+            doc = db.docs.get(id=doc_id, tenant_id=tenant_id)
+            upload(doc.body)
+      expect:
+        should_find: false

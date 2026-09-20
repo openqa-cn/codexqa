@@ -1,221 +1,247 @@
 ---
 name: defect-detection
-description: >-
-  Reviews code changes for defects before release. Given a git repository and
-  branch (optionally a PR, test plan, or a previous report to continue), it
-  clones the repo, diffs the base branch, extracts changed methods, runs static
-  rules, cross-checks requirements, test cases, and known defects, and writes
-  back findings with line numbers, fix suggestions, and an HTML report.
-  Language-aware for Java, Kotlin, Scala, JavaScript, TypeScript, Python, Go,
-  C, C++ and C#: method extraction, trivial-method filter, Semgrep seed packs,
-  and write-back conventions; polyglot diffs keep each language's rules.
-  Optional overlays add secret / SCA / native-analyzer findings.
-  Use when the user asks to find bugs in a branch or PR, review change or
-  regression risk, recheck before release, scan a test plan, or resume a
-  detection task. Not a P0/P1/P2 style CR (that is code-reviewer).
+description: >
+  AI defect detection and code-risk scanning for engineering projects. Use when
+  the user asks for AI defect detection, code-risk scan, review a diff/MR/PR/commit
+  (incremental), baseline-scan a repository (full), OR upload/paste code snippets
+  for adhoc defect detection. Combines deterministic SAST/lint/secrets/SCA with
+  two-stage semantic review performed by the invoking agent model (no separate LLM
+  API key). Delivers structured findings ordered by severity (P0–P3) via
+  report_scan.json / report_scan.md / report_scan.html. Do NOT use to apply or
+  autofix code style/formatting — lint may still surface hygiene findings.
+  Code-graph / call-chain MUST use CodexQA CLI for all languages
+  (references/codexqa-cli.md) — never homemade analyzers. Not a P0/P1/P2 playbook CR (that is code-reviewer), not structure/impact
+  mapping (that is code-analyzer), and not exception RCA (that is
+  root-cause-diagnosis). When scenario unclear, ask or run
+  choose_scenario / run_scan.py choose.
 license: Apache-2.0
-compatibility: >-
-  Requires Node.js 22+ and git on PATH. Clones repos under the skill data dir
-  (`<data dir>/repos`, override with DETECTION_CLONE_DIR). For non-JS/TS repos it
-  may run `npm install -g gitnexus` once (call-graph analysis); set
-  DETECTION_SKIP_GITNEXUS=1 to opt out. Semgrep (1.x recommended) optional for
-  AST seed rules; gitleaks / trivy / bandit / ruff / gosec / cppcheck / eslint optional overlays.
-metadata: {"openclaw":{"requires":{"bins":["node","git"]}}}
+compatibility: >
+  Requires **Python 3.10+** on PATH (re-execs onto 3.10+ if system `python3` is older), git on PATH for repo scans, and
+  optional SAST/lint/secrets tools (Semgrep, Bandit, gosec, gitleaks, ruff,
+  eslint, osv-scanner). Talks to the `@openqa-cn/codexqa` CLI for code-graph /
+  call-chain on all languages. Default `--llm-mode agent` needs no API key.
+metadata:
+  author: open-source
+  version: "0.0.1"
+  open-standard: agentskills
 ---
 
 # Defect Detection
 
-Agent-driven, method-by-method inspection. Tools gather context; rules, history, and evidence produce findings; users confirm or reject them.
+You are a defect-detection orchestrator. Commands are English; user-facing text may be Chinese.
+**Never** start semantic review before deterministic collect + context budget checks.
 
-**Purpose:** find real quality issues. Do not skip methods, skip steps, or soften a real defect.
+CLI: `python3 {baseDir}/scripts/run_scan.py` (`$SKILL_SCRIPT`). Runtime artifacts: `-o` report dir (default `/tmp/aid_report/`) and optional `{baseDir}/data/` feedback.
 
-**Write-back rule:** a real defect is written as bugStatus=6 (suspected) or 7 (improvement), whether or not it sits inside the current diff.
+`README.md` / `README.zh-CN.md` / `HOW_IT_WORKS.md` / `KNOWN_LIMITATIONS.md` (and their `.zh-CN` twins) are human-facing. Do not load them at runtime.
 
----
+## Boundaries
 
-## Execution mode: light vs strict
-
-`build-detection-plan` sets the mode from total changed lines (additions + deletions):
-
-| | light | strict (default) |
-|---|---|---|
-| Trigger | 1–199 changed lines | ≥ 200 changed lines |
-| Content fields | at least 1 | at least 3 |
-| Business-impact / reproduce path | optional | required |
-| contextReads | ≥ 1 file | ≥ 2 files |
-| AST scan | changed files only | **PR/diff default: changed files** (`--task-id` / `--changed-only`). Whole-repo is opt-in (`--full-repo`). Out-of-diff hits are T0 / auto-dismiss — do not verify one by one. |
-
-API required fields stay the same in both modes: thinking, processSteps, fileCodes, content (line numbers + prefix), tagId.
-
----
-
-## Documents (load on demand)
-
-Load each Phase file **at most once** per task. Do not re-read `references/phase1-preparation.md` / `references/phase2-detection.md` / `references/phase3-close.md` / `references/feedback.md` after the first load unless a gate cites a section you have not read. After `prep-and-plan` / `trivial-method-filter`, enter detection without reloading Phase 2. Do not open the Code PR page in a browser to learn source/target branch — use gitUrl+branch from the user, plan, or work-item ticket; `clone-and-diff` computes the merge-base.
-
-| File | Load when |
+| Need | Skill |
 |---|---|
-| `SKILL.md` (this file) | always: routing, constraints, output |
-| `references/phase1-preparation.md` | task starts (input → taskId → clone → plan) |
-| `references/writeback.md` | before the first write-back (fields, bugStatus, content format) |
-| `references/phase2-detection.md` | entering detection (AST + overlays + per-method analysis + gates) |
-| `references/rules/<lang>-gotchas.md` | before STEP C, one per language listed in `gotchasDocs` (returned by `clone-and-diff` / `build-detection-plan`); `references/rules/language-mapping.md` is the index |
-| `references/analysis/path-feasibility.md` | before writing a strategy=11 bugStatus=6/7 (the `[Feasibility]` marker) |
-| `references/phase3-close.md` | all methods written back; closing (coverage, rank, report, summary) |
-| `references/feedback.md` | user confirms / rejects / asks to recheck after the summary |
-| `references/analysis/`, `output/`, `rules/`, `writeback/` | detailed specs, cited from the phase files when a gate needs them |
-| `references/api/*.md` | wiring a remote platform or enterprise HTTP slots |
-| `references/operator-manual.md` | human walkthrough; not needed by the agent |
-| `README.md`, `HOW_IT_WORKS.md`, `KNOWN_LIMITATIONS.md` | human-facing: usage, detection method, and known gaps; not needed by the agent |
+| SAST + agent-inline semantic scan → `report_scan.*` (P0–P3) | **this skill** (`defect-detection`) |
+| P0/P1/P2 playbook review of a local checkout | `code-reviewer` |
+| Symbol-graph change impact, callers, test gaps | `code-analyzer` |
+| Exception RCA from stacks/logs on top of CLI analysis | `root-cause-diagnosis` |
 
-All runtime code lives in `scripts/` (`scripts/detect.ts` is the CLI; `scripts/validate.ts` is the write-back validator).
+## Judgment model (default)
 
----
+**You (the agent invoking this skill) ARE the Stage1/Stage2 judgment model.**
+Do **not** require `LLM_API_KEY` / `LLM_BASE_URL`. Scripts prepare prompts; you write findings JSON; scripts merge the report.
 
-## Trigger routes
+| `--llm-mode` | When |
+|--------------|------|
+| `agent` (default) | Skill / Cursor agent inline — **no API key** |
+| `api` | Optional external OpenAI-compatible API — see [references/llm-api.md](references/llm-api.md) |
+| `dry-run` | Heuristic mock (CI advisory only) |
 
-| Scenario | Path | Input |
-|---|---|---|
-| Test plan | Phase 1 → planId → taskId → Phase 2 | planId |
-| Delivery / release plan | Phase 1 → deliveryId → taskId → Phase 2 | deliveryId |
-| Existing report | reuse taskId → Phase 2/3 | taskId |
-| Git repo + branch | clone + diff → taskId → Phase 2 | gitUrl + branch |
-| Multiple services | each repo independently, then merge | multiple gitUrl |
-| Recheck same task | reuse taskId, overwrite | taskId |
-| Append after complete | update-process + finalize-rank | taskId |
-| Code snippet | clone / single-file diff → Phase 2 | source |
+## Deliverable
 
----
+| Artifact | Default | Role |
+|----------|---------|------|
+| `report_scan.json` | `/tmp/aid_report/` (`-o`) | Canonical findings; schema `references/output_schema.json` |
+| `report_scan.md` | same dir | Human summary (Markdown) |
+| `report_scan.html` | same dir | Same content as `.md` in styled HTML (auto-generated at finalize) |
 
-## Flow
+Finding fields: `file`, `line`, `category`, `severity`, `title`, `evidence`, `suggestion`; `source` ∈ `sast_only` \| `sast_confirmed` \| `llm_judged`; judgment SHOULD include `rule_id`. Order **P0→P3**. Surface `tooling_status.missing` when present. Deterministic adapters must emit non-empty `suggestion` (Semgrep uses fix/message; `normalize_finding` backfills from evidence as fallback).
 
-| Step | Actions | Gate |
-|---|---|---|
-| 1.1 Init | parse input → `submit-plan` / `submit-git` (auto init-content + service) → taskId | taskId present |
-| 1.2 Code | `clone-and-diff --with-plan` (clone + methods + plan + trivial filter) | clone registered |
-| 1.3 Context | `get-tag-list` / `get-rules` / history / traces / plan defects | tags + rules |
-| 1.4 Cases & docs | test-case provider + document provider | — |
-| 1.5 Plan | `prep-and-plan --submit-trivial` if clone already ran without `--with-plan` | plan.json |
-| 2.x Detect | AST + per-method analysis + `batch-update-process` + `finalize-rank` | scripts/validate.ts |
-| 3.x Close | `check-coverage` → `check-rank-integrity` → `reconcile-report` → `complete-task --summary` (or `finalize-all`) | exit 0 |
-| 4 Feedback | confirm / reject / create issue | user |
+**Not this skill’s deliverable:** CodexQA Mermaid “必看组” reports ([references/codexqa-cli.md](references/codexqa-cli.md)), platform write-back, or exception RCA prose.
 
-CLI entry: `node {baseDir}/scripts/detect.ts --help`  
-(`{baseDir}` is the installed skill folder. Equivalent: `$SKILL_DIR/scripts/detect.ts`.)
-
-Local data: `{baseDir}/data/{taskId}/` (meta, static, context, test cases, plan, writebacks, findings). Each new detection gets a new `taskId` directory. Do not delete a previous `data/{taskId}` to start the next run; reuse a directory only when the user continues that same task.
-
-### Install (folder or zip — not a JAR)
-
-Unzip so that **`SKILL.md` sits in a folder named `defect-detection`** (must match frontmatter `name`):
-
-| Tool | Path |
-|---|---|
-| Cursor | `~/.cursor/skills/defect-detection/` or project `.cursor/skills/defect-detection/` |
-| OpenClaw | `~/.openclaw/skills/defect-detection/` or workspace `skills/defect-detection/` |
-| Claude Code / Codex / other Agent Skills hosts | `~/.agents/skills/defect-detection/` · `~/.claude/skills/` · `~/.codex/skills/` |
-
-Then: `node {baseDir}/scripts/detect.ts get-plan-info --plan-id 1001 --plan-type 2`
-
-Pack: `bash pack-skill.sh` → `defect-detection.zip`. Do not ship a `.jar`; hosts load a directory with `SKILL.md`, not a JVM archive.
-
----
-
-## Enterprise adapters (no vendor lock-in)
-
-Default **local** providers store everything under `data/platform/` and `enterprise/`. Switch backends in `config.yaml` or env vars:
-
-| Concern | Local (default) | Remote |
-|---|---|---|
-| Auth | none | bearer / api_key (`DETECTION_TOKEN`) |
-| Detection platform | JSON store | HTTP (`references/api/platform-api.md`) |
-| Test / delivery plan | `enterprise/plans/{id}.json` (missing: degrade, do not exit) | HTTP slot `GET /v1/plans/{plan_id}` |
-| Test cases | `enterprise/test-cases/` or chat `add-test-case` | HTTP slots `/v1/test-cases` |
-| Issues | local JSON or GitHub Issues | HTTP slots `/v1/issues` |
-| Documents | local files or public URL | HTTP slot `GET /v1/documents/{doc_id}` |
-| Traces | optional JSON | HTTP slot `GET /v1/plans/{plan_id}/traces` |
-
-Enterprise HTTP slots (plan / testcase / issues / docs / traces) are defined in `scripts/providers/http_slots.ts` and documented in `references/api/enterprise-http-api.md`. Set `kind: http` plus `base_url`, or one shared `enterprise_http_base_url`. Remap a company path with `options.paths` — no TypeScript change.
+## Scenario selection
 
 ```bash
-export DETECTION_CONFIG=/path/to/config.yaml
-# or
-export DETECTION_PLATFORM_KIND=http
-export DETECTION_PLATFORM_BASE_URL=https://quality.example.com
-export DETECTION_TOKEN=...
+python3 scripts/choose_scenario.py --list
+python3 scripts/choose_scenario.py --infer "<user utterance>"
+python3 scripts/run_scan.py choose --scenario <id> ...
 ```
 
-## Call-graph analysis (JVM / Go / Python / C# services, default)
+| id | When |
+|----|------|
+| `repo-incremental` | Git MR/PR/diff |
+| `repo-full` | Whole-repo baseline |
+| `upload-incremental` / `upload-full` | Uploaded files / directory |
+| `paste` | Chat paste / snippet |
 
-After clone (every non-JS/TS-client repo), **detect GitNexus**. If it is not installed, **run one forced install**, then continue analysis. Only if that install fails (and a single `--force-install` retry still fails) fall back to grep / find.
+Upload/paste → temp file → `run_scan.py adhoc`. Unspecified mode: snippet→incremental, directory→full. No code → ask; do not scan empty.
+
+## Tools (deterministic)
+
+Before collect: `python3 scripts/ensure_tools.py --repo <repo>`.
+Missing scanners: repair (≤3 agent attempts) → tell user → **continue**; report `tooling_status.missing`.
+CodexQA mock policy: **real CLI always wins**. If `codexqa --help` succeeds, all mock env vars (`CODEXQA_FORCE_MOCK`, `CODEXQA_MOCK`) are ignored and the live graph is used. Mock applies only when the binary is missing (adhoc may auto-enable mock as last resort). Repo scans **hard-fail** if CLI missing and mock not allowed.
+
+| Role | Tools |
+|------|-------|
+| SAST | Semgrep, Bandit, gosec |
+| Secrets / SCA / Lint | gitleaks→…, OSV (osv-scanner → OSV HTTP API → npm audit), ruff / eslint / golangci-lint |
+
+**Not used:** SonarQube, CodeQL.
 
 ```bash
-node {baseDir}/scripts/detect.ts ensure-gitnexus --task-id $TASK_ID --local-dir "$LOCAL_DIR"
-# clone-and-diff already calls this for non-JS/TS services. Do not run it again
-# unless the clone return has gitnexus.ready=false. Reused clones skip analyze
-# when the graph stamp matches HEAD.
+bash scripts/install_codexqa.sh
+export PATH="$(npm prefix -g)/bin:$HOME/.local/bin:$HOME/go/bin:$PATH"
 ```
 
-Install used: `npm install -g gitnexus@latest` (or `pnpm add -g` if npm is missing). Needs Node.js ≥ 18.
+## Report cache (diff_hash)
 
-Phase 2 STEP B queries the graph when `gitnexus.ready=true`:
+Incremental scans cache **finalized** reports keyed by `diff_hash`. **Agent-inline mode (default) never reads cache at prepare** — it always emits `agent_llm/` for Stage1/Stage2. Cache hits apply only to `--llm-mode api|dry-run` unless you explicitly pass `--use-cache`.
 
-1. Host MCP (`impact` / `context`) if the tool list actually has a GitNexus namespace.
-2. Otherwise CLI (do **not** skip to grep while ready=true):
+| Flag / command | When |
+|----------------|------|
+| *(default agent)* | Always full Stage1 → Stage2 → finalize; **no cache short-circuit** |
+| `--fresh` | Clear this diff's cache entry before scan (use for **full rescan**, adhoc retest, post-fix validation) |
+| `--no-cache` | Disable cache read **and** write for this run |
+| `--use-cache` | Agent mode only: reuse a prior **finalized** report without LLM (re-present only) |
+| `run_scan.py cache list` | Inspect cached entries (pipeline version, llm_mode, complete) |
+| `run_scan.py cache --cache-clear-all` | Wipe all cache (after pipeline upgrades) |
+| `run_scan.py cache --cache-diff-hash <hash>` | Remove one stale entry |
+
+**Agent MUST do before a user-requested full rescan:** pass `--fresh` (or `cache --cache-clear-all` after skill/pipeline changes). Never assume a prior `report_scan.*` in `-o` is from the current pipeline run.
+
+## Scan scope planning (full / incremental)
+
+Before deterministic collect, `scope_planner.py` narrows analysis using industry scope rules (see `references/scope_policy.yaml`):
+
+- **SonarQube**: global + test exclusions; inclusions only shrink the analyzable set.
+- **Semgrep**: monorepo `--include` roots (`apps/`, `packages/`, …).
+- **CodeQL**: `paths-ignore` for vendor/generated/tests/fixtures.
+- **Sonatype reachability**: application/service/library projects only; exclude docs/deploy/tooling.
+- **Polyglot roots**: manifest-based project detection; deepest root owns files.
 
 ```bash
-node {baseDir}/scripts/detect.ts gitnexus-impact --task-id $TASK_ID --target Class#method --direction upstream
-node {baseDir}/scripts/detect.ts gitnexus-context --task-id $TASK_ID --name Class#method --content
+python3 scripts/scope_planner.py --repo <repo> --print-summary
+python3 scripts/scope_planner.py --repo <repo> -o /tmp/scope_plan.json
 ```
 
-Empty `~/.cursor/mcp.json` means MCP is not configured. Optional: `gitnexus setup` to register it. `ready=false` → grep / find. Do not block the task. GitNexus is local; it does not talk to a company platform.
+Override via `config/scan_config.yaml` → `scope_planning.manual_include` (e.g. `[apps/]`).
 
----
+## SCA (OSV-first)
 
-## bugStatus
+- **No Trivy / trivy-db.** SCA never downloads or requires a local vulnerability DB.
+- Primary: `osv-scanner` CLI when installed (optional; brew/go).
+- Always available: **OSV HTTP API** (`api.osv.dev`) for Maven `pom.xml` coordinates — no binary needed.
+- Node fallback: `npm audit` when `package-lock.json` is present.
+- Core install does **not** fail if `osv-scanner` is missing.
 
-0 initial / 2 no defect / 6 suspected / 7 improvement / 3 confirmed fix / 4 invalid / 5 later / 8 duplicate.
 
-AI outputs 6 or 7. Users turn those into 3 / 4 / 5 / 8.
+## Agent-inline scan SOP (default)
 
----
+### 1) Deterministic prepare (handoff)
 
-## Constraints (short)
+```bash
+python3 scripts/run_scan.py incremental --repo <repo> --intent "<desc>" -o /tmp/aid_report
+# full rescan / adhoc / retest after fixes — always add --fresh:
+python3 scripts/run_scan.py adhoc --scan-mode incremental --files path/to/File.java --fresh -o /tmp/aid_report
+# or: full | adhoc --scan-mode incremental|full ...
+```
 
-- Mission over ceremony: find defects, then self-check before closing.
-- No leak: do not show internal field names, commands, or retry noise to the user.
-- Write-back only after clone + code-read registration.
-- tagId must come from `get-tag-list`. AST hits must carry ruleId.
-- Rank is dual-write: `finalize-rank` to the platform **and** `record-rank` locally.
-- Defect content starts with `Defect:` or `Improvement:`, includes `Lines:X-Y`, and a fix/optimize section with a code block.
-- Batch write-backs go through `batch-update-process`. `scripts/validate.ts` is authoritative.
+Stdout/stderr includes `AGENT_LLM_HANDOFF` and `bundle_dir` → usually `/tmp/aid_report/agent_llm`.
+If you see `CACHE SKIP: agent-inline mode…` — proceed to Stage1 (expected). If you see `CACHE HIT` in agent mode, you passed `--use-cache` intentionally.
+Read `agent_llm/MANIFEST.json` for paths. Do **not** invent findings before this step.
 
-`complete-task` does not lock the task. Append or correct on the same taskId. Use `retry` only when the whole task must be discarded (wrong repo/branch).
+### 2) Stage1 (you)
 
----
+1. Read `agent_llm/stage1_prompt.md` (or each `shards/<id>/stage1_prompt.md` for full).
+2. Apply `prompts/` + injected policies; output **strict JSON** `{"findings":[...]}`.
+3. Write `stage1.json` (per shard if full). Empty `findings` is OK.
 
-## Output
+### 3) Stage2 prepare + Stage2 (you)
 
-Three user-facing moments: start card → milestone cards → final summary.
+```bash
+python3 scripts/run_scan.py agent-stage2 --agent-dir /tmp/aid_report/agent_llm
+```
 
-Final summary must include a report link:
+1. Read `stage2_prompt.md` (per shard if full).
+2. Write `llm_final.json` (incremental) or each `shards/<id>/stage2.json` (full) as
+   `{"findings":[...]}` with optional `"dismissals":[{"file","line","reason"}]`.
+   - **Ambiguous SAST residue:** demote by emitting a same-locus finding with the final
+     severity (merge keeps LLM severity), or dismiss via `dismissals` /
+     `"dismissed": true` / `"verdict":"dismiss"` (clear SAST cannot be dismissed).
+3. Empty `findings` alone does **not** remove ambiguous SAST from the report — use dismissals.
+### 4) Finalize + present
 
-`> View full report: [Open]({reportUrl})`
+```bash
+python3 scripts/run_scan.py finalize --agent-dir /tmp/aid_report/agent_llm -o /tmp/aid_report
+```
 
-`reportUrl` comes from the platform provider (local HTML `file://.../reports/{taskId}.html` by default, or your configured `report_base_url`). If the chat link does not open, open that HTML file in a browser.
+Read `report_scan.json` / `.md` / `.html`; present to user (Deliverable). HTML is written automatically by `finalize` / `merge_report.py` from the Markdown body. Then Section D if user verdicts.
 
-The `complete-task --summary` text is flat plain text (`references/output/summary-spec.md`): no Markdown tables, because it is stored and rendered by the platform as-is. The chat reply may use tables. In both, split **this change** vs **legacy** risk.
+### Quick commands
 
-Definition of done: coverage/rank gates + `complete-task` + `reconcile-report` exit 0 + complete summary with report link.
+```bash
+python3 scripts/run_scan.py adhoc --scan-mode incremental --files a.py --fresh -o /tmp/aid_report
+python3 scripts/run_scan.py adhoc --scan-mode incremental --paste-file /tmp/snip.py --lang python --fresh -o /tmp/aid_report
+python3 scripts/run_scan.py choose --infer "帮我看看这段粘贴的代码有没有漏洞"
+python3 scripts/run_scan.py cache list
+python3 scripts/run_scan.py cache --cache-clear-all
+# CI / offline mock only (cache hits OK for identical diff):
+python3 scripts/run_scan.py incremental --repo . --dry-run -o /tmp/aid_report
+```
 
----
+## Section D — Verdicts
 
-## Errors
+Only when the user explicitly accepts/dismisses/ignores:
 
-- Network / auth: retry; refresh token via the auth provider.
-- Format errors: `scripts/validate.ts` auto-fixes deterministic issues.
-- Quality errors: re-analyze, do not tweak wording to pass.
-- Clone failure: skip that service, continue others.
-- Missing `enterprise/plans/{id}.json` (or empty HTTP plan): `get-plan-info` returns `degraded=true`. Use chat materials (`--git`, `--user-materials-json`, `add-test-case`, `add-document`). Do not stop.
+```bash
+python3 scripts/feedback.py record --title "<title>" --verdict accept|dismiss|ignore \
+  --file "<path>" --category "<cat>" --rule-id "<RULE_ID>"
+```
 
-See `references/rules/error-handling.md`.
+No verdict → do not invent one.
+
+## LLM semantic policies
+
+Canonical: `references/policies/manifest.yaml` (**v1.1.0**, 27 rules). There is no separate `AUTH-003`; auth-bypass paths are covered by `ARCH-001`.
+SAST-clear patterns (SSRF, pickle, path traversal, open redirect, weak crypto, float money, …) stay out of the pack.
+
+```bash
+python3 scripts/audit_policy_fixtures.py
+```
+
+Add rule: new unused id YAML + manifest + bump version + audit. Details in policies dir.
+
+## Hard rules
+
+- **Polyglot CodexQA mandate:** every language (Java/Go/Python/TS/Rust/…) MUST use CodexQA CLI for underlying repo code-graph / call-chain / import / RAG analysis. Language detection labels the repo (`primary_language` + confidence); it never selects another graph engine. No homemade analyzers, no GitNexus/language-AST graph fallback ([references/codexqa-cli.md](references/codexqa-cli.md)).
+- **Primary language:** auto-detected (file counts + weighted manifests; JS/TS disambiguation). Override when wrong: `config.primary_language`, `--language`, or `AID_PRIMARY_LANGUAGE`. Low confidence is warned on stderr.
+- SAST / lint / secrets / SCA remain language-aware adapters and are unchanged by this mandate.
+- SAST missing: repair → warn → continue.
+- Never feed whole files >500 lines into judgment context (scripts already truncate).
+- Never emit a finding without `file`, `line`, `evidence`, `severity`.
+- Ask/choose when scenario unclear; do not autofix style.
+- Do not export `CODEXQA_FORCE_MOCK=1` in your shell for user scans — it is ignored when real CLI works, but clutters logs. Mock is auto-selected only when CLI is missing.
+- **Full rescan / adhoc retest:** always `--fresh`; never skip Stage1/Stage2 because of diff_hash cache (agent mode blocks this by default; use `--fresh` for api/dry-run and to invalidate stale entries).
+
+## CI (advisory smoke)
+
+Monorepo hygiene runs `npm test` (pipeline + policy fixtures). Live agent/API scans are **not** required. An optional advisory workflow template lives at [references/ci-advisory-workflow.yml](references/ci-advisory-workflow.yml) (`CODEXQA_FORCE_MOCK=1` + `--dry-run`); treat its artifacts as smoke only.
+
+## Policy fixture check
+
+```bash
+python3 scripts/audit_policy_fixtures.py
+```
+
+## Optional external API LLM
+
+See [references/llm-api.md](references/llm-api.md) (`--llm-mode api`).
