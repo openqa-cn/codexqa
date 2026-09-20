@@ -1,8 +1,10 @@
-<p align="center">
-  <strong>English</strong> · <a href="README.zh-CN.md">简体中文</a> · <a href="KNOWN_LIMITATIONS.md">Known limitations</a>
-</p>
+<div align="center">
+
+**English** · [简体中文](README.zh-CN.md)
 
 # CodexQA Code Wiki
+
+</div>
 
 **Turn a repository into a local architecture knowledge graph — module map, real dependencies, and reading guides — without calling a model.**
 

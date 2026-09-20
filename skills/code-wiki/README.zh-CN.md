@@ -1,6 +1,10 @@
-[English](README.md) · **简体中文** · [已知边界](KNOWN_LIMITATIONS.zh-CN.md)
+<div align="center">
+
+[English](README.md) · **简体中文**
 
 # CodexQA Code Wiki
+
+</div>
 
 **把仓库变成本地架构知识图谱：模块地图、真实依赖、阅读导览，全程不调模型。**
 
