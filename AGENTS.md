@@ -11,14 +11,3 @@ codexqa is a verification project. Agent-assisted contributions are welcome, but
 5. Run the repository checks before opening a pull request.
 
 Never include secrets, customer code, private logs, or personal data. Do not claim that a check proves correctness when it only proves that a command exited successfully.
-
-## Before any `git push`
-
-Mandatory identity gate (see `.cursor/rules/git-push-identity-gate.mdc`). Run and verify **every** item before push; if any output mismatches the expected value, **do not push** and report to the user:
-
-```bash
-git config user.name          # leviacicig
-git config user.email         # eviacici@126.com
-git remote -v                 # must contain github.com-leviacicig, or core.sshCommand points at this key
-ssh -T git@github.com-leviacicig
-```
