@@ -35,7 +35,7 @@
 1. **异常输入** — 堆栈、日志、调用链 dump 或调试文本，外加 `--git`/`--branch`、`--dir`、`--file`，或已打开的工作区。
 2. **`run`** — 一次进程：提交任务、确保 CodexQA 索引、分析帧。写出 `brief.json`、`facts.json` 和仅含标题的 `report.draft.md`。**不**撰写 `report.md`。
 3. **模型填写** — 在八个必需的 `##` 标题下写叙事，只引用已有 facts。不要把 `facts.json` 当报告粘贴。
-4. **`write-report`** — 拒绝缺标题和机械 `storyGaps`（Confidence 行、分支/抛出/竞态标记等）。不以章节字数拒绝。
+4. **`write-report`** — 拒绝缺标题和机械 `storyGaps`（Confidence 行 / 置信度夸大、分支/抛出标记，以及竞态/吞异常/lineDrift/弱帧等**证据门禁与反编造**检查）。不以章节字数拒绝。
 5. **对话输出** — `chat.en` 给一段英文摘要，并附上报告路径。
 
 ## TypeScript 与模型的分工

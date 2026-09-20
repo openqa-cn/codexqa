@@ -14,7 +14,7 @@
 
 ## RCA 叙事由模型判断
 
-TypeScript 抽出 facts，并拒绝机械 `storyGaps`。某句因果在本业务域是否*成立*，由宿主模型决定。通过 `write-report` 的报告仍可能错——模型可能编造调用边或误读契约。
+TypeScript 抽出 facts，并拒绝机械 `storyGaps`。可选叙事（竞态、吞异常、lineDrift 假设、弱帧标签）仅在对应 facts 标志成立时才要求；无证据编造会被拒绝。`facts.confidence` 为 medium 时写 `Confidence: high` 也会被拒绝。其他因果句在本业务域是否*成立*，仍由宿主模型决定。通过 `write-report` 的报告仍可能错——模型可能编造调用边或误读契约。
 
 ## 图缺口会削弱证据
 

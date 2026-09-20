@@ -27,19 +27,19 @@ Author **English only**. Do not add extra top-level headings unless the user ask
 [From entry to the throw: who called whom, extracted branch then-call, which frames are weak. Target ≤300 字.]
 
 ## Root cause
-[Earliest wrong contract in this repo, why that path ran, what it raced. Cite `Class#method`. Target ≤300 字.]
+[Earliest wrong contract in this repo and why that path ran. Cite `Class#method`. Mention race/contend **only** if `facts.raceEvidence` is true. Target ≤300 字.]
 
 ## Trigger
 [Throw site. Not the root cause. Target ≤100 字.]
 
 ## Contributing factors
-[Two or three factors with a citation each. Target ≤100 字.]
+[Factors grounded in facts (`swallowKey`, `evidenceGaps`). Do not invent swallow/race/weak claims. Target ≤100 字.]
 
 ## Suggested fix and verification
 [One fix + one verify step. Do not apply code. Target ≤100 字.]
 
 ## Confidence and gaps
-[high|medium|low; one missing fact. Target ≤100 字.]
+[`facts.confidence` (`high`/`medium`); never overstate to high when facts say medium; one missing fact. Target ≤100 字.]
 ```
 
 ## storyGaps (mechanical)
@@ -49,12 +49,18 @@ Author **English only**. Do not add extra top-level headings unless the user ask
 | Gap | Section | Required text |
 |---|---|---|
 | `missing-confidence` | Executive summary | `Confidence:` |
+| `confidence-overstated` | Executive summary | no `Confidence: high` when `facts.confidence=medium` |
 | `mapped-missing-branch-then` | Mapped call path | `facts.branch.thenCall` |
 | `mapped-missing-throw` | Mapped call path | throw class from `facts.throwKey` |
+| `mapped-invented-weak` | Mapped call path | drop "weak frame" when `facts.weakCount` is 0 |
 | `root-missing-branch-else` | Root cause | `facts.branch.elseCall` |
 | `root-missing-throw` | Root cause | throw class |
-| `root-missing-race` | Root cause | `raced`, `race`, or `contend` |
+| `root-missing-race` | Root cause | `raced` / `race` / `contend` — **only when** `facts.raceEvidence=true` |
+| `root-invented-race` | Root cause | drop race/contend when `facts.raceEvidence` is false |
 | `root-missing-hypothesis-on-drift` | Root cause | `hypothesis` when `facts.lineDrift` is non-empty |
+| `root-invented-line-drift` | Root cause | drop line-drift claims when `facts.lineDrift` is empty |
+| `contributing-missing-swallow` | Contributing / Root | cite `facts.swallowKey` when set |
+| `contributing-invented-swallow` | Contributing / Root | drop swallow claims when `facts.swallowKey` is null |
 | `trigger-missing-throw` | Trigger | throw class |
 | `trigger-missing-not-root` | Trigger | `not the root` (or `not root`) |
 

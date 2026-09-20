@@ -14,7 +14,7 @@ Local `npm test` covers parse, materialize, draft, and CLI smoke paths. The clos
 
 ## RCA narrative is model-judged
 
-TypeScript extracts facts and rejects mechanical `storyGaps`. Whether a causal sentence is *true* for this business domain is decided by the host model. A report that passes `write-report` can still be wrong if the model invents edges or misreads contracts.
+TypeScript extracts facts and rejects mechanical `storyGaps`. Optional narrative (race/contend, catch-all swallow, line-drift hypothesis, weak-frame labels) is required only when the matching facts flag is set; inventing those claims without evidence is rejected. Overstating `Confidence: high` when `facts.confidence` is `medium` is also rejected. Whether other causal sentences are *true* for this business domain is still decided by the host model. A report that passes `write-report` can still be wrong if the model invents edges or misreads contracts.
 
 ## Graph gaps weaken evidence
 

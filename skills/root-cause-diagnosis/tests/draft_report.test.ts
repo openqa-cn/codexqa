@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { parse_exception } from "../scripts/parse_exception.ts";
 import {
   build_skeleton_markdown,
+  detect_race_evidence,
   extract_branch,
   extract_facts,
   extract_swallow,
@@ -93,7 +94,7 @@ ${f.exceptionType}. Primary ${f.throwKey}.
 Entry ${f.entry}. Hops ${hops}. ${hypoEn}${thenCall}. Throw ${throwCls}.
 
 ## Root cause
-Throw ${throwCls} is trigger, not root. ${hypoEn}${f.rootKey}: ${thenCall}${elseCall ? ` not ${elseCall}` : ""}. Raced shared work.
+Throw ${throwCls} is trigger, not root. ${hypoEn}${f.rootKey}: ${thenCall}${elseCall ? ` not ${elseCall}` : ""}.${f.raceEvidence ? " Raced shared work." : ""}
 
 ## Trigger
 Throw ${throwCls}. Not the root.
@@ -176,6 +177,7 @@ describe("draft_report", () => {
     assert.equal(facts.swallowKey, "AbstractUnFinishSearch#query");
     assert.ok(facts.lineDrift.some((d) => d.includes("70")));
     assert.equal(facts.confidence, "medium");
+    assert.equal(facts.raceEvidence, true);
     assert.match(facts.entry, /RiderDistributionTaskSearchService#getUnConfirmedTask/);
     assert.ok(facts.hops.some((h) => h.startsWith("BmWaybillService#getByRiderIdAndStatus")));
     assert.ok(facts.mustCite.mapped.includes(facts.throwKey));
@@ -237,9 +239,115 @@ Medium. Gap: lineDrift.
       throwKey: "BmWaybillMySQLRepositoryImpl#x:1",
       branch: { thenCall: "batchBriefByRiderIdAndStatuses", elseCall: "batchWaybillFromIndexSupplySuqirrel" },
       lineDrift: ["BmWaybillService#getByRiderIdAndStatus:70 vs 94-106"],
+      raceEvidence: true,
     } as ReportFacts);
     assert.ok(gaps.includes("root-missing-hypothesis-on-drift"), JSON.stringify(gaps));
     assert.equal(gaps.some((g) => g.endsWith("-zh")), false);
+  });
+
+  it("requires race language only when facts.raceEvidence is true", () => {
+    const { parsed, brief } = deadlock_fixture();
+    assert.equal(detect_race_evidence(parsed, brief), true);
+    const facts = extract_facts(parsed, brief);
+    assert.equal(facts.raceEvidence, true);
+    const withoutRace = filled_from_facts({ ...facts, raceEvidence: true }).replace(/\s*Raced shared work\./, "");
+    assert.ok(story_gaps(withoutRace, facts).includes("root-missing-race"));
+    assert.deepEqual(story_gaps(filled_from_facts(facts), facts), []);
+  });
+
+  it("rejects invented race language when there is no race evidence (e.g. NPE cache miss)", () => {
+    const parsed = parse_exception(`java.lang.NullPointerException: Cannot invoke Order.getTotal because order is null
+	at com.example.order.OrderService.checkout(OrderService.java:14)
+	at com.example.order.OrderController.create(OrderController.java:7)
+`);
+    const brief = [
+      {
+        key: "OrderService#checkout",
+        weak: false,
+        source: {
+          text: `    public void checkout(String orderId) {
+        Order order;
+        if (useCache) {
+            order = repo.loadFromCache(orderId);
+        } else {
+            order = repo.loadFromDb(orderId);
+        }
+        String total = order.getTotal();
+    }`,
+          startLine: 7,
+          endLine: 16,
+        },
+      },
+      {
+        key: "OrderController#create",
+        weak: false,
+        callPath: "com.example.order::create(L5)→com.example.order::checkout(L7)",
+        source: { text: "    public void create(String orderId) {\n        orderService.checkout(orderId);\n    }", startLine: 5, endLine: 7 },
+      },
+    ];
+    assert.equal(detect_race_evidence(parsed, brief), false);
+    const facts = extract_facts(parsed, brief);
+    assert.equal(facts.raceEvidence, false);
+    assert.equal(facts.branch.thenCall, "loadFromCache");
+    assert.equal(facts.branch.elseCall, "loadFromDb");
+
+    const honest = filled_from_facts(facts);
+    assert.equal(/raced|contend|\brace[ds]?\b/i.test(honest), false);
+    assert.deepEqual(story_gaps(honest, facts), [], honest);
+
+    const invented = honest.replace(
+      "## Root cause\n",
+      "## Root cause\nConcurrent cache invalidation raced the miss. ",
+    );
+    assert.ok(story_gaps(invented, facts).includes("root-invented-race"), invented);
+  });
+
+  it("rejects Confidence: high when facts.confidence is medium", () => {
+    const { parsed, brief } = deadlock_fixture();
+    const facts = extract_facts(parsed, brief);
+    assert.equal(facts.confidence, "medium");
+    const overstated = filled_from_facts(facts).replace("Confidence: medium", "Confidence: high");
+    assert.ok(story_gaps(overstated, facts).includes("confidence-overstated"), overstated);
+    assert.deepEqual(story_gaps(filled_from_facts(facts), facts), []);
+  });
+
+  it("requires swallow cite when swallowKey is set and rejects invented swallow otherwise", () => {
+    const { parsed, brief } = deadlock_fixture();
+    const facts = extract_facts(parsed, brief);
+    assert.equal(facts.swallowKey, "AbstractUnFinishSearch#query");
+    const missing = filled_from_facts(facts).replace(
+      `## Contributing factors\n${facts.swallowKey}`,
+      "## Contributing factors\nn/a",
+    );
+    assert.ok(story_gaps(missing, facts).includes("contributing-missing-swallow"), missing);
+
+    const npe = parse_exception(`java.lang.NullPointerException: x\n\tat com.example.A.m(A.java:1)\n`);
+    const npeFacts = extract_facts(npe, [
+      { key: "A#m", weak: false, source: { text: "void m() { x.y(); }", startLine: 1, endLine: 3 } },
+    ]);
+    assert.equal(npeFacts.swallowKey, null);
+    const honest = filled_from_facts(npeFacts);
+    assert.deepEqual(story_gaps(honest, npeFacts), []);
+    const invented = honest.replace(
+      "## Contributing factors\n",
+      "## Contributing factors\nswallows catch-all and returns empty. ",
+    );
+    assert.ok(story_gaps(invented, npeFacts).includes("contributing-invented-swallow"), invented);
+  });
+
+  it("rejects invented line-drift and weak-frame claims without facts", () => {
+    const npe = parse_exception(`java.lang.NullPointerException: x\n\tat com.example.A.m(A.java:1)\n`);
+    const facts = extract_facts(npe, [
+      { key: "A#m", weak: false, source: { text: "void m() { x.y(); }", startLine: 1, endLine: 3 } },
+    ]);
+    assert.equal(facts.lineDrift.length, 0);
+    assert.equal(facts.weakCount, 0);
+    const honest = filled_from_facts(facts);
+    assert.deepEqual(story_gaps(honest, facts), []);
+    const driftInvented = honest.replace("## Root cause\n", "## Root cause\nstack line 1 is outside 10-20. ");
+    assert.ok(story_gaps(driftInvented, facts).includes("root-invented-line-drift"), driftInvented);
+    const weakInvented = honest.replace("## Mapped call path\n", "## Mapped call path\nweak frame on path. ");
+    assert.ok(story_gaps(weakInvented, facts).includes("mapped-invented-weak"), weakInvented);
   });
 
   it("detects catch-all empty/default swallow without encoding a race slogan", () => {

@@ -35,7 +35,7 @@ exception evidence + git / dir / file
 1. **Exception in** — stack, log, call-chain dump, or debug text, plus `--git`/`--branch`, `--dir`, `--file`, or the already-open workspace.
 2. **`run`** — one process: submit task, ensure CodexQA index, analyze frames. Writes `brief.json`, `facts.json`, and a heading-only `report.draft.md`. Does **not** author `report.md`.
 3. **Model fill** — narrative inside the eight required `##` headings, using only cited facts. Do not paste `facts.json` as the report.
-4. **`write-report`** — rejects missing headings and mechanical `storyGaps` (confidence line, branch/throw/race markers, etc.). Does not reject on section length.
+4. **`write-report`** — rejects missing headings and mechanical `storyGaps` (confidence line / overstated confidence, branch/throw markers, evidence-gated race/swallow/hypothesis/weak-frame invent checks, etc.). Does not reject on section length.
 5. **Chat out** — one English paragraph from `chat.en` plus paths to the report files.
 
 ## What TypeScript owns vs the model

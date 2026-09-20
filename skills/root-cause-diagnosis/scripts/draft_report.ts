@@ -37,6 +37,8 @@ export type ReportFacts = {
   lineDrift: string[];
   weakCount: number;
   swallowKey: string | null;
+  /** True only when exception text or indexed source shows contention/deadlock/race signals. */
+  raceEvidence: boolean;
   confidence: "high" | "medium";
   evidenceGaps: string[];
   mustCite: { mapped: string[]; root: string[]; trigger: string[] };
@@ -259,6 +261,27 @@ function swallow_key(brief: BriefItem[]): string | null {
   return item?.key || null;
 }
 
+/** Exception / type / message signals that justify race/contend language in Root cause. */
+const RACE_EXCEPTION_RE =
+  /\b(?:deadlock|lock\s*wait|race(?:d|s| condition)?|contend(?:ed|ing|s)?|ConcurrentModification|OptimisticLock|StaleObjectState|compareAndSet)\b/i;
+
+/** Indexed source signals for lock/contention paths — not cache-miss nulls or generic concurrency types. */
+const RACE_SOURCE_RE =
+  /\b(?:synchronized|ReentrantLock|ReadWriteLock|StampedLock|CountDownLatch|CyclicBarrier|deadlock|race\s*condition)\b/i;
+
+/**
+ * Mechanical race evidence from the exception and brief sources only.
+ * Do not treat comments, cache-miss nulls, or model prose as evidence.
+ */
+export function detect_race_evidence(parsed: ParsedException, brief: BriefItem[]): boolean {
+  const exc = `${parsed.exceptionType || ""} ${parsed.message || ""}`;
+  if (RACE_EXCEPTION_RE.test(exc)) return true;
+  for (const item of brief || []) {
+    if (RACE_SOURCE_RE.test(String(item.source?.text || ""))) return true;
+  }
+  return false;
+}
+
 export function extract_facts(parsed: ParsedException, brief: BriefItem[]): ReportFacts {
   const items = Array.isArray(brief) ? brief : [];
   const throwSite = parsed.primaryFrame;
@@ -268,6 +291,7 @@ export function extract_facts(parsed: ParsedException, brief: BriefItem[]): Repo
   const lineDrift = drift_notes(items);
   const weakCount = items.filter((b) => b.weak).length;
   const throwKey = short_key(throwSite);
+  const raceEvidence = detect_race_evidence(parsed, items);
   const evidenceGaps = [
     weakCount ? "external/weak frames" : "",
     lineDrift.length ? "stack vs indexed lineDrift" : "",
@@ -286,6 +310,7 @@ export function extract_facts(parsed: ParsedException, brief: BriefItem[]): Repo
     lineDrift,
     weakCount,
     swallowKey: swallow_key(items),
+    raceEvidence,
     confidence: weakCount || lineDrift.length ? "medium" : "high",
     evidenceGaps,
     mustCite: {
@@ -304,8 +329,37 @@ function has_race(text: string): boolean {
   return /raced|contend|\brace[ds]?\b/i.test(text);
 }
 
+/** Catch-all empty/default swallow claims (not ordinary "returns null" facts). */
+function has_swallow_claim(text: string): boolean {
+  return (
+    /\bswallows?\b/i.test(text) ||
+    /\bcatch-all\b/i.test(text) ||
+    /\bempty\s+catch\b/i.test(text) ||
+    /Collections\.empty\w*/i.test(text) ||
+    /Optional\.empty/i.test(text) ||
+    /\bcatch\b[\s\S]{0,120}\breturn(?:s|ed)?\s+(?:null|\[\s*\]|\{\s*\})/i.test(text)
+  );
+}
+
+/** Claims that stack vs index lineDrift is the uncertainty source. */
+function has_line_drift_claim(text: string): boolean {
+  return /line\s*drift|stack line \d+\s+is outside|outside\s+\d[\d-]*\b/i.test(text);
+}
+
+function has_weak_frame_claim(text: string): boolean {
+  return /\bweak\s+frames?\b/i.test(text);
+}
+
+function confidence_level(summaryEn: string): "high" | "medium" | "low" | null {
+  const m = summaryEn.match(/Confidence:\s*(high|medium|low)\b/i);
+  if (!m) return null;
+  return m[1].toLowerCase() as "high" | "medium" | "low";
+}
+
 /**
  * Mechanical 来龙去脉 checks on the English report. Does not prescribe exception-class wording.
+ * Evidence-gated: only require optional narrative (race / swallow / hypothesis / weak) when facts
+ * support it; reject inventing those claims without evidence.
  */
 export function story_gaps(markdown: string, facts: ReportFacts): string[] {
   const gaps: string[] = [];
@@ -313,9 +367,19 @@ export function story_gaps(markdown: string, facts: ReportFacts): string[] {
   const rootEn = section_body(markdown, "## Root cause");
   const summaryEn = section_body(markdown, "## Executive summary");
   const triggerEn = section_body(markdown, "## Trigger");
+  const contributingEn = section_body(markdown, "## Contributing factors");
+  const rootOrContrib = `${rootEn}\n${contributingEn}`;
+
   if (!mappedEn.trim()) gaps.push("mapped-empty");
   if (!rootEn.trim()) gaps.push("root-empty");
   if (!/Confidence:/i.test(summaryEn)) gaps.push("missing-confidence");
+
+  const statedConf = confidence_level(summaryEn);
+  // Do not allow Confidence: high when facts already downgraded to medium (weak frames / lineDrift).
+  if (facts.confidence === "medium" && statedConf === "high") {
+    gaps.push("confidence-overstated");
+  }
+
   const thenCall = facts.branch?.thenCall;
   if (thenCall && !mappedEn.includes(thenCall)) gaps.push("mapped-missing-branch-then");
   const elseCall = facts.branch?.elseCall;
@@ -325,10 +389,35 @@ export function story_gaps(markdown: string, facts: ReportFacts): string[] {
   if (throwCls && !rootEn.includes(throwCls)) gaps.push("root-missing-throw");
   if (throwCls && !triggerEn.includes(throwCls)) gaps.push("trigger-missing-throw");
   if (throwCls && !/not (?:the )?root/i.test(triggerEn)) gaps.push("trigger-missing-not-root");
-  if (!has_race(rootEn)) gaps.push("root-missing-race");
+
+  // Race: require only with evidence; invent without evidence → reject.
+  if (facts.raceEvidence) {
+    if (!has_race(rootEn)) gaps.push("root-missing-race");
+  } else if (rootEn.trim() && has_race(rootEn)) {
+    gaps.push("root-invented-race");
+  }
+
+  // Swallow: cite extracted swallowKey when present; invent swallow without evidence → reject.
+  if (facts.swallowKey) {
+    if (!rootOrContrib.includes(facts.swallowKey) && !has_swallow_claim(rootOrContrib)) {
+      gaps.push("contributing-missing-swallow");
+    }
+  } else if ((rootEn.trim() || contributingEn.trim()) && has_swallow_claim(rootOrContrib)) {
+    gaps.push("contributing-invented-swallow");
+  }
+
+  // Hypothesis / lineDrift: require hypothesis when drift notes exist; do not invent drift claims.
   if (facts.lineDrift?.length) {
     if (!/hypothesis/i.test(rootEn)) gaps.push("root-missing-hypothesis-on-drift");
+  } else if (rootEn.trim() && has_line_drift_claim(rootEn)) {
+    gaps.push("root-invented-line-drift");
   }
+
+  // Weak frames: do not invent "weak frame" labels when facts.weakCount is 0.
+  if (!(facts.weakCount > 0) && mappedEn.trim() && has_weak_frame_claim(mappedEn)) {
+    gaps.push("mapped-invented-weak");
+  }
+
   return gaps;
 }
 
@@ -381,6 +470,10 @@ export function agent_protocol(
       "read analysis.json",
       "load other skills",
       "invent Class#method:1 for → Class tails",
+      "invent race/contend without facts.raceEvidence=true",
+      "invent swallow/catch-all without facts.swallowKey",
+      "invent lineDrift or weak-frame claims without facts",
+      "write Confidence: high when facts.confidence is medium",
       "count 字 with python",
       "trim the draft to a hard 字 cap",
       "open 600-line classes",

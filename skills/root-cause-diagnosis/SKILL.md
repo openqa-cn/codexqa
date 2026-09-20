@@ -72,13 +72,13 @@ The **Target** column is a prompt hint for the model, not a `write-report` rejec
 | Executive summary | 100 | what failed, in-repo root, literal `Confidence: high\|medium\|low` |
 | Symptom and exception facts | 100 | type, message gist, primary `Class#method:line` |
 | Mapped call path | **300** | entry → each hop → extracted branch then-call → throw; mark weak frames |
-| Root cause | **300** | earliest wrong contract in *this* repo, why that path ran, what it raced; cite `Class#method` |
+| Root cause | **300** | earliest wrong contract in *this* repo, why that path ran; cite `Class#method`. Include race/contend **only** when `facts.raceEvidence` is true |
 | Trigger | 100 | throw site; not the root cause |
-| Contributing factors | 100 | two or three factors |
+| Contributing factors | 100 | factors grounded in `facts` (`swallowKey`, `evidenceGaps`); do **not** invent swallow / race / weak-frame claims |
 | Suggested fix and verification | 100 | one fix + one verify; do not apply code |
-| Confidence and gaps | 100 | high/medium/low + one gap |
+| Confidence and gaps | 100 | use `facts.confidence` (`high`/`medium`); never write `Confidence: high` when facts say `medium`; one gap |
 
-Mapped call path and Root cause must tell the story: entry, hops, branch, throw, and the race. A slogan or a bare `A→B→C` is invalid. Do not paste `facts.json` as the report.
+Mapped call path and Root cause must tell the story: entry, hops, branch, and throw. Mention race/contend **only** when `facts.raceEvidence` is true. Cite catch-all swallow **only** when `facts.swallowKey` is set. Mark `hypothesis` when `facts.lineDrift` is non-empty; do not invent line-drift or weak-frame claims without facts. A slogan or a bare `A→B→C` is invalid. Do not paste `facts.json` as the report.
 
 When `facts.lineDrift` is non-empty, Root cause must mark hypothesis. Trigger must cite the throw class and say it is not the root. Root must cite the throw class and (if extracted) the branch else-call.
 
@@ -87,12 +87,18 @@ When `facts.lineDrift` is non-empty, Root cause must mark hypothesis. Trigger mu
 | Gap | Section | Required text |
 |---|---|---|
 | `missing-confidence` | Executive summary | `Confidence:` |
+| `confidence-overstated` | Executive summary | do not write `Confidence: high` when `facts.confidence` is `medium` |
 | `mapped-missing-branch-then` | Mapped call path | `facts.branch.thenCall` |
 | `mapped-missing-throw` | Mapped call path | throw class from `facts.throwKey` |
+| `mapped-invented-weak` | Mapped call path | drop "weak frame" wording when `facts.weakCount` is 0 |
 | `root-missing-branch-else` | Root cause | `facts.branch.elseCall` |
 | `root-missing-throw` | Root cause | throw class |
-| `root-missing-race` | Root cause | `raced`, `race`, or `contend` |
+| `root-missing-race` | Root cause | `raced`/`race`/`contend` — **only when** `facts.raceEvidence=true` |
+| `root-invented-race` | Root cause | remove race/contend when `facts.raceEvidence` is false |
 | `root-missing-hypothesis-on-drift` | Root cause | `hypothesis` when `facts.lineDrift` is non-empty |
+| `root-invented-line-drift` | Root cause | drop line-drift claims when `facts.lineDrift` is empty |
+| `contributing-missing-swallow` | Contributing / Root | cite `facts.swallowKey` (or swallow wording) when set |
+| `contributing-invented-swallow` | Contributing / Root | drop swallow/catch-all claims when `facts.swallowKey` is null |
 | `trigger-missing-throw` | Trigger | throw class |
 | `trigger-missing-not-root` | Trigger | `not the root` (or `not root`) |
 

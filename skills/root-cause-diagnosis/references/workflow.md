@@ -69,7 +69,7 @@ node "$SKILL_SCRIPT" analyze-frames --task-id $TASK_ID
 3. Open a source file only if a cited line is outside brief `source`. Never open a whole 600-line class.
 4. If a method key is missing and `meta.codexqa.ready=true`, re-run `analyze-frames` once — never open `~/.codexqa/`.
 5. Write the call-path story into the empty `##` bodies of `report.draft.md`. Keep headings. Do not copy facts as slogans. Do not invent frames.
-6. Executive summary must contain the literal `Confidence:` plus `high`, `medium`, or `low`. Mapped must include `facts.branch.thenCall` and the throw class. Root must include the throw class, `facts.branch.elseCall`, race language (`raced`/`race`/`contend`), and `hypothesis` when `lineDrift` is non-empty. Trigger must include the throw class and `not the root`.
+6. Executive summary must contain the literal `Confidence:` plus `high`, `medium`, or `low`, and must **not** overstate to `high` when `facts.confidence` is `medium`. Mapped must include `facts.branch.thenCall` and the throw class. Root must include the throw class, `facts.branch.elseCall`, and `hypothesis` when `lineDrift` is non-empty. Include race language **only when** `facts.raceEvidence` is true; cite swallow **only when** `facts.swallowKey` is set; never invent line-drift or weak-frame claims without facts. Trigger must include the throw class and `not the root`.
 7. Do not load unrelated skills, do not invent `Class#search:1` for `→ Class` tails, and do not read `scripts/*.ts` on the happy path.
 
 ## Step 6: Report
