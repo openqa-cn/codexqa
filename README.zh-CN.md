@@ -47,8 +47,9 @@ AI 能很快产出一个绿 PR，但需求是否对齐、影响了谁、审查�
 | 异常根因 | [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.zh-CN.md) | 这条堆栈 / 日志 / 崩溃的仓内根因是什么？ | 基于 CodexQA CLI facts 的带门禁英文 RCA 报告 |
 | 代码风险扫描 | [`defect-detection`](skills/defect-detection/README.zh-CN.md) | 这个 diff / 仓库 / 粘贴里有哪些 SAST / 密钥 / 逻辑风险？ | 按 P0–P3 排序的 `report_scan.json` / `.md` / `.html` |
 | 图证据审查 | [`ai-code-reviewer`](skills/ai-code-reviewer/README.zh-CN.md) | CodexQA 证据包对影响面、缺口和维度风险怎么说？ | 证据包 + 双语 `REVIEW-REPORT.html` |
+| Skill 选择（元） | [`skill-router`](skills/skill-router/README.zh-CN.md) | 这次请求该交给哪个已发布 skill？ | 现场目录匹配 → 交接给该 skill 的 `SKILL.md` |
 
-这些 Skill 的输入不同，这是设计选择。Agent 能明确判断这次该读文档、索引本地 checkout、克隆分支、写用例，还是调用造数后端。
+这些 Skill 的输入不同，这是设计选择。Agent 能明确判断这次该读文档、索引本地 checkout、克隆分支、写用例，还是调用造数后端。请求未点名 skill 时，先走 [`skill-router`](skills/skill-router/README.zh-CN.md)——它会发现每个带 `SKILL.md` 的兄弟目录（含后续新增），并完成交接。
 
 ## 为什么用 codexqa？
 

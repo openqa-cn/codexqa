@@ -47,8 +47,9 @@ AI can produce a green pull request quickly. Teams still have to check whether t
 | Exception RCA | [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.md) | What is the in-repo root cause of this stack / log / crash? | Gated English root-cause report on top of CodexQA CLI facts |
 | Code-risk scan | [`defect-detection`](skills/defect-detection/README.md) | What SAST / secrets / logic risks are in this diff, repo, or paste? | `report_scan.json` / `.md` / `.html` findings ordered P0–P3 |
 | Graph-evidence review | [`ai-code-reviewer`](skills/ai-code-reviewer/README.md) | What does the CodexQA pack say about impact, gaps, and dimension risks? | Evidence pack + bilingual `REVIEW-REPORT.html` |
+| Skill selection (meta) | [`skill-router`](skills/skill-router/README.md) | Which published skill should handle this request? | Live catalog match → hand-off to that skill's `SKILL.md` |
 
-The skills use different inputs by design. The Agent can tell whether it should read documents, index a local checkout, clone a branch, write cases, or call a data backend.
+The skills use different inputs by design. The Agent can tell whether it should read documents, index a local checkout, clone a branch, write cases, or call a data backend. When the request does not name a skill, start with [`skill-router`](skills/skill-router/README.md) — it discovers every sibling with `SKILL.md` (including newly added ones) and hands off.
 
 ## Why codexqa?
 

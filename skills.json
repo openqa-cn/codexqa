@@ -36,6 +36,11 @@
       "name": "root-cause-diagnosis",
       "path": "skills/root-cause-diagnosis",
       "status": "available"
+    },
+    {
+      "name": "skill-router",
+      "path": "skills/skill-router",
+      "status": "available"
     }
   ]
 }

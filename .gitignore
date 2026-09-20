@@ -12,3 +12,5 @@ reports/
 缺陷检测报告.md
 # ai-code-reviewer / local evidence packs (never commit)
 .codexqa-review/
+# skill-creator eval workspaces (iteration outputs, snapshots, review.html)
+skills/*-workspace/

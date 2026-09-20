@@ -8,10 +8,11 @@
 
 codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优先 [Agent Skills](https://agentskills.io/specification) 包。AI 让产出代码更快；codexqa 聚焦那些不会自动变便宜的验证工作：澄清需求、理解变更影响、拿证据审实现、设计用例、准备测试数据。
 
-七个 skill 分别覆盖交付生命周期中的不同工作。每个 skill 都有独立输入契约，Agent 能明确知道这次该读文档、索引本地 checkout、克隆分支、做代码风险扫描、写用例、调用造数后端、诊断异常，还是收集 CodexQA 评审证据包：
+七个干活的 skill 分别覆盖交付生命周期中的不同工作，另有 [`skill-router`](../skills/skill-router/README.zh-CN.md) 在请求未点名 skill 时做自动选择。每个干活的 skill 都有独立输入契约，Agent 能明确知道这次该读文档、索引本地 checkout、克隆分支、做代码风险扫描、写用例、调用造数后端、诊断异常，还是收集 CodexQA 评审证据包：
 
 | Skill | 用途 |
 | --- | --- |
+| [`skill-router`](../skills/skill-router/README.zh-CN.md) | 发现现场兄弟 skill 并交接给最匹配者（新 skill 凭 `SKILL.md` 即可自动路由） |
 | [`code-analyzer`](../skills/code-analyzer/README.zh-CN.md) | 给本地仓库建符号图，再分析变更影响、回归范围、测试缺口、入口和报错 |
 | [`root-cause-diagnosis`](../skills/root-cause-diagnosis/README.zh-CN.md) | 在 CodexQA CLI 之上做异常根因诊断；带门禁的英文 RCA 报告 |
 | [`defect-detection`](../skills/defect-detection/README.zh-CN.md) | SAST/lint/secrets/SCA + agent 内联语义扫描 → `report_scan.*`（P0–P3） |
@@ -32,6 +33,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 
 按任务选，不要按措辞选：
 
+- 不确定用哪个 / 自动路由含糊的 QA 请求 → `skill-router`
 - 对 diff / 仓库 / 粘贴做 SAST 与语义代码风险扫描 → `defect-detection`
 - 在本地仓库追变更符号、调用方、回归范围、测试缺口和可达入口 → `code-analyzer`
 - 从堆栈 / 日志 / dump 做异常根因诊断 → `root-cause-diagnosis`

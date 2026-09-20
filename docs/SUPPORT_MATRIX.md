@@ -29,5 +29,6 @@ Installation compatibility does not establish analysis quality. Record agent/mod
 | `testdata-generation` scripts | Packer, slot search, and local catalog mock documented in that skill | Runtime depends on the configured adapters and slots; not covered by the defect-detection CLI suite |
 | `ai-code-reviewer` evidence pack | Local `bash scripts/validate-skill.sh` (static tree, fixture validate+render, plan-coverage); requires Node ≥ 18, bash, jq, Python 3.10+, and `@openqa-cn/codexqa` for live collect | Live CodexQA index not run by repository CI; review prose is model-judged; no published host-agent score |
 | `requirements-analyzer` | `evals/` skill-up cases and parse/convert scripts in that skill | No recorded host-agent score; analysis is the model, not `run_analysis.ts` |
+| `skill-router` discovery + ensure | `discover_skills.py --self-check` / `--with-catalog`; `ensure_skill.py --dry-run` / `--from-repo` / tarball / npx fallback (Python 3.10+) | On-demand install needs network or local checkout; routing choice is model-judged; no published host-agent score |
 
 One recorded agent end-to-end sample exists (JS reservation-v2 blind eval, recall/precision 7/7 — see the JS/TS method-level row). It is not yet a multi-model public benchmark. See [examples](../examples/README.md) and [benchmark methodology](../benchmarks/README.md).

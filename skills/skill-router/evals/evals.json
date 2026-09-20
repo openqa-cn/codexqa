@@ -1,0 +1,42 @@
+{
+  "skill_name": "skill-router",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我只装了 skill-router。请自动路由并必要时按需安装：对照 origin/main 审当前仓库，要能打开的双语 HTML 审查报告，不要漏洞扫描清单。授权你按需安装选中的 skill（可用 --from-repo /root/come_here/codexqa）。装完后打开其 SKILL.md 即可停止，不要跑 CodexQA collect。",
+      "expected_output": "Uses discover --with-catalog; selects ai-code-reviewer; runs ensure_skill (from-repo or yes); opens that SKILL.md; does not pick defect-detection.",
+      "files": [],
+      "assertions": [
+        "Output names ai-code-reviewer as the chosen skill",
+        "Output does not choose defect-detection as the primary skill",
+        "Output shows discover_skills.py --with-catalog or bundled catalog usage",
+        "Output shows ensure_skill.py was run or the skill was already installed then opened",
+        "Output references ai-code-reviewer/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Only skill-router is available initially. Route: from /tmp/demo-prd.md write a test plan first (Plan only). You may install the chosen skill with ensure_skill.py --from-repo /root/come_here/codexqa --yes into an isolated skills root if you create one, or into the real skills root if already present. Stop after opening the chosen SKILL.md — do not write the plan.",
+      "expected_output": "Selects testcase-generation via catalog; ensure if needed; opens testcase-generation/SKILL.md; not requirements-analyzer.",
+      "files": [],
+      "assertions": [
+        "Output names testcase-generation as the chosen skill",
+        "Output does not choose requirements-analyzer as the primary skill",
+        "Output shows catalog/discover --with-catalog evidence",
+        "Output shows ensure or installed hand-off to testcase-generation/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Solo router scenario: NPE stack + /tmp/my-app → 仓内根因. Auto-route, install if needed (--from-repo /root/come_here/codexqa --yes allowed), open the skill, then stop if codexqa CLI missing. Do not invent a stack.",
+      "expected_output": "Routes to root-cause-diagnosis; ensure if needed; opens SKILL.md; notes missing CLI / evidence rather than full RCA.",
+      "files": [],
+      "assertions": [
+        "Output names root-cause-diagnosis as the chosen skill",
+        "Output does not choose defect-detection as the primary skill",
+        "Output shows catalog/discover --with-catalog evidence",
+        "Output references root-cause-diagnosis/SKILL.md or its stop conditions"
+      ]
+    }
+  ]
+}

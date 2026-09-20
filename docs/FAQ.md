@@ -8,10 +8,11 @@ This page covers installation and the published skills. Most answers below are a
 
 codexqa is a public, local-first [Agent Skills](https://agentskills.io/specification) pack for Cursor, Claude Code, Codex, and OpenClaw. AI makes producing code faster; codexqa focuses on the verification work that does not automatically get cheaper: clarifying requirements, understanding change impact, reviewing implementation evidence, designing cases, and preparing test data.
 
-The seven skills cover different parts of the delivery lifecycle. Each has a separate input contract so the agent knows whether it should read documents, index a local checkout, scan for code risk, write cases, call a data backend, diagnose an exception, or collect a CodexQA review pack:
+The seven worker skills cover different parts of the delivery lifecycle, plus [`skill-router`](../skills/skill-router/README.md) as the auto-select entry when the request does not name a skill. Each worker has a separate input contract so the agent knows whether it should read documents, index a local checkout, scan for code risk, write cases, call a data backend, diagnose an exception, or collect a CodexQA review pack:
 
 | Skill | Role |
 | --- | --- |
+| [`skill-router`](../skills/skill-router/README.md) | Discover live sibling skills and hand off to the best match (new skills auto-routable via `SKILL.md`) |
 | [`code-analyzer`](../skills/code-analyzer/README.md) | Index a local repository, then trace change impact, regression scope, test gaps, entries, and errors through its symbol graph |
 | [`root-cause-diagnosis`](../skills/root-cause-diagnosis/README.md) | Exception RCA from stacks/logs on top of the CodexQA CLI; gated English root-cause report |
 | [`defect-detection`](../skills/defect-detection/README.md) | SAST/lint/secrets/SCA + agent-inline semantic scan → `report_scan.*` (P0–P3) |
@@ -32,6 +33,7 @@ They solve different parts of the problem. Linters and static rules catch suspic
 
 Match the request, not the wording:
 
+- Unsure which skill / auto-route a vague QA request → `skill-router`
 - Scan a diff / repo / paste for SAST and semantic code-risk findings → `defect-detection`
 - Trace changed symbols, callers, regression scope, test gaps, and reachable entries in a local repository → `code-analyzer`
 - Diagnose exception root cause from stacks / logs / dumps → `root-cause-diagnosis`

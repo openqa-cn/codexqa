@@ -4,8 +4,11 @@
 
 Each skill is independently documented. Every published skill has an agent-facing `SKILL.md` and a human-facing `README.md`. The [root README](../README.md) links the sample report, quick starts, and per-skill documentation.
 
+Install one skill with `npx skills add openqa-cn/codexqa --skill <name>` (for example `--skill skill-router` or `--skill defect-detection`).
+
 ## Available skills
 
+- [`skill-router`](skill-router/): discovers sibling skills from live `SKILL.md` catalogs and hands off to the best match (auto-routes new skills too). Not a worker — it only selects and follows another skill. [How it works](skill-router/HOW_IT_WORKS.md).
 - [`defect-detection`](defect-detection/): SAST/lint/secrets/SCA plus agent-inline semantic scan → `report_scan.*` (P0–P3). Not graph-evidence CR (`ai-code-reviewer`), not structure/impact (`code-analyzer`), and not exception RCA (`root-cause-diagnosis`). [How it works](defect-detection/HOW_IT_WORKS.md).
 - [`testcase-generation`](testcase-generation/): conversation-driven test plans and manual cases (Plan 0–5, Exec 6, Incremental) from local requirements / HTTPS docs; local Markdown only, plus aggregated HTML report (`testcase_generation_report.html`). Live backend data is `testdata-generation`. [How it works](testcase-generation/HOW_IT_WORKS.md).
 - [`testdata-generation`](testdata-generation/): construct reusable test data from domain slots, tools, APIs, and generated scripts; write values back as case-material preconditions. [How it works](testdata-generation/HOW_IT_WORKS.md).
