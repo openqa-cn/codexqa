@@ -2,7 +2,7 @@
 
 [简体中文](GETTING_STARTED.zh-CN.md)
 
-Install one skill at a time on Cursor, Claude Code, Codex, or OpenClaw. This page walks [`defect-detection`](../skills/defect-detection/README.md) because it has a CLI you can smoke-test. The same command also takes `--skill code-analyzer`, `--skill code-reviewer`, `--skill requirements-analyzer`, `--skill testcase-generation`, and `--skill testdata-generation`. `code-analyzer` uses the separate `codexqa` symbol-graph CLI; the other four have no `detect.ts` suite.
+Install one skill at a time on Cursor, Claude Code, Codex, or OpenClaw. This page walks [`defect-detection`](../skills/defect-detection/README.md) because it has a CLI you can smoke-test. The same command also takes `--skill code-analyzer`, `--skill root-cause-diagnosis`, `--skill code-reviewer`, `--skill requirements-analyzer`, `--skill testcase-generation`, and `--skill testdata-generation`. `code-analyzer` and `root-cause-diagnosis` use the separate `codexqa` symbol-graph CLI; the other four (aside from `defect-detection`) have no `detect.ts` suite.
 
 What you give each skill is different ([FAQ](FAQ.md#what-do-i-have-to-give-each-skill)). What a finished report looks like: [README · What the output looks like](../README.md#what-the-output-looks-like).
 
@@ -86,13 +86,14 @@ For global installations add `--global` where supported. Back up configuration a
 npx skills add openqa-cn/codexqa --skill code-analyzer
 npm install -g @openqa-cn/codexqa
 
+npx skills add openqa-cn/codexqa --skill root-cause-diagnosis
 npx skills add openqa-cn/codexqa --skill code-reviewer
 npx skills add openqa-cn/codexqa --skill requirements-analyzer
 npx skills add openqa-cn/codexqa --skill testcase-generation
 npx skills add openqa-cn/codexqa --skill testdata-generation
 ```
 
-The `code-analyzer` Skill is published in this repository. `@openqa-cn/codexqa` is the separately distributed, closed-source local code-analysis engine; indexes and sessions live under `~/.codexqa/`. See its [known limitations](../skills/code-analyzer/KNOWN_LIMITATIONS.md).
+The `code-analyzer` and `root-cause-diagnosis` Skills are published in this repository. `@openqa-cn/codexqa` is the separately distributed, closed-source local code-analysis engine; indexes and sessions live under `~/.codexqa/`. See [`code-analyzer` known limitations](../skills/code-analyzer/KNOWN_LIMITATIONS.md) and [`root-cause-diagnosis` known limitations](../skills/root-cause-diagnosis/KNOWN_LIMITATIONS.md).
 
 For a model-free `code-analyzer` smoke check, index a local checkout and inspect its summary:
 
@@ -107,6 +108,7 @@ codexqa stats /path/to/repo
 After install, start a new agent session and point it at the skill. Inputs differ:
 
 - `code-analyzer` needs a local repository. For change review, index it with a baseline such as `origin/main`; indexes live under `~/.codexqa/`. See its [README](../skills/code-analyzer/README.md).
+- `root-cause-diagnosis` needs exception evidence (stack / log / dump) plus a git URL, local dir, file, or already-open workspace. See its [README](../skills/root-cause-diagnosis/README.md).
 - `code-reviewer` needs a local Git checkout plus the branch / PR / commit. It does not clone. See [What you give it](../skills/code-reviewer/README.md#what-you-give-it).
 - `requirements-analyzer` needs requirement documents, not a repo. See [What you give it](../skills/requirements-analyzer/README.md#what-you-give-it).
 - `testcase-generation` needs `prd/` (PRD / design / specs). `code/` is optional and used on update only. See its [README](../skills/testcase-generation/README.md).

@@ -1,0 +1,10 @@
+{
+  "displayDescription": "Diagnoses exception root causes from stack traces, logs, call-chain dumps, and debug output using the CodexQA CLI for structured repo analysis. Use when the user mentions root-cause-diagnosis, exception RCA, crash analysis, AI code diagnosis, stack diagnosis, 异常根因, 堆栈诊断, 崩溃分析, 异常诊断, or asks to turn an exception into a root-cause report. Not structure/impact analysis (that is code-analyzer), not requirement-oriented defect write-back (that is defect-detection), and not a P0/P1/P2 playbook CR (that is code-reviewer).",
+  "environment": "production",
+  "fileTree": ["SKILL.md"],
+  "displayName": "root-cause-diagnosis",
+  "name": "root-cause-diagnosis",
+  "description": "Diagnoses exception root causes from stack traces, logs, call-chain dumps, and debug output using the CodexQA CLI for structured repo analysis. Use when the user mentions root-cause-diagnosis, exception RCA, crash analysis, AI code diagnosis, stack diagnosis, 异常根因, 堆栈诊断, 崩溃分析, 异常诊断, or asks to turn an exception into a root-cause report. Not structure/impact analysis (that is code-analyzer), not requirement-oriented defect write-back (that is defect-detection), and not a P0/P1/P2 playbook CR (that is code-reviewer).",
+  "uuid": "cskill-26bf61a2-4",
+  "version": "0.0.1"
+}

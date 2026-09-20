@@ -1,0 +1,56 @@
+---
+description: Mandatory pre-push identity/SSH/repo gate — block push if checks fail
+alwaysApply: true
+---
+
+# Git push identity & repo gate (mandatory)
+
+Before **any** `git push` (including `-u`, tags, or force), run these checks in the repo and compare outputs to the expected values. Do **not** push if any check fails — stop and report the mismatch to the user.
+
+Canonical repository: **https://github.com/openqa-cn/codexqa.git** (`openqa-cn/codexqa`).
+
+## Required checks (run in order)
+
+```bash
+git config user.name
+# expected: leviacicig
+
+git config user.email
+# expected: eviacici@126.com
+
+git remote -v
+# expected: origin points at openqa-cn/codexqa
+#   preferred SSH (this identity): git@github.com-leviacicig:openqa-cn/codexqa.git
+#   also OK:                      git@github.com:openqa-cn/codexqa.git
+#   also OK:                      https://github.com/openqa-cn/codexqa.git
+# AND: URL host/path uses github.com-leviacicig (preferred), OR core.sshCommand
+#      points at this identity's key when using github.com / HTTPS+SSH helper
+# reject: placeholders such as ORG/REPO.git
+
+ssh -T git@github.com-leviacicig
+# expected: successful GitHub auth for leviacicig
+#           (e.g. "Hi leviacicig! You've successfully authenticated...")
+```
+
+## Pass / fail rules
+
+| Check | Pass when | Fail when |
+| --- | --- | --- |
+| `user.name` | Exact string `leviacicig` | Empty, different, or missing |
+| `user.email` | Exact string `eviacici@126.com` | Empty, different, or missing |
+| `remote -v` repo | Fetch/push URL path is `openqa-cn/codexqa` (`.git` optional) | Wrong owner/repo, `ORG/REPO`, or missing origin |
+| `remote -v` / SSH identity | URL uses `github.com-leviacicig`, **or** `core.sshCommand` uses this identity's key | Neither condition holds |
+| `ssh -T` | Auth succeeds as `leviacicig` | Permission denied, wrong user, host unreachable, or no success message |
+
+## On failure
+
+1. **Do not** run `git push` (or any equivalent that updates the remote).
+2. Report which check failed, show **expected vs actual**, and wait for the user.
+3. Do not rewrite global git config unless the user explicitly asks.
+4. If only the remote URL is wrong, you may set  
+   `git remote set-url origin git@github.com-leviacicig:openqa-cn/codexqa.git`  
+   **after** confirming with the user, then re-run the gate before push.
+
+## On success
+
+Only then may you push to `origin` on the current branch (e.g. `leviacicig-dev`).

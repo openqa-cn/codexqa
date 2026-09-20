@@ -2,7 +2,7 @@
 
 [English](ROADMAP.md)
 
-codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。当前价值更具体、范围也更克制：六个本地优先的 skill，把需求、代码变更、审查、用例和测试数据拆成独立、可核查的工作流，而不是交给一次没有约束的 AI 对话。本仓库当前提供 [`code-analyzer`](../skills/code-analyzer/README.zh-CN.md)、[`defect-detection`](../skills/defect-detection/README.zh-CN.md)、[`code-reviewer`](../skills/code-reviewer/README.zh-CN.md)、[`requirements-analyzer`](../skills/requirements-analyzer/README.zh-CN.md)、[`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) 和 [`testdata-generation`](../skills/testdata-generation/README.zh-CN.md)。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由这些工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
+codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。当前价值更具体、范围也更克制：七个本地优先的 skill，把需求、代码变更、审查、用例、测试数据和异常诊断拆成独立、可核查的工作流，而不是交给一次没有约束的 AI 对话。本仓库当前提供 [`code-analyzer`](../skills/code-analyzer/README.zh-CN.md)、[`root-cause-diagnosis`](../skills/root-cause-diagnosis/README.zh-CN.md)、[`defect-detection`](../skills/defect-detection/README.zh-CN.md)、[`code-reviewer`](../skills/code-reviewer/README.zh-CN.md)、[`requirements-analyzer`](../skills/requirements-analyzer/README.zh-CN.md)、[`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) 和 [`testdata-generation`](../skills/testdata-generation/README.zh-CN.md)。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由这些工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
 
 ## 能力地图
 
@@ -20,7 +20,7 @@ codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。�
 | UI 端到端测试 | **计划中** | 浏览器和 UI 工作流生成、执行与结果集成 |
 | 测试用例生成 | **已提供** | 根据 PRD、技术方案、接口契约和知识库生成并增量更新结构化手工用例 |
 | 测试数据构造 | **已提供** | 通过 domain slot、工具、API 和生成脚本构造可复用测试数据，并回写到用例前置条件 |
-| 问题定位与诊断 | **部分提供** | `code-analyzer` 可把日志、堆栈和错误文案落到符号与调用方；`defect-detection` 发现项包含位置、触发条件、依据和修复建议；自动根因诊断仍有限 |
+| 问题定位与诊断 | **已提供** | `root-cause-diagnosis` 在 CodexQA CLI 之上把堆栈/日志变成带门禁的英文 RCA 报告；`code-analyzer` 仍可将日志和错误文案落到符号与调用方；`defect-detection` 发现项包含位置、触发条件、依据和修复建议。RCA 叙事质量由模型判断，尚未独立打分 |
 | 证据采集与结构化发现 | **已提供** | 发现校验、写回、排序、标签和可追踪 HTML 报告 |
 | 本地 provider 与报告 | **已提供** | 本地优先的 JSON 持久化和报告生成，不依赖私有后端 |
 | 企业与外部系统集成 | **部分提供** | HTTP 和 GitHub 适配器已有代码，需要部署配置 |

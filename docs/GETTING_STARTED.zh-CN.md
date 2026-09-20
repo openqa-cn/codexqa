@@ -2,7 +2,7 @@
 
 [English](GETTING_STARTED.md)
 
-在 Cursor、Claude Code、Codex 或 OpenClaw 上一次只装一个 skill。本页以 [`defect-detection`](../skills/defect-detection/README.zh-CN.md) 为例，因为它有可冒烟的 CLI。同一条命令也可以加 `--skill code-analyzer`、`--skill code-reviewer`、`--skill requirements-analyzer`、`--skill testcase-generation`、`--skill testdata-generation`。`code-analyzer` 使用单独的 `codexqa` 符号图 CLI；另外四个没有 `detect.ts` 套件。
+在 Cursor、Claude Code、Codex 或 OpenClaw 上一次只装一个 skill。本页以 [`defect-detection`](../skills/defect-detection/README.zh-CN.md) 为例，因为它有可冒烟的 CLI。同一条命令也可以加 `--skill code-analyzer`、`--skill root-cause-diagnosis`、`--skill code-reviewer`、`--skill requirements-analyzer`、`--skill testcase-generation`、`--skill testdata-generation`。`code-analyzer` 与 `root-cause-diagnosis` 使用单独的 `codexqa` 符号图 CLI；除 `defect-detection` 外另外四个没有 `detect.ts` 套件。
 
 每个 skill 要交的材料不一样（[FAQ](FAQ.zh-CN.md#每个-skill-要我交什么)）。跑完长什么样见 [README · 产物长什么样](../README.zh-CN.md#产物长什么样)。
 
@@ -86,13 +86,14 @@ npx skills remove defect-detection --agent codex
 npx skills add openqa-cn/codexqa --skill code-analyzer
 npm install -g @openqa-cn/codexqa
 
+npx skills add openqa-cn/codexqa --skill root-cause-diagnosis
 npx skills add openqa-cn/codexqa --skill code-reviewer
 npx skills add openqa-cn/codexqa --skill requirements-analyzer
 npx skills add openqa-cn/codexqa --skill testcase-generation
 npx skills add openqa-cn/codexqa --skill testdata-generation
 ```
 
-`code-analyzer` Skill 发布在本仓库中；`@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎，索引和会话写在 `~/.codexqa/`。详见[已知边界](../skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)。
+`code-analyzer` 与 `root-cause-diagnosis` Skill 发布在本仓库中；`@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎，索引和会话写在 `~/.codexqa/`。详见 [`code-analyzer` 已知边界](../skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md) 和 [`root-cause-diagnosis` 已知边界](../skills/root-cause-diagnosis/KNOWN_LIMITATIONS.zh-CN.md)。
 
 只做 `code-analyzer` 冒烟时不需要模型：给本地 checkout 建索引，再查看摘要。
 
@@ -107,6 +108,7 @@ codexqa stats /path/to/repo
 安装后新建 Agent 会话并指向该 skill。输入各不相同：
 
 - `code-analyzer` 需要本地仓库。审变更时用 `origin/main` 等基线建索引；索引写在 `~/.codexqa/`。见其 [README](../skills/code-analyzer/README.zh-CN.md)。
+- `root-cause-diagnosis` 需要异常证据（堆栈 / 日志 / dump），外加 git 地址、本地目录、文件，或已打开的工作区。见其 [README](../skills/root-cause-diagnosis/README.zh-CN.md)。
 - `code-reviewer` 需要本地 Git 工作副本，再加上分支 / PR / commit。它不克隆。见 [README · 你要交什么](../skills/code-reviewer/README.zh-CN.md#你要交什么)。
 - `requirements-analyzer` 需要需求文档，不要交仓库。见 [README · 你要交什么](../skills/requirements-analyzer/README.zh-CN.md#你要交什么)。
 - `testcase-generation` 需要 `prd/`（PRD / 技术方案 / 契约）。`code/` 可选，且只在更新时用。见其 [README](../skills/testcase-generation/README.zh-CN.md)。

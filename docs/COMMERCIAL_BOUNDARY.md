@@ -23,7 +23,7 @@ The public Skill defines when to invoke the engine, which evidence to query, how
 - Hosted execution, devices, and environments
 - Enterprise identity, policy, audit, and private deployment
 
-The public Skill pack must be independently useful. The closed-source local analysis engine is an explicit dependency of `code-analyzer`, not a hidden replacement for the other five workflows. Commercial products reduce organizational operating cost and preserve long-term context; they should not merely remove the first successful local workflow.
+The public Skill pack must be independently useful. The closed-source local analysis engine is an explicit dependency of `code-analyzer` and `root-cause-diagnosis`, not a hidden replacement for the other workflows. Commercial products reduce organizational operating cost and preserve long-term context; they should not merely remove the first successful local workflow.
 
 ## Project status language
 
