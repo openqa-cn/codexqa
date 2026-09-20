@@ -2,13 +2,13 @@
 
 [简体中文](GETTING_STARTED.zh-CN.md)
 
-Install one skill at a time on Cursor, Claude Code, Codex, or OpenClaw. This page walks [`defect-detection`](../skills/defect-detection/README.md) because it has a CLI you can smoke-test. The same command also takes `--skill code-analyzer`, `--skill code-reviewer`, `--skill requirements-analyzer`, `--skill testcase-generation`, and `--skill testdata-generation`. `code-analyzer` uses the separate `codexqa` symbol-graph CLI; the other four have no `detect.ts` suite.
+Install one skill at a time on Cursor, Claude Code, Codex, or OpenClaw. This page walks [`defect-detection`](../skills/defect-detection/README.md) because it has a CLI you can smoke-test. The same command also takes `--skill code-analyzer`, `--skill code-wiki`, `--skill code-reviewer`, `--skill requirements-analyzer`, `--skill testcase-generation`, and `--skill testdata-generation`. `code-analyzer` and `code-wiki` use the separate `codexqa` symbol-graph CLI; the other four have no `detect.ts` suite.
 
 What you give each skill is different ([FAQ](FAQ.md#what-do-i-have-to-give-each-skill)). What a finished report looks like: [README · What the output looks like](../README.md#what-the-output-looks-like).
 
 ## Requirements
 
-Use Node.js, npm/npx, Git, and a coding agent able to read skill files and run commands. `code-analyzer` requires Node.js 18 or newer. The `defect-detection` CLI suite has been run locally on macOS with Node 22.15.0 using TypeScript stripping:
+Use Node.js, npm/npx, Git, and a coding agent able to read skill files and run commands. `code-analyzer` and `code-wiki` require Node.js 18 or newer. The `defect-detection` CLI suite has been run locally on macOS with Node 22.15.0 using TypeScript stripping:
 
 ```bash
 export NODE_OPTIONS=--experimental-strip-types
@@ -84,6 +84,7 @@ For global installations add `--global` where supported. Back up configuration a
 
 ```bash
 npx skills add openqa-cn/codexqa --skill code-analyzer
+npx skills add openqa-cn/codexqa --skill code-wiki
 npm install -g @openqa-cn/codexqa
 
 npx skills add openqa-cn/codexqa --skill code-reviewer
@@ -92,21 +93,23 @@ npx skills add openqa-cn/codexqa --skill testcase-generation
 npx skills add openqa-cn/codexqa --skill testdata-generation
 ```
 
-The `code-analyzer` Skill is published in this repository. `@openqa-cn/codexqa` is the separately distributed, closed-source local code-analysis engine; indexes and sessions live under `~/.codexqa/`. See its [known limitations](../skills/code-analyzer/KNOWN_LIMITATIONS.md).
+The `code-analyzer` and `code-wiki` Skills are published in this repository. `@openqa-cn/codexqa` is the separately distributed, closed-source local code-analysis engine; indexes and sessions live under `~/.codexqa/`. See [code-analyzer limitations](../skills/code-analyzer/KNOWN_LIMITATIONS.md) and [code-wiki limitations](../skills/code-wiki/KNOWN_LIMITATIONS.md).
 
-For a model-free `code-analyzer` smoke check, index a local checkout and inspect its summary:
+For a model-free `code-analyzer` / `code-wiki` smoke check, index a local checkout and inspect its summary:
 
 ```bash
 codexqa --help
 codexqa index /path/to/repo
 codexqa stats /path/to/repo
+codexqa wiki inputs /path/to/repo --kind architecture --limit 8
 ```
 
-`--help` should list the CLI commands. A successful `stats` call should report indexed files, symbols, and languages. For change review, rebuild the index with `--diff-base <ref>`; without a diff base, changed symbols remain `default` and there is no change set to review.
+`--help` should list the CLI commands. A successful `stats` call should report indexed files, symbols, and languages. For change review, rebuild the index with `--diff-base <ref>`; without a diff base, changed symbols remain `default` and there is no change set to review. `wiki inputs` should print community / digest JSON without calling a model.
 
 After install, start a new agent session and point it at the skill. Inputs differ:
 
 - `code-analyzer` needs a local repository. For change review, index it with a baseline such as `origin/main`; indexes live under `~/.codexqa/`. See its [README](../skills/code-analyzer/README.md).
+- `code-wiki` needs a local repository and an existing index. It exports `wiki inputs` and writes an HTML architecture report; it does not review a change. See its [README](../skills/code-wiki/README.md).
 - `code-reviewer` needs a local Git checkout plus the branch / PR / commit. It does not clone. See [What you give it](../skills/code-reviewer/README.md#what-you-give-it).
 - `requirements-analyzer` needs requirement documents, not a repo. See [What you give it](../skills/requirements-analyzer/README.md#what-you-give-it).
 - `testcase-generation` needs `prd/` (PRD / design / specs). `code/` is optional and used on update only. See its [README](../skills/testcase-generation/README.md).
@@ -125,7 +128,7 @@ Method write-ups: [How it works index](HOW_IT_WORKS.md). What to bring: [FAQ](FA
 | Unknown `.ts` extension | Node runtime and TypeScript stripping environment |
 | Missing plan | Provide repository/branch and business materials; degraded loading does not mean sufficient materials |
 | Static/call-graph analysis unavailable | Tool installation result, PATH, permissions, and network access |
-| `codexqa` command not found or graph query is empty | Install `@openqa-cn/codexqa`, check PATH, confirm the repository was indexed, and use `--diff-base` for change review |
+| `codexqa` command not found or graph query is empty | Install `@openqa-cn/codexqa`, check PATH, confirm the repository was indexed, and use `--diff-base` for change review. For `code-wiki`, run `wiki inputs` (not `wiki` without `--no-llm`) |
 | Local report link does not open | Open the returned HTML file in a browser |
 
 For support include the commit, Node version, OS, agent/version, command, and sanitized error. Do not upload source or task directories containing private data.

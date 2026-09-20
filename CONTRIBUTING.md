@@ -27,7 +27,7 @@ export NODE_OPTIONS=--experimental-strip-types
 node examples/checkout-boundary/verify.mjs
 ```
 
-`check-docs.py` covers all published skills (relative links must stay inside each skill directory). `code-reviewer`, `requirements-analyzer`, `testcase-generation`, and `testdata-generation` have no equivalent CLI test suite; verify those changes with the checks in each skill's `CONTRIBUTING.md`. The defect-detection suite requires Git and packaging tools (Bash, rsync, zip, unzip). Include OS, Node version, commit, and results in your PR. Passing CLI tests do not measure model detection accuracy.
+`check-docs.py` covers all published skills (relative links must stay inside each skill directory). `code-analyzer`, `code-wiki`, `code-reviewer`, `requirements-analyzer`, `testcase-generation`, and `testdata-generation` have no equivalent CLI test suite in this repository; verify those changes with the checks in each skill's docs. The defect-detection suite requires Git and packaging tools (Bash, rsync, zip, unzip). Include OS, Node version, commit, and results in your PR. Passing CLI tests do not measure model detection accuracy.
 
 ## Useful contributions
 

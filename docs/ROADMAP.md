@@ -2,7 +2,7 @@
 
 [简体中文](ROADMAP.zh-CN.md)
 
-codexqa's product direction covers the full AI software engineering quality lifecycle. Its current value is narrower and concrete: six local-first skills turn requirements, code changes, reviews, cases, and test data into separate, checkable workflows instead of one unconstrained AI conversation. This repository currently ships [`code-analyzer`](../skills/code-analyzer/README.md), [`defect-detection`](../skills/defect-detection/README.md), [`code-reviewer`](../skills/code-reviewer/README.md), [`requirements-analyzer`](../skills/requirements-analyzer/README.md), [`testcase-generation`](../skills/testcase-generation/README.md), and [`testdata-generation`](../skills/testdata-generation/README.md). Capabilities marked **Available** or **Partial** below are delivered through those workflows unless stated otherwise. The remaining rows describe planned extensions, not features already included here.
+codexqa's product direction covers the full AI software engineering quality lifecycle. Its current value is narrower and concrete: seven local-first skills turn requirements, architecture, code changes, reviews, cases, and test data into separate, checkable workflows instead of one unconstrained AI conversation. This repository currently ships [`code-wiki`](../skills/code-wiki/README.md), [`code-analyzer`](../skills/code-analyzer/README.md), [`defect-detection`](../skills/defect-detection/README.md), [`code-reviewer`](../skills/code-reviewer/README.md), [`requirements-analyzer`](../skills/requirements-analyzer/README.md), [`testcase-generation`](../skills/testcase-generation/README.md), and [`testdata-generation`](../skills/testdata-generation/README.md). Capabilities marked **Available** or **Partial** below are delivered through those workflows unless stated otherwise. The remaining rows describe planned extensions, not features already included here.
 
 ## Capability map
 
@@ -10,6 +10,7 @@ codexqa's product direction covers the full AI software engineering quality life
 | --- | --- | --- |
 | Defect detection | **Available** | Agent-led static and business-logic review for code changes, test plans, and delivery tasks |
 | Code analysis | **Available** | Local symbol graph for supported languages (`code-analyzer`), plus AST-based rules and changed-method analysis in `defect-detection`; parser and framework coverage still varies |
+| Architecture knowledge graph | **Available** | `code-wiki` exports Leiden communities and real `deps` with `wiki inputs` (no model) and writes a Claude Code-style HTML wiki; titles without a model stay rule titles |
 | Requirement review | **Available** | Gap/conflict analysis of requirement documents (`requirements-analyzer`); implementation-vs-requirement check is still planned |
 | Specification review | **Planned** | Review technical specifications for completeness, consistency, and testability |
 | AI Code Review | **Available** | Playbook-driven PR / branch / commit review (`code-reviewer`); no published fixture yet |

@@ -22,6 +22,7 @@
 | ZIP 打包 | 打包 / 解包冒烟测试 | 需要 Bash、rsync、zip、unzip |
 | 证据 schema | 仓库内提供 schema | 不宣称 skill 输出自动符合该 schema |
 | `code-analyzer` 符号图工作流 | 已发布路由契约、查询 schema、分析 playbook、证据图示例和已知边界文档；本地建索引与查询需要 Node.js 18+ 和单独分发的闭源 `@openqa-cn/codexqa` 引擎 | 本仓库 CI 不安装或执行该引擎；没有公开宿主 Agent 运行；图完整性受 parser 覆盖、stub 和符号碰撞影响 |
+| `code-wiki` 架构 Wiki 工作流 | 已发布路由契约、playbook、Claude Code 风格 HTML 报告模板和已知边界文档；`wiki inputs` / `wiki --no-llm` 依赖同一套 Node.js 18+ 闭源引擎 | 本仓库 CI 不安装或执行该引擎；没有公开宿主 Agent 运行；社区是 Leiden 切分加页数上限，不是模块边界的证明 |
 | `testcase-generation` 脚本 | `validate_integrations.ts`、`call_integration.ts`、`lint_case_documents.ts` 在 Node 22.6+ 上用 TypeScript stripping 运行；不装 npm 包 | 无公开 fixture、无已记录 agent 运行；Windows 未测；无子 agent 的宿主未测 |
 | `testdata-generation` 脚本 | 打包、slot 检索和本地 catalog mock 见该 skill 文档 | 运行依赖已配置的 adapter 与 slot；不在 defect-detection CLI 套件覆盖范围内 |
 | `code-reviewer` playbook | `tooling/` 离线契约检查（在 `tooling/` 里 `npm test`） | 没有公开 fixture 或已记录的宿主 agent 运行；报告质量未测量 |

@@ -2,7 +2,7 @@
 
 [English](ROADMAP.md)
 
-codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。当前价值更具体、范围也更克制：六个本地优先的 skill，把需求、代码变更、审查、用例和测试数据拆成独立、可核查的工作流，而不是交给一次没有约束的 AI 对话。本仓库当前提供 [`code-analyzer`](../skills/code-analyzer/README.zh-CN.md)、[`defect-detection`](../skills/defect-detection/README.zh-CN.md)、[`code-reviewer`](../skills/code-reviewer/README.zh-CN.md)、[`requirements-analyzer`](../skills/requirements-analyzer/README.zh-CN.md)、[`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) 和 [`testdata-generation`](../skills/testdata-generation/README.zh-CN.md)。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由这些工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
+codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。当前价值更具体、范围也更克制：七个本地优先的 skill，把需求、架构、代码变更、审查、用例和测试数据拆成独立、可核查的工作流，而不是交给一次没有约束的 AI 对话。本仓库当前提供 [`code-wiki`](../skills/code-wiki/README.zh-CN.md)、[`code-analyzer`](../skills/code-analyzer/README.zh-CN.md)、[`defect-detection`](../skills/defect-detection/README.zh-CN.md)、[`code-reviewer`](../skills/code-reviewer/README.zh-CN.md)、[`requirements-analyzer`](../skills/requirements-analyzer/README.zh-CN.md)、[`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) 和 [`testdata-generation`](../skills/testdata-generation/README.zh-CN.md)。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由这些工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
 
 ## 能力地图
 
@@ -10,6 +10,7 @@ codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。�
 | --- | --- | --- |
 | 缺陷检测 | **已提供** | 面向代码变更、测试计划和交付任务的 Agent 静态与业务逻辑审查 |
 | 代码分析 | **已提供** | `code-analyzer` 为支持的语言建立本地符号图，`defect-detection` 另有 AST 规则和变更方法分析；parser 与框架覆盖仍有差异 |
+| 架构知识图谱 | **已提供** | `code-wiki` 用 `wiki inputs`（不调模型）导出 Leiden 社区和真实 `deps`，再写 Claude Code 风格 HTML Wiki；无模型时标题保持规则标题 |
 | 需求评审 | **已提供** | 对需求文档做缺口/冲突分析（`requirements-analyzer`）；实现是否符合需求仍是计划中 |
 | 规格评审 | **计划中** | 检查技术规格的完整性、一致性和可测试性 |
 | AI Code Review | **已提供** | Playbook 驱动的 PR / 分支 / commit 审查（`code-reviewer`）；尚无公开 fixture |

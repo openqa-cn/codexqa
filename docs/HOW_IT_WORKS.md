@@ -13,6 +13,7 @@ Index only. `npx skills add … --skill <name>` copies `skills/<name>/`, so meth
 | Skill | Human | Agent |
 | --- | --- | --- |
 | `code-analyzer` | [Workflow](../skills/code-analyzer/README.md) · [Known limitations](../skills/code-analyzer/KNOWN_LIMITATIONS.md) · [Playbook](../skills/code-analyzer/references/playbook.md) | [`SKILL.md`](../skills/code-analyzer/SKILL.md) |
+| `code-wiki` | [Workflow](../skills/code-wiki/README.md) · [Known limitations](../skills/code-wiki/KNOWN_LIMITATIONS.md) · [Playbook](../skills/code-wiki/references/playbook.md) | [`SKILL.md`](../skills/code-wiki/SKILL.md) |
 | `defect-detection` | [How it works](../skills/defect-detection/HOW_IT_WORKS.md) · [Known limitations](../skills/defect-detection/KNOWN_LIMITATIONS.md) | [`SKILL.md`](../skills/defect-detection/SKILL.md) |
 | `code-reviewer` | [How it works](../skills/code-reviewer/HOW_IT_WORKS.md) · [Known limitations](../skills/code-reviewer/KNOWN_LIMITATIONS.md) | [`SKILL.md`](../skills/code-reviewer/SKILL.md) |
 | `requirements-analyzer` | [How it works](../skills/requirements-analyzer/HOW_IT_WORKS.md) · [Known limitations](../skills/requirements-analyzer/KNOWN_LIMITATIONS.md) | [`SKILL.md`](../skills/requirements-analyzer/SKILL.md) |

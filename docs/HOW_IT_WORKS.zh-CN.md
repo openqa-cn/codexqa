@@ -13,6 +13,7 @@
 | Skill | 人读 | Agent |
 | --- | --- | --- |
 | `code-analyzer` | [工作流](../skills/code-analyzer/README.zh-CN.md) · [已知边界](../skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md) · [分析 playbook](../skills/code-analyzer/references/playbook.md) | [`SKILL.md`](../skills/code-analyzer/SKILL.md) |
+| `code-wiki` | [工作流](../skills/code-wiki/README.zh-CN.md) · [已知边界](../skills/code-wiki/KNOWN_LIMITATIONS.zh-CN.md) · [Wiki playbook](../skills/code-wiki/references/playbook.md) | [`SKILL.md`](../skills/code-wiki/SKILL.md) |
 | `defect-detection` | [工作原理](../skills/defect-detection/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/defect-detection/SKILL.md) |
 | `code-reviewer` | [工作原理](../skills/code-reviewer/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/code-reviewer/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/code-reviewer/SKILL.md) |
 | `requirements-analyzer` | [工作原理](../skills/requirements-analyzer/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/requirements-analyzer/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/requirements-analyzer/SKILL.md) |
