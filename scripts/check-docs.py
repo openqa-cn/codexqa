@@ -16,6 +16,9 @@ def file_links(path):
         # `{reportUrl}` and bare words like `url` are illustrative placeholders, not links.
         if '{' in target or '}' in target:
             continue
+        # Markdown examples such as `![...](...)` are not file links.
+        if target == '...' or set(target) <= {'.'}:
+            continue
         target = unquote(target.split('#')[0])
         if not target or ('/' not in target and '.' not in target):
             continue

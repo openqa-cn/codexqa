@@ -2,68 +2,32 @@
 
 [English](KNOWN_LIMITATIONS.md)
 
-已观察到或已在本 skill 源码/文档中核实的限制。数据流见[工作原理](HOW_IT_WORKS.zh-CN.md)。
+这里每一条都是当前 skill 的真实边界，不是免责声明。设计切分见[工作原理](HOW_IT_WORKS.zh-CN.md)。
 
-## 无公开评测
+## 需要 Python 3.10+
 
-无 fixture、无答案键、无记录在案的端到端运行。`defect-detection` 的盲测 fixture 不适用于本 skill。
+门禁与关阶段脚本依赖较新的类型注解与标准库行为。**一律**通过 `scripts/tcg-python` 调用。裸 `python3` 若低于 3.10 会立即 FATAL 退出。
 
-未测量项：
+## 不绑定用例平台或文档平台
 
-- 用例对需求的覆盖（无召回指标）
-- R1–R4 对目标缺陷的检出率
-- 相对「直接让模型写用例」的增益
-- 跨模型稳定性
+本 skill 只写本地 Markdown。不召回 / 上传 / 同步远程用例空间，也不安装或调用文档平台 / 身份 CLI。
 
-质量判定目前是人工审产出。
+## 方案与用例正文由模型判断
 
-## 指令体积
+`check_run_gate.py` / `close_stage.py` 约束产物是否存在、标题是否齐全、是否双写。场景与步骤是否符合业务域由宿主模型决定。门禁通过仍可能写出错误方案或用例——如果模型编造事实而不是标 TBD / 待澄清。
 
-`generate-skill.md` 约 200 行（编排）。`phase-*.md` 各 70–230 行。`subagent-gen-duty.md` 约 50 行。生成仍会加载 `case-authoring-rules.md`（约 650 行）和至少一道 gate。`update-skill.md` 约 590 行。
+## 增量需要有效基线
 
-- `case-authoring-rules.md` 仍整份进入 Phase 3 子 agent 上下文；展开规则被跳过或 `caseType` 写错时优先查这里。
-- 阶段编号、duty 原文、引用表无自动校验，改文档需手工对引用。
+按 PR / git URL 做 diff 增强前，必须先有用例基线。没有基线时先 bootstrap 初版，此时不要拉代码。权限与缺 ref 失败以脚本 `error.code` 返回。
 
-## 子 agent
+## 知识可选且本地
 
-Phase 2 最多 3 路并行；Phase 3 按 `design.md` 模块各一路。R1–R4 各用独立子 agent。
+空知识索引合法。本 skill 不调用外部知识检索 Skill。跑中途不会仅为补维度而向你要知识源。
 
-无子 agent 的宿主上流程仍可串行执行，未实测。门禁与作者同一 agent 时，独立评审失效。
+## 无公开宿主 agent 成绩
 
-## 语义无机械校验
+离线 `--self-check` 覆盖门禁夹具。完整 Plan→Exec 或 Incremental 没有公开标准答案夹具，也没有已记录的宿主 agent 成绩。
 
-`lint_case_documents.ts` 只覆盖结构：表头、空 `Construction`、占位符、标题、工程表列。以下由模型判断：
+## 工作流边界
 
-- 步骤是否可执行
-- 期望是否为具体值（非「成功」）
-- `coverage[]` 是否落在用例正文
-- `analysis.md` 是否抽全规则
-
-更新时的语义命中同样无脚本：漏匹配则过时用例会留下。
-
-## `prd/` 不会自动同步
-
-`prd/` 是 git 基线快照。更新只 diff 磁盘内容。
-
-- 只在托管平台改、未覆盖本地 → 报告无变更
-- 生成之后才写入 `context.json` 且无 `localPath` 基线文件 → 跳过；需再跑一次生成建基线
-
-企业 HTTP 适配覆盖 spec / knowledge / config / env，不含文档托管。
-
-## 测试数据不在本 skill
-
-`{placeholder}` 与空 `Construction` 由 `testdata-generation` 回填。未装该 skill 时，库可作为设计产物使用，不能直接打后端。见[工作原理 §4](HOW_IT_WORKS.zh-CN.md#4-占位符与数据构造解耦)。
-
-## 工程信息不上代码补全
-
-未在 PRD / 技术方案出现的表、cache key、配置 key 写 `TBD`。`code/` 仅用于更新流程的 diff，生成阶段不从代码推断 schema。薄 PRD 会导致大量 `TBD`。
-
-## 运行环境
-
-- Shell 为 POSIX `sh`，不用 `jq` / `uuidgen` / bash 4 关联数组。Windows 未测。[SUPPORT_MATRIX](https://github.com/openqa-cn/codexqa/blob/main/docs/SUPPORT_MATRIX.zh-CN.md)
-- 依赖 `git`（`prd/` 基线、`code/` diff）。无非 git 模式
-- 工作区约定 `prd/`、`code/`、`usecases/`。其它目录布局未测
-
-## 领域假设
-
-规则文档为英文。示例与展开启发式按「订单 / 账户 / 目录 + HTTP/gRPC + DB/Cache/MQ」调的。数据管道、嵌入式、纯算法需求仍会出文件，覆盖方向未按这些域设计。
+本 skill 产出**测试方案与手工用例**。它不替代 `requirements-analyzer` 的缺口登记、`testdata-generation` 的真实后端造数，也不替代代码评审 / 扫描类 skill 的缺陷结论。

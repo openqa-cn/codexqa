@@ -10,7 +10,7 @@
   <a href="https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/ra-register.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/ra-register.png" alt="需求分析缺口登记表样例" width="880"></a>
 </p>
 
-**不是** [`testcase-generation`](https://github.com/openqa-cn/codexqa/blob/main/skills/testcase-generation/README.zh-CN.md)。那个 skill 根据 `prd/` 写手工用例库。本 skill 审的是需求本身是否完整、一致、可测。
+**不是** [`testcase-generation`](https://github.com/openqa-cn/codexqa/blob/main/skills/testcase-generation/README.zh-CN.md)。那个 skill 根据本地需求（文件、粘贴或 HTTPS 文档）写测试方案与手工用例。本 skill 审的是需求本身是否完整、一致、可测。
 
 ## 你要交什么
 

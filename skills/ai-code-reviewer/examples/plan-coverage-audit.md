@@ -1,7 +1,7 @@
 # Plan coverage audit (fine-grained)
 
 - skill_root: `skills/ai-code-reviewer`
-- audited_at: 2026-09-20T12:27:04Z
+- audited_at: 2026-09-20T12:56:13Z
 - method: atomic function points × layers (I/S/T)
 - plan: AI Code Reviewer (CodexQA-backed)
 

@@ -24,7 +24,7 @@
 | `code-analyzer` 符号图工作流 | 已发布路由契约、查询 schema、分析 playbook、证据图示例和已知边界文档；本地建索引与查询需要 Node.js 18+ 和单独分发的闭源 `@openqa-cn/codexqa` 引擎 | 本仓库 CI 不安装或执行该引擎；没有公开宿主 Agent 运行；图完整性受 parser 覆盖、stub 和符号碰撞影响 |
 | `root-cause-diagnosis` CLI / 脚本 | `skills/root-cause-diagnosis` 本地 `npm test`（解析、落地、草稿、冒烟）；用 `@openqa-cn/codexqa` CLI 做 index/query；Node.js 22+ + TypeScript stripping | 引擎不在本仓库 CI 中运行；RCA 叙事由模型判断；无公开宿主 agent 成绩；图缺口会削弱证据 |
 | `defect-detection` 流水线 | `skills/defect-detection` 本地 `npm test`（Python 流水线 + 策略夹具，优先 3.11）；可选 SAST/lint/secrets；实图用 CodexQA CLI | CI 不强制完整 agent Stage1/Stage2 与全部 SAST 二进制；语义发现由模型判断；无公开宿主 agent 成绩 |
-| `testcase-generation` 脚本 | `validate_integrations.ts`、`call_integration.ts`、`lint_case_documents.ts` 在 Node 22.6+ 上用 TypeScript stripping 运行；不装 npm 包 | 无公开 fixture、无已记录 agent 运行；Windows 未测；无子 agent 的宿主未测 |
+| `testcase-generation` 脚本 | `close_stage.py` / `check_run_gate.py`（及 ingest / incremental 辅助）经 `scripts/tcg-python` 在 Python 3.10+ 上运行；离线 `--self-check` | 无公开 Plan→Exec fixture、无已记录 agent 运行；Windows 未测；仅可选知识库/PR 拉取需要 git |
 | `testdata-generation` 脚本 | 打包、slot 检索和本地 catalog mock 见该 skill 文档 | 运行依赖已配置的 adapter 与 slot；不在 defect-detection CLI 套件覆盖范围内 |
 | `ai-code-reviewer` 证据包 | 本地 `bash scripts/validate-skill.sh`（静态树、fixture 校验+渲染、plan-coverage）；现场收集需要 Node ≥ 18、bash、jq、Python 3.10+ 与 `@openqa-cn/codexqa` | 本仓库 CI 不跑现场 CodexQA 建索引；评审叙事由模型判断；无公开宿主 agent 成绩 |
 | `requirements-analyzer` | 该 skill 的 `evals/` skill-up 用例和解析/转换脚本 | 没有已记录的宿主 agent 成绩；分析靠模型，不是 `run_analysis.ts` |

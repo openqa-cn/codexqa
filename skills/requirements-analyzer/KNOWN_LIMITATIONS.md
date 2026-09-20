@@ -12,8 +12,8 @@ Every entry here is something visible in the files, not a defensive disclaimer. 
 
 | | `requirements-analyzer` | `testcase-generation` |
 |---|---|---|
-| Input | Requirement text (any files you paste) | `prd/` layout (PRD / design / specs) |
-| Output | One gap/conflict register + verification fields | Manual cases under `usecases/cases/` |
+| Input | Requirement text (any files you paste) | Mandatory `prd/` workspace layout |
+| Output | One gap/conflict register + verification fields | Manual cases under `{run_dir}/testcase/cases/` |
 | Code | Not used | `code/` on update only |
 
 Installing only this skill does not write `{placeholder}` cases and does not run the R1–R4 gates.

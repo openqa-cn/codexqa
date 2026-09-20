@@ -41,7 +41,7 @@ AI can produce a green pull request quickly. Teams still have to check whether t
 | Stage | Skill | Question it answers | Checkable output |
 | --- | --- | --- | --- |
 | Requirement review | [`requirements-analyzer`](skills/requirements-analyzer/README.md) | Is the PRD complete, consistent, and testable? | One gap/conflict register with P0 / P1 verification |
-| Test design | [`testcase-generation`](skills/testcase-generation/README.md) | What manual cases follow from the PRD and design? | A structured case library with unknowns marked, not invented |
+| Test design | [`testcase-generation`](skills/testcase-generation/README.md) | What manual cases and test plan follow from the requirements? | Local Markdown plan + cases; unknowns marked, not invented |
 | Test data | [`testdata-generation`](skills/testdata-generation/README.md) | What real IDs and preconditions make those cases runnable? | Backend-returned values written back into case preconditions |
 | Change impact | [`code-analyzer`](skills/code-analyzer/README.md) | What changed, who calls it, which entries are hit, and what is untested? | Symbol-graph evidence, regression scope, test gaps, and diagrams |
 | Exception RCA | [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.md) | What is the in-repo root cause of this stack / log / crash? | Gated English root-cause report on top of CodexQA CLI facts |
@@ -176,16 +176,16 @@ Produce one gap/conflict register. P0 items must include verification fields.
 Do not invent endpoints or SLAs that are not in the source.
 ```
 
-This reviews the PRD. To write a case library from `prd/`, use `testcase-generation`.
+This reviews the PRD. To write a test plan and/or case library from requirements, use `testcase-generation`.
 
-**Generate manual test cases from a PRD (`testcase-generation`)** — put PRD / design / specs under `prd/` first. `code/` is not required for generate.
+**Generate a test plan / cases (`testcase-generation`)** — give local files, a directory, pasted text, or an HTTPS document URL this turn.
 
 ```text
-Generate a manual case library with testcase-generation from the documents under prd/.
-Do not invent engineering fields that are not in the source. Mark those TBD.
+Generate a test plan with testcase-generation from /path/to/prd.md.
+Do not invent business facts that are not in the source. Mark those TBD.
 ```
 
-When the agent stops on a PRD vs design conflict, reply `Confirm follow PRD` or `Item N follow technical design`. There is no public fixture yet.
+After the plan is on disk, confirm once if you also want cases. For post-submit incremental, say so and point at the baseline (and optionally a PR/git URL).
 
 **Construct test data (`testdata-generation`)** — not a git clone. Say what to construct, or point at written cases / OpenAPI:
 
@@ -228,7 +228,7 @@ The workflows do not have the same public evidence maturity:
 | `defect-detection` | Local Python pipeline/policy-fixture tests; optional SAST + closed-source CodexQA CLI; no published host-agent score; Stage1/Stage2 are model-judged |
 | `ai-code-reviewer` | Local `validate-skill.sh` / fixture validate+render smoke (Python 3.10+); live CodexQA index not run by repository CI; review prose is model-judged |
 | `requirements-analyzer` | Evaluation cases and parse/convert scripts; no recorded host-Agent score |
-| `testcase-generation` | Integration validators and case-document linting; no public fixture or recorded Agent run |
+| `testcase-generation` | Stage gate / close_stage `--self-check` (Python 3.10+); no public Plan→Exec fixture or recorded Agent run |
 | `testdata-generation` | Packer, slot search, and local catalog mock; runtime depends on configured adapters and slots |
 
 Findings are candidates for human review. codexqa does not replace tests, static analysis, security review, or maintainer judgment, and it cannot infer business rules that were not supplied. Local workflows write data to disk; cloning, document fetching, external providers, tool installation, and the host Agent/model may use the network.

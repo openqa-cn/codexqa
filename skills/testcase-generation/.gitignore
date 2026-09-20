@@ -1,0 +1,21 @@
+# Workspace - runtime data, user configs, and cached cases
+workspace/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Local packaging checksum
+skill.manifest
+
+# Local denylist — do not commit
+sensitive.md
+CLAUDE.md

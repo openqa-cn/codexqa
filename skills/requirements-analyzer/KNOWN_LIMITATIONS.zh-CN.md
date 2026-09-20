@@ -12,8 +12,8 @@
 
 | | `requirements-analyzer` | `testcase-generation` |
 |---|---|---|
-| 输入 | 需求正文（你粘贴的文件） | `prd/` 布局（PRD / 技术方案 / 契约） |
-| 输出 | 一份缺口/冲突登记表 + 验证字段 | `usecases/cases/` 下的手工用例 |
+| 输入 | 需求正文（你粘贴的文件） | 强制 `prd/` 工作区布局 |
+| 输出 | 一份缺口/冲突登记表 + 验证字段 | `{run_dir}/testcase/cases/` 下的手工用例 |
 | 代码 | 不用 | 只在更新时用 `code/` |
 
 只装本 skill 不会写出带 `{placeholder}` 的用例，也不会跑 R1–R4 门禁。

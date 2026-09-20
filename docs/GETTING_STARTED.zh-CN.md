@@ -111,7 +111,7 @@ codexqa stats /path/to/repo
 - `defect-detection` 需要对 diff / 仓库 / 上传 / 粘贴做代码风险扫描。见其 [README](../skills/defect-detection/README.zh-CN.md)。
 - `ai-code-reviewer` 需要本地 checkout、`PATH` 上的 `codexqa` + `jq`，以及（PR 模式）`--diff-base`。见 [ai-code-reviewer README](../skills/ai-code-reviewer/README.zh-CN.md)。
 - `requirements-analyzer` 需要需求文档，不要交仓库。见 [README · 你要交什么](../skills/requirements-analyzer/README.zh-CN.md#你要交什么)。
-- `testcase-generation` 需要 `prd/`（PRD / 技术方案 / 契约）。`code/` 可选，且只在更新时用。见其 [README](../skills/testcase-generation/README.zh-CN.md)。
+- `testcase-generation` 需要本地需求材料（文件、目录、粘贴，或本轮 HTTPS 文档 URL）。可选知识目录 / Git URL。见其 [README](../skills/testcase-generation/README.zh-CN.md)。
 - `testdata-generation` 需要造数请求、用例或 API 来源，**不要**丢被测源码当输入。见其 [README · 你要交什么](../skills/testdata-generation/README.zh-CN.md#你要交什么)。
 
 对各 skill 可以直接说的话：[仓库 README · 快速开始](../README.zh-CN.md#快速开始)。

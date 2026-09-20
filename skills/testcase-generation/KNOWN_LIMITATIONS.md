@@ -2,68 +2,32 @@
 
 [简体中文](KNOWN_LIMITATIONS.zh-CN.md)
 
-Limits observed in use or verified in this skill’s files. Data flow: [How it works](HOW_IT_WORKS.md).
+Every entry here is a real boundary of the current skill, not a marketing disclaimer. Read [how it works](HOW_IT_WORKS.md) first for the design split.
 
-## No public eval
+## Requires Python 3.10+
 
-No fixture, no answer key, no recorded end-to-end run. The `defect-detection` blind fixture does not apply here.
+Gate and stage scripts use modern typing and stdlib behavior. **Always** invoke them via `scripts/tcg-python`. Bare `python3` that is older than 3.10 exits immediately with a FATAL message.
 
-Unmeasured:
+## No case-platform or doc-platform binding
 
-- Case coverage of a requirement (no recall metric)
-- R1–R4 detection rate on the failures they target
-- Lift over “ask the model for cases”
-- Cross-model stability
+The skill writes local Markdown only. It does not recall, upload, or sync remote case spaces, and it does not install or call a document-platform / identity CLI.
 
-Quality is human review of outputs.
+## Plan and case prose are model-judged
 
-## Instruction size
+`check_run_gate.py` / `close_stage.py` enforce artifact presence, headings, and dual-write. Whether scenarios and steps match the business domain is decided by the host model. A gate that passes can still yield a wrong plan or case if the model invents facts instead of marking TBD / pending clarification.
 
-`generate-skill.md` is ~200 lines (orchestrator). Each `phase-*.md` is 70–230 lines. `subagent-gen-duty.md` is ~50 lines. A generate run still loads `case-authoring-rules.md` (~650 lines) plus at least one gate. `update-skill.md` is ~590 lines.
+## Incremental needs a valid baseline
 
-- `case-authoring-rules.md` still enters the Phase 3 subagent context in full. If expansion is skipped or `caseType` is wrong, start there.
-- Phase numbers, duty text, and the file index have no automated cross-check. Edits need a manual pass.
+Diff-enhancement from a PR / git URL requires an existing case baseline first. Without one, bootstrap an initial version; do not fetch code yet. Permission and missing-ref failures surface as script `error.code` values.
 
-## Subagents
+## Knowledge is optional and local
 
-Phase 2: up to 3 parallel subagents. Phase 3: one per `design.md` module. R1–R4 each use a separate subagent.
+An empty knowledge index is valid. The skill does not call an external knowledge-retrieval Skill. Mid-run it will not ask for a knowledge source just to fill dimensions.
 
-Hosts without subagents can run the sequence serially; that path is untested. Gates sharing the author agent lose independent review.
+## No published host-agent score
 
-## No mechanical semantic check
+Offline `--self-check` covers gate fixtures. There is no public answer-key fixture and no recorded host-agent score for full Plan→Exec or Incremental runs.
 
-`lint_case_documents.ts` covers structure only: headers, empty `Construction`, placeholders, headings, engineering-table columns. The model still judges:
+## Workflow boundary
 
-- whether steps are executable
-- whether expected values are concrete (not “success”)
-- whether `coverage[]` landed in the case body
-- whether `analysis.md` extracted the rules
-
-Update matching is the same: a missed semantic hit leaves a stale case.
-
-## `prd/` is not auto-synced
-
-`prd/` is a git-baselined snapshot. Update diffs disk only.
-
-- Edit only on a hosted doc platform, no local overwrite → “no changes”
-- Docs added to `context.json` after generate with no baseline file → skipped; re-run generate to create a baseline
-
-Enterprise HTTP covers spec / knowledge / config / env, not document hosting.
-
-## Test data is out of scope
-
-`{placeholder}` and empty `Construction` are filled by `testdata-generation`. Without that skill the library is a design artifact, not a backend script. See [How it works §4](HOW_IT_WORKS.md#4-placeholders-vs-data-construction).
-
-## No schema inference from code
-
-Tables, cache keys, and config keys absent from the PRD / technical design become `TBD`. `code/` is used for update diffs only. A thin PRD yields many `TBD`s.
-
-## Runtime
-
-- POSIX `sh`; no `jq` / `uuidgen` / bash-4 associative arrays. Windows untested. [SUPPORT_MATRIX](https://github.com/openqa-cn/codexqa/blob/main/docs/SUPPORT_MATRIX.md)
-- `git` required (`prd/` baseline, `code/` diff). No non-git mode
-- Workspace layout: `prd/`, `code/`, `usecases/`. Other layouts untested
-
-## Domain assumptions
-
-Rule docs are English. Examples and expansion heuristics assume order / account / catalog plus HTTP/gRPC and DB/Cache/MQ. Pipelines, embedded, and pure-algorithm work still emit files; coverage directions were not designed for those domains.
+This skill produces **test plans and manual cases**. It does not replace `requirements-analyzer` for gap registers, `testdata-generation` for live backend data, or code-review / scan skills for defect findings.

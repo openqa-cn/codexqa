@@ -10,7 +10,7 @@ What the register looks like:
   <a href="https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/ra-register.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/ra-register.png" alt="Sample requirements-analyzer gap register" width="880"></a>
 </p>
 
-It is **not** [`testcase-generation`](https://github.com/openqa-cn/codexqa/blob/main/skills/testcase-generation/README.md). That skill writes a manual case library from `prd/`. This skill reviews whether the requirements themselves are complete, consistent, and testable.
+It is **not** [`testcase-generation`](https://github.com/openqa-cn/codexqa/blob/main/skills/testcase-generation/README.md). That skill writes test plans and manual cases from local requirements (files, paste, or HTTPS docs). This skill reviews whether the requirements themselves are complete, consistent, and testable.
 
 ## What you give it
 

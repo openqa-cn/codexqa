@@ -1,94 +1,17 @@
-# 测试用例生成
+# testcase-generation
 
-[English](README.md) · [工作原理](HOW_IT_WORKS.zh-CN.md) · [已知边界](KNOWN_LIMITATIONS.zh-CN.md)
+[English](README.md) · [工作原理](HOW_IT_WORKS.zh-CN.md) · [已知边界](KNOWN_LIMITATIONS.zh-CN.md) · [使用指南](user-guide.md)
 
-开源 Agent Skill：从本地 PRD、技术方案、接口规格和可选知识库，生成并维护结构化的**手工测试用例**。
+面向 APP / Web / 服务端的对话式**测试方案与用例**生成。完整跑 **Plan（阶段 0–5）**、**Exec（阶段 6）** 和/或 **Incremental（提测后增量）**。产物仅为本地 Markdown。
 
-写出来的用例如此（Markdown 渲染）：
+当前策略（V56）：不连接用例平台或文档平台，也不调用外部知识检索 Skill。知识来自需求 / 技术方案、本 skill 内置规范，以及你主动提供的本地知识目录或知识库 Git URL。Stage 0 可抓取你本轮给出的 `http(s)://` 文档 URL 并落成 testdocs 正文，不爬页内其它链接。提测后增量在本 Skill 内完成；当你明确给出 PR / MR / 代码平台 PR 页或自定义 git 仓库 URL，且已有用例基线时，可用 git 拉代码做 diff 增强。
 
-<p align="center">
-  <a href="https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testcase-sample.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/testcase-sample.png" alt="库存预占手工用例样例" width="880"></a>
-</p>
+**不是** [`requirements-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/requirements-analyzer/README.zh-CN.md)（缺口 / 冲突登记表），**不是** [`testdata-generation`](https://github.com/openqa-cn/codexqa/blob/main/skills/testdata-generation/README.zh-CN.md)（后端造数 / 回写），也**不是**代码风险扫描（`defect-detection` / `ai-code-reviewer`）。
 
-**输入是文档，不是 git 克隆。** 生成读 `prd/`（以及可选的 `knowledge/`）。`code/` **只在更新**时用来 diff、判断哪些已有用例受影响——不从代码推断 schema，也不填测试数据。
+## 环境要求
 
-## 它做什么
-
-1. **生成** — 分析需求、设计覆盖、查询接口契约，写出带唯一 ID 和工程信息的 Markdown 用例。
-2. **更新** — 检测 PRD / 代码 diff，定位受影响用例，增量改设计并重生成。
-
-不需要内网 CLI、内部配置中心或用量上报。脚本是 TypeScript，需要 **Node.js 22.6+**（`node --experimental-strip-types --experimental-default-type=module`），不用装 npm 包。
-
-数据流、门禁、`TBD` 规则见[工作原理](HOW_IT_WORKS.zh-CN.md)。未测量项与更新 diff 限制见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。
-
-测试数据是另一件事：用例带着 `{placeholder}`，由兄弟 skill `testdata-generation` 对着真实后端回填。
-
-## 零配置（只用本地文件）
-
-没有 `{workspace}/.ai-testcase/integrations.yaml` 时，skill 使用 `config/integrations.default.yaml`：
-
-- 协议：`http`、`grpc`。一张缓存表、一张 MQ 表。不拆 Redis / KV，也不要求 Thrift。
-- `spec_lookup` / `knowledge_search` / `env_info` 读 `prd/specs/`、`knowledge/` 和 `.project/context.json`。
-- `config_lookup` / `middleware_lookup` / `experiment_lookup` 保持关闭（`call_integration.ts` 返回 `status=skipped`）。
-
-把材料放到工作区（或让 agent 拷进去）：
-
-```
-{workspace}/
-├── .project/context.json   # 可选：环境、分支、文档本地路径
-├── knowledge/              # 可选：本地知识库（markdown / JSON）
-├── prd/
-│   ├── requirementDocs/    # PRD
-│   ├── techDocs/           # 技术方案
-│   └── specs/              # OpenAPI / IDL / 其它契约
-├── code/                   # 被测代码（可选）
-└── usecases/
-```
-
-公开 URL 可以抓下来落到 `prd/`。不用私有内网文档平台。
-
-## 企业 HTTP 适配
-
-要接自己的规格门户、知识检索、配置中心或环境服务：
-
-1. 把 [`config/integrations.example.yaml`](config/integrations.example.yaml) 拷到 `{workspace}/.ai-testcase/integrations.yaml`。
-2. 按 [`references/integration-api.md`](references/integration-api.md) 实现 JSON 接口。
-3. token 和证书路径放环境变量（`${OAUTH_CLIENT_SECRET}`、`${MTLS_CERT_PATH}`）。不要把明文密钥或 PEM 提交进库。
-
-Agent 必须走 `scripts/call_integration.ts`——不要手写 curl，不要绑厂商 SDK。Phase 0 会写出不含密钥的 `usecases/testdocs/integrations-resolved.json`，后续步骤只读这份解析结果。
-
-## 产出
-
-```
-usecases/
-├── cases/{module}/*.md
-└── testdocs/
-    ├── analysis.md
-    ├── integrations-resolved.json
-    ├── design.md
-    ├── api-details.md
-    ├── case-registry.json
-    └── ...
-```
-
-## 目录
-
-```
-testcase-generation/
-├── SKILL.md
-├── README.md
-├── README.zh-CN.md
-├── HOW_IT_WORKS.md         # 数据流与约束
-├── HOW_IT_WORKS.zh-CN.md
-├── KNOWN_LIMITATIONS.md
-├── KNOWN_LIMITATIONS.zh-CN.md
-├── config/                 # 默认 / 示例 integrations YAML + schema
-├── scripts/                # validate_integrations.ts, call_integration.ts (Node 22.6+)
-├── references/             # HTTP 适配契约
-├── generation/             # 编排 + 分阶段文件、指南、质量门
-├── maintenance/            # 增量更新工作流
-└── evals/                  # 代表性 prompt；尚无公开 fixture
-```
+- PATH 上有 Python **3.10+**（系统 `python3` 过旧时用 `scripts/tcg-python` 解析到 `python3.11` / `3.12` / …）
+- 仅在提供知识库 Git URL 或 Incremental PR/git URL 时需要 `git`
 
 ## 安装
 
@@ -96,15 +19,69 @@ testcase-generation/
 npx skills add openqa-cn/codexqa --skill testcase-generation
 ```
 
-然后**新建** Agent 会话。安装器会把本目录拷进宿主的 skills 文件夹（Cursor、Claude Code、Codex、OpenClaw），不必自己打 zip。
+见[安装指南](https://github.com/openqa-cn/codexqa/blob/main/docs/GETTING_STARTED.zh-CN.md)、[支持矩阵](https://github.com/openqa-cn/codexqa/blob/main/docs/SUPPORT_MATRIX.zh-CN.md)和 [FAQ](https://github.com/openqa-cn/codexqa/blob/main/docs/FAQ.zh-CN.md)。
 
 ## 怎么用
 
-让 Agent 生成或更新测试用例。它先读 `SKILL.md`，再读生成或更新那份文档。
+把 PRD / 技术方案（本地文件、目录、粘贴正文，或本轮给出的 `http(s)://` 文档 URL）交给 Agent，并说明要测试方案、用例，还是两者都要。
 
-```text
-用 testcase-generation 根据 prd/ 下的文档生成手工用例库。
-源材料没写的工程字段不要编，写成 TBD。
+```
+生成测试方案：/Users/me/docs/prd.md
 ```
 
-PRD 与技术方案冲突时回复 `Confirm follow PRD` 或 `Item N follow technical design`。停点与产物见[工作原理 · 交互协议](HOW_IT_WORKS.zh-CN.md#交互协议)。
+可选知识（二选一或都不要）：
+
+```
+知识目录：/Users/me/kb/biz
+知识库仓库：https://git.example.com/team/biz-knowledge.git#main
+```
+
+- 只要方案 → 跑完阶段 0–4-1，过 stage5 gate，再写 `testdesign/test_design.md`
+- 只要用例且正式方案已在盘上 → 跑阶段 6
+- 方案和用例都要 → 先 Plan；方案落盘后确认一次，再写用例
+- 提测后增量 / 增强已有用例 → 在既有基线上 diff 增强或直接更新，写 `testcase/cases/`
+- 按 PR / 自定义仓库增量 → 先有用例基线，再明确给出 PR / MR / 代码平台 PR 页或仓库 URL；拉到 `.pr-cache/` 再 diff
+
+只抓取本轮给出的文档 URL，不爬页内链接。需求正文里的 URL 不当作知识库或 PR。失败按脚本 `error.code` 解释：`PR_PERMISSION_DENIED`、`PR_HEAD_REF_MISSING`，其余原样上报。
+
+**使用细节：** [user-guide.md](user-guide.md)。**Agent 执行地图：** [SKILL.md](SKILL.md)。
+
+## 产物位置
+
+默认运行目录：`$HOME/testdata-generation/runs/{runid}`。也可指定本地目录。内部子目录仍在该 `run_dir` 下。
+
+| 内容 | 路径 |
+|---|---|
+| 配置与阶段 0–4-1 报告 | `{run_dir}/testcase/testdocs/` |
+| 正式测试方案 | `{run_dir}/testdesign/test_design.md` |
+| 用例生成报告（HTML，聚合 Web/服务端/APP） | `{run_dir}/testdesign/testcase_generation_report.html` |
+| 初始用例 | `{run_dir}/testcase/initialcase/` |
+| 当前有效用例 | `{run_dir}/testcase/cases/` |
+| 增量过程区 | `{run_dir}/testcase/.case-enhance/{executionId}/` |
+| PR 代码缓存 | `{run_dir}/testcase/.pr-cache/` |
+| 可选知识索引 | `{run_dir}/knowledge/index.md` |
+
+## 不做什么
+
+- 不绑定远程用例空间；不召回 / 上传远程用例
+- 不写远程文档；不安装文档平台或身份 CLI
+- 不调用外部知识检索 Skill
+- 不从需求正文自动 clone Git
+- 提测后增量在本 Skill 内完成
+- 不构造真实后端测试数据（那是 `testdata-generation`）
+
+## 冒烟检查
+
+```bash
+./scripts/tcg-python scripts/close_stage.py --self-check
+./scripts/tcg-python scripts/check_run_gate.py --self-check
+./scripts/tcg-python scripts/generate_case_report.py --self-check
+```
+
+## 许可证
+
+MIT。见 [LICENSE](LICENSE)。
+
+## 边界
+
+阶段门禁是确定性的；方案 / 用例正文由模型判断。见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。数据流见[工作原理](HOW_IT_WORKS.zh-CN.md)。

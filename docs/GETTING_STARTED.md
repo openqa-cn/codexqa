@@ -109,7 +109,7 @@ After install, start a new agent session and point it at the skill. Inputs diffe
 - `defect-detection` needs a diff, repo, upload, or paste for a code-risk scan. See its [README](../skills/defect-detection/README.md).
 - `ai-code-reviewer` needs a local checkout, `codexqa` + `jq` on PATH, and (for PR mode) `--diff-base`. See [ai-code-reviewer README](../skills/ai-code-reviewer/README.md).
 - `requirements-analyzer` needs requirement documents, not a repo. See [What you give it](../skills/requirements-analyzer/README.md#what-you-give-it).
-- `testcase-generation` needs `prd/` (PRD / design / specs). `code/` is optional and used on update only. See its [README](../skills/testcase-generation/README.md).
+- `testcase-generation` needs local requirement materials (file, directory, paste, or HTTPS document URL this turn). Optional knowledge dir / Git URL. See its [README](../skills/testcase-generation/README.md).
 - `testdata-generation` needs a construct request, cases, or an API source — not application source. See [What you give it](../skills/testdata-generation/README.md#what-you-give-it).
 
 Sample prompts for each skill: [root README · Quick start](../README.md#quick-start).

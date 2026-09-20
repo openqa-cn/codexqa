@@ -17,7 +17,7 @@ The seven skills cover different parts of the delivery lifecycle. Each has a sep
 | [`defect-detection`](../skills/defect-detection/README.md) | SAST/lint/secrets/SCA + agent-inline semantic scan → `report_scan.*` (P0–P3) |
 | [`ai-code-reviewer`](../skills/ai-code-reviewer/README.md) | CodexQA evidence pack → bilingual `REVIEW-REPORT.html` |
 | [`requirements-analyzer`](../skills/requirements-analyzer/README.md) | Quality-and-risk analysis of requirement documents; one gap register |
-| [`testcase-generation`](../skills/testcase-generation/README.md) | Generate and update structured manual test cases from PRD / design / specs |
+| [`testcase-generation`](../skills/testcase-generation/README.md) | Generate test plans and manual cases (Plan / Exec / Incremental) from local requirements |
 | [`testdata-generation`](../skills/testdata-generation/README.md) | Construct reusable test data and backfill `{placeholder}`s in those cases |
 
 `npx skills add … --skill <name>` copies one directory. Install the skill you need; they do not replace each other. Detection accuracy for `defect-detection` has not been independently benchmarked. `code-analyzer`, `root-cause-diagnosis`, `defect-detection`, `testcase-generation`, `ai-code-reviewer`, and `requirements-analyzer` have no published host-agent score.
@@ -53,7 +53,7 @@ They do not share one input. Two skills take Git, but not the same way:
 | `defect-detection` | Diff / repo / upload / paste for a code-risk scan | Exception stacks as the primary goal (use `root-cause-diagnosis`) or graph-evidence HTML review (use `ai-code-reviewer`) |
 | `ai-code-reviewer` | Local checkout + `codexqa`/`jq`; `--diff-base` for PR mode | Structure/impact Q&A alone (use `code-analyzer`) or SAST scan reports (use `defect-detection`) |
 | `requirements-analyzer` | Requirement documents (PRD, stories, API notes, optional role reports) | Application source. It does not write cases |
-| `testcase-generation` | PRD / technical design / API specs under `prd/` | Application `code/` on generate. `code/` is update-only, to see which cases a change hits — not to invent schemas or data |
+| `testcase-generation` | Local PRD / design files, paste, or HTTPS document URLs given this turn (optional knowledge dir / Git URL) | Application source as the primary input. Code fetch is Incremental-only when the user gives a PR/git URL and a case baseline already exists |
 | `testdata-generation` | A construct request, written cases, and/or OpenAPI / `planId` / `serviceId` | Application source. It calls a backend (or the local mock) and reports IDs the backend returned |
 
 Sample prompts: [root README · Quick start](../README.md#quick-start).
@@ -82,7 +82,7 @@ Repository cloning and fetching public documents can also use the network. Curre
 
 `defect-detection` writes reports to the `-o` directory (default `/tmp/aid_report/`) and optional feedback under the skill `data/` directory. See its [README](../skills/defect-detection/README.md). Keep runtime data and private configuration outside version control and back them up before upgrading.
 
-`testcase-generation` writes under the workspace `usecases/` and optional `{workspace}/.ai-testcase/`. `testdata-generation` writes under the workspace `testdata/` (see that skill's README). `code-analyzer` stores local indexes under `~/.codexqa/`; indexing and graph queries do not require an LLM. `root-cause-diagnosis` stores task data under its skill `data/` directory and also uses the CodexQA CLI indexes.
+`testcase-generation` writes under a `run_dir` (default `$HOME/testdata-generation/runs/{runid}`, or a path you specify): `testcase/testdocs/`, `testdesign/`, `testcase/initialcase/`, `testcase/cases/`. `testdata-generation` writes under the workspace `testdata/` (see that skill's README). `code-analyzer` stores local indexes under `~/.codexqa/`; indexing and graph queries do not require an LLM. `root-cause-diagnosis` stores task data under its skill `data/` directory and also uses the CodexQA CLI indexes.
 
 ## Is defect-detection a replacement for static analysis or testing?
 
@@ -102,4 +102,4 @@ Sample pages (same renderers, canned findings): [README · What the output looks
 
 ## Does testcase-generation fill test data?
 
-No. Cases keep `{placeholder}` markers and an empty `Construction` column. Backfill is `testdata-generation`. Installing only `testcase-generation` yields a design library, not a script against a live backend.
+No. It writes test plans and manual case Markdown (unknowns stay TBD / pending clarification). Constructing live backend IDs and writing them back as preconditions is `testdata-generation`. Installing only `testcase-generation` yields a design library, not a script against a live backend.

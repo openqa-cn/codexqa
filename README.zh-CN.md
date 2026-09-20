@@ -41,7 +41,7 @@ AI 能很快产出一个绿 PR，但需求是否对齐、影响了谁、审查�
 | 阶段 | Skill | 它回答什么问题 | 可核查产物 |
 | --- | --- | --- | --- |
 | 需求评审 | [`requirements-analyzer`](skills/requirements-analyzer/README.zh-CN.md) | PRD 是否完整、一致、可测试？ | 一份带 P0 / P1 验证项的缺口/冲突登记表 |
-| 测试设计 | [`testcase-generation`](skills/testcase-generation/README.zh-CN.md) | 根据 PRD 和设计应该测什么？ | 结构化手工用例库；未知信息标出，不编造 |
+| 测试设计 | [`testcase-generation`](skills/testcase-generation/README.zh-CN.md) | 根据需求应该写什么测试方案和手工用例？ | 本地 Markdown 方案 + 用例；未知信息标出，不编造 |
 | 测试数据 | [`testdata-generation`](skills/testdata-generation/README.zh-CN.md) | 哪些真实 ID 和前置条件能让用例跑起来？ | 后端实际返回值回写到用例前置条件 |
 | 变更影响 | [`code-analyzer`](skills/code-analyzer/README.zh-CN.md) | 改了什么、谁在调用、影响哪些入口、哪里没测试？ | 符号图证据、回归范围、测试缺口和关系图 |
 | 异常根因 | [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.zh-CN.md) | 这条堆栈 / 日志 / 崩溃的仓内根因是什么？ | 基于 CodexQA CLI facts 的带门禁英文 RCA 报告 |
@@ -178,16 +178,16 @@ codexqa stats /path/to/repo
 源材料没有的接口和 SLA 不要编。
 ```
 
-这是在审 PRD。要根据 `prd/` 写用例库，用 `testcase-generation`。
+这是在审 PRD。要根据需求写测试方案和/或用例库，用 `testcase-generation`。
 
-**从 PRD 生成手工用例（`testcase-generation`）** — 先把 PRD / 技术方案 / 契约放到 `prd/`。生成阶段不需要 `code/`。
+**生成测试方案 / 用例（`testcase-generation`）** — 给出本地文件、目录、粘贴正文，或本轮 HTTPS 文档 URL。
 
 ```text
-用 testcase-generation 根据 prd/ 下的文档生成手工用例库。
-源材料没写的工程字段不要编，写成 TBD。
+用 testcase-generation 根据 /path/to/prd.md 生成测试方案。
+不要编造源里没有的业务事实，标 TBD。
 ```
 
-Agent 停在 PRD 与技术方案冲突时，回复 `Confirm follow PRD` 或 `Item N follow technical design`。目前没有公开 fixture。
+方案落盘后若还要用例，确认一次即可。提测后增量请说明，并指向基线（可选 PR/git URL）。
 
 **构造测试数据（`testdata-generation`）** — 不是 git 克隆。直接说要造什么，或指向已写好的用例 / OpenAPI：
 
@@ -232,7 +232,7 @@ Agent 停在 PRD 与技术方案冲突时，回复 `Confirm follow PRD` 或 `Ite
 | `defect-detection` | 本地 Python 流水线/策略夹具测试；可选 SAST 与闭源 CodexQA CLI；无公开宿主 agent 成绩；Stage1/Stage2 由模型判断 |
 | `ai-code-reviewer` | 本地 `validate-skill.sh` / fixture 校验+渲染冒烟（Python 3.10+）；本仓库 CI 不跑现场 CodexQA 建索引；评审叙事由模型判断 |
 | `requirements-analyzer` | eval 用例和解析/转换脚本；没有已记录宿主 Agent 成绩 |
-| `testcase-generation` | 集成校验和用例文档 lint；没有公开 fixture 或已记录 Agent 运行 |
+| `testcase-generation` | 阶段门禁 / close_stage `--self-check`（Python 3.10+）；没有公开 Plan→Exec fixture 或已记录 Agent 运行 |
 | `testdata-generation` | packer、slot 检索和本地 catalog mock；运行结果取决于已配置的 adapter 与 slot |
 
 发现项需要人工确认。codexqa 不替代测试、静态分析、安全审查或维护者判断，也不能推断没有提供的业务规则。本地工作流会写磁盘；仓库克隆、文档获取、外部 provider、工具安装以及宿主 Agent/模型都可能联网。
