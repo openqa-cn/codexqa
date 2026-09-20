@@ -3,9 +3,11 @@
 Each release has two sections. **Highlights** is what changes for someone using the skills. **Internal** is the full engineering record — refactors, test changes, and fixes with no user-visible effect. If you are upgrading, Highlights is enough.
 
 ## Unreleased
+- Removed the playbook `code-reviewer` skill; graph-evidence review remains via `ai-code-reviewer`. Registry, docs, CI, and sibling skill boundaries no longer reference `skills/code-reviewer`.
 
 ### Highlights
 
+- **New `ai-code-reviewer` skill.** Graph-evidence code review via the CodexQA CLI only: collect a JSON evidence pack (PR/diff, full-repo, or adhoc), validate it, then render bilingual `REVIEW-REPORT.html` from `review-conclusion.json`. Replaces the removed playbook `code-reviewer` skill; not a SAST scan pipeline (`defect-detection`).
 - **New `code-analyzer` skill.** Index a local repository into a symbol graph, then review changes, bound regression scope, find test gaps, trace errors, and identify reachable HTTP / RPC / MQ / scheduled-task entries. The Skill, playbook, schemas, and examples are published here; the required `@openqa-cn/codexqa` package is a separately distributed closed-source local analysis engine. Indexing and graph queries run locally without an LLM.
 - **Repository renamed from `openqa-skills` to `codexqa`.** The install path is now `npx skills add openqa-cn/codexqa`; badges, links, citation metadata, and documentation titles use the new name. The old GitHub URL redirects. GitHub About leads with the name, and topics traded three low-signal terms (`developer-tools`, `verification`, `code-graph`) for `sast`, `code-analysis`, and `agentskills`.
 - **The README now leads with the verification bottleneck.** AI makes a green PR cheap; codexqa makes the remaining work—requirements, impact, review evidence, cases, and test data—bounded and checkable. The README shows how the six skills fit together, distinguishes the three code-facing workflows, publishes the evidence status of every skill, and provides separate first-success paths for `defect-detection` and `code-analyzer`. Both language versions use the same value story.

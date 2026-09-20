@@ -1,0 +1,8 @@
+{
+  "repo_label": "partial",
+  "overall_risk": "Medium",
+  "summary": "Partial fields only",
+  "p0": "not-an-array",
+  "p1": null,
+  "fix_order": "single-string-not-array"
+}

@@ -1,0 +1,44 @@
+{
+  "kind": "ComplexitySignals",
+  "mode": "pr",
+  "generated_by": "derive-complexity.sh",
+  "schema_version": 1,
+  "signals_thin": false,
+  "thresholds": {
+    "loc_attention": 80,
+    "loc_high": 150,
+    "decisions": 10,
+    "nesting": 5,
+    "type_add_methods": 15
+  },
+  "hot_methods": [],
+  "hot_types": [],
+  "yagni_hints": [
+    {
+      "kind": "empty_edges_in",
+      "artifact": "impact/sym1/edges-in.json",
+      "note": "no direct callers — review unused / premature complexity if add"
+    }
+  ],
+  "summary": {
+    "hot_method_count": 0,
+    "hot_type_count": 0,
+    "yagni_hint_count": 1,
+    "files_scanned": 0,
+    "symbols_considered": 1,
+    "body_metrics_ok": true,
+    "design_xref": true
+  },
+  "confidence_caps": {
+    "heuristic": "medium",
+    "stubs_cap_unknown": false,
+    "stubs": 0
+  },
+  "evidence_refs": [
+    "05-changed-symbols.json",
+    "04-changed-files.json",
+    "impact/*/edges-in.json",
+    "10-design-fit-signals.json"
+  ],
+  "notes": []
+}

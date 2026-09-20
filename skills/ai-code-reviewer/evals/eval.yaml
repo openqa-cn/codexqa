@@ -1,0 +1,33 @@
+schema_version: v1alpha1
+
+environment:
+  type: none
+
+skills:
+  - source: local_path
+    path: .
+
+engine:
+  name: cursor
+  # Local gate does not require skill-up; use scripts/validate-skill.sh.
+
+cases:
+  files:
+    - evals/cases/basic-pipeline-smoke.yaml
+    - evals/cases/edge-legacy-pack-compat.yaml
+    - evals/cases/edge-invalid-pack-blocked.yaml
+    - evals/cases/edge-html-partial-conclusion.yaml
+  defaults:
+    timeout_seconds: 120
+    max_turns: 4
+    expect:
+      exit_code: 0
+
+report:
+  formats: [json]
+
+notes: |
+  When skill-up is unavailable, run:
+    ./scripts/validate-skill.sh
+  That script is the authoritative local Eval / structural / runtime gate for this skill.
+  Fixtures under evals/fixtures/ exercise collect→validate→HTML without live indexing.

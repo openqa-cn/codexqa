@@ -1,0 +1,73 @@
+{
+  "mode": "pr-diff",
+  "skill": "ai-code-reviewer",
+  "repo": "/tmp/fixture-repo",
+  "repo_label": "fixture/repo",
+  "diff_base": "origin/main",
+  "branch": "feature",
+  "primary_language": "Go",
+  "review_language_focus": "Go",
+  "language_confidence": "high",
+  "index_confidence": "high",
+  "overall_risk": "Low",
+  "intent": "Fixture smoke with Design fit sections",
+  "scope": "1 symbol",
+  "summary": "Smoke conclusion including design_fit.sections with concern.",
+  "dimensions_covered": [
+    "design",
+    "correctness",
+    "security",
+    "contract",
+    "concurrency",
+    "regression",
+    "test_gaps",
+    "observability"
+  ],
+  "design_fit": {
+    "verdict": "concern",
+    "belong_in_repo": "questionable — utility under wrong package",
+    "layer_fit": "storage calling 入口 via import_cross_layer",
+    "over_engineering": "None",
+    "timing_note": "",
+    "sections": {
+      "belong": {
+        "verdict": "concern",
+        "notes": "helper lives under cmd/ instead of internal/",
+        "evidence": "10-design-fit-signals.json",
+        "risk": "helper lives under cmd/ instead of internal/"
+      },
+      "layer": {
+        "verdict": "concern",
+        "notes": "import_cross_layer: storage → 入口",
+        "evidence": "namespace_layers",
+        "risk": "import_cross_layer: storage → 入口"
+      },
+      "over_engineering": {
+        "verdict": "none",
+        "notes": "None",
+        "evidence": "sprawl"
+      },
+      "timing": {
+        "verdict": "ok",
+        "notes": "None",
+        "evidence": "intent/scope"
+      }
+    },
+    "evidence": "10-design-fit-signals.json",
+    "signals_file": "10-design-fit-signals.json",
+    "risk": "工具代码放在错误包路径，且存储层反向依赖入口，后续改动容易越层耦合。"
+  },
+  "p0": [],
+  "p1": [],
+  "p2": [],
+  "regression_tests": [],
+  "test_gaps": [],
+  "sensitive": "None",
+  "fix_order": [
+    "No-op"
+  ],
+  "residual_risks": [
+    "Fixture only"
+  ],
+  "diagrams": []
+}

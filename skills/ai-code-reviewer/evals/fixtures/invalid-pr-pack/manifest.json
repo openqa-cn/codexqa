@@ -1,0 +1,7 @@
+{
+  "mode": "pr",
+  "engine": "codexqa",
+  "diff_base": "origin/main",
+  "commands": ["codexqa index x --diff-base origin/main"],
+  "index_quality": {"stubs": 100, "collisions": 5}
+}

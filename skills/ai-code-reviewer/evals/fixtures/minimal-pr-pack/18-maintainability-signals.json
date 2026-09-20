@@ -1,0 +1,19 @@
+{
+  "kind": "MaintainabilitySignals",
+  "mode": "pr",
+  "generated_by": "derive-maintainability.sh",
+  "schema_version": 1,
+  "signals_thin": true,
+  "summary": {},
+  "confidence_caps": {
+    "heuristic": "medium",
+    "stubs_cap_unknown": false,
+    "stubs": 0
+  },
+  "evidence_refs": [
+    "04-changed-files.json"
+  ],
+  "notes": [
+    "No maintainability heuristics hit for this fixture"
+  ]
+}

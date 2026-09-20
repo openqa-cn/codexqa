@@ -1,0 +1,45 @@
+{
+  "kind": "RolloutSignals",
+  "mode": "pr",
+  "generated_by": "derive-rollout.sh",
+  "schema_version": 1,
+  "signals_thin": true,
+  "thresholds": {
+    "max_files": 40,
+    "max_lines": 4000,
+    "neighbor": 4
+  },
+  "schema_migrations": [],
+  "dual_write_gaps": [],
+  "feature_flags": [],
+  "feature_flag_gaps": [],
+  "compat_window_gaps": [],
+  "breaking_announcement_gaps": [],
+  "rollback_gaps": [],
+  "residual_rollout": [],
+  "surfaces": {},
+  "summary": {
+    "schema_migration_count": 0,
+    "dual_write_gap_count": 0,
+    "feature_flag_count": 0,
+    "feature_flag_gap_count": 0,
+    "compat_window_gap_count": 0,
+    "breaking_announcement_gap_count": 0,
+    "rollback_gap_count": 0,
+    "residual_rollout_count": 0,
+    "files_considered": 0,
+    "files_scanned": 0
+  },
+  "confidence_caps": {
+    "heuristic": "medium",
+    "stubs_cap_unknown": false,
+    "stubs": 0,
+    "no_ops_probe": true
+  },
+  "evidence_refs": [
+    "04-changed-files.json"
+  ],
+  "notes": [
+    "No rollout heuristics hit for this fixture"
+  ]
+}

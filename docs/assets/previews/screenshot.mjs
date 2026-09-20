@@ -11,7 +11,6 @@ const root = dirname(new URL(import.meta.url).pathname);
 const shots = [
   ["defect-report.html", "defect-report.png", 1280, 900],
   ["testcase-sample.html", "testcase-sample.png", 1100, 980],
-  ["cr-findings.html", "cr-findings.png", 1100, 640],
   ["ra-register.html", "ra-register.png", 1100, 620],
   ["testdata-writeback.html", "testdata-writeback.png", 1100, 720],
 ];

@@ -1,0 +1,25 @@
+id: edge-legacy-pack-compat
+title: "Legacy pack without 09-language-profile still validates with WARN"
+description: |
+  Old packs missing engine stamp / language profile must remain usable (WARN only).
+
+input:
+  prompt: |
+    ./scripts/validate-evidence.sh --dir evals/fixtures/legacy-pr-pack --mode pr
+    Expect status: ok and a legacy WARN. Do not fail the review gate solely for missing
+    09-language-profile.json.
+
+expect:
+  must_contain:
+    - "status: ok"
+    - "legacy"
+  must_not_contain:
+    - "status: invalid"
+
+judge:
+  type: rule_based
+  success:
+    - output_contains:
+        all:
+          - "status: ok"
+          - "legacy"

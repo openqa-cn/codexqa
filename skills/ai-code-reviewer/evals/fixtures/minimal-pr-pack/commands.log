@@ -1,0 +1,1 @@
+codexqa index /tmp/fixture-repo --diff-base origin/main

@@ -8,19 +8,19 @@ This page covers installation and the published skills. Most answers below are a
 
 codexqa is a public, local-first [Agent Skills](https://agentskills.io/specification) pack for Cursor, Claude Code, Codex, and OpenClaw. AI makes producing code faster; codexqa focuses on the verification work that does not automatically get cheaper: clarifying requirements, understanding change impact, reviewing implementation evidence, designing cases, and preparing test data.
 
-The seven skills cover different parts of the delivery lifecycle. Each has a separate input contract so the agent knows whether it should read documents, index a local checkout, scan for code risk, write cases, call a data backend, or diagnose an exception:
+The seven skills cover different parts of the delivery lifecycle. Each has a separate input contract so the agent knows whether it should read documents, index a local checkout, scan for code risk, write cases, call a data backend, diagnose an exception, or collect a CodexQA review pack:
 
 | Skill | Role |
 | --- | --- |
 | [`code-analyzer`](../skills/code-analyzer/README.md) | Index a local repository, then trace change impact, regression scope, test gaps, entries, and errors through its symbol graph |
 | [`root-cause-diagnosis`](../skills/root-cause-diagnosis/README.md) | Exception RCA from stacks/logs on top of the CodexQA CLI; gated English root-cause report |
 | [`defect-detection`](../skills/defect-detection/README.md) | SAST/lint/secrets/SCA + agent-inline semantic scan → `report_scan.*` (P0–P3) |
-| [`code-reviewer`](../skills/code-reviewer/README.md) | Playbook CR of a local checkout; P0 / P1 / P2 report |
+| [`ai-code-reviewer`](../skills/ai-code-reviewer/README.md) | CodexQA evidence pack → bilingual `REVIEW-REPORT.html` |
 | [`requirements-analyzer`](../skills/requirements-analyzer/README.md) | Quality-and-risk analysis of requirement documents; one gap register |
 | [`testcase-generation`](../skills/testcase-generation/README.md) | Generate and update structured manual test cases from PRD / design / specs |
 | [`testdata-generation`](../skills/testdata-generation/README.md) | Construct reusable test data and backfill `{placeholder}`s in those cases |
 
-`npx skills add … --skill <name>` copies one directory. Install the skill you need; they do not replace each other. Detection accuracy for `defect-detection` has not been independently benchmarked. `code-analyzer`, `root-cause-diagnosis`, `defect-detection`, `testcase-generation`, `code-reviewer`, and `requirements-analyzer` have no published host-agent score.
+`npx skills add … --skill <name>` copies one directory. Install the skill you need; they do not replace each other. Detection accuracy for `defect-detection` has not been independently benchmarked. `code-analyzer`, `root-cause-diagnosis`, `defect-detection`, `testcase-generation`, `ai-code-reviewer`, and `requirements-analyzer` have no published host-agent score.
 
 What a finished report or case looks like: [sample pages and screenshots](../README.md#what-the-output-looks-like).
 
@@ -35,12 +35,12 @@ Match the request, not the wording:
 - Scan a diff / repo / paste for SAST and semantic code-risk findings → `defect-detection`
 - Trace changed symbols, callers, regression scope, test gaps, and reachable entries in a local repository → `code-analyzer`
 - Diagnose exception root cause from stacks / logs / dumps → `root-cause-diagnosis`
-- Broader quality / security / maintainability CR on a local checkout → `code-reviewer`
+- CodexQA graph-evidence pack and bilingual HTML review report → `ai-code-reviewer`
 - Review whether the PRD itself is complete and consistent → `requirements-analyzer`
 - Write or update a manual case library → `testcase-generation`
 - Build data that fills case `{placeholder}`s → `testdata-generation`
 
-“Review this PR” is not enough to choose: `code-analyzer` maps changed symbols, callers, entries, and test gaps; `defect-detection` runs SAST + agent semantic scan into `report_scan.*`; `code-reviewer` diffs in place and loads review playbooks; `root-cause-diagnosis` needs exception evidence for RCA. A request can span skills: use `code-analyzer` to bound the impact, then `code-reviewer` for concrete P0 / P1 / P2 findings. Generate cases first; placeholders can only be backfilled after the `.md` files exist.
+“Review this PR” is not enough to choose: `code-analyzer` maps changed symbols, callers, entries, and test gaps; `defect-detection` runs SAST + agent semantic scan into `report_scan.*`; `ai-code-reviewer` collects a CodexQA pack and renders `REVIEW-REPORT.html`; `root-cause-diagnosis` needs exception evidence for RCA. A request can span skills: use `code-analyzer` to bound the impact, then `ai-code-reviewer` for graph-evidence HTML review. Generate cases first; placeholders can only be backfilled after the `.md` files exist.
 
 ## What do I have to give each skill?
 
@@ -49,9 +49,9 @@ They do not share one input. Two skills take Git, but not the same way:
 | Skill | You bring | Not used as input |
 |---|---|---|
 | `code-analyzer` | A local repository; for change review, the baseline ref | Requirements or a clone task. It indexes the checkout already on disk and queries its symbol graph |
-| `root-cause-diagnosis` | Exception evidence (stack / log / dump) plus git URL, local dir, file, or open workspace | A PRD or P0/P1/P2 review request. It diagnoses exceptions, not requirement gaps or playbook CR |
-| `defect-detection` | Diff / repo / upload / paste for a code-risk scan | Exception stacks as the primary goal (use `root-cause-diagnosis`) or playbook CR (use `code-reviewer`) |
-| `code-reviewer` | A local Git checkout + the branch / PR / commit to review | A clone URL. This skill diffs in place |
+| `root-cause-diagnosis` | Exception evidence (stack / log / dump) plus git URL, local dir, file, or open workspace | A PRD or P0/P1/P2 review request. It diagnoses exceptions, not requirement gaps or graph-evidence HTML review |
+| `defect-detection` | Diff / repo / upload / paste for a code-risk scan | Exception stacks as the primary goal (use `root-cause-diagnosis`) or graph-evidence HTML review (use `ai-code-reviewer`) |
+| `ai-code-reviewer` | Local checkout + `codexqa`/`jq`; `--diff-base` for PR mode | Structure/impact Q&A alone (use `code-analyzer`) or SAST scan reports (use `defect-detection`) |
 | `requirements-analyzer` | Requirement documents (PRD, stories, API notes, optional role reports) | Application source. It does not write cases |
 | `testcase-generation` | PRD / technical design / API specs under `prd/` | Application `code/` on generate. `code/` is update-only, to see which cases a change hits — not to invent schemas or data |
 | `testdata-generation` | A construct request, written cases, and/or OpenAPI / `planId` / `serviceId` | Application source. It calls a backend (or the local mock) and reports IDs the backend returned |

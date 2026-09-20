@@ -6,7 +6,7 @@ description: >
   Triggers: requirements analyzer, requirement quality, gap register, 需求分析,
   需求分析器, 需求评审, 需求缺口. Not for writing a case library (that is
   testcase-generation), constructing test data (testdata-generation), or reviewing
-  code (defect-detection / code-reviewer).
+  code (defect-detection / ai-code-reviewer).
 license: Apache-2.0
 ---
 

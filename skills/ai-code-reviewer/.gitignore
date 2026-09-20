@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+*.tmp
+*.zip
+.codexqa-review/
+__pycache__/
+*.pyc
+*.pyo

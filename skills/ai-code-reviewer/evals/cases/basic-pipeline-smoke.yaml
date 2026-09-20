@@ -1,0 +1,27 @@
+id: basic-pipeline-smoke
+title: "End-to-end fixture: validate + HTML render"
+description: |
+  Minimal PR pack validates with primary_language=Go and HTML renders from conclusion.
+
+input:
+  prompt: |
+    Run the local skill gate (no skill-up required):
+      ./scripts/validate-skill.sh
+    Confirm minimal-pr-pack validates and REVIEW-REPORT.html can be produced from
+    evals/fixtures/conclusion/minimal.json.
+
+expect:
+  must_contain:
+    - "status: ok"
+    - "validate minimal-pr-pack"
+    - "render-review-html minimal"
+  must_not_contain:
+    - "FAIL:"
+
+judge:
+  type: rule_based
+  success:
+    - output_contains:
+        all:
+          - "status: ok"
+          - "PASS"

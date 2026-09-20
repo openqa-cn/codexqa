@@ -4,7 +4,7 @@
 
 `defect-detection` 先跑确定性的 SAST / lint / secrets / SCA，再由**调用本 skill 的宿主 agent**做两阶段语义审查（默认 `--llm-mode agent`，无需 API key）。输出按 **P0→P3** 排序的 `report_scan.json` / `.md` / `.html`。代码图与调用链对**所有语言**统一走公开的 **CodexQA CLI**（`@openqa-cn/codexqa`）。
 
-**不是** [`code-reviewer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-reviewer/README.zh-CN.md)（P0/P1/P2 playbook 审查），**不是** [`code-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-analyzer/README.zh-CN.md)（符号图影响面 / 测试缺口），也**不是** [`root-cause-diagnosis`](https://github.com/openqa-cn/codexqa/blob/main/skills/root-cause-diagnosis/README.zh-CN.md)（异常根因）。目标是代码风险 / 安全 / 逻辑的**扫描报告**时用本 skill。
+**不是** [`ai-code-reviewer`](https://github.com/openqa-cn/codexqa/blob/main/skills/ai-code-reviewer/README.zh-CN.md)（CodexQA 证据包 HTML 评审），**不是** [`code-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-analyzer/README.zh-CN.md)（符号图影响面 / 测试缺口），也**不是** [`root-cause-diagnosis`](https://github.com/openqa-cn/codexqa/blob/main/skills/root-cause-diagnosis/README.zh-CN.md)（异常根因）。目标是代码风险 / 安全 / 逻辑的**扫描报告**时用本 skill。
 
 ## 安装要求
 

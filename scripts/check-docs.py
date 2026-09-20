@@ -23,7 +23,7 @@ def file_links(path):
 
 
 # Agent reference syntax is not a documentation link contract; check reader-facing docs.
-paths = list(root.glob('*.md')) + list((root / 'docs').glob('*.md')) + list((root / 'examples').rglob('*.md')) + [root / 'skills/README.md', root / 'skills/README.zh-CN.md', root / 'skills/defect-detection/README.md', root / 'skills/code-reviewer/README.md', root / 'skills/requirements-analyzer/README.md', root / 'skills/testcase-generation/README.md', root / 'skills/testdata-generation/README.md']
+paths = list(root.glob('*.md')) + list((root / 'docs').glob('*.md')) + list((root / 'examples').rglob('*.md')) + [root / 'skills/README.md', root / 'skills/README.zh-CN.md', root / 'skills/defect-detection/README.md', root / 'skills/ai-code-reviewer/README.md', root / 'skills/requirements-analyzer/README.md', root / 'skills/testcase-generation/README.md', root / 'skills/testdata-generation/README.md']
 for p in paths:
     for target in file_links(p):
         if not (p.parent / target).exists():

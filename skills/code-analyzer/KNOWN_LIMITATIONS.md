@@ -33,4 +33,4 @@ The graph can miss or approximate relationships when a language construct, frame
 
 ## Workflow boundary
 
-`code-analyzer` maps structure, change impact, callers, entries, and test gaps. It does not execute tests, prove the absence of defects, decide whether code matches a business requirement, or replace P0 / P1 / P2 code review. Use `defect-detection` for SAST+agent code-risk scans, `code-reviewer` for playbook-driven implementation findings, and `root-cause-diagnosis` for full exception root-cause reports on top of the CodexQA CLI.
+`code-analyzer` maps structure, change impact, callers, entries, and test gaps. It does not execute tests, prove the absence of defects, decide whether code matches a business requirement, or replace graph-evidence code review. Use `defect-detection` for SAST+agent code-risk scans, `ai-code-reviewer` for CodexQA evidence-pack HTML review, and `root-cause-diagnosis` for full exception root-cause reports on top of the CodexQA CLI.

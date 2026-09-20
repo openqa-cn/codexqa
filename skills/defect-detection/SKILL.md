@@ -10,9 +10,9 @@ description: >
   report_scan.json / report_scan.md / report_scan.html. Do NOT use to apply or
   autofix code style/formatting — lint may still surface hygiene findings.
   Code-graph / call-chain MUST use CodexQA CLI for all languages
-  (references/codexqa-cli.md) — never homemade analyzers. Not a P0/P1/P2 playbook CR (that is code-reviewer), not structure/impact
-  mapping (that is code-analyzer), and not exception RCA (that is
-  root-cause-diagnosis). When scenario unclear, ask or run
+  (references/codexqa-cli.md) — never homemade analyzers. Not CodexQA evidence-pack HTML review (that is ai-code-reviewer),
+  not structure/impact mapping (that is code-analyzer), and not exception RCA
+  (that is root-cause-diagnosis). When scenario unclear, ask or run
   choose_scenario / run_scan.py choose.
 license: Apache-2.0
 compatibility: >
@@ -40,7 +40,7 @@ CLI: `python3 {baseDir}/scripts/run_scan.py` (`$SKILL_SCRIPT`). Runtime artifact
 | Need | Skill |
 |---|---|
 | SAST + agent-inline semantic scan → `report_scan.*` (P0–P3) | **this skill** (`defect-detection`) |
-| P0/P1/P2 playbook review of a local checkout | `code-reviewer` |
+| CodexQA evidence-pack → bilingual `REVIEW-REPORT.html` | `ai-code-reviewer` |
 | Symbol-graph change impact, callers, test gaps | `code-analyzer` |
 | Exception RCA from stacks/logs on top of CLI analysis | `root-cause-diagnosis` |
 

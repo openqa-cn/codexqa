@@ -1,0 +1,19 @@
+{
+  "kind": "ObservabilitySignals",
+  "mode": "pr",
+  "generated_by": "derive-observability.sh",
+  "schema_version": 1,
+  "signals_thin": true,
+  "summary": {},
+  "confidence_caps": {
+    "heuristic": "medium",
+    "stubs_cap_unknown": false,
+    "stubs": 0
+  },
+  "evidence_refs": [
+    "04-changed-files.json"
+  ],
+  "notes": [
+    "No observability heuristics hit for this fixture"
+  ]
+}

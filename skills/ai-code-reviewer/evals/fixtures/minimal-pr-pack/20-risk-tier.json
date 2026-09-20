@@ -1,0 +1,79 @@
+{
+  "kind": "RiskTierSignals",
+  "mode": "pr",
+  "generated_by": "derive-risk-tier.sh",
+  "schema_version": 1,
+  "signals_thin": false,
+  "tier": "T2",
+  "tier_numeric": 2,
+  "industry_tier": "Tier1",
+  "drivers": {
+    "path_hits": [
+      {
+        "path": "main.go",
+        "family": "prod",
+        "tier": "T2"
+      }
+    ],
+    "tag_hits": [],
+    "sensitive_hits": [],
+    "rollout_surfaces": {
+      "migration": false,
+      "destructive": false,
+      "storage_switch": false,
+      "breaking": false,
+      "feature_flag": false,
+      "money": false
+    }
+  },
+  "file_tiers": [
+    {
+      "path": "main.go",
+      "tier": "T2",
+      "reasons": [
+        "production_path"
+      ]
+    }
+  ],
+  "review_depth": {
+    "evidence_floor": "spot_check",
+    "must_attempt_dimensions": [
+      "correctness",
+      "security",
+      "test_gaps"
+    ],
+    "required_graph": false,
+    "min_evidence_cites_per_finding": 1,
+    "paired_review_recommended": false,
+    "escalate_if": [
+      "spot_check_fail",
+      "new_t0_surface",
+      "entry_reachable"
+    ]
+  },
+  "summary": {
+    "tier": "T2",
+    "industry_tier": "Tier1",
+    "files_considered": 1,
+    "path_hit_count": 1,
+    "tag_hit_count": 0,
+    "sensitive_hit_count": 0,
+    "missing_input_count": 0,
+    "body_ok": true
+  },
+  "confidence_caps": {
+    "heuristic": "medium",
+    "stubs_cap_unknown": false,
+    "stubs": 0,
+    "escalate_on_uncertainty": true
+  },
+  "evidence_refs": [
+    "04-changed-files.json",
+    "06-sensitive-hits.json",
+    "07-tags.json",
+    "15-rollout-signals.json"
+  ],
+  "notes": [
+    "T0=highest blast; auth/pay/migration/IaC force T0; never downgrade mid-review"
+  ]
+}

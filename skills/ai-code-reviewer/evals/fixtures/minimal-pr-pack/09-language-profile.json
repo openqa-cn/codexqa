@@ -1,0 +1,12 @@
+{
+  "primary_language": "Go",
+  "detected_primary_language": "Go",
+  "primary_share": 1.0,
+  "confidence": "high",
+  "is_polyglot": false,
+  "lang_stats": {"Go": 40, "Markdown": 5, "JSON": 2},
+  "code_lang_stats": {"Go": 40},
+  "secondary_languages": [],
+  "review_language_focus": "Go",
+  "detection_method": "codexqa_summary_lang_stats"
+}

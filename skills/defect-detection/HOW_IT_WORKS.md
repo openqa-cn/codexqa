@@ -49,7 +49,7 @@ diff / repo / upload / paste
 
 | Skill | Difference |
 |---|---|
-| [`code-reviewer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-reviewer/README.md) | Playbook P0/P1/P2 on a local checkout — no `report_scan` pipeline |
+| [`ai-code-reviewer`](https://github.com/openqa-cn/codexqa/blob/main/skills/ai-code-reviewer/README.md) | CodexQA evidence-pack → bilingual `REVIEW-REPORT.html` — no `report_scan` pipeline |
 | [`code-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-analyzer/README.md) | Structure/impact from the same CodexQA graph — not a finding severity report |
 | [`root-cause-diagnosis`](https://github.com/openqa-cn/codexqa/blob/main/skills/root-cause-diagnosis/README.md) | Exception RCA on top of CLI facts — not incremental/full code-risk scan |
 

@@ -1,0 +1,43 @@
+{
+  "kind": "ResilienceSignals",
+  "mode": "pr",
+  "generated_by": "derive-resilience.sh",
+  "schema_version": 1,
+  "signals_thin": true,
+  "thresholds": {
+    "max_files": 40,
+    "max_lines": 4000,
+    "neighbor": 4
+  },
+  "silent_swallows": [],
+  "timeout_gaps": [],
+  "retry_risks": [],
+  "degradation_or_breaker": [],
+  "partial_failure_gaps": [],
+  "idempotency_gaps": [],
+  "residual_hardening": [],
+  "surfaces": {},
+  "summary": {
+    "silent_swallow_count": 0,
+    "timeout_gap_count": 0,
+    "retry_risk_count": 0,
+    "degrade_breaker_count": 0,
+    "partial_failure_count": 0,
+    "idempotency_gap_count": 0,
+    "residual_hardening_count": 0,
+    "files_considered": 0,
+    "files_scanned": 0
+  },
+  "confidence_caps": {
+    "heuristic": "medium",
+    "stubs_cap_unknown": false,
+    "stubs": 0,
+    "no_chaos_probe": true
+  },
+  "evidence_refs": [
+    "04-changed-files.json"
+  ],
+  "notes": [
+    "No resilience heuristics hit for this fixture"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "kind": "PrivacySignals",
+  "mode": "pr",
+  "generated_by": "derive-privacy.sh",
+  "schema_version": 1,
+  "signals_thin": true,
+  "thresholds": {
+    "pii_fields": 5,
+    "max_files": 40,
+    "max_lines": 4000,
+    "log_neighbor": 3
+  },
+  "pii_field_hits": [],
+  "log_exposure": [],
+  "minimization_flags": [],
+  "retention_gaps": [],
+  "consent_or_transfer_hints": [],
+  "sensitive_reuse": [],
+  "summary": {
+    "pii_field_count": 0,
+    "log_exposure_count": 0,
+    "minimization_flag_count": 0,
+    "retention_gap_count": 0,
+    "consent_transfer_hint_count": 0,
+    "files_considered": 0,
+    "files_scanned": 0
+  },
+  "confidence_caps": {
+    "heuristic": "medium",
+    "stubs_cap_unknown": false,
+    "stubs": 0,
+    "no_legal_conclusion": true
+  },
+  "evidence_refs": [
+    "04-changed-files.json"
+  ],
+  "notes": [
+    "No privacy heuristics hit for this fixture"
+  ]
+}

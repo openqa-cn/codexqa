@@ -1,0 +1,212 @@
+{
+  "mode": "pr-diff",
+  "skill": "ai-code-reviewer",
+  "analysis_backend": "codexqa-cli",
+  "repo": "/absolute/path/to/repo",
+  "repo_label": "org/repo",
+  "diff_base": "origin/master",
+  "branch": "feature",
+  "compare_url": "",
+  "evidence_dir": "/absolute/path/to/.codexqa-review/<run-id>",
+  "codexqa_version": "codexqa 0.1.0",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "primary_language": "Java",
+  "review_language_focus": "Java",
+  "is_polyglot": false,
+  "language_confidence": "high",
+  "index_confidence": "medium",
+  "index_confidence_note": "stubs/collisions from manifest.index_quality",
+  "overall_risk": "Medium",
+  "intent": "一句话业务/变更意图（中文）",
+  "intent_en": "One-line business / change intent (English)",
+  "scope": "变更文件/分组/符号摘要（中文）",
+  "scope_en": "Changed files / groups / symbols summary (English)",
+  "summary": "总体评估一句话（中文）",
+  "summary_en": "Overall assessment one-liner (English)",
+  "dimensions_covered": [
+    "risk_tier",
+    "design",
+    "complexity",
+    "dependencies",
+    "correctness",
+    "resilience",
+    "security",
+    "privacy",
+    "contract",
+    "rollout",
+    "concurrency",
+    "regression",
+    "test_gaps",
+    "observability",
+    "maintainability",
+    "performance"
+  ],
+  "risk_tier": {
+    "tier": "T0 | T1 | T2 | T3",
+    "industry_tier": "Tier3 | Tier2 | Tier1",
+    "evidence_floor": "full_checklist | trimmed_checklist | spot_check | sample_ci",
+    "drivers": "Short summary of path/tag/sensitive/rollout drivers — or None",
+    "evidence": "20-risk-tier.json",
+    "signals_file": "20-risk-tier.json"
+  },
+  "design_fit": {
+    "verdict": "ok | concern | unknown",
+    "risk": "REQUIRED when concern/unknown: plain-language specific code risk in this repo — or omit when ok",
+    "belong_in_repo": "(legacy flat) yes | questionable | unknown — cite path/package clusters",
+    "layer_fit": "(legacy flat) Short note from layer_summary / import_cross_layer / cross_layer_edges",
+    "over_engineering": "(legacy flat) None, or add-heavy / dead_nested / empty edges-in",
+    "timing_note": "(legacy flat) Optional; do not invent product strategy",
+    "sections": {
+      "belong": { "verdict": "ok | concern | none", "risk": "Plain risk when concern", "notes": "Belong subsection — or None", "evidence": "10-design-fit-signals / packages / callers" },
+      "layer": { "verdict": "ok | concern | none", "risk": "Plain risk when concern", "notes": "Layer subsection — or None", "evidence": "import_cross_layer / cross_layer_edges / namespace_layers" },
+      "over_engineering": { "verdict": "ok | concern | none", "risk": "Plain risk when concern", "notes": "Over-engineering subsection — or None", "evidence": "sprawl / dead_nested_symbols / empty_edges_in" },
+      "timing": { "verdict": "ok | concern | none", "risk": "Plain risk when concern", "notes": "Timing subsection — or None", "evidence": "intent/scope + change surface" }
+    },
+    "evidence": "10-design-fit-signals.json + impact/*/edges-in.json",
+    "signals_file": "10-design-fit-signals.json"
+  },
+  "complexity": {
+    "verdict": "ok | concern | unknown",
+    "risk": "REQUIRED when concern: plain-language specific code risk (path + what breaks)",
+    "call_chain": {
+      "title": "Optional HTML call-path for this dimension risk",
+      "paths": [["entry", "hotMethod"]],
+      "focus": ["hotMethod"]
+    },
+    "hotspots": "Same prose as risk (or detail bullets) — renderer uses risk // hotspots. Soft LOC parenthetical OK; no loc_high+untested dump.",
+    "yagni": "Plain note if implementation is more generic than needed — or None",
+    "evidence": "One plain sentence of basis, optional (信号: 11-complexity-signals.json)",
+    "signals_file": "11-complexity-signals.json"
+  },
+  "dependencies": {
+    "verdict": "ok | concern | unknown | none",
+    "risk": "REQUIRED when concern: which dependency/lock/license risk and impact",
+    "necessity": "New/upgrade justified — or None",
+    "reproducibility": "SNAPSHOT / floating / lock drift notes — or None",
+    "license": "Manifest license clues only (not legal advice) — or None",
+    "vuln_posture": "Local audit summary or residual: run org SCA — never invent CVEs",
+    "evidence": "12-dependency-signals.json",
+    "signals_file": "12-dependency-signals.json"
+  },
+  "resilience": {
+    "verdict": "ok | concern | unknown | none",
+    "risk": "REQUIRED when concern: which failure-path risk and user/runtime impact",
+    "silent_swallow": "Empty/bare catch or ignored err — or None",
+    "timeouts": "Remote/IO without timeout/deadline clues — or None",
+    "retries": "Unbounded / no-backoff retry — or None",
+    "degradation": "Fallback / circuit-breaker clues or residual — or None",
+    "partial_failure": "Fan-out without per-item / allSettled handling — or None",
+    "idempotency": "Retry/MQ/pay without idempotent/compensate clues — or None",
+    "evidence": "14-resilience-signals.json",
+    "signals_file": "14-resilience-signals.json"
+  },
+  "privacy": {
+    "verdict": "ok | concern | unknown | none",
+    "risk": "REQUIRED when concern: which PII/log/retention risk",
+    "minimization": "PII field bloat / purpose clues — or None",
+    "logging": "Log redaction / plaintext PII — or None",
+    "retention": "Erase/export/DSAR/retention clues — or residual",
+    "consent_transfer": "Consent / cross-border / third-party clues — or None",
+    "evidence": "13-privacy-signals.json",
+    "signals_file": "13-privacy-signals.json"
+  },
+  "rollout": {
+    "verdict": "ok | concern | unknown | none",
+    "risk": "REQUIRED when concern: which migration/flag/rollback risk for release",
+    "migrations": "Schema/DDL/migrate path notes — or None",
+    "dual_write": "Dual-write / expand-contract / backfill gaps — or None",
+    "feature_flags": "Flag/toggle/kill-switch clues or gaps — or None",
+    "compat_window": "Deprecate/breaking without sunset/compat clues — or None",
+    "breaking_announce": "Breaking without CHANGELOG/migration guide — or None",
+    "rollback": "Rollback/canary/blue-green clues or gaps — or None",
+    "evidence": "15-rollout-signals.json",
+    "signals_file": "15-rollout-signals.json"
+  },
+  "performance": {
+    "verdict": "ok | concern | unknown | none",
+    "risk": "REQUIRED when concern: which hot-path / N+1 / alloc risk and user impact",
+    "n_plus_one": "Loop-hosted DB/ORM/HTTP without batch — or None",
+    "hot_path": "Entry/handler expensive patterns — or None",
+    "unbounded_allocation": "Loop alloc / unpaginated list / unbounded cache — or None",
+    "evidence": "21-performance-signals.json",
+    "signals_file": "21-performance-signals.json"
+  },
+  "p0_count": 0,
+  "p1_count": 1,
+  "p2_count": 1,
+  "p0": [],
+  "p1": [
+    {
+      "title": "发现标题（中文）",
+      "title_en": "Finding title (English)",
+      "location": "文件/符号（中文标点可）",
+      "location_en": "File / symbol (ASCII punctuation preferred)",
+      "symbol_id": "(JSON audit only — omitted from HTML)",
+      "change_status": "add|change|default — HTML maps to 本次新增/本次修改/既有代码…",
+      "category": "design | complexity | dependencies | correctness | resilience | security | privacy | contract | rollout | concurrency | regression | test_gaps | observability | maintainability | performance | risk_tier | …",
+      "risk": "触发路径与影响（中文白话）",
+      "risk_en": "Trigger path and impact in plain English",
+      "call_chain": {
+        "title": "可选 — 调用链路标题（中文）",
+        "title_en": "Optional — call-path title (English)",
+        "paths": [["caller", "hotSymbol", "callee"]],
+        "focus": ["hotSymbol"]
+      },
+      "evidence": "通俗依据（中文）",
+      "evidence_en": "Human basis first (English); artifact path optional appendix",
+      "callers": ["(optional fallback if call_chain omitted)"],
+      "entry": "from tags/paths when present; else omit — do not invent",
+      "entry_en": "English mirror when entry is prose",
+      "tested_count": "(JSON audit only — omitted from HTML)",
+      "confidence": "(JSON audit only — omitted from HTML) high|medium|low|UNKNOWN",
+      "fix": "修复建议（中文）",
+      "fix_en": "Recommended fix (English)"
+    }
+  ],
+  "p2": [
+    {
+      "title": "Optional finding",
+      "location": "",
+      "category": "design",
+      "risk": "Short note",
+      "evidence": "",
+      "confidence": "medium",
+      "fix": ""
+    }
+  ],
+  "regression_tests": [
+    {
+      "target": "可执行回归场景：谁在什么条件下调用、输入是什么、期望什么结果（勿只写方法名）",
+      "target_en": "Executable regression scenario (entry/conditions/expected)",
+      "why": "为什么必测：用业务/风险语言说明漏测后果",
+      "why_en": "Why required: business/risk consequence if untested",
+      "evidence": "通俗依据：改了哪个类/方法的什么行为、受影响的调用方类型。禁止仅写证据包路径、行号标签或裸 symbol UUID；内部 id 仅可作句末附录",
+      "evidence_en": "Plain-language basis; do not use only pack paths or bare symbol UUIDs"
+    }
+  ],
+  "test_gaps": [
+    {
+      "symbol": "changedMethod",
+      "symbol_en": "changedMethod (optional English label)",
+      "tested_count": "0",
+      "tests_reach": "empty",
+      "tests_reach_en": "Not reachable from tests",
+      "note": "风险说明（中文）；勿编造覆盖",
+      "note_en": "Risk note (English); do not invent coverage"
+    }
+  ],
+  "sensitive": "无，或与变更相交的敏感命中（中文）",
+  "sensitive_en": "None, or hits intersecting change with callers (English)",
+  "fix_order": [
+    "(optional JSON only — not rendered in HTML)"
+  ],
+  "residual_risks": [
+    "(optional JSON only — not rendered in HTML)"
+  ],
+  "diagrams": [
+    {
+      "title": "(Deprecated for HTML) Prefer call_chain on findings / dimension cards — standalone 影响面示意 is no longer rendered",
+      "body": "optional legacy mermaid; ignored by render-review-html.sh"
+    }
+  ]
+}

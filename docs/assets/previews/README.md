@@ -6,7 +6,6 @@ Sample pages used as screenshots in the repository README. They are **illustrati
 |---|---|
 | `defect-report.html` | Real `render_report_html` output with three inventory-hold findings |
 | `testcase-sample.html` | What a generated manual case looks like after Markdown is rendered |
-| `cr-findings.html` | Typical `code-reviewer` P0 / P1 report shape |
 | `ra-register.html` | One `requirements-analyzer` gap / conflict register |
 | `testdata-writeback.html` | `{placeholder}` replaced with a backend-returned id |
 

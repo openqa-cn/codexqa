@@ -1,0 +1,49 @@
+{
+  "kind": "DependencySignals",
+  "mode": "pr",
+  "generated_by": "derive-dependencies.sh",
+  "schema_version": 1,
+  "signals_thin": true,
+  "thresholds": {
+    "direct_add": 8,
+    "lock_new_lines": 200,
+    "max_files": 40,
+    "max_lines": 8000
+  },
+  "ecosystems": [],
+  "manifest_hits": [],
+  "snapshot_or_floating": [],
+  "lock_drift": [],
+  "license_hints": [],
+  "bloat": {
+    "direct_add_count": 0,
+    "lock_new_lines_est": 0,
+    "flagged": false
+  },
+  "necessity_flags": [],
+  "local_audit": {
+    "present": false,
+    "paths": [],
+    "high_or_critical": false
+  },
+  "summary": {
+    "manifest_hit_count": 0,
+    "snapshot_count": 0,
+    "lock_drift_count": 0,
+    "license_hint_count": 0,
+    "files_considered": 0
+  },
+  "confidence_caps": {
+    "heuristic": "medium",
+    "stubs_cap_unknown": false,
+    "stubs": 0,
+    "no_network_cve": true
+  },
+  "evidence_refs": [
+    "04-changed-files.json",
+    "manifest.repo"
+  ],
+  "notes": [
+    "No dependency manifests in changed-files for this fixture"
+  ]
+}

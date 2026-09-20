@@ -26,7 +26,7 @@
 | `defect-detection` 流水线 | `skills/defect-detection` 本地 `npm test`（Python 流水线 + 策略夹具，优先 3.11）；可选 SAST/lint/secrets；实图用 CodexQA CLI | CI 不强制完整 agent Stage1/Stage2 与全部 SAST 二进制；语义发现由模型判断；无公开宿主 agent 成绩 |
 | `testcase-generation` 脚本 | `validate_integrations.ts`、`call_integration.ts`、`lint_case_documents.ts` 在 Node 22.6+ 上用 TypeScript stripping 运行；不装 npm 包 | 无公开 fixture、无已记录 agent 运行；Windows 未测；无子 agent 的宿主未测 |
 | `testdata-generation` 脚本 | 打包、slot 检索和本地 catalog mock 见该 skill 文档 | 运行依赖已配置的 adapter 与 slot；不在 defect-detection CLI 套件覆盖范围内 |
-| `code-reviewer` playbook | `tooling/` 离线契约检查（在 `tooling/` 里 `npm test`） | 没有公开 fixture 或已记录的宿主 agent 运行；报告质量未测量 |
+| `ai-code-reviewer` 证据包 | 本地 `bash scripts/validate-skill.sh`（静态树、fixture 校验+渲染、plan-coverage）；现场收集需要 Node ≥ 18、bash、jq、Python 3.10+ 与 `@openqa-cn/codexqa` | 本仓库 CI 不跑现场 CodexQA 建索引；评审叙事由模型判断；无公开宿主 agent 成绩 |
 | `requirements-analyzer` | 该 skill 的 `evals/` skill-up 用例和解析/转换脚本 | 没有已记录的宿主 agent 成绩；分析靠模型，不是 `run_analysis.ts` |
 
 当前证据：已有一次 JS 端到端盲测样本（召回/精确率 7/7，见上表 JS / TS 方法级一行）。尚未形成多模型公开 benchmark。另见[示例](../examples/README.zh-CN.md)和[评估方法](../benchmarks/README.md)。

@@ -1,0 +1,24 @@
+id: edge-invalid-pack-blocked
+title: "Empty change-groups / all-default blocks review"
+description: |
+  Invalid packs must fail validation so agents emit blocked, not fake findings.
+
+input:
+  prompt: |
+    ./scripts/validate-evidence.sh --dir evals/fixtures/invalid-pr-pack --mode pr
+    Expect non-zero exit and change-groups empty error. Review must be blocked.
+
+expect:
+  must_contain:
+    - "change-groups empty"
+    - "status: invalid"
+  must_not_contain:
+    - "status: ok"
+
+judge:
+  type: rule_based
+  success:
+    - output_contains:
+        all:
+          - "change-groups empty"
+          - "status: invalid"

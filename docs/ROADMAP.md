@@ -2,7 +2,7 @@
 
 [简体中文](ROADMAP.zh-CN.md)
 
-codexqa's product direction covers the full AI software engineering quality lifecycle. Its current value is narrower and concrete: seven local-first skills turn requirements, code changes, reviews, cases, test data, code-risk scans, and exception diagnosis into separate, checkable workflows instead of one unconstrained AI conversation. This repository currently ships [`code-analyzer`](../skills/code-analyzer/README.md), [`root-cause-diagnosis`](../skills/root-cause-diagnosis/README.md), [`defect-detection`](../skills/defect-detection/README.md), [`code-reviewer`](../skills/code-reviewer/README.md), [`requirements-analyzer`](../skills/requirements-analyzer/README.md), [`testcase-generation`](../skills/testcase-generation/README.md), and [`testdata-generation`](../skills/testdata-generation/README.md). Capabilities marked **Available** or **Partial** below are delivered through those workflows unless stated otherwise. The remaining rows describe planned extensions, not features already included here.
+codexqa's product direction covers the full AI software engineering quality lifecycle. Its current value is narrower and concrete: seven local-first skills turn requirements, code changes, reviews, cases, test data, code-risk scans, and exception diagnosis into separate, checkable workflows instead of one unconstrained AI conversation. This repository currently ships [`code-analyzer`](../skills/code-analyzer/README.md), [`root-cause-diagnosis`](../skills/root-cause-diagnosis/README.md), [`defect-detection`](../skills/defect-detection/README.md), [`ai-code-reviewer`](../skills/ai-code-reviewer/README.md), [`requirements-analyzer`](../skills/requirements-analyzer/README.md), [`testcase-generation`](../skills/testcase-generation/README.md), and [`testdata-generation`](../skills/testdata-generation/README.md). Capabilities marked **Available** or **Partial** below are delivered through those workflows unless stated otherwise. The remaining rows describe planned extensions, not features already included here.
 
 ## Capability map
 
@@ -12,7 +12,7 @@ codexqa's product direction covers the full AI software engineering quality life
 | Code analysis | **Available** | Local symbol graph for supported languages (`code-analyzer`); `defect-detection` adds SAST/lint/secrets/SCA plus agent-inline semantic scan reports; parser and framework coverage still varies |
 | Requirement review | **Available** | Gap/conflict analysis of requirement documents (`requirements-analyzer`); implementation-vs-requirement check is still planned |
 | Specification review | **Planned** | Review technical specifications for completeness, consistency, and testability |
-| AI Code Review | **Available** | Playbook-driven PR / branch / commit review (`code-reviewer`); no published fixture yet |
+| AI Code Review | **Available** | CodexQA evidence-pack → bilingual `REVIEW-REPORT.html` (`ai-code-reviewer`); fixture validate+render smoke locally |
 | Change-impact analysis | **Available** | `code-analyzer` traces changed symbols to callers and HTTP / RPC / MQ / scheduled-task entries inside one indexed repository; cross-repository impact analysis is planned |
 | Test-gap analysis | **Available** | `code-analyzer` checks symbol-level `tests` edges and reports changed production symbols with no graph-backed test relation |
 | Test execution orchestration | **Planned** | Run and collect results from existing test frameworks as part of the verification workflow |

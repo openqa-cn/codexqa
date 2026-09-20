@@ -26,4 +26,4 @@ Python 校验 schema、合并规则与排序。某条语义发现在本仓库是
 
 ## 工作流边界
 
-本 skill 产出**代码风险扫描报告**。它不替代 `code-reviewer` 的 playbook P0/P1/P2、`code-analyzer` 的变更影响面，或 `root-cause-diagnosis` 的异常 RCA。
+本 skill 产出**代码风险扫描报告**。它不替代 `ai-code-reviewer` 的 CodexQA 证据包 HTML 评审、`code-analyzer` 的变更影响面，或 `root-cause-diagnosis` 的异常 RCA。

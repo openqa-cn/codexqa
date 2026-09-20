@@ -4,7 +4,7 @@
 
 `root-cause-diagnosis` 把异常证据（堆栈、日志、调用链 dump、调试输出）加上业务代码库，变成一份**英文** Markdown 根因报告（`report.md` / `report.en.md`）。对业务仓库的结构化理解只来自公开的 **CodexQA CLI**（`@openqa-cn/codexqa`）；本 skill 不复制引擎或 skill 源码。
 
-**不是** [`code-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-analyzer/README.zh-CN.md)（符号图影响面 / 调用方 / 测试缺口），**不是** [`defect-detection`](https://github.com/openqa-cn/codexqa/blob/main/skills/defect-detection/README.zh-CN.md)（SAST+agent 代码风险扫描报告），也**不是** [`code-reviewer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-reviewer/README.zh-CN.md)（P0/P1/P2 playbook 审查）。那些负责结构、需求或审查发现；输入是异常、目标是根因分析时用本 skill。
+**不是** [`code-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-analyzer/README.zh-CN.md)（符号图影响面 / 调用方 / 测试缺口），**不是** [`defect-detection`](https://github.com/openqa-cn/codexqa/blob/main/skills/defect-detection/README.zh-CN.md)（SAST+agent 代码风险扫描报告），也**不是** [`ai-code-reviewer`](https://github.com/openqa-cn/codexqa/blob/main/skills/ai-code-reviewer/README.zh-CN.md)（CodexQA 证据包 HTML 评审）。那些负责结构、需求或审查发现；输入是异常、目标是根因分析时用本 skill。
 
 ## 安装要求
 

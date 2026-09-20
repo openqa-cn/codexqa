@@ -8,19 +8,19 @@
 
 codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优先 [Agent Skills](https://agentskills.io/specification) 包。AI 让产出代码更快；codexqa 聚焦那些不会自动变便宜的验证工作：澄清需求、理解变更影响、拿证据审实现、设计用例、准备测试数据。
 
-七个 skill 分别覆盖交付生命周期中的不同工作。每个 skill 都有独立输入契约，Agent 能明确知道这次该读文档、索引本地 checkout、克隆分支、做代码风险扫描、写用例、调用造数后端，还是诊断异常：
+七个 skill 分别覆盖交付生命周期中的不同工作。每个 skill 都有独立输入契约，Agent 能明确知道这次该读文档、索引本地 checkout、克隆分支、做代码风险扫描、写用例、调用造数后端、诊断异常，还是收集 CodexQA 评审证据包：
 
 | Skill | 用途 |
 | --- | --- |
 | [`code-analyzer`](../skills/code-analyzer/README.zh-CN.md) | 给本地仓库建符号图，再分析变更影响、回归范围、测试缺口、入口和报错 |
 | [`root-cause-diagnosis`](../skills/root-cause-diagnosis/README.zh-CN.md) | 在 CodexQA CLI 之上做异常根因诊断；带门禁的英文 RCA 报告 |
 | [`defect-detection`](../skills/defect-detection/README.zh-CN.md) | SAST/lint/secrets/SCA + agent 内联语义扫描 → `report_scan.*`（P0–P3） |
-| [`code-reviewer`](../skills/code-reviewer/README.zh-CN.md) | 对本地工作副本做 playbook CR，产出 P0 / P1 / P2 报告 |
+| [`ai-code-reviewer`](../skills/ai-code-reviewer/README.zh-CN.md) | CodexQA 证据包 → 双语 `REVIEW-REPORT.html` |
 | [`requirements-analyzer`](../skills/requirements-analyzer/README.zh-CN.md) | 审需求文档的质量与风险，出一份缺口登记表 |
 | [`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) | 从 PRD / 技术方案 / 规格生成并更新手工测试用例 |
 | [`testdata-generation`](../skills/testdata-generation/README.zh-CN.md) | 构造可复用测试数据，回填用例里的 `{placeholder}` |
 
-`npx skills add … --skill <name>` 一次只复制一个目录。按任务安装，彼此不互相替代。`defect-detection` 的检出效果尚未独立 benchmark。`code-analyzer`、`root-cause-diagnosis`、`defect-detection`、`testcase-generation`、`code-reviewer` 和 `requirements-analyzer` 没有公开的宿主 agent 成绩。
+`npx skills add … --skill <name>` 一次只复制一个目录。按任务安装，彼此不互相替代。`defect-detection` 的检出效果尚未独立 benchmark。`code-analyzer`、`root-cause-diagnosis`、`defect-detection`、`testcase-generation`、`ai-code-reviewer` 和 `requirements-analyzer` 没有公开的宿主 agent 成绩。
 
 报告、用例长什么样：[样例页和截图](../README.zh-CN.md#产物长什么样)。
 
@@ -35,12 +35,12 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 - 对 diff / 仓库 / 粘贴做 SAST 与语义代码风险扫描 → `defect-detection`
 - 在本地仓库追变更符号、调用方、回归范围、测试缺口和可达入口 → `code-analyzer`
 - 从堆栈 / 日志 / dump 做异常根因诊断 → `root-cause-diagnosis`
-- 对本地工作副本做质量 / 安全 / 可维护性 CR → `code-reviewer`
+- CodexQA 图证据包与双语 HTML 评审报告 → `ai-code-reviewer`
 - 审 PRD 本身是否完整、一致 → `requirements-analyzer`
 - 写或更新手工用例库 → `testcase-generation`
 - 构造数据、填用例 `{placeholder}` → `testdata-generation`
 
-只说「审这个 PR」不够选：`code-analyzer` 负责画出变更符号、调用方、入口和测试缺口；`defect-detection` 跑 SAST + agent 语义扫描并产出 `report_scan.*`；`code-reviewer` 原地 diff 再加载审查 playbook；`root-cause-diagnosis` 需要异常证据做 RCA。一个请求可以串联多个 skill：先用 `code-analyzer` 收敛影响面，再用 `code-reviewer` 找具体 P0 / P1 / P2 问题。先生成用例；占位符只能在 `.md` 落盘后再回填。
+只说「审这个 PR」不够选：`code-analyzer` 负责画出变更符号、调用方、入口和测试缺口；`defect-detection` 跑 SAST + agent 语义扫描并产出 `report_scan.*`；`ai-code-reviewer` 收集 CodexQA 证据包并渲染 `REVIEW-REPORT.html`；`root-cause-diagnosis` 需要异常证据做 RCA。一个请求可以串联多个 skill：先用 `code-analyzer` 收敛影响面，再用 `ai-code-reviewer` 做图证据 HTML 评审。先生成用例；占位符只能在 `.md` 落盘后再回填。
 
 ## 每个 skill 要我交什么？
 
@@ -49,9 +49,9 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 | Skill | 你要带上的 | 不会当输入用的 |
 |---|---|---|
 | `code-analyzer` | 本地仓库；审变更时再给基线 ref | 需求文档或克隆任务。它给磁盘上的现有 checkout 建索引并查询符号图 |
-| `root-cause-diagnosis` | 异常证据（堆栈 / 日志 / dump），外加 git 地址、本地目录、文件或已打开工作区 | PRD 或 P0/P1/P2 审查请求。它诊断异常，不做需求缺口或 playbook CR |
-| `defect-detection` | Diff / 仓库 / 上传 / 粘贴，用于代码风险扫描 | 以异常堆栈为主（用 `root-cause-diagnosis`）或以 playbook CR 为主（用 `code-reviewer`） |
-| `code-reviewer` | 本地 Git 工作副本 + 要审的分支 / PR / commit | 克隆地址。本 skill 原地 diff |
+| `root-cause-diagnosis` | 异常证据（堆栈 / 日志 / dump），外加 git 地址、本地目录、文件或已打开工作区 | PRD 或 P0/P1/P2 审查请求。它诊断异常，不做需求缺口或图证据 HTML 评审 |
+| `defect-detection` | Diff / 仓库 / 上传 / 粘贴，用于代码风险扫描 | 以异常堆栈为主（用 `root-cause-diagnosis`）或以图证据 HTML 评审为主（用 `ai-code-reviewer`） |
+| `ai-code-reviewer` | 本地 checkout + `codexqa`/`jq`；PR 模式需要 `--diff-base` | 只要结构/影响面问答用 `code-analyzer`；只要 SAST 扫描报告用 `defect-detection` |
 | `requirements-analyzer` | 需求文档（PRD、故事、接口说明，可选角色报告） | 被测源码。它不写用例 |
 | `testcase-generation` | `prd/` 下的 PRD / 技术方案 / 接口契约 | 生成阶段的 `code/`。`code/` 只在更新时做 diff，判断哪些用例受影响，不从代码推断 schema，也不造数据 |
 | `testdata-generation` | 造数请求、写好的用例，和/或 OpenAPI / `planId` / `serviceId` | 被测源码。它打后端（或本地 mock），回报后端返回的业务 ID |

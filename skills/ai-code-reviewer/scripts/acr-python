@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Always run ai-code-reviewer Python helpers with 3.10+.
+set -euo pipefail
+HERE="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=lib/python_resolve.sh
+source "$HERE/lib/python_resolve.sh"
+PY="$(acr_resolve_python)" || {
+  echo "FATAL: Python 3.10+ not found on PATH (tried python3.13..python3.10, python3)" >&2
+  exit 1
+}
+exec "$PY" "$@"

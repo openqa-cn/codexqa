@@ -1,0 +1,23 @@
+id: edge-html-partial-conclusion
+title: "HTML render coerces partial conclusion; rejects invalid JSON"
+description: |
+  Partial/wrong-typed conclusion fields still render; broken JSON fails clearly.
+
+input:
+  prompt: |
+    Render evals/fixtures/conclusion/partial-malformed.json via render-review-html.sh
+    and confirm success. Then attempt invalid JSON and expect a clear parse error.
+
+expect:
+  must_contain:
+    - "HTML review report written"
+    - "invalid or non-object conclusion JSON"
+  must_not_contain:
+    - "TODO"
+
+judge:
+  type: rule_based
+  success:
+    - output_contains:
+        all:
+          - "HTML review report written"

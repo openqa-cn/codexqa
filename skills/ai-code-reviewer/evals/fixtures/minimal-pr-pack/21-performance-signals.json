@@ -1,0 +1,25 @@
+{
+  "kind": "PerformanceSignals",
+  "mode": "pr",
+  "generated_by": "derive-performance.sh",
+  "schema_version": 1,
+  "signals_thin": true,
+  "n_plus_one_risks": [],
+  "hot_path_risks": [],
+  "unbounded_allocation": [],
+  "residual_performance": [],
+  "summary": {},
+  "confidence_caps": {
+    "heuristic": "medium",
+    "no_profiler": true,
+    "stubs_cap_unknown": false,
+    "stubs": 0
+  },
+  "evidence_refs": [
+    "04-changed-files.json",
+    "07-tags.json"
+  ],
+  "notes": [
+    "No performance heuristics hit for this fixture"
+  ]
+}

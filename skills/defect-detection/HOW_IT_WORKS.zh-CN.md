@@ -49,7 +49,7 @@ diff / 仓库 / 上传 / 粘贴
 
 | Skill | 区别 |
 |---|---|
-| [`code-reviewer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-reviewer/README.zh-CN.md) | 本地 checkout 上的 playbook P0/P1/P2 — 没有 `report_scan` 流水线 |
+| [`ai-code-reviewer`](https://github.com/openqa-cn/codexqa/blob/main/skills/ai-code-reviewer/README.zh-CN.md) | CodexQA 证据包 → 双语 `REVIEW-REPORT.html` — 没有 `report_scan` 流水线 |
 | [`code-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-analyzer/README.zh-CN.md) | 同一 CodexQA 图上的结构/影响面 — 不是严重级别发现报告 |
 | [`root-cause-diagnosis`](https://github.com/openqa-cn/codexqa/blob/main/skills/root-cause-diagnosis/README.zh-CN.md) | 在 CLI facts 之上做异常 RCA — 不是增量/全量代码风险扫描 |
 

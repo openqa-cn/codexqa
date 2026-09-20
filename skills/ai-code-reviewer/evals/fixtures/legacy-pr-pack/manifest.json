@@ -1,0 +1,7 @@
+{
+  "mode": "pr",
+  "skill": "code-review-codexqa",
+  "repo": "/tmp/fixture-repo",
+  "diff_base": "origin/main",
+  "commands": ["codexqa index /tmp/fixture-repo --diff-base origin/main"]
+}

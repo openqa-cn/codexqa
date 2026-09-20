@@ -4,7 +4,7 @@
 
 `defect-detection` runs deterministic SAST / lint / secrets / SCA, then two-stage semantic review by the **invoking agent** (default `--llm-mode agent`, no API key). It writes `report_scan.json` / `.md` / `.html` with findings ordered **P0→P3**. Code-graph and call-chain analysis use the public **CodexQA CLI** (`@openqa-cn/codexqa`) for all languages.
 
-It is **not** [`code-reviewer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-reviewer/README.md) (P0/P1/P2 playbook CR), **not** [`code-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-analyzer/README.md) (symbol-graph impact / test gaps), and **not** [`root-cause-diagnosis`](https://github.com/openqa-cn/codexqa/blob/main/skills/root-cause-diagnosis/README.md) (exception RCA). Use this skill when the goal is a code-risk / security / logic **scan report**.
+It is **not** [`ai-code-reviewer`](https://github.com/openqa-cn/codexqa/blob/main/skills/ai-code-reviewer/README.md) (CodexQA evidence-pack HTML review), **not** [`code-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-analyzer/README.md) (symbol-graph impact / test gaps), and **not** [`root-cause-diagnosis`](https://github.com/openqa-cn/codexqa/blob/main/skills/root-cause-diagnosis/README.md) (exception RCA). Use this skill when the goal is a code-risk / security / logic **scan report**.
 
 ## Requirements
 

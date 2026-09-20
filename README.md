@@ -2,7 +2,7 @@
 
 # codexqa
 
-**Seven local-first Agent Skills for requirements, test design, test data, change impact, exception RCA, code-risk scan, and code review.**
+**Seven local-first Agent Skills for requirements, test design, test data, change impact, exception RCA, code-risk scan, and graph-evidence review.**
 
 [![CI](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml)
 [![Release](https://img.shields.io/github/v/tag/openqa-cn/codexqa?label=release&style=flat)](https://github.com/openqa-cn/codexqa/releases)
@@ -46,7 +46,7 @@ AI can produce a green pull request quickly. Teams still have to check whether t
 | Change impact | [`code-analyzer`](skills/code-analyzer/README.md) | What changed, who calls it, which entries are hit, and what is untested? | Symbol-graph evidence, regression scope, test gaps, and diagrams |
 | Exception RCA | [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.md) | What is the in-repo root cause of this stack / log / crash? | Gated English root-cause report on top of CodexQA CLI facts |
 | Code-risk scan | [`defect-detection`](skills/defect-detection/README.md) | What SAST / secrets / logic risks are in this diff, repo, or paste? | `report_scan.json` / `.md` / `.html` findings ordered P0–P3 |
-| Code review | [`code-reviewer`](skills/code-reviewer/README.md) | What concrete quality, security, or maintainability problems are in this diff? | Playbook-driven P0 / P1 / P2 findings with file:line and fixes |
+| Graph-evidence review | [`ai-code-reviewer`](skills/ai-code-reviewer/README.md) | What does the CodexQA pack say about impact, gaps, and dimension risks? | Evidence pack + bilingual `REVIEW-REPORT.html` |
 
 The skills use different inputs by design. The Agent can tell whether it should read documents, index a local checkout, clone a branch, write cases, or call a data backend.
 
@@ -55,6 +55,7 @@ The skills use different inputs by design. The Agent can tell whether it should 
 - `defect-detection` combines deterministic SAST/lint/secrets/SCA with agent-inline semantic review into a P0–P3 `report_scan.*`.
 - `code-analyzer` uses a local symbol graph to trace changed symbols to callers, entries, and graph-backed test relationships.
 - `root-cause-diagnosis` turns exception evidence into a gated English RCA report on top of the same CodexQA CLI.
+- `ai-code-reviewer` collects a CodexQA evidence pack and renders bilingual `REVIEW-REPORT.html` from pack artifacts only.
 - The document and test skills keep requirement review, case design, and data construction separate instead of asking one prompt to do everything.
 - Each skill has a narrow input contract, evidence format, and stop conditions. The skills install into the Agent you already use; findings remain candidates for human review.
 
@@ -64,12 +65,12 @@ The four code-facing skills overlap on the same repository but answer different 
 
 | Skill | Primary question | Input | It does not replace |
 | --- | --- | --- | --- |
-| [`code-analyzer`](skills/code-analyzer/README.md) | What changed, what can it reach, and where are the test gaps? | Local repository + optional diff base | Requirement judgement, exception RCA, or P0 / P1 / P2 review |
+| [`code-analyzer`](skills/code-analyzer/README.md) | What changed, what can it reach, and where are the test gaps? | Local repository + optional diff base | Requirement judgement, exception RCA, or full review report |
 | [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.md) | What is the in-repo root cause of this exception? | Exception evidence + git / dir / file / open workspace | Structure/impact mapping or code-risk scan |
-| [`defect-detection`](skills/defect-detection/README.md) | What code-risk / security / logic findings belong in a scan report? | Diff / repo / upload / paste | Playbook CR or exception RCA |
-| [`code-reviewer`](skills/code-reviewer/README.md) | What concrete implementation problems deserve review findings? | Local checkout + branch / PR / commit | Symbol-graph impact mapping or requirement-document review |
+| [`defect-detection`](skills/defect-detection/README.md) | What code-risk / security / logic findings belong in a scan report? | Diff / repo / upload / paste | Graph-evidence CR, structure/impact Q&A, or exception RCA |
+| [`ai-code-reviewer`](skills/ai-code-reviewer/README.md) | What does a CodexQA evidence pack imply for this change / repo? | Local checkout + collect scripts (`--diff-base` / full / adhoc) | SAST scan reports or structure/impact Q&A alone |
 
-Detailed workflow and boundary documents live with each skill: [code-analyzer](skills/code-analyzer/README.md) ([limitations](skills/code-analyzer/KNOWN_LIMITATIONS.md)), [root-cause-diagnosis](skills/root-cause-diagnosis/HOW_IT_WORKS.md), [defect-detection](skills/defect-detection/HOW_IT_WORKS.md), [code-reviewer](skills/code-reviewer/HOW_IT_WORKS.md), [requirements-analyzer](skills/requirements-analyzer/HOW_IT_WORKS.md), [testcase-generation](skills/testcase-generation/HOW_IT_WORKS.md), and [testdata-generation](skills/testdata-generation/HOW_IT_WORKS.md). Host, language, and verification status are tracked in the [support matrix](docs/SUPPORT_MATRIX.md).
+Detailed workflow and boundary documents live with each skill: [code-analyzer](skills/code-analyzer/README.md) ([limitations](skills/code-analyzer/KNOWN_LIMITATIONS.md)), [root-cause-diagnosis](skills/root-cause-diagnosis/HOW_IT_WORKS.md), [defect-detection](skills/defect-detection/HOW_IT_WORKS.md), [ai-code-reviewer](skills/ai-code-reviewer/HOW_IT_WORKS.md), [requirements-analyzer](skills/requirements-analyzer/HOW_IT_WORKS.md), [testcase-generation](skills/testcase-generation/HOW_IT_WORKS.md), and [testdata-generation](skills/testdata-generation/HOW_IT_WORKS.md). Host, language, and verification status are tracked in the [support matrix](docs/SUPPORT_MATRIX.md).
 
 ## Install on Cursor, Claude Code, and Codex
 
@@ -87,7 +88,7 @@ Install only the skill needed for the current task:
 npx skills add openqa-cn/codexqa --skill code-analyzer
 npx skills add openqa-cn/codexqa --skill root-cause-diagnosis
 npx skills add openqa-cn/codexqa --skill defect-detection
-npx skills add openqa-cn/codexqa --skill code-reviewer
+npx skills add openqa-cn/codexqa --skill ai-code-reviewer
 npx skills add openqa-cn/codexqa --skill requirements-analyzer
 npx skills add openqa-cn/codexqa --skill testcase-generation
 npx skills add openqa-cn/codexqa --skill testdata-generation
@@ -157,16 +158,15 @@ Produce an English root-cause report: trigger vs root cause, mapped call path, a
 Provide the exception text or file plus a git URL, local directory, single file, or already-open workspace. This path also uses `@openqa-cn/codexqa`; see [root-cause-diagnosis limitations](skills/root-cause-diagnosis/KNOWN_LIMITATIONS.md).
 
 <details>
-<summary><b>What to say to the other four skills</b></summary>
+<summary><b>What to say to the other skills</b></summary>
 
-**Review a local checkout (`code-reviewer`)** — open the repository in the agent. This skill diffs in place; it does not clone.
+**Graph-evidence review (`ai-code-reviewer`)** — open the repository in the agent; requires `codexqa` + `jq` on PATH.
 
 ```text
-Review the current branch with code-reviewer against main.
-For each finding give severity, file:line, the rule, the runtime impact, and a fix.
+Run ai-code-reviewer against origin/main and produce REVIEW-REPORT.html from the CodexQA pack.
 ```
 
-There is no public fixture yet. For SAST+agent code-risk scanning, use `defect-detection`.
+For SAST+agent code-risk scanning, use `defect-detection`. For CodexQA HTML review, use `ai-code-reviewer`.
 
 **Analyze requirements (`requirements-analyzer`)** — give documents, not a repo.
 
@@ -211,7 +211,6 @@ The large image at the top is the `defect-detection` HTML report. Other sample a
 | Skill | Sample |
 | --- | --- |
 | `code-analyzer` | [Change-impact graph](skills/code-analyzer/assets/checkout-change-impact.svg) |
-| `code-reviewer` | [P0 / P1 findings](docs/assets/previews/cr-findings.html) |
 | `requirements-analyzer` | [Gap/conflict register](docs/assets/previews/ra-register.html) |
 | `testcase-generation` | [Structured manual case](docs/assets/previews/testcase-sample.html) |
 | `testdata-generation` | [Backend values written into case preconditions](docs/assets/previews/testdata-writeback.html) |
@@ -227,7 +226,7 @@ The workflows do not have the same public evidence maturity:
 | `code-analyzer` | Published Skill contract, schemas, playbook, example diagram, and limitations; the separately distributed closed-source engine is not run by this repository's CI |
 | `root-cause-diagnosis` | Local CLI tests (parse, materialize, draft, smoke); uses `@openqa-cn/codexqa`; no published host-agent score; RCA narrative is model-judged |
 | `defect-detection` | Local Python pipeline/policy-fixture tests; optional SAST + closed-source CodexQA CLI; no published host-agent score; Stage1/Stage2 are model-judged |
-| `code-reviewer` | Offline tooling contract checks; no public fixture or recorded host-Agent run |
+| `ai-code-reviewer` | Local `validate-skill.sh` / fixture validate+render smoke (Python 3.10+); live CodexQA index not run by repository CI; review prose is model-judged |
 | `requirements-analyzer` | Evaluation cases and parse/convert scripts; no recorded host-Agent score |
 | `testcase-generation` | Integration validators and case-document linting; no public fixture or recorded Agent run |
 | `testdata-generation` | Packer, slot search, and local catalog mock; runtime depends on configured adapters and slots |

@@ -2,7 +2,7 @@
 
 [English](ROADMAP.md)
 
-codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。当前价值更具体、范围也更克制：七个本地优先的 skill，把需求、代码变更、审查、用例、测试数据、代码风险扫描和异常诊断拆成独立、可核查的工作流，而不是交给一次没有约束的 AI 对话。本仓库当前提供 [`code-analyzer`](../skills/code-analyzer/README.zh-CN.md)、[`root-cause-diagnosis`](../skills/root-cause-diagnosis/README.zh-CN.md)、[`defect-detection`](../skills/defect-detection/README.zh-CN.md)、[`code-reviewer`](../skills/code-reviewer/README.zh-CN.md)、[`requirements-analyzer`](../skills/requirements-analyzer/README.zh-CN.md)、[`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) 和 [`testdata-generation`](../skills/testdata-generation/README.zh-CN.md)。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由这些工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
+codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。当前价值更具体、范围也更克制：七个本地优先的 skill，把需求、代码变更、审查、用例、测试数据、代码风险扫描和异常诊断拆成独立、可核查的工作流，而不是交给一次没有约束的 AI 对话。本仓库当前提供 [`code-analyzer`](../skills/code-analyzer/README.zh-CN.md)、[`root-cause-diagnosis`](../skills/root-cause-diagnosis/README.zh-CN.md)、[`defect-detection`](../skills/defect-detection/README.zh-CN.md)、[`ai-code-reviewer`](../skills/ai-code-reviewer/README.zh-CN.md)、[`requirements-analyzer`](../skills/requirements-analyzer/README.zh-CN.md)、[`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) 和 [`testdata-generation`](../skills/testdata-generation/README.zh-CN.md)。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由这些工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
 
 ## 能力地图
 
@@ -12,7 +12,7 @@ codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。�
 | 代码分析 | **已提供** | `code-analyzer` 为支持的语言建立本地符号图，`defect-detection` 另有 AST 规则和变更方法分析；parser 与框架覆盖仍有差异 |
 | 需求评审 | **已提供** | 对需求文档做缺口/冲突分析（`requirements-analyzer`）；实现是否符合需求仍是计划中 |
 | 规格评审 | **计划中** | 检查技术规格的完整性、一致性和可测试性 |
-| AI Code Review | **已提供** | Playbook 驱动的 PR / 分支 / commit 审查（`code-reviewer`）；尚无公开 fixture |
+| AI Code Review | **已提供** | CodexQA 证据包 → 双语 `REVIEW-REPORT.html`（`ai-code-reviewer`）；本地有 fixture validate+render 冒烟 |
 | 变更影响分析 | **已提供** | `code-analyzer` 在单个已索引仓库内从变更符号追到调用方及 HTTP / RPC / MQ / 定时任务入口；跨仓影响分析仍在规划 |
 | 测试缺口分析 | **已提供** | `code-analyzer` 核验符号级 `tests` 边，报告没有图关系测试罩住的已变更生产符号 |
 | 测试执行编排 | **计划中** | 在验证工作流中运行现有测试框架并采集结果 |

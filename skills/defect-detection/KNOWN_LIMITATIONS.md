@@ -26,4 +26,4 @@ There is no public answer-key fixture and no recorded host-agent score for end-t
 
 ## Workflow boundary
 
-This skill produces **code-risk scan reports**. It does not replace `code-reviewer` for playbook P0/P1/P2, `code-analyzer` for change-impact mapping, or `root-cause-diagnosis` for exception RCA.
+This skill produces **code-risk scan reports**. It does not replace `ai-code-reviewer` for CodexQA evidence-pack HTML review, `code-analyzer` for change-impact mapping, or `root-cause-diagnosis` for exception RCA.
