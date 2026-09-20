@@ -4,7 +4,7 @@
 
 `root-cause-diagnosis` turns exception evidence (stack traces, logs, call-chain dumps, debug output) plus a business codebase into an **English** Markdown root-cause report (`report.md` / `report.en.md`). Structured repo understanding comes only from the public **CodexQA CLI** (`@openqa-cn/codexqa`); this skill does not copy engine or skill source.
 
-It is **not** [`code-analyzer`](../code-analyzer/README.md) (symbol-graph impact / callers / test gaps), **not** [`defect-detection`](../defect-detection/README.md) (requirement-oriented defects with write-back gates), and **not** [`code-reviewer`](../code-reviewer/README.md) (P0/P1/P2 playbook CR). Use those for structure, requirements, or review findings; use this skill when the input is an exception and the goal is RCA.
+It is **not** [`code-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-analyzer/README.md) (symbol-graph impact / callers / test gaps), **not** [`defect-detection`](https://github.com/openqa-cn/codexqa/blob/main/skills/defect-detection/README.md) (requirement-oriented defects with write-back gates), and **not** [`code-reviewer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-reviewer/README.md) (P0/P1/P2 playbook CR). Use those for structure, requirements, or review findings; use this skill when the input is an exception and the goal is RCA.
 
 ## Requirements
 
