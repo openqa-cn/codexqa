@@ -12,6 +12,10 @@ Gate and stage scripts use modern typing and stdlib behavior. **Always** invoke 
 
 The skill writes local Markdown only. It does not recall, upload, or sync remote case spaces, and it does not install or call a document-platform / identity CLI.
 
+## Aggregated HTML report is a viewer
+
+After Stage 6 dual-write, `generate_case_report.py` writes `testdesign/testcase_generation_report.html` (Web / Server / APP panels, zh/EN chrome, light/dark theme). Markdown under `cases/` remains the only edit source; regenerate the HTML after case edits. UI chrome is bilingual; case body language follows whatever was authored in Markdown.
+
 ## Plan and case prose are model-judged
 
 `check_run_gate.py` / `close_stage.py` enforce artifact presence, headings, and dual-write. Whether scenarios and steps match the business domain is decided by the host model. A gate that passes can still yield a wrong plan or case if the model invents facts instead of marking TBD / pending clarification.
@@ -26,7 +30,7 @@ An empty knowledge index is valid. The skill does not call an external knowledge
 
 ## No published host-agent score
 
-Offline `--self-check` covers gate fixtures. There is no public answer-key fixture and no recorded host-agent score for full Plan→Exec or Incremental runs.
+Offline `--self-check` covers gate fixtures and the HTML report generator. There is no public answer-key fixture and no recorded host-agent score for full Plan→Exec or Incremental runs.
 
 ## Workflow boundary
 

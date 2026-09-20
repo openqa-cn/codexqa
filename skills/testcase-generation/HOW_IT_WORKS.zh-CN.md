@@ -17,7 +17,8 @@
         ├─ Plan 0→5  →  testdocs 报告 + testdesign/test_design.md
         │                （check_run_gate stage5 + close_stage）
         ├─ Exec 6    →  testcase/initialcase/ 与 cases/ 双写
-        │                （allow-exec → check_run_gate stage6 + close_stage）
+        │                + testdesign/testcase_generation_report.html
+        │                （allow-exec → 双写 → generate_case_report → gate stage6 + close_stage）
         └─ Incremental → .case-enhance/ 过程区 + 更新后的 cases/
                           （可选把 PR/git 拉到 .pr-cache/）
 ```
@@ -25,14 +26,14 @@
 1. **路由** — 只看用户原话（`references/entry-routing.md`）。不清楚就先问；不要臆造「只要用例」。
 2. **工作区** — `close_stage.py --init`，再从 `run-status.json` 的 `currentStage` 续跑。
 3. **Plan** — 阶段 0–4-1 产出报告；阶段 5 仅在 gate `stage5` 的 stdout `ok: true` 后写 `test_design.md`。
-4. **Exec** — 仅在后续用户确认并 `--allow-exec` 之后双写用例；再过 gate `stage6`。
+4. **Exec** — 仅在后续用户确认并 `--allow-exec` 之后双写用例，生成聚合 HTML 报告，再过 gate `stage6`。
 5. **Incremental** — 在既有基线上的并列作用域；用户给出 PR/git URL 时可拉代码。
 
 ## 脚本与模型各自负责什么
 
 | 层 | 负责 |
 |---|---|
-| `close_stage.py` / `check_run_gate.py` / ingest 与 incremental 脚本 | 运行状态、阶段门禁、文档摄入、PR 拉取、冻结辅助 |
+| `close_stage.py` / `check_run_gate.py` / `generate_case_report.py` / ingest 与 incremental 脚本 | 运行状态、阶段门禁、聚合 HTML 报告、文档摄入、PR 拉取、冻结辅助 |
 | 宿主 agent | 路由、分析正文、方案章节、`references/` 下的用例正文 |
 | 内置模板（`case-tpl-*.md`、方案模板） | 三端用例形态与方案 Minimum persist 标题 |
 
@@ -46,4 +47,4 @@
 
 ## 证据状态
 
-`scripts/tcg-python scripts/close_stage.py --self-check` 与 `check_run_gate.py --self-check` 覆盖离线门禁夹具。完整 Plan→Exec 没有公开宿主 agent 成绩。见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。
+`scripts/tcg-python scripts/close_stage.py --self-check`、`check_run_gate.py --self-check` 与 `generate_case_report.py --self-check` 覆盖离线夹具。完整 Plan→Exec 没有公开宿主 agent 成绩。见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。

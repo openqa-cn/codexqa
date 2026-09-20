@@ -17,7 +17,7 @@ The seven skills cover different parts of the delivery lifecycle. Each has a sep
 | [`defect-detection`](../skills/defect-detection/README.md) | SAST/lint/secrets/SCA + agent-inline semantic scan → `report_scan.*` (P0–P3) |
 | [`ai-code-reviewer`](../skills/ai-code-reviewer/README.md) | CodexQA evidence pack → bilingual `REVIEW-REPORT.html` |
 | [`requirements-analyzer`](../skills/requirements-analyzer/README.md) | Quality-and-risk analysis of requirement documents; one gap register |
-| [`testcase-generation`](../skills/testcase-generation/README.md) | Generate test plans and manual cases (Plan / Exec / Incremental) from local requirements |
+| [`testcase-generation`](../skills/testcase-generation/README.md) | Generate test plans and manual cases (Plan / Exec / Incremental) from local requirements; dual-write Markdown plus aggregated HTML report |
 | [`testdata-generation`](../skills/testdata-generation/README.md) | Construct reusable test data and backfill `{placeholder}`s in those cases |
 
 `npx skills add … --skill <name>` copies one directory. Install the skill you need; they do not replace each other. Detection accuracy for `defect-detection` has not been independently benchmarked. `code-analyzer`, `root-cause-diagnosis`, `defect-detection`, `testcase-generation`, `ai-code-reviewer`, and `requirements-analyzer` have no published host-agent score.
@@ -37,7 +37,7 @@ Match the request, not the wording:
 - Diagnose exception root cause from stacks / logs / dumps → `root-cause-diagnosis`
 - CodexQA graph-evidence pack and bilingual HTML review report → `ai-code-reviewer`
 - Review whether the PRD itself is complete and consistent → `requirements-analyzer`
-- Write or update a manual case library → `testcase-generation`
+- Write or update a manual case library (and optional aggregated HTML report) → `testcase-generation`
 - Build data that fills case `{placeholder}`s → `testdata-generation`
 
 “Review this PR” is not enough to choose: `code-analyzer` maps changed symbols, callers, entries, and test gaps; `defect-detection` runs SAST + agent semantic scan into `report_scan.*`; `ai-code-reviewer` collects a CodexQA pack and renders `REVIEW-REPORT.html`; `root-cause-diagnosis` needs exception evidence for RCA. A request can span skills: use `code-analyzer` to bound the impact, then `ai-code-reviewer` for graph-evidence HTML review. Generate cases first; placeholders can only be backfilled after the `.md` files exist.
@@ -82,7 +82,7 @@ Repository cloning and fetching public documents can also use the network. Curre
 
 `defect-detection` writes reports to the `-o` directory (default `/tmp/aid_report/`) and optional feedback under the skill `data/` directory. See its [README](../skills/defect-detection/README.md). Keep runtime data and private configuration outside version control and back them up before upgrading.
 
-`testcase-generation` writes under a `run_dir` (default `$HOME/testdata-generation/runs/{runid}`, or a path you specify): `testcase/testdocs/`, `testdesign/`, `testcase/initialcase/`, `testcase/cases/`. `testdata-generation` writes under the workspace `testdata/` (see that skill's README). `code-analyzer` stores local indexes under `~/.codexqa/`; indexing and graph queries do not require an LLM. `root-cause-diagnosis` stores task data under its skill `data/` directory and also uses the CodexQA CLI indexes.
+`testcase-generation` writes under a `run_dir` (default `$HOME/testdata-generation/runs/{runid}`, or a path you specify): `testcase/testdocs/`, `testdesign/` (including `test_design.md` and `testcase_generation_report.html`), `testcase/initialcase/`, `testcase/cases/`. `testdata-generation` writes under the workspace `testdata/` (see that skill's README). `code-analyzer` stores local indexes under `~/.codexqa/`; indexing and graph queries do not require an LLM. `root-cause-diagnosis` stores task data under its skill `data/` directory and also uses the CodexQA CLI indexes. `ai-code-reviewer` writes evidence packs under a working directory such as `.codexqa-review/` and renders `REVIEW-REPORT.html`.
 
 ## Is defect-detection a replacement for static analysis or testing?
 
@@ -102,4 +102,4 @@ Sample pages (same renderers, canned findings): [README · What the output looks
 
 ## Does testcase-generation fill test data?
 
-No. It writes test plans and manual case Markdown (unknowns stay TBD / pending clarification). Constructing live backend IDs and writing them back as preconditions is `testdata-generation`. Installing only `testcase-generation` yields a design library, not a script against a live backend.
+No. It writes test plans and manual case Markdown (unknowns stay TBD / pending clarification), then an aggregated HTML report for review. Constructing live backend IDs and writing them back as preconditions is `testdata-generation`. Installing only `testcase-generation` yields a design library, not a script against a live backend.

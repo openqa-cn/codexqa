@@ -8,10 +8,10 @@ What you give each skill is different ([FAQ](FAQ.md#what-do-i-have-to-give-each-
 
 ## Requirements
 
-Use Node.js, npm/npx, Git, and a coding agent able to read skill files and run commands. `code-analyzer` requires Node.js 18 or newer. The `defect-detection` Python pipeline is exercised with Python 3.11 locally and in CI:
+Use Node.js, npm/npx, Git, and a coding agent able to read skill files and run commands. `code-analyzer` requires Node.js 18 or newer. `testcase-generation` requires Python 3.10+ (invoke via that skill's `scripts/tcg-python`). The `defect-detection` Python pipeline is exercised with Python 3.11 locally and in CI:
 
 ```bash
-python3 --version   # 3.10+; 3.11 recommended
+python3 --version   # 3.10+; 3.11 recommended (defect-detection / testcase-generation)
 node --version      # for CodexQA CLI / other skills
 npx --version
 git --version
@@ -109,7 +109,7 @@ After install, start a new agent session and point it at the skill. Inputs diffe
 - `defect-detection` needs a diff, repo, upload, or paste for a code-risk scan. See its [README](../skills/defect-detection/README.md).
 - `ai-code-reviewer` needs a local checkout, `codexqa` + `jq` on PATH, and (for PR mode) `--diff-base`. See [ai-code-reviewer README](../skills/ai-code-reviewer/README.md).
 - `requirements-analyzer` needs requirement documents, not a repo. See [What you give it](../skills/requirements-analyzer/README.md#what-you-give-it).
-- `testcase-generation` needs local requirement materials (file, directory, paste, or HTTPS document URL this turn). Optional knowledge dir / Git URL. See its [README](../skills/testcase-generation/README.md).
+- `testcase-generation` needs local requirement materials (file, directory, paste, or HTTPS document URL this turn). Optional knowledge dir / Git URL. After Exec, expect Markdown under `testcase/cases/` plus `testdesign/testcase_generation_report.html`. Smoke: `./scripts/tcg-python scripts/close_stage.py --self-check` (and `check_run_gate.py` / `generate_case_report.py --self-check`) from the skill directory. See its [README](../skills/testcase-generation/README.md).
 - `testdata-generation` needs a construct request, cases, or an API source — not application source. See [What you give it](../skills/testdata-generation/README.md#what-you-give-it).
 
 Sample prompts for each skill: [root README · Quick start](../README.md#quick-start).

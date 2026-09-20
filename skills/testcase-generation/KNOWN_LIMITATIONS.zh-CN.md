@@ -12,6 +12,10 @@
 
 本 skill 只写本地 Markdown。不召回 / 上传 / 同步远程用例空间，也不安装或调用文档平台 / 身份 CLI。
 
+## 聚合 HTML 报告是只读视图
+
+Stage 6 双写后，`generate_case_report.py` 写出 `testdesign/testcase_generation_report.html`（Web / 服务端 / APP 分栏、中英界面、白天/黑夜主题）。编辑源仍是 `cases/` 下的 Markdown；改用例后需重新生成 HTML。界面文案可中英切换；用例正文语言随 Markdown 原文。
+
 ## 方案与用例正文由模型判断
 
 `check_run_gate.py` / `close_stage.py` 约束产物是否存在、标题是否齐全、是否双写。场景与步骤是否符合业务域由宿主模型决定。门禁通过仍可能写出错误方案或用例——如果模型编造事实而不是标 TBD / 待澄清。
@@ -26,7 +30,7 @@
 
 ## 无公开宿主 agent 成绩
 
-离线 `--self-check` 覆盖门禁夹具。完整 Plan→Exec 或 Incremental 没有公开标准答案夹具，也没有已记录的宿主 agent 成绩。
+离线 `--self-check` 覆盖门禁夹具与 HTML 报告生成器。完整 Plan→Exec 或 Incremental 没有公开标准答案夹具，也没有已记录的宿主 agent 成绩。
 
 ## 工作流边界
 

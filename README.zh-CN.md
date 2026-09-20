@@ -41,7 +41,7 @@ AI 能很快产出一个绿 PR，但需求是否对齐、影响了谁、审查�
 | 阶段 | Skill | 它回答什么问题 | 可核查产物 |
 | --- | --- | --- | --- |
 | 需求评审 | [`requirements-analyzer`](skills/requirements-analyzer/README.zh-CN.md) | PRD 是否完整、一致、可测试？ | 一份带 P0 / P1 验证项的缺口/冲突登记表 |
-| 测试设计 | [`testcase-generation`](skills/testcase-generation/README.zh-CN.md) | 根据需求应该写什么测试方案和手工用例？ | 本地 Markdown 方案 + 用例；未知信息标出，不编造 |
+| 测试设计 | [`testcase-generation`](skills/testcase-generation/README.zh-CN.md) | 根据需求应该写什么测试方案和手工用例？ | 本地 Markdown 方案 + 用例 + 聚合 HTML 报告；未知信息标出，不编造 |
 | 测试数据 | [`testdata-generation`](skills/testdata-generation/README.zh-CN.md) | 哪些真实 ID 和前置条件能让用例跑起来？ | 后端实际返回值回写到用例前置条件 |
 | 变更影响 | [`code-analyzer`](skills/code-analyzer/README.zh-CN.md) | 改了什么、谁在调用、影响哪些入口、哪里没测试？ | 符号图证据、回归范围、测试缺口和关系图 |
 | 异常根因 | [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.zh-CN.md) | 这条堆栈 / 日志 / 崩溃的仓内根因是什么？ | 基于 CodexQA CLI facts 的带门禁英文 RCA 报告 |
@@ -74,7 +74,7 @@ AI 能很快产出一个绿 PR，但需求是否对齐、影响了谁、审查�
 
 ## 在 Cursor、Claude Code、Codex 上安装
 
-先检查基础工具。`code-analyzer` 要求 Node.js 18+；`defect-detection` 要求 Python 3.10+（推荐 3.11），实图可选 CodexQA CLI。
+先检查基础工具。`code-analyzer` 要求 Node.js 18+；`defect-detection` 要求 Python 3.10+（推荐 3.11），实图可选 CodexQA CLI；`testcase-generation` 要求 Python 3.10+（用该 skill 的 `scripts/tcg-python`）。
 
 ```bash
 node --version
@@ -214,7 +214,7 @@ codexqa stats /path/to/repo
 | --- | --- |
 | `code-analyzer` | [变更影响关系图](skills/code-analyzer/assets/checkout-change-impact.svg) |
 | `requirements-analyzer` | [缺口/冲突登记表](docs/assets/previews/ra-register.html) |
-| `testcase-generation` | [结构化手工用例](docs/assets/previews/testcase-sample.html) |
+| `testcase-generation` | [结构化手工用例](docs/assets/previews/testcase-sample.html)（V56 服务端模板；运行时另写 `testdesign/testcase_generation_report.html`） |
 | `testdata-generation` | [后端返回值回写用例前置条件](docs/assets/previews/testdata-writeback.html) |
 
 这些页面使用项目内的渲染器和预置样例数据，只用于说明产物形态，不是已记录的 Agent 运行。
@@ -232,7 +232,7 @@ codexqa stats /path/to/repo
 | `defect-detection` | 本地 Python 流水线/策略夹具测试；可选 SAST 与闭源 CodexQA CLI；无公开宿主 agent 成绩；Stage1/Stage2 由模型判断 |
 | `ai-code-reviewer` | 本地 `validate-skill.sh` / fixture 校验+渲染冒烟（Python 3.10+）；本仓库 CI 不跑现场 CodexQA 建索引；评审叙事由模型判断 |
 | `requirements-analyzer` | eval 用例和解析/转换脚本；没有已记录宿主 Agent 成绩 |
-| `testcase-generation` | 阶段门禁 / close_stage `--self-check`（Python 3.10+）；没有公开 Plan→Exec fixture 或已记录 Agent 运行 |
+| `testcase-generation` | 阶段门禁 / close_stage / generate_case_report `--self-check`（Python 3.10+）；没有公开 Plan→Exec fixture 或已记录 Agent 运行 |
 | `testdata-generation` | packer、slot 检索和本地 catalog mock；运行结果取决于已配置的 adapter 与 slot |
 
 发现项需要人工确认。codexqa 不替代测试、静态分析、安全审查或维护者判断，也不能推断没有提供的业务规则。本地工作流会写磁盘；仓库克隆、文档获取、外部 provider、工具安装以及宿主 Agent/模型都可能联网。
@@ -248,9 +248,10 @@ python3 scripts/check-docs.py
 export NODE_OPTIONS=--experimental-strip-types
 (cd skills/defect-detection && npm test)
 node examples/checkout-boundary/verify.mjs
+(cd skills/testcase-generation && ./scripts/tcg-python scripts/close_stage.py --self-check && ./scripts/tcg-python scripts/check_run_gate.py --self-check && ./scripts/tcg-python scripts/generate_case_report.py --self-check)
 ```
 
-这些检查覆盖文档链接、中英章节对齐、`defect-detection` Python 流水线/策略夹具、打包和边界 fixture。它们不执行完整实 agent Stage1/Stage2 扫描，也不执行单独分发的 `code-analyzer` / `root-cause-diagnosis` 引擎路径，也不能证明所有缺陷都会被发现。
+这些检查覆盖文档链接、中英章节对齐、`defect-detection` Python 流水线/策略夹具、打包、边界 fixture，以及 `testcase-generation` 离线门禁/报告冒烟。它们不执行完整实 agent Stage1/Stage2 扫描，也不执行单独分发的 `code-analyzer` / `root-cause-diagnosis` 引擎路径，也不能证明所有缺陷都会被发现。
 
 ## 文档
 

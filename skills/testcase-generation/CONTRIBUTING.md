@@ -17,7 +17,7 @@ HOW_IT_WORKS.md          data flow (human)
 KNOWN_LIMITATIONS.md     unimplemented / unmeasured
 README.md                install + overview
 references/              stage specs, templates, incremental specs
-scripts/                 close_stage / check_run_gate / ingest / knowledge / incremental
+scripts/                 close_stage / check_run_gate / generate_case_report / ingest / knowledge / incremental
 scripts/tcg-python       Python 3.10+ resolver for hosts with old python3
 ```
 
@@ -36,6 +36,7 @@ From this skill directory:
 ```bash
 ./scripts/tcg-python scripts/close_stage.py --self-check
 ./scripts/tcg-python scripts/check_run_gate.py --self-check
+./scripts/tcg-python scripts/generate_case_report.py --self-check
 ```
 
 From the repository root:

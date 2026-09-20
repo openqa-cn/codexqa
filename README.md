@@ -41,7 +41,7 @@ AI can produce a green pull request quickly. Teams still have to check whether t
 | Stage | Skill | Question it answers | Checkable output |
 | --- | --- | --- | --- |
 | Requirement review | [`requirements-analyzer`](skills/requirements-analyzer/README.md) | Is the PRD complete, consistent, and testable? | One gap/conflict register with P0 / P1 verification |
-| Test design | [`testcase-generation`](skills/testcase-generation/README.md) | What manual cases and test plan follow from the requirements? | Local Markdown plan + cases; unknowns marked, not invented |
+| Test design | [`testcase-generation`](skills/testcase-generation/README.md) | What manual cases and test plan follow from the requirements? | Local Markdown plan + cases + aggregated HTML report; unknowns marked, not invented |
 | Test data | [`testdata-generation`](skills/testdata-generation/README.md) | What real IDs and preconditions make those cases runnable? | Backend-returned values written back into case preconditions |
 | Change impact | [`code-analyzer`](skills/code-analyzer/README.md) | What changed, who calls it, which entries are hit, and what is untested? | Symbol-graph evidence, regression scope, test gaps, and diagrams |
 | Exception RCA | [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.md) | What is the in-repo root cause of this stack / log / crash? | Gated English root-cause report on top of CodexQA CLI facts |
@@ -74,7 +74,7 @@ Detailed workflow and boundary documents live with each skill: [code-analyzer](s
 
 ## Install on Cursor, Claude Code, and Codex
 
-Check the basic tools first. `code-analyzer` requires Node.js 18+; `defect-detection` requires Python 3.10+ (3.11 recommended) and optionally the CodexQA CLI.
+Check the basic tools first. `code-analyzer` requires Node.js 18+; `defect-detection` requires Python 3.10+ (3.11 recommended) and optionally the CodexQA CLI; `testcase-generation` requires Python 3.10+ (use that skill's `scripts/tcg-python`).
 
 ```bash
 node --version
@@ -212,7 +212,7 @@ The large image at the top is the `defect-detection` HTML report. Other sample a
 | --- | --- |
 | `code-analyzer` | [Change-impact graph](skills/code-analyzer/assets/checkout-change-impact.svg) |
 | `requirements-analyzer` | [Gap/conflict register](docs/assets/previews/ra-register.html) |
-| `testcase-generation` | [Structured manual case](docs/assets/previews/testcase-sample.html) |
+| `testcase-generation` | [Structured manual case](docs/assets/previews/testcase-sample.html) (V56 server template; runtime also writes `testdesign/testcase_generation_report.html`) |
 | `testdata-generation` | [Backend values written into case preconditions](docs/assets/previews/testdata-writeback.html) |
 
 These pages use the project renderers and prepared sample data. They are illustrations, not recorded Agent runs.
@@ -228,7 +228,7 @@ The workflows do not have the same public evidence maturity:
 | `defect-detection` | Local Python pipeline/policy-fixture tests; optional SAST + closed-source CodexQA CLI; no published host-agent score; Stage1/Stage2 are model-judged |
 | `ai-code-reviewer` | Local `validate-skill.sh` / fixture validate+render smoke (Python 3.10+); live CodexQA index not run by repository CI; review prose is model-judged |
 | `requirements-analyzer` | Evaluation cases and parse/convert scripts; no recorded host-Agent score |
-| `testcase-generation` | Stage gate / close_stage `--self-check` (Python 3.10+); no public Plan→Exec fixture or recorded Agent run |
+| `testcase-generation` | Stage gate / close_stage / generate_case_report `--self-check` (Python 3.10+); no public Plan→Exec fixture or recorded Agent run |
 | `testdata-generation` | Packer, slot search, and local catalog mock; runtime depends on configured adapters and slots |
 
 Findings are candidates for human review. codexqa does not replace tests, static analysis, security review, or maintainer judgment, and it cannot infer business rules that were not supplied. Local workflows write data to disk; cloning, document fetching, external providers, tool installation, and the host Agent/model may use the network.
@@ -244,9 +244,10 @@ python3 scripts/check-docs.py
 export NODE_OPTIONS=--experimental-strip-types
 (cd skills/defect-detection && npm test)
 node examples/checkout-boundary/verify.mjs
+(cd skills/testcase-generation && ./scripts/tcg-python scripts/close_stage.py --self-check && ./scripts/tcg-python scripts/check_run_gate.py --self-check && ./scripts/tcg-python scripts/generate_case_report.py --self-check)
 ```
 
-These checks cover documentation links, translation section parity, `defect-detection` Python pipeline/policy fixtures, packaging, and the bundled boundary fixtures. They do not execute a full live agent Stage1/Stage2 scan or the separately distributed `code-analyzer` / `root-cause-diagnosis` engine path, and they do not prove that every defect will be found.
+These checks cover documentation links, translation section parity, `defect-detection` Python pipeline/policy fixtures, packaging, the bundled boundary fixtures, and `testcase-generation` offline gate/report smoke. They do not execute a full live agent Stage1/Stage2 scan or the separately distributed `code-analyzer` / `root-cause-diagnosis` engine path, and they do not prove that every defect will be found.
 
 ## Documentation
 

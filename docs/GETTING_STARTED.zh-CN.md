@@ -8,9 +8,10 @@
 
 ## 环境要求
 
-需要 Node.js、npm/npx、Git，以及能够读取 skill 文件并执行命令的 Coding Agent。`code-analyzer` 要求 Node.js 18 或更高版本。`defect-detection` CLI 测试在 macOS、Node 22.15.0 上通过，运行 TypeScript 需要：
+需要 Node.js、npm/npx、Git，以及能够读取 skill 文件并执行命令的 Coding Agent。`code-analyzer` 要求 Node.js 18 或更高版本。`testcase-generation` 要求 Python 3.10+（经该 skill 的 `scripts/tcg-python` 调用）。`defect-detection` 的 Python 流水线在本地与 CI 以 Python 3.11 验证；部分历史 TypeScript 冒烟仍可能需要：
 
 ```bash
+python3 --version   # 3.10+；defect-detection / testcase-generation 推荐 3.11
 export NODE_OPTIONS=--experimental-strip-types
 node --version
 npx --version
@@ -111,7 +112,7 @@ codexqa stats /path/to/repo
 - `defect-detection` 需要对 diff / 仓库 / 上传 / 粘贴做代码风险扫描。见其 [README](../skills/defect-detection/README.zh-CN.md)。
 - `ai-code-reviewer` 需要本地 checkout、`PATH` 上的 `codexqa` + `jq`，以及（PR 模式）`--diff-base`。见 [ai-code-reviewer README](../skills/ai-code-reviewer/README.zh-CN.md)。
 - `requirements-analyzer` 需要需求文档，不要交仓库。见 [README · 你要交什么](../skills/requirements-analyzer/README.zh-CN.md#你要交什么)。
-- `testcase-generation` 需要本地需求材料（文件、目录、粘贴，或本轮 HTTPS 文档 URL）。可选知识目录 / Git URL。见其 [README](../skills/testcase-generation/README.zh-CN.md)。
+- `testcase-generation` 需要本地需求材料（文件、目录、粘贴，或本轮 HTTPS 文档 URL）。可选知识目录 / Git URL。Exec 后产物在 `testcase/cases/` 与 `testdesign/testcase_generation_report.html`。冒烟：在 skill 目录执行 `./scripts/tcg-python scripts/close_stage.py --self-check`（以及 `check_run_gate.py` / `generate_case_report.py --self-check`）。见其 [README](../skills/testcase-generation/README.zh-CN.md)。
 - `testdata-generation` 需要造数请求、用例或 API 来源，**不要**丢被测源码当输入。见其 [README · 你要交什么](../skills/testdata-generation/README.zh-CN.md#你要交什么)。
 
 对各 skill 可以直接说的话：[仓库 README · 快速开始](../README.zh-CN.md#快速开始)。

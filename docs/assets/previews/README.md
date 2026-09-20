@@ -5,7 +5,7 @@ Sample pages used as screenshots in the repository README. They are **illustrati
 | File | What it shows |
 |---|---|
 | `defect-report.html` | Real `render_report_html` output with three inventory-hold findings |
-| `testcase-sample.html` | V56 server-end manual case table (`case-tpl-server` fields; TBD for unknowns) |
+| `testcase-sample.html` | V56 server-end manual case table (`case-tpl-server` fields; TBD for unknowns). Runtime Exec also writes an aggregated Web/Server/APP HTML report under `{run_dir}/testdesign/testcase_generation_report.html` (not a static preview here) |
 | `ra-register.html` | One `requirements-analyzer` gap / conflict register |
 | `testdata-writeback.html` | `{placeholder}` replaced with a backend-returned id |
 

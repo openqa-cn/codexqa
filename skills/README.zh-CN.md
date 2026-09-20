@@ -7,7 +7,7 @@
 ## 已发布的 skill
 
 - [`defect-detection`](defect-detection/README.zh-CN.md)：SAST/lint/secrets/SCA + agent 内联语义扫描 → `report_scan.*`（P0–P3）。不是图证据审查（`ai-code-reviewer`），不是结构/影响面（`code-analyzer`），也不是异常 RCA（`root-cause-diagnosis`）。[工作原理](defect-detection/HOW_IT_WORKS.zh-CN.md)。
-- [`testcase-generation`](testcase-generation/README.zh-CN.md)：对话驱动的测试方案与手工用例（Plan 0–5、Exec 6、Incremental），输入本地需求 / HTTPS 文档，产物为本地 Markdown。真实后端造数交给 `testdata-generation`。[工作原理](testcase-generation/HOW_IT_WORKS.zh-CN.md)。
+- [`testcase-generation`](testcase-generation/README.zh-CN.md)：对话驱动的测试方案与手工用例（Plan 0–5、Exec 6、Incremental），输入本地需求 / HTTPS 文档，产物为本地 Markdown，并生成聚合 HTML 报告（`testcase_generation_report.html`）。真实后端造数交给 `testdata-generation`。[工作原理](testcase-generation/HOW_IT_WORKS.zh-CN.md)。
 - [`testdata-generation`](testdata-generation/README.zh-CN.md)：用 domain slot、工具、API 和生成脚本构造可复用测试数据，并把值回写成用例前置条件。[工作原理](testdata-generation/HOW_IT_WORKS.zh-CN.md)。
 - [`ai-code-reviewer`](ai-code-reviewer/README.zh-CN.md)：CodexQA 图证据包 → 双语 `REVIEW-REPORT.html`（PR/diff、全仓或 adhoc）。不是 SAST+agent 扫描报告（`defect-detection`），也不是单独的结构/影响面问答（`code-analyzer`）。[工作原理](ai-code-reviewer/HOW_IT_WORKS.zh-CN.md)。
 - [`requirements-analyzer`](requirements-analyzer/README.zh-CN.md)：对需求文档做质量与风险分析，产出一份带 P0/P1 验证项的缺口 / 冲突登记表。它不写用例——那是 `testcase-generation`。[工作原理](requirements-analyzer/HOW_IT_WORKS.zh-CN.md)。

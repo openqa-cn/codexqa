@@ -17,7 +17,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 | [`defect-detection`](../skills/defect-detection/README.zh-CN.md) | SAST/lint/secrets/SCA + agent 内联语义扫描 → `report_scan.*`（P0–P3） |
 | [`ai-code-reviewer`](../skills/ai-code-reviewer/README.zh-CN.md) | CodexQA 证据包 → 双语 `REVIEW-REPORT.html` |
 | [`requirements-analyzer`](../skills/requirements-analyzer/README.zh-CN.md) | 审需求文档的质量与风险，出一份缺口登记表 |
-| [`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) | 从本地需求生成测试方案与手工用例（Plan / Exec / Incremental） |
+| [`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) | 从本地需求生成测试方案与手工用例（Plan / Exec / Incremental）；双写 Markdown 并生成聚合 HTML 报告 |
 | [`testdata-generation`](../skills/testdata-generation/README.zh-CN.md) | 构造可复用测试数据，回填用例里的 `{placeholder}` |
 
 `npx skills add … --skill <name>` 一次只复制一个目录。按任务安装，彼此不互相替代。`defect-detection` 的检出效果尚未独立 benchmark。`code-analyzer`、`root-cause-diagnosis`、`defect-detection`、`testcase-generation`、`ai-code-reviewer` 和 `requirements-analyzer` 没有公开的宿主 agent 成绩。
@@ -37,7 +37,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 - 从堆栈 / 日志 / dump 做异常根因诊断 → `root-cause-diagnosis`
 - CodexQA 图证据包与双语 HTML 评审报告 → `ai-code-reviewer`
 - 审 PRD 本身是否完整、一致 → `requirements-analyzer`
-- 写或更新手工用例库 → `testcase-generation`
+- 写或更新手工用例库（并可生成聚合 HTML 报告） → `testcase-generation`
 - 构造数据、填用例 `{placeholder}` → `testdata-generation`
 
 只说「审这个 PR」不够选：`code-analyzer` 负责画出变更符号、调用方、入口和测试缺口；`defect-detection` 跑 SAST + agent 语义扫描并产出 `report_scan.*`；`ai-code-reviewer` 收集 CodexQA 证据包并渲染 `REVIEW-REPORT.html`；`root-cause-diagnosis` 需要异常证据做 RCA。一个请求可以串联多个 skill：先用 `code-analyzer` 收敛影响面，再用 `ai-code-reviewer` 做图证据 HTML 评审。先生成用例；占位符只能在 `.md` 落盘后再回填。
@@ -82,7 +82,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 
 `defect-detection` 把报告写到 `-o` 目录（默认 `/tmp/aid_report/`），可选反馈写在 skill 的 `data/` 下。见其 [README](../skills/defect-detection/README.zh-CN.md)。运行数据和私有配置不要进版本库，升级前先备份。
 
-`testcase-generation` 写到 `run_dir`（默认 `$HOME/testdata-generation/runs/{runid}`，或你指定的路径）：`testcase/testdocs/`、`testdesign/`、`testcase/initialcase/`、`testcase/cases/`。`testdata-generation` 写到工作区 `testdata/`（见该 skill 的 [README](../skills/testdata-generation/README.zh-CN.md)）。`code-analyzer` 的本地索引写到 `~/.codexqa/`；建索引和图查询不需要 LLM。`root-cause-diagnosis` 的任务数据写在 skill 的 `data/` 目录，并同样使用 CodexQA CLI 索引。
+`testcase-generation` 写到 `run_dir`（默认 `$HOME/testdata-generation/runs/{runid}`，或你指定的路径）：`testcase/testdocs/`、`testdesign/`（含 `test_design.md` 与 `testcase_generation_report.html`）、`testcase/initialcase/`、`testcase/cases/`。`testdata-generation` 写到工作区 `testdata/`（见该 skill 的 [README](../skills/testdata-generation/README.zh-CN.md)）。`code-analyzer` 的本地索引写到 `~/.codexqa/`；建索引和图查询不需要 LLM。`root-cause-diagnosis` 的任务数据写在 skill 的 `data/` 目录，并同样使用 CodexQA CLI 索引。`ai-code-reviewer` 把证据包写到工作目录（如 `.codexqa-review/`）并渲染 `REVIEW-REPORT.html`。
 
 ## defect-detection 能替代测试或静态分析吗？
 
@@ -102,4 +102,4 @@ Skill 指令面向 Codex、Claude Code、Cursor 和 OpenClaw。注意「装得�
 
 ## testcase-generation 会填测试数据吗？
 
-不会。它写测试方案和手工用例 Markdown（未知信息标 TBD / 待澄清）。构造真实后端 ID 并回写前置条件是 `testdata-generation`。只装 `testcase-generation` 得到的是设计产物，不能直接打真实后端。
+不会。它写测试方案和手工用例 Markdown（未知信息标 TBD / 待澄清），并生成聚合 HTML 报告供查阅。构造真实后端 ID 并回写前置条件是 `testdata-generation`。只装 `testcase-generation` 得到的是设计产物，不能直接打真实后端。
