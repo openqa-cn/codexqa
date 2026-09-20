@@ -2,7 +2,7 @@
 
 [简体中文](ROADMAP.zh-CN.md)
 
-codexqa's product direction covers the full AI software engineering quality lifecycle. Its current value is narrower and concrete: six local-first skills turn requirements, code changes, reviews, cases, and test data into separate, checkable workflows instead of one unconstrained AI conversation. This repository currently ships [`code-analyzer`](../skills/code-analyzer/README.md), [`defect-detection`](../skills/defect-detection/README.md), [`code-reviewer`](../skills/code-reviewer/README.md), [`requirements-analyzer`](../skills/requirements-analyzer/README.md), [`testcase-generation`](../skills/testcase-generation/README.md), and [`testdata-generation`](../skills/testdata-generation/README.md). Capabilities marked **Available** or **Partial** below are delivered through those workflows unless stated otherwise. The remaining rows describe planned extensions, not features already included here.
+codexqa's product direction covers the full AI software engineering quality lifecycle. Its current value is narrower and concrete: seven local-first skills turn requirements, code changes, reviews, cases, test data, and exception diagnosis into separate, checkable workflows instead of one unconstrained AI conversation. This repository currently ships [`code-analyzer`](../skills/code-analyzer/README.md), [`root-cause-diagnosis`](../skills/root-cause-diagnosis/README.md), [`defect-detection`](../skills/defect-detection/README.md), [`code-reviewer`](../skills/code-reviewer/README.md), [`requirements-analyzer`](../skills/requirements-analyzer/README.md), [`testcase-generation`](../skills/testcase-generation/README.md), and [`testdata-generation`](../skills/testdata-generation/README.md). Capabilities marked **Available** or **Partial** below are delivered through those workflows unless stated otherwise. The remaining rows describe planned extensions, not features already included here.
 
 ## Capability map
 
@@ -20,7 +20,7 @@ codexqa's product direction covers the full AI software engineering quality life
 | UI end-to-end testing | **Planned** | Browser and UI workflow generation, execution, and result integration |
 | Test-case generation | **Available** | Generate and update structured manual cases from PRD, technical design, specs, and knowledge files |
 | Test-data construction | **Available** | Build reusable domain test data from slots, tools, APIs, and generated scripts; write constructed values back into case preconditions |
-| Issue localization and diagnosis | **Partial** | `code-analyzer` maps logs, stack text, and error strings to symbols and callers; `defect-detection` findings include locations, triggers, reasoning, and fixes; automated root-cause diagnosis is still limited |
+| Issue localization and diagnosis | **Available** | `root-cause-diagnosis` turns stacks/logs into a gated English RCA report on top of the CodexQA CLI; `code-analyzer` still maps logs and error strings to symbols and callers; `defect-detection` findings include locations, triggers, reasoning, and fixes. RCA narrative quality is model-judged and not independently scored |
 | Evidence collection and structured findings | **Available** | Validation, write-back, ranking, tagging, and traceable HTML reports |
 | Local providers and reports | **Available** | Local-first JSON persistence and report generation without a private backend |
 | Enterprise and external integrations | **Partial** | HTTP and GitHub adapters are available in code and require deployment configuration |

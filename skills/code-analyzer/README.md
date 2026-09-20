@@ -13,7 +13,7 @@ CodexQA parses a repo into a local symbol graph, then answers “what changed, w
 - **Find test gaps** — coverage is a `tests` edge on the production symbol, not “the repo has a tests directory”
 - **Trace errors** — land logs, stacks, and error text on a symbol, then see who calls it and whether it is tested
 
-`code-analyzer` answers **structure and impact** questions from graph evidence; it does not decide whether the implementation matches a business requirement or assign P0 / P1 / P2 review findings. Use `defect-detection` for requirement-oriented defect discovery and gated write-back, and `code-reviewer` for playbook-driven implementation findings. They can be chained: map the impact here, then focus the deeper review.
+`code-analyzer` answers **structure and impact** questions from graph evidence; it does not decide whether the implementation matches a business requirement or assign P0 / P1 / P2 review findings. Use `defect-detection` for requirement-oriented defect discovery and gated write-back, `code-reviewer` for playbook-driven implementation findings, and `root-cause-diagnosis` for full exception RCA on top of the CodexQA CLI. They can be chained: map the impact here, then focus the deeper review or RCA.
 
 Indexing supports **TypeScript, JavaScript, Vue, Java, C/C++, C#, Python, Go, PHP, and Rust**. Language mix for this repo shows up in `stats` / `summary`.
 

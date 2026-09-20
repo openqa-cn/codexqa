@@ -12,5 +12,6 @@ Each skill is independently documented. Every published skill has an agent-facin
 - [`code-reviewer`](code-reviewer/): playbook-driven P0/P1/P2 review of a local Git checkout (branch / PR / commit). Not a clone-and-detect workflow — that is `defect-detection`. [How it works](code-reviewer/HOW_IT_WORKS.md).
 - [`requirements-analyzer`](requirements-analyzer/): quality-and-risk analysis of requirement documents; one gap/conflict register with P0/P1 verification. Not a case writer — that is `testcase-generation`. [How it works](requirements-analyzer/HOW_IT_WORKS.md).
 - [`code-analyzer`](code-analyzer/): local symbol-graph QA — index a repo, then review changes, bound regression, find test gaps, and trace errors with the `codexqa` CLI. [Skill README](code-analyzer/README.md).
+- [`root-cause-diagnosis`](root-cause-diagnosis/): exception root-cause diagnosis from stacks/logs on top of the CodexQA CLI; English gated report. Not structure/impact (`code-analyzer`) and not requirement write-back (`defect-detection`). [How it works](root-cause-diagnosis/HOW_IT_WORKS.md).
 
 Use [SKILL_TEMPLATE.md](SKILL_TEMPLATE.md) when proposing a new skill. A contribution should solve a distinct verification problem, include acceptance criteria, and provide reproducible evidence.
