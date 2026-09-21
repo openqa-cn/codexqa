@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Build a tiny git repo from the known-good / seeded-defect pair so defect-detection
+// Build a tiny git repo from the known-good / seeded-defect pair so codexqa-defect-analyzer
 // can submit-git + clone-and-diff + run-ast-scan against a real branch.
 //
 // Cross-platform (Node + git only, no bash). Usage:

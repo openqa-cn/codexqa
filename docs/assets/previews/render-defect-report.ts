@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-/** Write the sample defect-detection HTML used in README screenshots. */
+/** Write the sample codexqa-defect-analyzer HTML used in README screenshots. */
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { render_report_html } from "../../../skills/defect-detection/scripts/providers/platform/report_html.ts";
+import { render_report_html } from "../../../skills/codexqa-defect-analyzer/scripts/providers/platform/report_html.ts";
 
 const out = resolve(dirname(fileURLToPath(import.meta.url)), "defect-report.html");
 

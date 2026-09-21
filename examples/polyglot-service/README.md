@@ -1,6 +1,6 @@
 # Polyglot service: Python + Go + TypeScript in one change set
 
-A small repository with three languages and a feature branch that plants one or two seeded defects per language. It remains a polyglot fixture for local experiments with `defect-detection` (`run_scan.py`) or other code skills.
+A small repository with three languages and a feature branch that plants one or two seeded defects per language. It remains a polyglot fixture for local experiments with `codexqa-defect-analyzer` (`run_scan.py`) or other code skills.
 
 ## Seeded defects (`feature/polyglot-defects` vs `main`)
 
@@ -22,12 +22,12 @@ node examples/polyglot-service/make-git-fixture.mjs      # prints the repo path
 
 ## Run the skill against it
 
-From `skills/defect-detection`:
+From `skills/codexqa-defect-analyzer`:
 
 ```bash
 python3 scripts/run_scan.py incremental --repo "$REPO" --intent "polyglot seeded defects" --fresh -o /tmp/aid_report
 ```
 
-Use `npm test` in `skills/defect-detection` for pipeline/policy regressions.
+Use `npm test` in `skills/codexqa-defect-analyzer` for pipeline/policy regressions.
 
 This is a hand-authored fixture: it proves the pipeline handles a non-Java, multi-language change set; it is not an agent-generated report or an accuracy claim.

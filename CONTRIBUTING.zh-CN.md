@@ -9,10 +9,10 @@
 ```bash
 python3 scripts/check-docs.py
 export NODE_OPTIONS=--experimental-strip-types
-(cd skills/defect-detection && npm test)
+(cd skills/codexqa-defect-analyzer && npm test)
 node examples/checkout-boundary/verify.mjs
-(cd skills/testcase-generation && ./scripts/tcg-python scripts/close_stage.py --self-check && ./scripts/tcg-python scripts/check_run_gate.py --self-check && ./scripts/tcg-python scripts/generate_case_report.py --self-check)
-python3 skills/skill-router/scripts/discover_skills.py --self-check
+(cd skills/codexqa-testcase-generator && ./scripts/tcg-python scripts/close_stage.py --self-check && ./scripts/tcg-python scripts/check_run_gate.py --self-check && ./scripts/tcg-python scripts/generate_case_report.py --self-check)
+python3 skills/codexqa-skill-router/scripts/discover_skills.py --self-check
 ```
 
-请勿提交客户代码、凭据、私有日志或个人数据。AI 生成的代码或文字本身不构成正确性证据。新增干活 skill 后请在完整 checkout 中运行 `skills/skill-router/scripts/refresh_catalog.py` 并提交更新后的 `catalog.json`。完整流程与质量条见英文 [CONTRIBUTING.md](CONTRIBUTING.md)。
+请勿提交客户代码、凭据、私有日志或个人数据。AI 生成的代码或文字本身不构成正确性证据。新增干活 skill 后请在完整 checkout 中运行 `skills/codexqa-skill-router/scripts/refresh_catalog.py` 并提交更新后的 `catalog.json`。完整流程与质量条见英文 [CONTRIBUTING.md](CONTRIBUTING.md)。

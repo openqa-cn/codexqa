@@ -29,13 +29,14 @@ def file_links(path):
 paths = list(root.glob('*.md')) + list((root / 'docs').glob('*.md')) + list((root / 'examples').rglob('*.md')) + [
     root / 'skills/README.md',
     root / 'skills/README.zh-CN.md',
-    root / 'skills/defect-detection/README.md',
-    root / 'skills/ai-code-reviewer/README.md',
-    root / 'skills/requirements-analyzer/README.md',
-    root / 'skills/testcase-generation/README.md',
-    root / 'skills/testdata-generation/README.md',
-    root / 'skills/code-analyzer/README.md',
-    root / 'skills/root-cause-diagnosis/README.md',
+    root / 'skills/codexqa-defect-analyzer/README.md',
+    root / 'skills/codexqa-code-reviewer/README.md',
+    root / 'skills/codexqa-requirement-analyzer/README.md',
+    root / 'skills/codexqa-testcase-generator/README.md',
+    root / 'skills/codexqa-testdata-generator/README.md',
+    root / 'skills/codexqa-code-analyzer/README.md',
+    root / 'skills/codexqa-rootcause-analyzer/README.md',
+    root / 'skills/codexqa-skill-router/README.md',
 ]
 for p in paths:
     for target in file_links(p):
@@ -47,6 +48,9 @@ for p in paths:
 skill_docs = 0
 for skill_dir in sorted((root / 'skills').iterdir()):
     if not skill_dir.is_dir():
+        continue
+    # Local skill-creator eval workspaces are gitignored and not published skills.
+    if skill_dir.name.endswith('-workspace') or not (skill_dir / 'SKILL.md').exists():
         continue
     skill_root = skill_dir.resolve()
     for p in sorted(skill_dir.rglob('*.md')):
@@ -69,7 +73,7 @@ for skill_dir in sorted((root / 'skills').iterdir()):
 # stays visible instead of disappearing.
 translation_gaps = {
     'CONTRIBUTING.zh-CN.md': 'short summary; the full process is English-only',
-    'skills/testdata-generation/HOW_IT_WORKS.zh-CN.md': 'appendices not translated yet',
+    'skills/codexqa-testdata-generator/HOW_IT_WORKS.zh-CN.md': 'appendices not translated yet',
 }
 declared_gaps = 0
 for zh in sorted(root.rglob('*.zh-CN.md')):

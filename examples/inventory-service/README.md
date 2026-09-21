@@ -53,14 +53,14 @@ node examples/inventory-service/make-git-fixture.mjs      # prints the repo path
 
 `main` holds the known-good service; `feature/reservation-v2` carries the changes above (7 files, +217/−35).
 
-## Run defect-detection against it
+## Run codexqa-defect-analyzer against it
 
-The published `defect-detection` skill is now the Python `run_scan.py` SAST+agent pipeline (see its [README](../../skills/defect-detection/README.md)). This fixture remains useful as a planted-defect corpus and answer key via `node examples/inventory-service/verify.mjs`.
+The published `codexqa-defect-analyzer` skill is now the Python `run_scan.py` SAST+agent pipeline (see its [README](../../skills/codexqa-defect-analyzer/README.md)). This fixture remains useful as a planted-defect corpus and answer key via `node examples/inventory-service/verify.mjs`.
 
 Example adhoc/repo scan (agent-inline handoff; agent-inline handoff via `run_scan.py`):
 
 ```bash
-cd skills/defect-detection
+cd skills/codexqa-defect-analyzer
 python3 scripts/run_scan.py incremental --repo "$REPO" --intent "reservation-v2 blind eval" --fresh -o /tmp/aid_report
 ```
 
@@ -86,4 +86,4 @@ Scoring after the fact is what makes the number meaningful. A run where the agen
 
 Conditions: Composer agent, 2026-09-08, local providers, runtime-confirmed findings.
 
-Read this as a demonstration that the contract works end to end, **not as a benchmark score**. It is one model, one run, on a fixture authored by the same project. Multi-model variance, repeated runs, and third-party fixtures are all missing. The third row is the interesting one: every defect here was caught by method-level analysis against the specification, and none by static rules — see [how it works](../../skills/defect-detection/HOW_IT_WORKS.md).
+Read this as a demonstration that the contract works end to end, **not as a benchmark score**. It is one model, one run, on a fixture authored by the same project. Multi-model variance, repeated runs, and third-party fixtures are all missing. The third row is the interesting one: every defect here was caught by method-level analysis against the specification, and none by static rules — see [how it works](../../skills/codexqa-defect-analyzer/HOW_IT_WORKS.md).

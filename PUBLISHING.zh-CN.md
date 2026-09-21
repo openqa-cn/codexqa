@@ -7,16 +7,16 @@ Skill 从本 GitHub 仓库通过 `npx skills add` 分发，无需发布 codexqa 
 ## 推送前
 
 1. 确认每个 Skill 目录名与 `SKILL.md` 中的 `name` 和 `skills.json` 注册项一致。
-2. 若新增或修改了干活 skill 的 frontmatter `description`，运行 `python3 skills/skill-router/scripts/refresh_catalog.py` 并提交 `skills/skill-router/references/catalog.json`。
+2. 若新增或修改了干活 skill 的 frontmatter `description`，运行 `python3 skills/codexqa-skill-router/scripts/refresh_catalog.py` 并提交 `skills/codexqa-skill-router/references/catalog.json`。
 3. 提供面向用户的说明、运行要求、示例和局限性。
 4. 在仓库根目录运行：
 
 ```bash
 python3 scripts/check-docs.py
 export NODE_OPTIONS=--experimental-strip-types
-(cd skills/defect-detection && npm test)
+(cd skills/codexqa-defect-analyzer && npm test)
 node examples/checkout-boundary/verify.mjs
-python3 skills/skill-router/scripts/discover_skills.py --self-check
+python3 skills/codexqa-skill-router/scripts/discover_skills.py --self-check
 npx skills add . --list
 ```
 
@@ -30,7 +30,7 @@ npx skills add . --list
 创建经过审核的 GitHub release/tag，说明变更、运行要求和已知限制。可通过以下命令生成可选 ZIP 包：
 
 ```bash
-bash skills/defect-detection/pack-skill.sh /absolute/output/directory
+bash skills/codexqa-defect-analyzer/pack-skill.sh /absolute/output/directory
 ```
 
 版本元数据应与 release 保持一致；打 tag 前先核对 `skills/*/SKILL.md` 里的 `version` 字段。

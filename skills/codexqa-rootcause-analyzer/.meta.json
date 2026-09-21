@@ -1,0 +1,12 @@
+{
+  "displayDescription": "Diagnoses exception root causes from stack traces, logs, call-chain dumps, and debug output using the CodexQA CLI for structured repo analysis. Use when the user mentions codexqa-rootcause-analyzer, exception RCA, crash analysis, AI code diagnosis, stack diagnosis, 异常根因, 堆栈诊断, 崩溃分析, 异常诊断, or asks to turn an exception into a root-cause report. Not structure/impact analysis (that is codexqa-code-analyzer), not SAST + Agent LLM Detection code-risk scan reports (that is codexqa-defect-analyzer), and not CodexQA evidence-pack HTML review (that is codexqa-code-reviewer). Former skill name: root-cause-diagnosis.",
+  "environment": "production",
+  "fileTree": [
+    "SKILL.md"
+  ],
+  "displayName": "codexqa-rootcause-analyzer",
+  "name": "codexqa-rootcause-analyzer",
+  "description": "Diagnoses exception root causes from stack traces, logs, call-chain dumps, and debug output using the CodexQA CLI for structured repo analysis. Use when the user mentions codexqa-rootcause-analyzer, exception RCA, crash analysis, AI code diagnosis, stack diagnosis, 异常根因, 堆栈诊断, 崩溃分析, 异常诊断, or asks to turn an exception into a root-cause report. Not structure/impact analysis (that is codexqa-code-analyzer), not SAST + Agent LLM Detection code-risk scan reports (that is codexqa-defect-analyzer), and not CodexQA evidence-pack HTML review (that is codexqa-code-reviewer). Former skill name: root-cause-diagnosis.",
+  "uuid": "cskill-26bf61a2-4",
+  "version": "0.0.1"
+}

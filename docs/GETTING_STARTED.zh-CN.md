@@ -2,16 +2,16 @@
 
 [English](GETTING_STARTED.md)
 
-在 Cursor、Claude Code、Codex 或 OpenClaw 上一次只装一个 skill。本页以 [`defect-detection`](../skills/defect-detection/README.zh-CN.md) 为例，因为它有可冒烟的 CLI。同一条命令也可以加 `--skill skill-router`、`--skill code-analyzer`、`--skill root-cause-diagnosis`、`--skill ai-code-reviewer`、`--skill requirements-analyzer`、`--skill testcase-generation`、`--skill testdata-generation`。不确定装哪个时优先 [`skill-router`](../skills/skill-router/README.zh-CN.md)——它能匹配并按需拉取干活 skill。`code-analyzer`、`root-cause-diagnosis` 与 `ai-code-reviewer` 使用单独的 `codexqa` 符号图 CLI；`defect-detection` 由 Python 编排，实图同样使用该 CLI；`skill-router` 的发现/按需安装需要 Python 3.10+。
+在 Cursor、Claude Code、Codex 或 OpenClaw 上一次只装一个 skill。本页以 [`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.zh-CN.md) 为例，因为它有可冒烟的 CLI。同一条命令也可以加 `--skill codexqa-skill-router`、`--skill codexqa-code-analyzer`、`--skill codexqa-rootcause-analyzer`、`--skill codexqa-code-reviewer`、`--skill codexqa-requirement-analyzer`、`--skill codexqa-testcase-generator`、`--skill codexqa-testdata-generator`。不确定装哪个时优先 [`codexqa-skill-router`](../skills/codexqa-skill-router/README.zh-CN.md)——它能匹配并按需拉取干活 skill。`codexqa-code-analyzer`、`codexqa-rootcause-analyzer` 与 `codexqa-code-reviewer` 使用单独的 `codexqa` 符号图 CLI；`codexqa-defect-analyzer` 由 Python 编排，实图同样使用该 CLI；`codexqa-skill-router` 的发现/按需安装需要 Python 3.10+。
 
 每个 skill 要交的材料不一样（[FAQ](FAQ.zh-CN.md#每个-skill-要我交什么)）。跑完长什么样见 [README · 产物长什么样](../README.zh-CN.md#产物长什么样)。
 
 ## 环境要求
 
-需要 Node.js、npm/npx、Git，以及能够读取 skill 文件并执行命令的 Coding Agent。`code-analyzer` 要求 Node.js 18 或更高版本。`testcase-generation` 要求 Python 3.10+（经该 skill 的 `scripts/tcg-python` 调用）。`defect-detection` 的 Python 流水线在本地与 CI 以 Python 3.11 验证；部分历史 TypeScript 冒烟仍可能需要：
+需要 Node.js、npm/npx、Git，以及能够读取 skill 文件并执行命令的 Coding Agent。`codexqa-code-analyzer` 要求 Node.js 18 或更高版本。`codexqa-testcase-generator` 要求 Python 3.10+（经该 skill 的 `scripts/tcg-python` 调用）。`codexqa-defect-analyzer` 的 Python 流水线在本地与 CI 以 Python 3.11 验证；部分历史 TypeScript 冒烟仍可能需要：
 
 ```bash
-python3 --version   # 3.10+；defect-detection / testcase-generation 推荐 3.11
+python3 --version   # 3.10+；codexqa-defect-analyzer / codexqa-testcase-generator 推荐 3.11
 export NODE_OPTIONS=--experimental-strip-types
 node --version
 npx --version
@@ -25,13 +25,13 @@ git --version
 ## 从 GitHub 安装
 
 ```bash
-npx skills add openqa-cn/codexqa --skill defect-detection
+npx skills add openqa-cn/codexqa --skill codexqa-defect-analyzer
 ```
 
 按提示选择 Agent。默认安装范围是当前项目。为 Codex 跨项目安装：
 
 ```bash
-npx skills add openqa-cn/codexqa --skill defect-detection --agent codex --global
+npx skills add openqa-cn/codexqa --skill codexqa-defect-analyzer --agent codex --global
 ```
 
 想要复制而不是软链到 Agent 目录，加 `--copy`。安装位置由第三方 `skills` 安装器决定，看它的输出找已安装目录。**装得上不等于在那个 Agent 上能跑完整分析。**
@@ -47,14 +47,14 @@ npx skills add . --list
 要把当前 checkout 装上，在仓库根目录运行：
 
 ```bash
-npx skills add . --skill defect-detection --agent codex --copy
+npx skills add . --skill codexqa-defect-analyzer --agent codex --copy
 ```
 
 只做 CLI 冒烟，不需要模型也不需要私有平台：
 
 ```bash
-python3 skills/defect-detection/scripts/run_scan.py --help
-(cd skills/defect-detection && npm test)
+python3 skills/codexqa-defect-analyzer/scripts/run_scan.py --help
+(cd skills/codexqa-defect-analyzer && npm test)
 ```
 
 冒烟套件验证样例计划加载、任务创建和材料缺失时的处理。里面的 `acme` 仓库地址是样例数据，这个测试不会去克隆它们。想看一组「正常实现 + 预置缺陷」的对照，跑[边界案例](../examples/checkout-boundary/README.md)。
@@ -63,7 +63,7 @@ python3 skills/defect-detection/scripts/run_scan.py --help
 
 安装后新建会话。给出可访问的仓库 URL 和分支，以及你能提供的需求或测试用例。可以直接这么说：
 
-> 用 defect-detection 扫描仓库 /abs/path/to/repo 的本次 PR。跑 Agent LLM Detection（Stage1/Stage2），返回按 P0–P3 排序的 `report_scan.json` 发现项。
+> 用 codexqa-defect-analyzer 扫描仓库 /abs/path/to/repo 的本次 PR。跑 Agent LLM Detection（Stage1/Stage2），返回按 P0–P3 排序的 `report_scan.json` 发现项。
 
 期望先跑确定性 collect + agent handoff，再产出 `report_scan.json` / `.md` / `.html`。扫描器缺失时检查 `tooling_status.missing`。发现项一律留给人复核。
 
@@ -75,7 +75,7 @@ python3 skills/defect-detection/scripts/run_scan.py --help
 npx skills --help
 npx skills list
 npx skills update
-npx skills remove defect-detection --agent codex
+npx skills remove codexqa-defect-analyzer --agent codex
 ```
 
 全局安装在支持的地方加 `--global`。更新或删除已安装目录前，先备份配置和任务数据。默认 skill 把数据存在自己的安装目录里，**更新不能当备份手段用**。
@@ -83,20 +83,20 @@ npx skills remove defect-detection --agent codex
 ## 其他已发布 skill
 
 ```bash
-npx skills add openqa-cn/codexqa --skill code-analyzer
+npx skills add openqa-cn/codexqa --skill codexqa-code-analyzer
 npm install -g @openqa-cn/codexqa
 
-npx skills add openqa-cn/codexqa --skill skill-router
-npx skills add openqa-cn/codexqa --skill root-cause-diagnosis
-npx skills add openqa-cn/codexqa --skill ai-code-reviewer
-npx skills add openqa-cn/codexqa --skill requirements-analyzer
-npx skills add openqa-cn/codexqa --skill testcase-generation
-npx skills add openqa-cn/codexqa --skill testdata-generation
+npx skills add openqa-cn/codexqa --skill codexqa-skill-router
+npx skills add openqa-cn/codexqa --skill codexqa-rootcause-analyzer
+npx skills add openqa-cn/codexqa --skill codexqa-code-reviewer
+npx skills add openqa-cn/codexqa --skill codexqa-requirement-analyzer
+npx skills add openqa-cn/codexqa --skill codexqa-testcase-generator
+npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
 ```
 
-`code-analyzer`、`root-cause-diagnosis`、`ai-code-reviewer`、`defect-detection` 与 `skill-router` Skill 发布在本仓库中；`@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎，索引和会话写在 `~/.codexqa/`。详见 [`code-analyzer` 已知边界](../skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)、[`root-cause-diagnosis` 已知边界](../skills/root-cause-diagnosis/KNOWN_LIMITATIONS.zh-CN.md)、[`ai-code-reviewer` 已知边界](../skills/ai-code-reviewer/KNOWN_LIMITATIONS.zh-CN.md)、[`defect-detection` 已知边界](../skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md) 和 [`skill-router` 已知边界](../skills/skill-router/KNOWN_LIMITATIONS.zh-CN.md)。
+`codexqa-code-analyzer`、`codexqa-rootcause-analyzer`、`codexqa-code-reviewer`、`codexqa-defect-analyzer` 与 `codexqa-skill-router` Skill 发布在本仓库中；`@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎，索引和会话写在 `~/.codexqa/`。详见 [`codexqa-code-analyzer` 已知边界](../skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-rootcause-analyzer` 已知边界](../skills/codexqa-rootcause-analyzer/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-code-reviewer` 已知边界](../skills/codexqa-code-reviewer/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-defect-analyzer` 已知边界](../skills/codexqa-defect-analyzer/KNOWN_LIMITATIONS.zh-CN.md) 和 [`codexqa-skill-router` 已知边界](../skills/codexqa-skill-router/KNOWN_LIMITATIONS.zh-CN.md)。
 
-只做 `code-analyzer` 冒烟时不需要模型：给本地 checkout 建索引，再查看摘要。
+只做 `codexqa-code-analyzer` 冒烟时不需要模型：给本地 checkout 建索引，再查看摘要。
 
 ```bash
 codexqa --help
@@ -108,14 +108,14 @@ codexqa stats /path/to/repo
 
 安装后新建 Agent 会话并指向该 skill。输入各不相同：
 
-- `skill-router` 需要待路由的用户请求（以及 Python 3.10+）。它对照内置/现场目录匹配，并可运行 `ensure_skill.py` 把干活 skill 拉到路由旁边。见其 [README](../skills/skill-router/README.zh-CN.md)。
-- `code-analyzer` 需要本地仓库。审变更时用 `origin/main` 等基线建索引；索引写在 `~/.codexqa/`。见其 [README](../skills/code-analyzer/README.zh-CN.md)。
-- `root-cause-diagnosis` 需要异常证据（堆栈 / 日志 / dump），外加 git 地址、本地目录、文件，或已打开的工作区。见其 [README](../skills/root-cause-diagnosis/README.zh-CN.md)。
-- `defect-detection` 需要对 diff / 仓库 / 上传 / 粘贴做代码风险扫描。见其 [README](../skills/defect-detection/README.zh-CN.md)。
-- `ai-code-reviewer` 需要本地 checkout、`PATH` 上的 `codexqa` + `jq`，以及（PR 模式）`--diff-base`。见 [ai-code-reviewer README](../skills/ai-code-reviewer/README.zh-CN.md)。
-- `requirements-analyzer` 需要需求文档，不要交仓库。见 [README · 你要交什么](../skills/requirements-analyzer/README.zh-CN.md#你要交什么)。
-- `testcase-generation` 需要本地需求材料（文件、目录、粘贴，或本轮 HTTPS 文档 URL）。可选知识目录 / Git URL。Exec 后产物在 `testcase/cases/` 与 `testdesign/testcase_generation_report.html`。冒烟：在 skill 目录执行 `./scripts/tcg-python scripts/close_stage.py --self-check`（以及 `check_run_gate.py` / `generate_case_report.py --self-check`）。见其 [README](../skills/testcase-generation/README.zh-CN.md)。
-- `testdata-generation` 需要造数请求、用例或 API 来源，**不要**丢被测源码当输入。见其 [README · 你要交什么](../skills/testdata-generation/README.zh-CN.md#你要交什么)。
+- `codexqa-skill-router` 需要待路由的用户请求（以及 Python 3.10+）。它对照内置/现场目录匹配，并可运行 `ensure_skill.py` 把干活 skill 拉到路由旁边。见其 [README](../skills/codexqa-skill-router/README.zh-CN.md)。
+- `codexqa-code-analyzer` 需要本地仓库。审变更时用 `origin/main` 等基线建索引；索引写在 `~/.codexqa/`。见其 [README](../skills/codexqa-code-analyzer/README.zh-CN.md)。
+- `codexqa-rootcause-analyzer` 需要异常证据（堆栈 / 日志 / dump），外加 git 地址、本地目录、文件，或已打开的工作区。见其 [README](../skills/codexqa-rootcause-analyzer/README.zh-CN.md)。
+- `codexqa-defect-analyzer` 需要对 diff / 仓库 / 上传 / 粘贴做代码风险扫描。见其 [README](../skills/codexqa-defect-analyzer/README.zh-CN.md)。
+- `codexqa-code-reviewer` 需要本地 checkout、`PATH` 上的 `codexqa` + `jq`，以及（PR 模式）`--diff-base`。见 [codexqa-code-reviewer README](../skills/codexqa-code-reviewer/README.zh-CN.md)。
+- `codexqa-requirement-analyzer` 需要需求文档，不要交仓库。见 [README · 你要交什么](../skills/codexqa-requirement-analyzer/README.zh-CN.md#你要交什么)。
+- `codexqa-testcase-generator` 需要本地需求材料（文件、目录、粘贴，或本轮 HTTPS 文档 URL）。可选知识目录 / Git URL。Exec 后产物在 `testcase/cases/` 与 `testdesign/testcase_generation_report.html`。冒烟：在 skill 目录执行 `./scripts/tcg-python scripts/close_stage.py --self-check`（以及 `check_run_gate.py` / `generate_case_report.py --self-check`）。见其 [README](../skills/codexqa-testcase-generator/README.zh-CN.md)。
+- `codexqa-testdata-generator` 需要造数请求、用例或 API 来源，**不要**丢被测源码当输入。见其 [README · 你要交什么](../skills/codexqa-testdata-generator/README.zh-CN.md#你要交什么)。
 
 对各 skill 可以直接说的话：[仓库 README · 快速开始](../README.zh-CN.md#快速开始)。
 

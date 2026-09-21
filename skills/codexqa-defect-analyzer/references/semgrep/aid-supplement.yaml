@@ -1,0 +1,264 @@
+# codexqa-defect-analyzer supplemental Semgrep rules (merged with --config auto at scan time).
+rules:
+  - id: aid-java-path-traversal-new-file
+    languages: [java]
+    severity: WARNING
+    message: >
+      User-controlled path segment passed to File constructor may allow path traversal.
+      Canonicalize with Path.normalize(), verify the resolved path stays under an allowed base directory.
+    metadata:
+      category: security
+      aid_rule_id: SEC-001
+    pattern-either:
+      - pattern: new File($BASE, $SEG)
+      - pattern: new File($SEG)
+    metavariable-pattern:
+      metavariable: $SEG
+      patterns:
+        - pattern-not: "..."
+
+  - id: aid-java-empty-catch
+    languages: [java]
+    severity: INFO
+    message: >
+      Empty catch block swallows exceptions without logging or recovery.
+      Log at appropriate level, rethrow wrapped, or document intentional suppression.
+    metadata:
+      category: hygiene
+      aid_rule_id: ERR-001
+    pattern: |
+      try {
+        ...
+      } catch ($T $E) {
+      }
+
+  - id: aid-java-second-order-sql-taint
+    languages: [java]
+    severity: ERROR
+    message: >
+      Value read from a database ResultSet is concatenated into dynamic SQL (second-order SQL injection).
+      Use parameterized PreparedStatement for all SQL, including values from prior query results.
+    metadata:
+      category: security
+      aid_rule_id: SEC-001
+    mode: taint
+    pattern-sources:
+      - pattern: $RS.getString(...)
+      - pattern: $RS.getObject(...)
+      - pattern: $RS.getBytes(...)
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: $ST.execute($SQL)
+              - pattern: $ST.executeQuery($SQL)
+              - pattern: $ST.executeUpdate($SQL)
+          - focus-metavariable: $SQL
+
+  - id: aid-java-runtime-exec-concat
+    languages: [java]
+    severity: ERROR
+    message: >
+      OS command string built with dynamic concatenation passed to Runtime.exec (command injection).
+      Use ProcessBuilder with a fixed argv array; never pass unsanitized input through a shell.
+    metadata:
+      category: security
+      aid_rule_id: SEC-001
+    pattern-either:
+      - pattern: Runtime.getRuntime().exec("..." + $VAR)
+      - pattern: Runtime.getRuntime().exec($CMD + "...")
+      - pattern: Runtime.getRuntime().exec($CMD + $VAR)
+      - pattern: Runtime.getRuntime().exec(String.format(...))
+
+  - id: aid-java-ssrf-user-controlled-url
+    languages: [java]
+    severity: ERROR
+    message: >
+      HTTP request target URL is built from non-literal data (SSRF risk).
+      Allowlist outbound hosts/schemes; block metadata and internal IP ranges; verify signed callbacks.
+    metadata:
+      category: security
+      aid_rule_id: PAY-004
+    pattern: new URL($URL)
+
+  - id: aid-java-xss-html-writer-concat
+    languages: [java]
+    severity: ERROR
+    message: >
+      User-controlled value concatenated into HTML output without encoding (reflected XSS).
+      HTML-encode dynamic content or use a templating engine with contextual auto-escaping.
+    metadata:
+      category: security
+      aid_rule_id: SEC-001
+    pattern-either:
+      - patterns:
+          - pattern: $OUT.println($EXPR);
+          - metavariable-regex:
+              metavariable: $EXPR
+              regex: .*<.*\+.*
+      - patterns:
+          - pattern: $OUT.print($EXPR);
+          - metavariable-regex:
+              metavariable: $EXPR
+              regex: .*<.*\+.*
+      - patterns:
+          - pattern: $OUT.write($EXPR);
+          - metavariable-regex:
+              metavariable: $EXPR
+              regex: .*<.*\+.*
+
+  - id: aid-java-redos-nested-quantifier
+    languages: [java]
+    severity: WARNING
+    message: >
+      Catastrophic backtracking regex applied to input (ReDoS). Nested quantifiers like (a+)+
+      can stall the JVM on crafted input. Use linear-time validation and bound input length.
+    metadata:
+      category: security
+      aid_rule_id: SEC-001
+    patterns:
+      - pattern: Pattern.matches($RE, $INPUT)
+      - metavariable-regex:
+          metavariable: $RE
+          regex: .*(\([^)]*\+[^)]*\)\+|\(\.\*\)\+|\(\.\+\)\+).*
+
+  - id: aid-java-insecure-random-token
+    languages: [java]
+    severity: WARNING
+    message: >
+      java.util.Random used for values that appear security-sensitive (token/nonce generation).
+      Use SecureRandom or cryptographically signed tokens (JWT/HMAC).
+    metadata:
+      category: security
+      aid_rule_id: SEC-001
+    pattern: |
+      Random $R = new Random(...);
+      ...
+      $R.nextInt(...);
+
+  - id: aid-java-hardcoded-crypto-key
+    languages: [java]
+    severity: ERROR
+    message: >
+      Hardcoded symmetric key material passed to SecretKeySpec (key embedded in source).
+      Load keys from KMS/secrets manager and support rotation.
+    metadata:
+      category: security
+      aid_rule_id: HYG-001
+    pattern: new SecretKeySpec("...".getBytes(...), ...)
+
+  - id: aid-java-error-disclosure
+    languages: [java]
+    severity: WARNING
+    message: >
+      Internal exception details (message or stack trace) returned to the caller.
+      Return generic error codes to clients; log details server-side only.
+    metadata:
+      category: hygiene
+      aid_rule_id: ERR-001
+    pattern-either:
+      - patterns:
+          - pattern: return $RET;
+          - metavariable-regex:
+              metavariable: $RET
+              regex: .*\.getMessage\(\).*
+      - patterns:
+          - pattern: return $RET;
+          - metavariable-regex:
+              metavariable: $RET
+              regex: .*getStackTrace\(\).*
+      - pattern: $E.getStackTrace()[0]
+
+  - id: aid-java-preparedstatement-sql-concat
+    languages: [java]
+    severity: ERROR
+    message: >
+      SQL string for PreparedStatement built via concatenation (SQL injection bypasses parameter binding).
+      Use placeholders (? ) and bind values with setString/setObject.
+    metadata:
+      category: security
+      aid_rule_id: SEC-001
+    pattern: |
+      String $SQL = $A + $VAR + $B;
+      ...
+      $CONN.prepareStatement($SQL);
+
+  - id: aid-java-hardcoded-password
+    languages: [java]
+    severity: ERROR
+    message: >
+      Hardcoded password/secret assigned to a credential-named field or variable.
+      Load secrets from environment variables or a secrets manager; rotate any exposed value.
+    metadata:
+      category: secret
+      aid_rule_id: HYG-001
+    patterns:
+      - pattern-either:
+          - pattern: String $NAME = "...";
+          - pattern: final String $NAME = "...";
+          - pattern: static final String $NAME = "...";
+          - pattern: private static final String $NAME = "...";
+          - pattern: public static final String $NAME = "...";
+          - pattern: protected static final String $NAME = "...";
+          - pattern: private final String $NAME = "...";
+      - metavariable-regex:
+          metavariable: $NAME
+          regex: (?i).*(password|passwd|pwd|secret|api_?key|access_?key|jdbc_?pass|client_?secret|auth_?token).*
+      - pattern-not: String $NAME = "";
+      - pattern-not: String $NAME = "password";
+      - pattern-not: String $NAME = "changeme";
+      - pattern-not: String $NAME = "secret";
+      - pattern-not: String $NAME = "TODO";
+      - pattern-not: private static final String $NAME = "";
+      - pattern-not: private static final String $NAME = "password";
+      - pattern-not: private static final String $NAME = "changeme";
+
+  - id: aid-generic-hardcoded-password
+    languages: [python, go, javascript, typescript]
+    severity: ERROR
+    message: >
+      Hardcoded password/secret/API key in source. Use environment variables or a secrets manager;
+      rotate any credential that was committed.
+    metadata:
+      category: secret
+      aid_rule_id: HYG-001
+    pattern-either:
+      - patterns:
+          - pattern: $NAME = "..."
+          - metavariable-regex:
+              metavariable: $NAME
+              regex: (?i).*(password|passwd|pwd|secret|api_?key|access_?key|client_?secret|auth_?token).*
+          - pattern-not: $NAME = ""
+          - pattern-not: $NAME = "password"
+          - pattern-not: $NAME = "changeme"
+          - pattern-not: $NAME = "secret"
+      - patterns:
+          - pattern: $NAME := "..."
+          - metavariable-regex:
+              metavariable: $NAME
+              regex: (?i).*(password|passwd|pwd|secret|api_?key|access_?key|client_?secret|auth_?token).*
+          - pattern-not: $NAME := ""
+          - pattern-not: $NAME := "password"
+
+  - id: aid-java-log-sensitive-credential
+    languages: [java]
+    severity: WARNING
+    message: >
+      Credential or sensitive field written to logs/stdout (credential leak and CRLF log injection risk).
+      Redact secrets; sanitize user-controlled fields before logging.
+    metadata:
+      category: hygiene
+      aid_rule_id: HYG-001
+    pattern-either:
+      - pattern: System.out.println("..." + " password=" + $PASS)
+      - pattern: System.out.println("..." + $ACCOUNT + " password=" + $PASS)
+      - pattern: $LOG.info("..." + " password=" + $PASS)
+      - patterns:
+          - pattern-either:
+              - pattern: System.out.println($MSG);
+              - pattern: System.err.println($MSG);
+              - pattern: $LOG.info($MSG);
+              - pattern: $LOG.warn($MSG);
+              - pattern: $LOG.error($MSG);
+          - metavariable-regex:
+              metavariable: $MSG
+              regex: (?i).*(token|password|passwd|idcard|id_card|phone|secret)\s*=.*

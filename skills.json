@@ -3,43 +3,43 @@
   "project": "codexqa",
   "skills": [
     {
-      "name": "defect-detection",
-      "path": "skills/defect-detection",
+      "name": "codexqa-defect-analyzer",
+      "path": "skills/codexqa-defect-analyzer",
       "status": "available"
     },
     {
-      "name": "testcase-generation",
-      "path": "skills/testcase-generation",
+      "name": "codexqa-testcase-generator",
+      "path": "skills/codexqa-testcase-generator",
       "status": "available"
     },
     {
-      "name": "testdata-generation",
-      "path": "skills/testdata-generation",
+      "name": "codexqa-testdata-generator",
+      "path": "skills/codexqa-testdata-generator",
       "status": "available"
     },
     {
-      "name": "ai-code-reviewer",
-      "path": "skills/ai-code-reviewer",
+      "name": "codexqa-code-reviewer",
+      "path": "skills/codexqa-code-reviewer",
       "status": "available"
     },
     {
-      "name": "requirements-analyzer",
-      "path": "skills/requirements-analyzer",
+      "name": "codexqa-requirement-analyzer",
+      "path": "skills/codexqa-requirement-analyzer",
       "status": "available"
     },
     {
-      "name": "code-analyzer",
-      "path": "skills/code-analyzer",
+      "name": "codexqa-code-analyzer",
+      "path": "skills/codexqa-code-analyzer",
       "status": "available"
     },
     {
-      "name": "root-cause-diagnosis",
-      "path": "skills/root-cause-diagnosis",
+      "name": "codexqa-rootcause-analyzer",
+      "path": "skills/codexqa-rootcause-analyzer",
       "status": "available"
     },
     {
-      "name": "skill-router",
-      "path": "skills/skill-router",
+      "name": "codexqa-skill-router",
+      "path": "skills/codexqa-skill-router",
       "status": "available"
     }
   ]

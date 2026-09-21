@@ -1,0 +1,8 @@
+{
+  "name": "codexqa-defect-analyzer",
+  "private": true,
+  "description": "Dev-only metadata. Do not ship this file in the skill zip.",
+  "scripts": {
+    "test": "bash scripts/run_tests.sh"
+  }
+}

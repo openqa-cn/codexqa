@@ -1,8 +1,0 @@
-{
-  "name": "defect-detection",
-  "private": true,
-  "description": "Dev-only metadata. Do not ship this file in the skill zip.",
-  "scripts": {
-    "test": "bash scripts/run_tests.sh"
-  }
-}

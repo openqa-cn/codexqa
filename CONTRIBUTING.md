@@ -23,13 +23,13 @@ From the repository root:
 ```bash
 python3 scripts/check-docs.py
 export NODE_OPTIONS=--experimental-strip-types
-(cd skills/defect-detection && npm test)
+(cd skills/codexqa-defect-analyzer && npm test)
 node examples/checkout-boundary/verify.mjs
-(cd skills/testcase-generation && ./scripts/tcg-python scripts/close_stage.py --self-check && ./scripts/tcg-python scripts/check_run_gate.py --self-check && ./scripts/tcg-python scripts/generate_case_report.py --self-check)
-python3 skills/skill-router/scripts/discover_skills.py --self-check
+(cd skills/codexqa-testcase-generator && ./scripts/tcg-python scripts/close_stage.py --self-check && ./scripts/tcg-python scripts/check_run_gate.py --self-check && ./scripts/tcg-python scripts/generate_case_report.py --self-check)
+python3 skills/codexqa-skill-router/scripts/discover_skills.py --self-check
 ```
 
-`check-docs.py` covers all published skills (relative links must stay inside each skill directory). `ai-code-reviewer`, `requirements-analyzer`, `testcase-generation`, and `testdata-generation` have no equivalent CLI test suite; verify those changes with the checks in each skill's `CONTRIBUTING.md` (for `testcase-generation`, run `scripts/tcg-python scripts/close_stage.py --self-check`, `check_run_gate.py --self-check`, and `generate_case_report.py --self-check`). For `skill-router`, run `scripts/discover_skills.py --self-check` and optionally `ensure_skill.py --dry-run <name>`. After adding a worker skill, refresh `skills/skill-router/references/catalog.json` with `scripts/refresh_catalog.py`. The defect-detection suite requires Git and packaging tools (Bash, rsync, zip, unzip). Include OS, Node version, commit, and results in your PR. Passing CLI tests do not measure model detection accuracy.
+`check-docs.py` covers all published skills (relative links must stay inside each skill directory). `codexqa-code-reviewer`, `codexqa-requirement-analyzer`, `codexqa-testcase-generator`, and `codexqa-testdata-generator` have no equivalent CLI test suite; verify those changes with the checks in each skill's `CONTRIBUTING.md` (for `codexqa-testcase-generator`, run `scripts/tcg-python scripts/close_stage.py --self-check`, `check_run_gate.py --self-check`, and `generate_case_report.py --self-check`). For `codexqa-skill-router`, run `scripts/discover_skills.py --self-check` and optionally `ensure_skill.py --dry-run <name>`. After adding a worker skill, refresh `skills/codexqa-skill-router/references/catalog.json` with `scripts/refresh_catalog.py`. The codexqa-defect-analyzer suite requires Git and packaging tools (Bash, rsync, zip, unzip). Include OS, Node version, commit, and results in your PR. Passing CLI tests do not measure model detection accuracy.
 
 ## Useful contributions
 

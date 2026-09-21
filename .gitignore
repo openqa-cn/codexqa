@@ -7,10 +7,10 @@ dist/
 coverage/
 .pytest_cache/
 __pycache__/
-# Local scan report artifacts (e.g. defect-detection full/incremental outputs)
+# Local scan report artifacts (e.g. codexqa-defect-analyzer full/incremental outputs)
 reports/
 缺陷检测报告.md
-# ai-code-reviewer / local evidence packs (never commit)
+# codexqa-code-reviewer / local evidence packs (never commit)
 .codexqa-review/
 # skill-creator eval workspaces (iteration outputs, snapshots, review.html)
 skills/*-workspace/

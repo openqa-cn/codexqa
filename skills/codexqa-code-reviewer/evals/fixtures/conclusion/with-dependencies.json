@@ -1,0 +1,89 @@
+{
+  "mode": "pr-diff",
+  "skill": "codexqa-code-reviewer",
+  "repo": "/tmp/fixture-repo",
+  "repo_label": "fixture/repo",
+  "diff_base": "origin/main",
+  "branch": "feature",
+  "primary_language": "Go",
+  "review_language_focus": "Go",
+  "language_confidence": "high",
+  "index_confidence": "high",
+  "overall_risk": "Low",
+  "intent": "Fixture smoke with Dependencies section",
+  "scope": "1 symbol",
+  "summary": "Smoke conclusion including dependencies block with concern.",
+  "dimensions_covered": [
+    "design",
+    "complexity",
+    "dependencies",
+    "correctness",
+    "security",
+    "contract",
+    "concurrency",
+    "regression",
+    "test_gaps",
+    "observability"
+  ],
+  "design_fit": {
+    "verdict": "ok",
+    "belong_in_repo": "yes",
+    "layer_fit": "paths mostly other; no cross-layer edges",
+    "over_engineering": "None",
+    "timing_note": "",
+    "sections": {
+      "belong": {
+        "verdict": "ok",
+        "notes": "None",
+        "evidence": "10-design-fit-signals.json"
+      },
+      "layer": {
+        "verdict": "ok",
+        "notes": "None",
+        "evidence": "namespace_layers"
+      },
+      "over_engineering": {
+        "verdict": "none",
+        "notes": "None",
+        "evidence": "sprawl"
+      },
+      "timing": {
+        "verdict": "ok",
+        "notes": "None",
+        "evidence": "intent/scope"
+      }
+    },
+    "evidence": "10-design-fit-signals.json",
+    "signals_file": "10-design-fit-signals.json"
+  },
+  "complexity": {
+    "verdict": "ok",
+    "hotspots": "None",
+    "yagni": "None",
+    "evidence": "11-complexity-signals.json",
+    "signals_file": "11-complexity-signals.json"
+  },
+  "dependencies": {
+    "verdict": "concern",
+    "necessity": "New lib without observed callers",
+    "reproducibility": "go.mod uses floating pseudo-version",
+    "license": "None",
+    "vuln_posture": "No local audit artifact; residual: run org SCA — never invent CVEs",
+    "evidence": "12-dependency-signals.json",
+    "signals_file": "12-dependency-signals.json",
+    "risk": "新增依赖缺少明确调用方，且版本浮动，构建结果可能随时间漂移、难以复现。"
+  },
+  "p0": [],
+  "p1": [],
+  "p2": [],
+  "regression_tests": [],
+  "test_gaps": [],
+  "sensitive": "None",
+  "fix_order": [
+    "No-op"
+  ],
+  "residual_risks": [
+    "Fixture only"
+  ],
+  "diagrams": []
+}

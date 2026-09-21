@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "pack": "openqa-cn/codexqa",
+  "source": "generated from sibling SKILL.md frontmatter",
+  "skills": [
+    {
+      "name": "codexqa-code-analyzer",
+      "directory": "codexqa-code-analyzer",
+      "repoPath": "skills/codexqa-code-analyzer",
+      "description": "Queries a local CodexQA symbol graph for change review, regression scope, test gaps, error location, and entry risk. Use when the user mentions codexqa-code-analyzer, code-analyzer, codexqa, 符号图, 代码知识图谱, 建索引, 查调用, 影响面, --diff-base, 变更审查, 回归范围, 测试缺口, or asks to install / run the codexqa CLI (index, query). Former skill name: code-analyzer. Not CodexQA evidence-pack HTML review (that is codexqa-code-reviewer), not SAST + Agent LLM Detection code-risk scan reports (that is codexqa-defect-analyzer), and not full exception RCA reports (that is codexqa-rootcause-analyzer). license: Apache-2.0 compatibility: > Requires Node.js >= 18 and the `codexqa` CLI (`npm i -g @openqa-cn/codexqa`) on PATH. Index and query need no LLM. Data lives in ~/.codexqa/. metadata: author: open-source version: \"1.0.0\" open-standard: agentskills",
+      "compatibility": "",
+      "installHint": "npx skills add openqa-cn/codexqa --skill codexqa-code-analyzer"
+    },
+    {
+      "name": "codexqa-code-reviewer",
+      "directory": "codexqa-code-reviewer",
+      "repoPath": "skills/codexqa-code-reviewer",
+      "description": "Graph-evidence AI code review (codexqa-code-reviewer) for ANY language repo using ONLY the CodexQA CLI symbol graph (call chains, classes, methods, configs, blast radius, test edges), then an order-16 Agent LLM judgment pass by the host agent's embedded model with deterministic dedupe/merge against heuristic findings. Use when the user asks for codexqa-code-reviewer (former name ai-code-reviewer), code review, PR review, 代码评审, impact analysis, 影响面, regression scope, test gaps, full-repo health review, 全仓评审, CodexQA evidence-pack, 证据包, graph-backed review, or LLM semantic CR on a pack. Requires codexqa CLI for every language; never embeds CodexQA source; never substitutes git-diff-only analysis. Not SAST+agent scan reports (that is codexqa-defect-analyzer), not structure/impact mapping alone (that is codexqa-code-analyzer), and not exception RCA (that is codexqa-rootcause-analyzer). license: Apache-2.0 compatibility: > Requires Node.js >= 18, bash 3.2+, jq, Python 3.10+ (via `scripts/acr-python`), and the `codexqa` CLI (`npm i -g @openqa-cn/codexqa`) on PATH for every language. Collect / validate / render / merge-llm-findings need no external LLM API; review prose and the order-16 semantic pass use the host agent's embedded model. Data lands under `<repo>/.codexqa-review/<run-id>/`. metadata: author: open-source version: \"0.0.3\" open-standard: agentskills",
+      "compatibility": "",
+      "installHint": "npx skills add openqa-cn/codexqa --skill codexqa-code-reviewer"
+    },
+    {
+      "name": "codexqa-defect-analyzer",
+      "directory": "codexqa-defect-analyzer",
+      "repoPath": "skills/codexqa-defect-analyzer",
+      "description": "AI defect detection and code-risk scanning for engineering projects. Use when the user asks for AI defect detection, code-risk scan, review a diff/MR/PR/commit (incremental), baseline-scan a repository (full), OR upload/paste code snippets for adhoc defect detection. Combines two detection dimensions — (1) deterministic SAST/lint/secrets/SCA and (2) one-round Agent LLM Detection by the invoking agent's embedded model (no separate LLM API key) — then dedupes and merges them into the final report. Delivers structured findings ordered by severity (P0–P3) via report_scan.json / report_scan.md / report_scan.html. Do NOT use to apply or autofix code style/formatting — lint may still surface hygiene findings. Code-graph / call-chain MUST use CodexQA CLI for all languages (references/codexqa-cli.md) — never homemade analyzers. Not CodexQA evidence-pack HTML review (that is codexqa-code-reviewer), not structure/impact mapping (that is codexqa-code-analyzer), and not exception RCA (that is codexqa-rootcause-analyzer). When scenario unclear, ask or run choose_scenario / run_scan.py choose. Former skill name: defect-detection. license: Apache-2.0 compatibility: > Requires **Python 3.10+** on PATH (re-execs onto 3.10+ if system `python3` is older), git on PATH for repo scans, and optional SAST/lint/secrets tools (Semgrep, Bandit, gosec, gitleaks, ruff, eslint, osv-scanner). Talks to the `@openqa-cn/codexqa` CLI for code-graph / call-chain on all languages. Default `--llm-mode agent` needs no API key. metadata: author: open-source version: \"0.0.2\" open-standard: agentskills",
+      "compatibility": "",
+      "installHint": "npx skills add openqa-cn/codexqa --skill codexqa-defect-analyzer"
+    },
+    {
+      "name": "codexqa-requirement-analyzer",
+      "directory": "codexqa-requirement-analyzer",
+      "repoPath": "skills/codexqa-requirement-analyzer",
+      "description": "Full quality-and-risk analysis of requirement documents (single- or multi-source), producing one gap/conflict register with executable P0/P1 verification. Triggers: requirements analyzer, requirement quality, gap register, 需求分析, 需求分析器, 需求评审, 需求缺口. Not for writing a case library (that is codexqa-testcase-generator), constructing test data (codexqa-testdata-generator), or reviewing code (codexqa-defect-analyzer / codexqa-code-reviewer). Former skill name: requirements-analyzer. license: Apache-2.0",
+      "compatibility": "",
+      "installHint": "npx skills add openqa-cn/codexqa --skill codexqa-requirement-analyzer"
+    },
+    {
+      "name": "codexqa-rootcause-analyzer",
+      "directory": "codexqa-rootcause-analyzer",
+      "repoPath": "skills/codexqa-rootcause-analyzer",
+      "description": "Diagnoses exception root causes from stack traces, logs, call-chain dumps, and debug output using the CodexQA CLI for structured repo analysis. Use when the user mentions codexqa-rootcause-analyzer, exception RCA, crash analysis, AI code diagnosis, stack diagnosis, 异常根因, 堆栈诊断, 崩溃分析, 异常诊断, or asks to turn an exception into a root-cause report. Not structure/impact analysis (that is codexqa-code-analyzer), not SAST + Agent LLM Detection code-risk scan reports (that is codexqa-defect-analyzer), and not CodexQA evidence-pack HTML review (that is codexqa-code-reviewer). Former skill name: root-cause-diagnosis. license: Apache-2.0 compatibility: > Requires Node.js 22+ and git on PATH when cloning remotes. Talks to the `@openqa-cn/codexqa` CLI via npm (`codexqa` binary only); do not copy engine or skill source. Task data lives under this skill's `data/` directory. metadata: author: open-source version: \"0.0.1\" open-standard: agentskills",
+      "compatibility": "",
+      "installHint": "npx skills add openqa-cn/codexqa --skill codexqa-rootcause-analyzer"
+    },
+    {
+      "name": "codexqa-testcase-generator",
+      "directory": "codexqa-testcase-generator",
+      "repoPath": "skills/codexqa-testcase-generator",
+      "description": "Generates test plans and test cases from local requirements for APP, Web, and server. Use when the user wants a test plan, test analysis, test design, write cases, both plan and cases, PRD-based testing, pre-submit case edits, post-submit incremental, PR/git regression, or says 测试方案、测试分析、测试设计、测试计划、只要方案、写用例、出用例、只要用例、方案和用例都要、按 PRD 出测试、提测前改用例、提测后增量、按 PR 或 git 补回归用例、帮我出测试、补测试、做一轮测试设计. Do not switch to other case-generation, knowledge-retrieval, or generic writing skills even if unnamed. Input is local files, directories, pasted text, or HTTPS document URLs the user gives this turn; output is local Markdown only. Complete Plan and Exec without skipping. For code incremental, require a case baseline before fetching the given PR/MR/git URL; otherwise bootstrap first. Does not connect to case or doc platforms. Former skill name: testcase-generation.",
+      "compatibility": "Requires Python 3.10+ on PATH (use `scripts/tcg-python` when system `python3` is older). Git is required only when the user gives a knowledge-repo Git URL, or an Incremental PR/git URL. metadata: version: \"V56",
+      "installHint": "npx skills add openqa-cn/codexqa --skill codexqa-testcase-generator"
+    },
+    {
+      "name": "codexqa-testdata-generator",
+      "directory": "codexqa-testdata-generator",
+      "repoPath": "skills/codexqa-testdata-generator",
+      "description": "Constructs test data against real backends and writes it back into test cases as executable preconditions. Use whenever the user wants test data built, case materials or preconditions prepared, a data-build skill or tool reused, an API discovered, a construction script written, or a proven method recorded — including Chinese phrasings such as 构造测试数据, 准备测试数据, 造数据, 用例数据, 用例物料, 用例数据准备, 用例前置数据, 测试数据回写, 测试物料清单, 数据需求分析. Also use it for concrete requests that never say \"test data\", like \"create this account from the OpenAPI\", \"build a script from these change APIs\", \"publish that script as a tool\", or \"scaffold a new domain from this OpenAPI directory\". Not for authoring test cases from a PRD (that is codexqa-testcase-generator) or finding defects in code (that is codexqa-defect-analyzer). Bundled slots and sub-skills here are internal; reach them through this skill. Former skill name: testdata-generation. license: Apache-2.0 compatibility: >- Requires Node 22+ on PATH; scripts run on the Node standard library with no runtime npm dependencies. Works fully offline against local files and the bundled mock server; enterprise platforms are opt-in HTTP adapters. metadata: author: codexqa-testdata-generator contributors version: \"1.0\" open-standard: agentskills",
+      "compatibility": "",
+      "installHint": "npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator"
+    }
+  ]
+}

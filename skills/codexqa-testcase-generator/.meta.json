@@ -1,0 +1,12 @@
+{
+  "displayDescription": "Generates test plans and test cases from local requirements for APP, Web, and server. Use when the user wants a test plan, test analysis, test design, write cases, both plan and cases, PRD-based testing, pre-submit case edits, post-submit incremental, PR/git regression, or says 测试方案、测试分析、测试设计、测试计划、只要方案、写用例、出用例、只要用例、方案和用例都要、按 PRD 出测试、提测前改用例、提测后增量、按 PR 或 git 补回归用例、帮我出测试、补测试、做一轮测试设计. Do not switch to other case-generation, knowledge-retrieval, or generic writing skills even if unnamed. Input is local files, directories, pasted text, or HTTPS document URLs the user gives this turn; output is local Markdown only. Complete Plan and Exec without skipping. For code incremental, require a case baseline before fetching the given PR/MR/git URL; otherwise bootstrap first. Does not connect to case or doc platforms. Former skill name: testcase-generation.",
+  "environment": "production",
+  "fileTree": [
+    "SKILL.md"
+  ],
+  "displayName": "codexqa-testcase-generator",
+  "name": "codexqa-testcase-generator",
+  "description": "Generates test plans and test cases from local requirements for APP, Web, and server. Use when the user wants a test plan, test analysis, test design, write cases, both plan and cases, PRD-based testing, pre-submit case edits, post-submit incremental, PR/git regression, or says 测试方案、测试分析、测试设计、测试计划、只要方案、写用例、出用例、只要用例、方案和用例都要、按 PRD 出测试、提测前改用例、提测后增量、按 PR 或 git 补回归用例、帮我出测试、补测试、做一轮测试设计. Do not switch to other case-generation, knowledge-retrieval, or generic writing skills even if unnamed. Input is local files, directories, pasted text, or HTTPS document URLs the user gives this turn; output is local Markdown only. Complete Plan and Exec without skipping. For code incremental, require a case baseline before fetching the given PR/MR/git URL; otherwise bootstrap first. Does not connect to case or doc platforms. Former skill name: testcase-generation.",
+  "uuid": "cskill-f46c3cfc-7",
+  "version": "0.0.1"
+}

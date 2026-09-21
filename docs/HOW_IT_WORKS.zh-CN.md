@@ -12,14 +12,14 @@
 
 | Skill | 人读 | Agent |
 | --- | --- | --- |
-| `skill-router` | [工作原理](../skills/skill-router/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/skill-router/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/skill-router/SKILL.md) |
-| `code-analyzer` | [工作流](../skills/code-analyzer/README.zh-CN.md) · [已知边界](../skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md) · [分析 playbook](../skills/code-analyzer/references/playbook.md) | [`SKILL.md`](../skills/code-analyzer/SKILL.md) |
-| `root-cause-diagnosis` | [工作原理](../skills/root-cause-diagnosis/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/root-cause-diagnosis/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/root-cause-diagnosis/SKILL.md) |
-| `defect-detection` | [工作原理](../skills/defect-detection/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/defect-detection/SKILL.md) |
-| `ai-code-reviewer` | [工作原理](../skills/ai-code-reviewer/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/ai-code-reviewer/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/ai-code-reviewer/SKILL.md) |
-| `requirements-analyzer` | [工作原理](../skills/requirements-analyzer/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/requirements-analyzer/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/requirements-analyzer/SKILL.md) |
-| `testdata-generation` | [工作原理](../skills/testdata-generation/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/testdata-generation/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/testdata-generation/SKILL.md) |
-| `testcase-generation` | [工作原理](../skills/testcase-generation/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/testcase-generation/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/testcase-generation/SKILL.md) |
+| `codexqa-skill-router` | [工作原理](../skills/codexqa-skill-router/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/codexqa-skill-router/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/codexqa-skill-router/SKILL.md) |
+| `codexqa-code-analyzer` | [工作流](../skills/codexqa-code-analyzer/README.zh-CN.md) · [已知边界](../skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.zh-CN.md) · [分析 playbook](../skills/codexqa-code-analyzer/references/playbook.md) | [`SKILL.md`](../skills/codexqa-code-analyzer/SKILL.md) |
+| `codexqa-rootcause-analyzer` | [工作原理](../skills/codexqa-rootcause-analyzer/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/codexqa-rootcause-analyzer/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/codexqa-rootcause-analyzer/SKILL.md) |
+| `codexqa-defect-analyzer` | [工作原理](../skills/codexqa-defect-analyzer/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/codexqa-defect-analyzer/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/codexqa-defect-analyzer/SKILL.md) |
+| `codexqa-code-reviewer` | [工作原理](../skills/codexqa-code-reviewer/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/codexqa-code-reviewer/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/codexqa-code-reviewer/SKILL.md) |
+| `codexqa-requirement-analyzer` | [工作原理](../skills/codexqa-requirement-analyzer/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/codexqa-requirement-analyzer/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/codexqa-requirement-analyzer/SKILL.md) |
+| `codexqa-testdata-generator` | [工作原理](../skills/codexqa-testdata-generator/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/codexqa-testdata-generator/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/codexqa-testdata-generator/SKILL.md) |
+| `codexqa-testcase-generator` | [工作原理](../skills/codexqa-testcase-generator/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/codexqa-testcase-generator/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/codexqa-testcase-generator/SKILL.md) |
 
 各 skill 要交什么（仓库 / PRD / 用例与 API）：[FAQ](FAQ.zh-CN.md#每个-skill-要我交什么)。产物长什么样：[README 预览](../README.zh-CN.md#产物长什么样)。
 

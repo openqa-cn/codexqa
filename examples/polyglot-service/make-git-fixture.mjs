@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Build a small polyglot git repo (Python API + Go payment package + TypeScript cart)
-// whose feature branch plants one seeded defect per language, so defect-detection can
+// whose feature branch plants one seeded defect per language, so codexqa-defect-analyzer can
 // run submit-git → clone-and-diff → get-changed-methods → build-detection-plan →
 // run-ast-scan against a change set that is not Java.
 //

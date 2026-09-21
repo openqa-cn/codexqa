@@ -26,7 +26,7 @@ The verifier exits zero only when the good implementation passes the sampled con
 
 The corresponding candidate finding is: “Zero-value checkout is accepted at defective.mjs line 2; reject zero as required.” It has a concrete input, expected/actual behavior, and executable evidence. This is a hand-authored fixture, not an agent-generated platform report.
 
-## Use it with defect-detection
+## Use it with codexqa-defect-analyzer
 
 Build a git branch pair and run the skill's Quick start (submit-git → clone-and-diff → run-ast-scan). The defective branch should produce Semgrep finding `AST-JS-BOUND-001`:
 
@@ -34,7 +34,7 @@ Build a git branch pair and run the skill's Quick start (submit-git → clone-an
 node examples/checkout-boundary/make-git-fixture.mjs   # Node + git; `make-git-fixture.sh` is a bash wrapper
 # Fixture verification only (no AI claim):
 node examples/checkout-boundary/verify.mjs
-# For a real scan of a repo, see skills/defect-detection/README.md → Quick start (`run_scan.py`)
+# For a real scan of a repo, see skills/codexqa-defect-analyzer/README.md → Quick start (`run_scan.py`)
 ```
 
 ## Use it in an agent evaluation
