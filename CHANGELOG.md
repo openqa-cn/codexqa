@@ -3,6 +3,7 @@
 Each release has two sections. **Highlights** is what changes for someone using the skills. **Internal** is the full engineering record — refactors, test changes, and fixes with no user-visible effect. If you are upgrading, Highlights is enough.
 
 ## Unreleased
+- `codexqa-code-wiki`: HTML reports now use DeepWiki wiki layout (left sidebar tree, article, on-this-page TOC) while keeping the original dark Claude chrome; default filled copy stays 简体中文.
 - Root README (EN/zh-CN) rewritten as a product landing page: first-screen value line, eight skill HTML report screenshots, three-step start, capability icons, audience, star CTA, changelog badges, and openqa.cn links.
 - Renamed `code-wiki` to `codexqa-code-wiki` (directory, frontmatter `name`, catalog, and docs).
 - Canonical docs/product URL is [openqa.cn](https://openqa.cn/). Removed the in-repo VitePress `website/` tree and GitHub Pages docs workflow so ranking is not split.
@@ -24,7 +25,7 @@ Each release has two sections. **Highlights** is what changes for someone using 
 
 - **README is a landing page.** Root README leads with who it is for, eight skill HTML report screenshots, a three-step start, and activity badges. Documentation still points at [openqa.cn](https://openqa.cn/).
 - **Search landing is openqa.cn.** README Documentation points at [openqa.cn](https://openqa.cn/). There is no second docs host in this repository.
-- **New `codexqa-code-wiki` skill.** Index a local repository, export Leiden communities and digests with `wiki inputs` (no model), and write a Claude Code official-style HTML architecture wiki (module map, real deps, reading guides). The Skill, playbook, report template, and limitations are published here; it uses the same separately distributed `@openqa-cn/codexqa` engine as `codexqa-code-analyzer`.
+- **New `codexqa-code-wiki` skill.** Index a local repository, export Leiden communities and digests with `wiki inputs` (no model), and write a DeepWiki-style HTML architecture wiki (sidebar + article + TOC, module map, real deps, reading guides). The Skill, playbook, report template, and limitations are published here; it uses the same separately distributed `@openqa-cn/codexqa` engine as `codexqa-code-analyzer`.
 - **Skill rename to `codexqa-*`.** Every published skill directory and frontmatter `name` now uses the `codexqa-` prefix (see Unreleased). Update install flags and docs bookmarks accordingly (`--skill codexqa-defect-analyzer`, etc.).
 - **`codexqa-code-reviewer` Agent LLM judgment (v0.0.3).** After heuristic dimension drafts, the host embedded model runs an order-16 semantic CR pass; `merge-llm-findings.py` dedupes/merges into final P0/P1/P2 (`22-llm-judgment.json`). Collect/validate/render still need no external LLM API.
 - **`codexqa-defect-analyzer` Agent LLM Detection (v0.0.2).** First-class detection dimension via `prompts/agent_detect.md` (Stage1 + Stage2); `finalize` dedupes/merges with deterministic SAST/lint/secrets/SCA and stamps `dimension` on findings. Default `--llm-mode agent` needs no API key.

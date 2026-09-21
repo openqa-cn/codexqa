@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    /* anthropic / claude-code palette — same tokens as official session-report */
+    /* anthropic / claude-code palette on DeepWiki wiki chrome */
     --ivory: #FAF9F5;
     --term-bg: #1a1918;
     --term-fg: #d1cfc5;
@@ -23,81 +23,191 @@
     --red: rgb(255,107,128);
     --blue: rgb(177,185,249);
     --yellow: rgb(255,193,7);
-    --mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, Monaco, monospace;
-    --sans: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    --chip: #3a3836;
+    --chip-loc: #2a2826;
+    --sidebar-w: 252px;
+    --toc-w: 200px;
+    --topbar-h: 48px;
+    --mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Monaco, monospace;
+    --sans: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   }
 
   * { box-sizing: border-box; }
-  html { background: var(--ivory); }
+  html { background: var(--ivory); scroll-behavior: smooth; }
   body {
-    margin: 0; padding: 48px 24px 80px;
+    margin: 0;
     font: 14px/1.7 var(--sans);
     font-variant-numeric: tabular-nums;
     color: var(--term-fg);
-  }
-
-  /* ——— terminal window chrome ——— */
-  .term {
-    max-width: 1180px; margin: 0 auto;
     background: var(--term-bg);
-    border-radius: 8px;
-    outline: 1px solid var(--outline);
-    box-shadow: 0 20px 60px rgba(20,20,19,0.22);
   }
-  .titlebar {
-    background: var(--titlebar);
-    border-radius: 8px 8px 0 0;
-    border-bottom: 1px solid var(--outline);
-    padding: 11px 14px;
-    display: flex; align-items: center; gap: 7px;
-  }
-  .titlebar .dot { width: 11px; height: 11px; border-radius: 50%; background: #3a3836; }
-  .titlebar .path { margin-left: 14px; color: var(--dim); font-size: 11px; font-family: var(--mono); }
-  .term-body { padding: 22px 30px 30px; }
 
-  /* ——— command + hero ——— */
-  .cmd { color: var(--dim); margin-bottom: 6px; font-family: var(--mono); font-size: 12px; }
+  a { color: var(--clay); }
+  a:hover { color: #e8a07a; }
+  code { color: var(--blue); font-family: var(--mono); font-size: 12px; }
+  ::selection { background: var(--clay); color: var(--term-bg); }
+
+  /* ——— top bar (titlebar) ——— */
+  .topbar {
+    position: sticky; top: 0; z-index: 30;
+    height: var(--topbar-h);
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 16px;
+    background: var(--titlebar);
+    border-bottom: 1px solid var(--outline);
+  }
+  .topbar .dot { width: 11px; height: 11px; border-radius: 50%; background: #3a3836; }
+  .brand { margin-left: 8px; font-weight: 500; font-size: 13px; color: var(--term-fg); text-decoration: none; }
+  .brand:hover { color: var(--clay); }
+  .repo { color: var(--dim); font-size: 12px; font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar-meta { margin-left: auto; color: var(--subtle); font-size: 11px; font-family: var(--mono); }
+
+  /* ——— 3-column wiki shell ——— */
+  .wiki-shell {
+    display: grid;
+    grid-template-columns: var(--sidebar-w) minmax(0, 1fr) var(--toc-w);
+    min-height: calc(100vh - var(--topbar-h));
+  }
+
+  .sidebar, .toc {
+    position: sticky; top: var(--topbar-h);
+    height: calc(100vh - var(--topbar-h));
+    overflow: auto;
+  }
+  .sidebar {
+    padding: 14px 10px 48px;
+    border-right: 1px solid var(--outline);
+    background: var(--term-bg);
+  }
+  .toc {
+    padding: 24px 16px 48px 14px;
+    border-left: 1px solid var(--outline);
+  }
+
+  .indexed { font-size: 11px; color: var(--subtle); padding: 0 8px 10px; line-height: 1.5; }
+  .indexed .hash { font-family: var(--mono); }
+
+  .nav a, .toc a { display: block; text-decoration: none; border-radius: 4px; }
+  .nav a { padding: 5px 8px; font-size: 13px; color: var(--term-fg); }
+  .nav a:hover { background: var(--hover); color: var(--clay); }
+  .nav a.active { background: rgba(255,255,255,0.08); color: var(--term-fg); }
+  .nav .children { padding-left: 10px; }
+  .nav .children a { color: var(--dim); font-size: 13px; }
+  .nav .children a.active { color: var(--term-fg); background: rgba(255,255,255,0.08); }
+  .nav .nav-empty { color: var(--subtle); font-style: normal; }
+
+  .nav-group { margin: 2px 0; }
+  .nav-group > summary {
+    list-style: none; cursor: pointer;
+    padding: 6px 8px; border-radius: 4px;
+    font-size: 13px; color: var(--term-fg);
+  }
+  .nav-group > summary::-webkit-details-marker { display: none; }
+  .nav-group > summary::before {
+    content: "▾ "; font-family: var(--mono); font-size: 10px; color: var(--subtle);
+  }
+  .nav-group:not([open]) > summary::before { content: "▸ "; }
+  .nav-group > summary:hover { background: var(--hover); }
+
+  .toc h3 { margin: 0 0 10px; font-size: 12px; font-weight: 500; color: var(--dim); }
+  .toc ol { list-style: none; margin: 0; padding: 0; }
+  .toc a { color: var(--dim); font-size: 12px; padding: 4px 0; line-height: 1.4; }
+  .toc a:hover, .toc a.active { color: var(--term-fg); }
+
+  /* ——— article ——— */
+  .article { max-width: 780px; padding: 28px 36px 80px; }
+
+  h1 {
+    margin: 0 0 12px;
+    font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25;
+  }
+  h2 {
+    all: unset; display: block;
+    margin: 32px 0 10px;
+    color: var(--clay); font-weight: 500; font-size: 16px;
+  }
+  h2::before { content: "▸ "; font-family: var(--mono); }
+  h2 .hint { color: var(--subtle); font-size: 12px; font-weight: 400; margin-left: 8px; }
+  h3 { margin: 22px 0 8px; font-size: 14px; font-weight: 500; color: var(--term-fg); }
+  section { scroll-margin-top: calc(var(--topbar-h) + 16px); margin-top: 8px; }
+  .hr { display: none; }
+  .section-body { margin-top: 8px; }
+
+  .cmd {
+    margin: 0 8px 12px;
+    color: var(--dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.45;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  }
   .cmd .prompt { color: var(--clay); }
   .cmd .flag { color: var(--blue); }
-  #meta-line { color: var(--subtle); font-size: 12px; }
 
-  #hero { margin: 14px 0 6px; }
-  #hero-total { font-size: 52px; font-weight: 700; line-height: 1; font-family: var(--mono); }
-  #hero-total .unit { color: var(--clay); font-size: 22px; margin-left: 6px; }
-  #hero-total .label { font-size: 16px; font-weight: 400; color: var(--dim); margin-left: 8px; font-family: var(--sans); }
-  #hero-split { color: var(--dim); margin-top: 10px; }
-  #hero-split b { color: var(--term-fg); font-weight: 500; }
-  #hero-split .ok { color: var(--green); }
-  #hero-split .warn { color: var(--yellow); }
+  #meta-line { color: var(--subtle); font-size: 11px; margin: 0 0 8px; }
+
+  .sources-box {
+    margin: 0 0 16px;
+    border: 1px solid var(--outline);
+    border-radius: 8px;
+    background: var(--titlebar);
+    scroll-margin-top: calc(var(--topbar-h) + 16px);
+  }
+  .sources-box > summary {
+    list-style: none; cursor: pointer;
+    padding: 9px 12px; font-size: 13px; color: var(--dim);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sources-box > summary::-webkit-details-marker { display: none; }
+  .sources-box > summary::before { content: "▸"; font-size: 11px; color: var(--subtle); font-family: var(--mono); }
+  .sources-box[open] > summary::before { content: "▾"; }
+  .sources-box .files { padding: 0 12px 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .file, .file-static {
+    display: inline-flex; align-items: stretch;
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    text-decoration: none; color: var(--term-fg); border-radius: 4px; overflow: hidden;
+    line-height: 1;
+  }
+  .file:hover { color: var(--clay); }
+  .file-static:hover { opacity: 0.8; color: var(--term-fg); }
+  .file-path { background: var(--chip); padding: 5px 8px; }
+  .file-loc { background: var(--chip-loc); padding: 5px 8px; color: var(--dim); }
 
   .howto {
-    margin: 14px 0 4px; padding: 10px 14px;
+    margin: 0 0 16px; padding: 10px 14px;
     border-left: 2px solid var(--clay);
     color: var(--dim); font-size: 13px;
   }
   .howto b { color: var(--term-fg); font-weight: 500; }
 
-  /* ——— sections ——— */
-  section { margin-top: 26px; }
-  .hr { color: var(--subtle); overflow: hidden; white-space: nowrap;
-        user-select: none; margin-bottom: 8px; font-family: var(--mono); }
-  .hr::after { content: '────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────'; }
-  h2 { all: unset; display: block; color: var(--clay); font-weight: 500; }
-  h2::before { content: '▸ '; font-family: var(--mono); }
-  h2 .hint { color: var(--subtle); font-size: 12px; font-weight: 400; margin-left: 10px; }
-  .section-body { margin-top: 10px; }
+  #hero { margin: 8px 0 10px; }
+  #hero-total { display: flex; align-items: baseline; line-height: 1; }
+  #hero-total .num { font-size: 40px; font-weight: 700; font-family: var(--mono); }
+  #hero-total .unit { color: var(--clay); font-size: 18px; margin-left: 2px; font-weight: 700; }
+  #hero-total .label { font-size: 14px; font-weight: 400; color: var(--dim); margin-left: 6px; font-family: var(--sans); }
+  #hero-split { color: var(--dim); margin-top: 8px; }
+  #hero-split b { color: var(--term-fg); font-weight: 500; }
+  #hero-split .ok { color: var(--green); }
+  #hero-split .warn { color: var(--yellow); }
 
-  /* ——— overall stat grid ——— */
-  #overall-grid { display: grid; gap: 4px 28px;
-                  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  #overall-grid {
+    display: grid; gap: 4px 28px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    margin: 8px 0 4px; padding: 10px 0;
+    border-top: 1px solid var(--outline);
+    border-bottom: 1px solid var(--outline);
+  }
   .stat { padding: 4px 0; }
   .stat .label { font-size: 12px; color: var(--dim); }
   .stat .val { font-size: 22px; font-weight: 500; font-family: var(--mono); }
   .stat .detail { font-size: 12px; color: var(--subtle); }
 
   /* ——— takeaways ——— */
-  .take { display: grid; grid-template-columns: 9ch 1fr; gap: 18px;
-          padding: 8px 0; align-items: baseline; }
+  .take {
+    display: grid; grid-template-columns: 8ch 1fr; gap: 16px;
+    padding: 8px 0; align-items: baseline;
+  }
   .take .fig { text-align: right; font-weight: 700; font-size: 15px; font-family: var(--mono); }
   .take .txt { color: var(--dim); }
   .take .txt b { color: var(--term-fg); font-weight: 500; }
@@ -106,15 +216,16 @@
   .take.info .fig { color: var(--blue); }
 
   /* ——— callouts (reading-guide steps) ——— */
-  .callout { padding: 8px 0 8px 14px; border-left: 2px solid var(--subtle);
-             color: var(--dim); margin: 8px 0; }
+  .callout { padding: 8px 0 8px 14px; border-left: 2px solid var(--subtle); color: var(--dim); margin: 8px 0; }
   .callout b, .callout code { color: var(--term-fg); }
   .callout.risk { border-left-color: var(--clay); }
   .callout .why { display: block; margin-top: 4px; font-size: 12px; color: var(--subtle); }
 
   /* ——— block-char bars (community size) ——— */
-  .bar { display: grid; grid-template-columns: 28ch 1fr 8ch; gap: 14px;
-         padding: 2px 0; align-items: center; font-family: var(--mono); font-size: 12px; }
+  .bar {
+    display: grid; grid-template-columns: 22ch 1fr 6ch; gap: 12px;
+    padding: 2px 0; align-items: center; font-family: var(--mono); font-size: 12px;
+  }
   .bar .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .bar .blocks { color: var(--clay); white-space: pre; overflow: hidden; }
   .bar .blocks .empty { color: var(--subtle); }
@@ -122,38 +233,81 @@
   .bar:hover .name { color: var(--clay); }
 
   /* ——— drill-down lists (module notes) ——— */
-  .drill details { border-top: 1px solid var(--outline); }
+  .drill details { border-top: 1px solid var(--outline); scroll-margin-top: calc(var(--topbar-h) + 16px); }
   .drill details:last-of-type { border-bottom: 1px solid var(--outline); }
-  .drill summary { list-style: none; cursor: pointer;
-    display: grid; grid-template-columns: 8ch 1fr; gap: 16px;
-    padding: 10px 4px; align-items: baseline; }
+  .drill summary {
+    list-style: none; cursor: pointer;
+    display: grid; grid-template-columns: 6ch 1fr; gap: 14px;
+    padding: 10px 4px; align-items: baseline;
+  }
   .drill summary::-webkit-details-marker { display: none; }
   .drill summary:hover { background: var(--hover); }
-  .drill .amt { font-weight: 700; text-align: right; color: var(--clay); font-family: var(--mono); }
+  .drill .amt { font-weight: 700; text-align: right; color: var(--clay); font-family: var(--mono); font-size: 13px; }
   .drill .desc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .drill .meta { grid-column: 2; font-size: 12px; color: var(--subtle); }
   .drill details[open] summary .desc { white-space: normal; }
-  .drill .body { padding: 4px 4px 16px calc(8ch + 20px); font-size: 13px; color: var(--dim); }
+  .drill .body { padding: 4px 4px 16px calc(6ch + 18px); font-size: 13px; color: var(--dim); }
   .drill .body p { margin: 0 0 8px; }
   .drill .body p:last-child { margin-bottom: 0; }
 
-  /* ——— ivory insets: mermaid paper + quoted digest ——— */
+  /* ——— ivory insets: mermaid paper ——— */
   .ctx, .diagram {
     margin: 8px 0 12px; padding: 12px 14px;
     background: #F0EEE6; color: #1a1918;
     border-radius: 6px; font-size: 13px;
   }
-  .diagram { background: #FAF9F5; overflow-x: auto; }
+  .diagram { background: var(--ivory); overflow: hidden; position: relative; }
   .diagram .mermaid { margin: 0; }
-  .diagram-meta { margin-top: 10px; color: #87867F; font-size: 12px; }
+  .diagram .mermaid svg { max-width: none !important; height: auto; }
+  .diagram-meta, .sources {
+    margin-top: 10px; color: #87867F; font-size: 12px;
+  }
   .diagram-meta div { padding: 1px 0; }
+
+  .zoom-toolbar {
+    display: flex; align-items: center; justify-content: flex-end; gap: 6px;
+    margin: 0 0 8px;
+  }
+  .zoom-toolbar button {
+    font-family: var(--mono); font-size: 13px; line-height: 1;
+    width: 28px; height: 28px; padding: 0;
+    color: #141413; background: #F0EEE6;
+    border: 1px solid #D1CFC5; border-radius: 4px; cursor: pointer;
+  }
+  .zoom-toolbar button.wide { width: auto; padding: 0 8px; font-size: 12px; }
+  .zoom-toolbar button:hover { border-color: var(--clay); color: var(--clay); }
+  .zoom-pct { font-family: var(--mono); font-size: 11px; color: #87867F; min-width: 4ch; text-align: center; }
+  .zoom-viewport {
+    overflow: hidden;
+    max-height: min(72vh, 640px);
+    border-radius: 4px;
+    cursor: grab;
+    touch-action: none;
+  }
+  .zoom-viewport.is-dragging { cursor: grabbing; }
+  .zoom-stage { transform-origin: 0 0; will-change: transform; width: max-content; }
+
+  .diagram-backdrop {
+    display: none; position: fixed; inset: 0; z-index: 55;
+    background: rgba(0, 0, 0, 0.55);
+  }
+  body.diagram-expanded { overflow: hidden; }
+  body.diagram-expanded .diagram-backdrop { display: block; }
+  .diagram.is-expanded {
+    position: fixed; inset: 56px 24px 24px; z-index: 60;
+    margin: 0; max-width: none;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  }
+  .diagram.is-expanded .zoom-viewport { max-height: calc(100vh - 160px); }
 
   .prose { color: var(--dim); }
   .prose p { margin: 0 0 10px; }
   .prose p:last-child { margin-bottom: 0; }
   .prose b, .prose strong { color: var(--term-fg); font-weight: 500; }
+  .prose ul { margin: 0 0 10px; padding-left: 1.2em; }
+  .prose li { margin: 4px 0; }
   .tag {
-    display: inline-block; padding: 0 6px; margin-right: 6px;
+    display: inline-block; padding: 0 6px; margin-left: 6px;
     border: 1px solid var(--subtle); border-radius: 3px;
     font-size: 11px; color: var(--dim);
   }
@@ -161,56 +315,178 @@
   .tag.change { border-color: var(--yellow); color: var(--yellow); }
 
   /* ——— tables ——— */
-  .scroll { max-height: 440px; overflow: auto;
-            border-top: 1px solid var(--outline); border-bottom: 1px solid var(--outline); }
+  .scroll {
+    max-height: 440px; overflow: auto;
+    border-top: 1px solid var(--outline); border-bottom: 1px solid var(--outline);
+  }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th, td { text-align: left; padding: 7px 10px; }
   td { border-top: 1px solid rgba(255,255,255,0.04); }
-  th { position: sticky; top: 0; background: var(--term-bg); z-index: 1;
-       font-weight: 500; font-size: 12px; color: var(--subtle);
-       user-select: none;
-       border-bottom: 1px solid var(--outline); }
+  th {
+    position: sticky; top: 0; background: var(--term-bg); z-index: 1;
+    font-weight: 500; font-size: 12px; color: var(--subtle);
+    user-select: none;
+    border-bottom: 1px solid var(--outline);
+  }
   td.num, th.num { text-align: right; font-family: var(--mono); }
   td.mono { font-family: var(--mono); font-size: 12px; }
   tbody tr:hover td { background: var(--hover); }
 
-  footer { margin-top: 28px; color: var(--subtle); font-size: 12px;
-           display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .layer-grid {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 8px;
+  }
+  .layer-card {
+    border: 1px solid var(--outline); border-radius: 6px; padding: 10px 12px;
+  }
+  .layer-card h3 { margin: 0 0 6px; color: var(--clay); font-size: 13px; }
+  .layer-card ul { margin: 0; padding-left: 1.1em; color: var(--dim); }
+  .layer-card li { margin: 3px 0; }
 
-  code { color: var(--blue); font-family: var(--mono); font-size: 12px; }
-  a { color: var(--clay); }
-  ::selection { background: var(--clay); color: var(--term-bg); }
+  footer {
+    margin-top: 36px; padding-top: 14px;
+    border-top: 1px solid var(--outline);
+    color: var(--subtle); font-size: 12px;
+    display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  }
 
+  @media (max-width: 1100px) {
+    #overall-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .layer-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 880px) {
+    .wiki-shell { grid-template-columns: var(--sidebar-w) minmax(0, 1fr); }
+    .toc { display: none; }
+  }
   @media (max-width: 760px) {
-    body { padding: 20px 12px 48px; }
-    .term-body { padding: 16px 16px 24px; }
-    #hero-total { font-size: 36px; }
-    .bar { grid-template-columns: 16ch 1fr 7ch; gap: 8px; }
-    .drill summary { grid-template-columns: 6ch 1fr; }
-    .drill .body { padding-left: 12px; }
-    .take { grid-template-columns: 7ch 1fr; gap: 12px; }
+    .wiki-shell { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .article { padding: 20px 16px 56px; }
+    #hero-total .num { font-size: 32px; }
+    .bar { grid-template-columns: 14ch 1fr 5ch; gap: 8px; }
+    .drill summary { grid-template-columns: 5ch 1fr; }
+    .drill .body { padding-left: 8px; }
+    .take { grid-template-columns: 6ch 1fr; gap: 10px; }
   }
 </style>
 </head>
 <body>
 
-<div class="term">
-  <div class="titlebar">
-    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-    <span class="path" id="title-path">仓库 — 架构知识图谱</span>
-  </div>
-  <div class="term-body">
+<header class="topbar">
+  <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+  <a class="brand" href="#page-top">Code Wiki</a>
+  <span class="repo" id="title-path">仓库 — 架构知识图谱</span>
+  <span class="topbar-meta" id="foot-gen">生成于 —</span>
+</header>
 
-    <div class="cmd"><span class="prompt">&gt;</span> wiki inputs <span id="cmd-repo">/path/to/repo</span> <span class="flag" id="cmd-flags">--kind architecture --limit 8</span></div>
-    <div id="meta-line">社区 — · 本报告收录 — · 未调用模型</div>
-
-    <div id="hero">
-      <div id="hero-total">— <span class="unit">个模块</span><span class="label">本报告收录</span></div>
-      <div id="hero-split">有依赖的模块走主阅读路径 · 无依赖的放在文末「独立模块」</div>
+<div class="wiki-shell">
+  <aside class="sidebar">
+    <div hidden>
+      <div id="meta-line">最近索引 — · 本报告收录 — · 未调用模型</div>
+      <span id="cmd-repo">/path/to/repo</span>
+      <span id="cmd-flags">--kind architecture --limit 8</span>
     </div>
+    <nav class="nav" id="wiki-nav">
+      <a href="#page-top" class="active">总览</a>
+
+      <details class="nav-group" open>
+        <summary>快速上手</summary>
+        <div class="children">
+          <a href="#howto">怎么读</a>
+          <a href="#sec-findings">关键发现</a>
+          <a href="#sec-guides">阅读路径</a>
+        </div>
+      </details>
+
+      <details class="nav-group" open>
+        <summary>系统架构</summary>
+        <div class="children">
+          <a href="#sec-overview">核心架构</a>
+          <a href="#sec-map">模块地图</a>
+          <a href="#sec-diagrams">架构图</a>
+          <a href="#sec-layers">分层</a>
+          <a href="#sec-flow">数据流与存储</a>
+        </div>
+      </details>
+
+      <details class="nav-group" open>
+        <summary>入口</summary>
+        <div class="children" id="nav-entry">
+          <a class="nav-empty" href="#sec-layers">按层填写模块</a>
+        </div>
+      </details>
+
+      <details class="nav-group" open>
+        <summary>应用</summary>
+        <div class="children" id="nav-app">
+          <a class="nav-empty" href="#sec-layers">按层填写模块</a>
+        </div>
+      </details>
+
+      <details class="nav-group" open>
+        <summary>领域</summary>
+        <div class="children" id="nav-domain">
+          <a class="nav-empty" href="#sec-layers">按层填写模块</a>
+        </div>
+      </details>
+
+      <details class="nav-group" open>
+        <summary>存储</summary>
+        <div class="children" id="nav-storage">
+          <a class="nav-empty" href="#sec-layers">按层填写模块</a>
+        </div>
+      </details>
+
+      <details class="nav-group" open>
+        <summary>核心模块</summary>
+        <div class="children" id="nav-modules">
+          <a href="#p01">p01 待填</a>
+          <a href="#p02">p02 待填</a>
+          <a href="#p03">p03 待填</a>
+          <a href="#p04">p04 待填</a>
+          <a href="#p05">p05 待填</a>
+          <a href="#p06">p06 待填</a>
+          <a href="#p07">p07 待填</a>
+          <a href="#p08">p08 待填</a>
+        </div>
+      </details>
+
+      <details class="nav-group" open>
+        <summary>独立模块</summary>
+        <div class="children" id="nav-peripheral">
+          <a class="nav-empty" href="#sec-peripheral">未列出</a>
+        </div>
+      </details>
+
+      <details class="nav-group" open>
+        <summary>参考</summary>
+        <div class="children">
+          <a href="#sec-sources">相关源文件</a>
+          <a href="#sec-legend">图例</a>
+          <a href="#sec-glossary">术语</a>
+        </div>
+      </details>
+    </nav>
+  </aside>
+
+  <main class="article" id="page-top">
+    <h1>核心架构</h1>
+
+    <details class="sources-box" id="sec-sources">
+      <summary>相关源文件</summary>
+      <div class="files" id="source-files">
+        <span class="file-static"><span class="file-path">用本次导出里的真实路径替换</span></span>
+      </div>
+    </details>
 
     <div class="howto" id="howto">
       <b>怎么读：</b>先看「关键发现」抓住枢纽和风险，再按「阅读路径」从入口往下读；地图和对图用来对照，不要从孤立工具读起。
+    </div>
+
+    <div id="hero">
+      <div id="hero-total"><span class="num">—</span><span class="unit">个模块</span><span class="label">本报告收录</span></div>
+      <div id="hero-split">有依赖的模块走主阅读路径 · 无依赖的放在文末「独立模块」</div>
     </div>
 
     <div id="overall-grid">
@@ -224,7 +500,7 @@
          关键发现 — 3～5 条。每条 = 事实 + 对读者意味着什么。
          .bad = 枢纽 / 风险 / 意外孤立, .good = 一条能走通的路径, .info = 中性事实。
          ==================================================================== -->
-    <section>
+    <section id="sec-findings">
       <div class="hr"></div>
       <h2>关键发现 <span class="hint">先看这些，再下钻</span></h2>
       <div class="section-body" id="takeaways">
@@ -235,7 +511,7 @@
     <!-- ====================================================================
          系统怎么运转 — 这个仓库是什么、主链路怎么走。不要堆字段名。
          ==================================================================== -->
-    <section>
+    <section id="sec-overview">
       <div class="hr"></div>
       <h2>系统怎么运转 <span class="hint">一句话定位 + 主链路</span></h2>
       <div class="section-body prose" id="overview">
@@ -246,7 +522,7 @@
     <!-- ====================================================================
          模块地图 — 社区编号、人话职责、真实依赖。孤立页不要进分层。
          ==================================================================== -->
-    <section>
+    <section id="sec-map">
       <div class="hr"></div>
       <h2>模块地图 <span class="hint">入口 → 应用 → 领域 → 存储</span></h2>
       <div class="section-body" id="module-map">
@@ -271,10 +547,38 @@
     </section>
 
     <!-- ====================================================================
+         分层 — 侧栏四层的对照。只放有真实依赖的页。
+         ==================================================================== -->
+    <section id="sec-layers">
+      <div class="hr"></div>
+      <h2>分层 <span class="hint">入口 → 应用 → 领域 → 存储</span></h2>
+      <div class="section-body">
+        <div class="layer-grid">
+          <div class="layer-card" id="layer-entry">
+            <h3>入口</h3>
+            <ul id="layer-entry-list"><li>还没有。把请求进来的模块写在这里。</li></ul>
+          </div>
+          <div class="layer-card" id="layer-app">
+            <h3>应用</h3>
+            <ul id="layer-app-list"><li>还没有。编排 / 用例写在这里。</li></ul>
+          </div>
+          <div class="layer-card" id="layer-domain">
+            <h3>领域</h3>
+            <ul id="layer-domain-list"><li>还没有。规则与核心计算写在这里。</li></ul>
+          </div>
+          <div class="layer-card" id="layer-storage">
+            <h3>存储</h3>
+            <ul id="layer-storage-list"><li>还没有。持久化与外部状态写在这里。</li></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
          架构图 — 至少一张。init + classDef 从 diagrams.md 原样复制。
          图下三行：依据 / 是否截断 / 图在说明什么。
          ==================================================================== -->
-    <section>
+    <section id="sec-diagrams">
       <div class="hr"></div>
       <h2>架构图 <span class="hint">分层与真实依赖</span></h2>
       <div class="section-body" id="diagrams">
@@ -292,9 +596,20 @@
     </section>
 
     <!-- ====================================================================
+         数据流与存储 — 请求 / 数据怎么穿过各层。不要编造边。
+         ==================================================================== -->
+    <section id="sec-flow">
+      <div class="hr"></div>
+      <h2>数据流与存储 <span class="hint">主链路怎么穿过各层</span></h2>
+      <div class="section-body prose" id="data-flow">
+        <p>还没有数据流。按真实依赖写：请求从哪进、在哪一层变成领域规则、最后落到哪一处存储。独立模块不要写进来。</p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
          阅读路径 — 相邻步骤必须出现在 deps / 真实依赖 里。
          ==================================================================== -->
-    <section>
+    <section id="sec-guides">
       <div class="hr"></div>
       <h2>阅读路径 <span class="hint">按这个顺序读源码</span></h2>
       <div class="section-body" id="guides">
@@ -305,13 +620,13 @@
     <!-- ====================================================================
          模块笔记 — 职责 / 对外接口 / 内部调用 / 跨模块往来
          ==================================================================== -->
-    <section>
+    <section id="sec-notes">
       <div class="hr"></div>
       <h2>模块笔记 <span class="hint">点开看接口和谁在往来</span></h2>
       <div class="section-body drill" id="notes">
-        <details>
+        <details id="p01">
           <summary>
-            <span class="amt">p00</span>
+            <span class="amt">p01</span>
             <span class="desc">还没有笔记</span>
             <span class="meta">职责 · 对外接口 · 跨模块往来</span>
           </summary>
@@ -325,7 +640,7 @@
     <!-- ====================================================================
          独立模块 — 没有列出的依赖。不要硬塞进分层。
          ==================================================================== -->
-    <section>
+    <section id="sec-peripheral">
       <div class="hr"></div>
       <h2>独立模块 <span class="hint">不在主链上，后看或不看</span></h2>
       <div class="section-body" id="peripheral">
@@ -333,16 +648,255 @@
       </div>
     </section>
 
+    <section id="sec-legend">
+      <div class="hr"></div>
+      <h2>图例 <span class="hint">怎么读图和分层</span></h2>
+      <div class="section-body prose" id="legend">
+        <ul>
+          <li><b>入口 / 应用 / 领域 / 存储</b>：图上的四层。没有依赖的页不进这四层。</li>
+          <li><b>risk</b>（赤陶）：枢纽或高扇入，改这里影响面最宽。</li>
+          <li><b>change</b>（陶土）：规模或依赖偏多的页。</li>
+          <li><b>独立模块</b>：本次导出没有列出依赖，后看或不看。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="sec-glossary">
+      <div class="hr"></div>
+      <h2>术语 <span class="hint">本报告用词</span></h2>
+      <div class="section-body prose" id="glossary">
+        <ul>
+          <li><b>模块 / 社区</b>：编号 <code>p01</code> 起，对应一次导出里的一页。</li>
+          <li><b>依赖</b>：社区之间的有向边，阅读路径只沿这条边走。</li>
+          <li><b>枢纽</b>：依赖多或被调用多，先读对外接口。</li>
+          <li><b>规模</b>：该页收录的符号数量，用来排序，不是质量分。</li>
+        </ul>
+      </div>
+    </section>
+
     <footer>
       <span id="foot-gen">生成于 —</span>
       <span id="foot-stats">codexqa-code-wiki · 只读本次导出 · 未调用模型</span>
     </footer>
-  </div>
+  </main>
+
+  <aside class="toc">
+    <h3>本页目录</h3>
+    <ol id="page-toc">
+      <li><a href="#page-top">核心架构</a></li>
+      <li><a href="#sec-findings">关键发现</a></li>
+      <li><a href="#sec-overview">系统怎么运转</a></li>
+      <li><a href="#sec-map">模块地图</a></li>
+      <li><a href="#sec-layers">分层</a></li>
+      <li><a href="#sec-diagrams">架构图</a></li>
+      <li><a href="#sec-flow">数据流与存储</a></li>
+      <li><a href="#sec-guides">阅读路径</a></li>
+      <li><a href="#sec-notes">模块笔记</a></li>
+      <li><a href="#sec-peripheral">独立模块</a></li>
+      <li><a href="#sec-legend">图例</a></li>
+      <li><a href="#sec-glossary">术语</a></li>
+    </ol>
+  </aside>
 </div>
 
+<div class="diagram-backdrop" id="diagram-backdrop"></div>
 <script type="module">
   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-  mermaid.initialize({ startOnLoad: true, theme: 'base' });
+  mermaid.initialize({ startOnLoad: false, theme: 'base' });
+  try { await mermaid.run({ querySelector: '.mermaid' }); } catch { /* keep zoom for images */ }
+
+  const toc = document.getElementById('page-toc');
+  if (toc) {
+    const heading = document.querySelector('h1');
+    const rows = [
+      { id: 'page-top', text: (heading?.textContent || '总览').trim() },
+      ...[...document.querySelectorAll('main section h2')].map((h) => ({
+        id: h.closest('section')?.id || '',
+        text: (h.childNodes[0]?.textContent || h.textContent || '').trim(),
+      })),
+    ].filter((row) => row.id && row.text);
+    toc.innerHTML = rows.map((row) => `<li><a href="#${row.id}">${row.text}</a></li>`).join('');
+  }
+
+  const links = [...document.querySelectorAll('.nav a[href^="#"], .toc a[href^="#"]')];
+  const targets = [...document.querySelectorAll('section[id], #page-top, #sec-sources, #howto')];
+  const mark = () => {
+    let current = 'page-top';
+    for (const el of targets) {
+      if (el.getBoundingClientRect().top <= 72) current = el.id;
+    }
+    const href = '#' + current;
+    for (const a of links) {
+      a.classList.toggle('active', a.getAttribute('href') === href);
+    }
+  };
+  const openHashDetails = (id) => {
+    if (!id) return;
+    const el = document.getElementById(decodeURIComponent(id));
+    if (el && el.tagName === 'DETAILS') el.open = true;
+  };
+  document.querySelectorAll('a[href^="#"]').forEach((a) => {
+    a.addEventListener('click', () => {
+      const href = a.getAttribute('href') || '';
+      openHashDetails(href.slice(1));
+    });
+  });
+  window.addEventListener('hashchange', () => openHashDetails(location.hash.slice(1)));
+  openHashDetails(location.hash.slice(1));
+  document.addEventListener('scroll', mark, { passive: true });
+  mark();
+
+  const ZOOM_MIN = 0.4;
+  const ZOOM_MAX = 4;
+  const ZOOM_STEP = 0.25;
+
+  const initDiagramZoom = () => {
+    document.querySelectorAll('main img:not(.zoom-stage img)').forEach((img) => {
+      if (img.closest('.diagram')) return;
+      const wrap = document.createElement('div');
+      wrap.className = 'diagram';
+      img.replaceWith(wrap);
+      wrap.appendChild(img);
+    });
+
+    document.querySelectorAll('.diagram').forEach((box) => {
+      if (box.dataset.zoomReady) return;
+      const target = box.querySelector('.mermaid') || box.querySelector('img');
+      if (!target) return;
+      box.dataset.zoomReady = '1';
+
+      const svg = target.querySelector?.('svg');
+      if (svg) {
+        const raw = svg.getAttribute('width') || '';
+        const fromAttr = raw && !raw.includes('%') ? parseFloat(raw) : NaN;
+        const w = Number.isFinite(fromAttr) && fromAttr > 0
+          ? fromAttr
+          : svg.viewBox?.baseVal?.width;
+        if (w) svg.style.width = `${w}px`;
+      }
+
+      const viewport = document.createElement('div');
+      viewport.className = 'zoom-viewport';
+      viewport.tabIndex = 0;
+      const stage = document.createElement('div');
+      stage.className = 'zoom-stage';
+      target.parentNode.insertBefore(viewport, target);
+      stage.appendChild(target);
+      viewport.appendChild(stage);
+
+      const bar = document.createElement('div');
+      bar.className = 'zoom-toolbar';
+      bar.innerHTML = [
+        '<button type="button" data-zoom="out" aria-label="缩小">−</button>',
+        '<span class="zoom-pct">100%</span>',
+        '<button type="button" data-zoom="in" aria-label="放大">+</button>',
+        '<button type="button" class="wide" data-zoom="reset">重置</button>',
+        '<button type="button" class="wide" data-zoom="expand">全屏</button>',
+      ].join('');
+      viewport.parentNode.insertBefore(bar, viewport);
+
+      let scale = 1;
+      let x = 0;
+      let y = 0;
+      let dragging = false;
+      let lastX = 0;
+      let lastY = 0;
+      const pct = bar.querySelector('.zoom-pct');
+
+      const apply = () => {
+        stage.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+        pct.textContent = `${Math.round(scale * 100)}%`;
+      };
+
+      const setScale = (next, cx, cy) => {
+        const clamped = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, next));
+        if (cx != null && cy != null && scale > 0) {
+          const rect = viewport.getBoundingClientRect();
+          const px = cx - rect.left;
+          const py = cy - rect.top;
+          const ratio = clamped / scale;
+          x = px - ratio * (px - x);
+          y = py - ratio * (py - y);
+        }
+        scale = clamped;
+        if (Math.abs(scale - 1) < 0.001) {
+          scale = 1;
+          x = 0;
+          y = 0;
+        }
+        apply();
+      };
+
+      bar.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-zoom]');
+        if (!btn) return;
+        const action = btn.getAttribute('data-zoom');
+        if (action === 'in') setScale(scale + ZOOM_STEP);
+        else if (action === 'out') setScale(scale - ZOOM_STEP);
+        else if (action === 'reset') setScale(1);
+        else if (action === 'expand') {
+          const on = box.classList.toggle('is-expanded');
+          document.body.classList.toggle('diagram-expanded', on);
+          btn.textContent = on ? '退出' : '全屏';
+          const backdrop = document.getElementById('diagram-backdrop');
+          if (backdrop) backdrop.hidden = !on;
+        }
+      });
+
+      viewport.addEventListener('wheel', (event) => {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        const dir = event.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+        setScale(scale + dir, event.clientX, event.clientY);
+      }, { passive: false });
+
+      viewport.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        dragging = true;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        viewport.classList.add('is-dragging');
+        viewport.setPointerCapture(event.pointerId);
+      });
+      viewport.addEventListener('pointermove', (event) => {
+        if (!dragging) return;
+        x += event.clientX - lastX;
+        y += event.clientY - lastY;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        apply();
+      });
+      const endDrag = (event) => {
+        dragging = false;
+        viewport.classList.remove('is-dragging');
+        if (event.pointerId != null) {
+          try { viewport.releasePointerCapture(event.pointerId); } catch { /* already released */ }
+        }
+      };
+      viewport.addEventListener('pointerup', endDrag);
+      viewport.addEventListener('pointercancel', endDrag);
+      viewport.addEventListener('dblclick', (event) => {
+        setScale(scale > 1.05 ? 1 : 2, event.clientX, event.clientY);
+      });
+    });
+
+    const backdrop = document.getElementById('diagram-backdrop');
+    const closeExpanded = () => {
+      document.querySelectorAll('.diagram.is-expanded').forEach((box) => {
+        box.classList.remove('is-expanded');
+        const btn = box.querySelector('[data-zoom="expand"]');
+        if (btn) btn.textContent = '全屏';
+      });
+      document.body.classList.remove('diagram-expanded');
+      if (backdrop) backdrop.hidden = true;
+    };
+    backdrop?.addEventListener('click', closeExpanded);
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeExpanded();
+    });
+  };
+
+  initDiagramZoom();
 </script>
 </body>
 </html>
