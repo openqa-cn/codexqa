@@ -5,12 +5,16 @@ Agent-inline LLM handoff for defect-detection.
 Default judgment path: the Cursor/agent model that invoked this skill reads
 rendered prompts and writes findings JSON — no LLM_API_KEY required.
 
+Detection dimensions (merged + deduped at finalize):
+  1. deterministic — SAST/lint/secrets/SCA collect
+  2. agent_llm     — host embedded model (Stage1 agent_detect → Stage2 verify)
+
 Bundle layout under <output>/agent_llm/:
   MANIFEST.json
-  stage1_prompt.md          (incremental) or shards/<id>/...
-  stage1.json               (agent writes)
+  stage1_prompt.md          (Agent LLM Detection; incremental) or shards/<id>/...
+  stage1.json               (agent writes — agent_detect round)
   stage2_prompt.md          (after agent-stage2)
-  llm_final.json            (agent writes)
+  llm_final.json            (agent writes — verified)
   collect.json / ctx.json / sast.json / meta.json
 """
 import json, os, sys
@@ -50,6 +54,7 @@ def write_incremental_handoff(output_dir, *, collect, ctx, stage1_prompt, repo):
     meta['sast_ambiguous_count'] = len(collect.get('sast_ambiguous') or [])
     meta['scan_type'] = 'incremental'
     meta['llm_provider'] = 'agent_inline'
+    meta['detection_dimensions'] = ['deterministic', 'agent_llm']
     meta['repo'] = collect.get('repo') or repo
     write_json(os.path.join(b, 'meta.json'), meta)
     open(os.path.join(b, 'stage1_prompt.md'), 'w').write(stage1_prompt)
@@ -60,13 +65,16 @@ def write_incremental_handoff(output_dir, *, collect, ctx, stage1_prompt, repo):
         'repo': meta['repo'],
         'primary_language': collect.get('primary_language') or 'unknown',
         'language_confidence': collect.get('language_confidence') or 'unknown',
+        'detection_dimensions': ['deterministic', 'agent_llm'],
         'steps': [
-            '1. Read stage1_prompt.md. YOU are the judgment model (no API key).',
+            '1. Read stage1_prompt.md. YOU are the Agent LLM Detection dimension '
+            '(host embedded model; no API key). One analysis round.',
             '2. Write stage1.json as {"findings":[...]} per references/output_schema.json.',
             '3. Run: python3 scripts/run_scan.py agent-stage2 --agent-dir <bundle_dir>',
             '4. Read stage2_prompt.md; write llm_final.json as {"findings":[...]} '
             '(optional dismissals:[{file,line,reason}] for ambiguous SAST FPs).',
-            '5. Run: python3 scripts/run_scan.py finalize --agent-dir <bundle_dir> -o <report_dir>',
+            '5. Run: python3 scripts/run_scan.py finalize --agent-dir <bundle_dir> -o <report_dir> '
+            '(merges + dedupes deterministic ∪ agent_llm).',
         ],
         'paths': {
             'stage1_prompt': 'stage1_prompt.md',
@@ -108,6 +116,7 @@ def write_full_handoff(output_dir, *, coll, shard_jobs, repo):
         'sast_clear_count': len(coll.get('sast_clear') or []),
         'sast_ambiguous_count': len(coll.get('sast_ambiguous') or []),
         'llm_provider': 'agent_inline',
+        'detection_dimensions': ['deterministic', 'agent_llm'],
         'hot_files': coll.get('hot_files', [])[:50],
         'intent': coll.get('intent') or '',
         'rag_intent': coll.get('rag_intent') or '',
@@ -130,13 +139,16 @@ def write_full_handoff(output_dir, *, coll, shard_jobs, repo):
         'bundle_dir': os.path.abspath(b),
         'primary_language': coll.get('primary_language') or 'unknown',
         'language_confidence': coll.get('language_confidence') or 'unknown',
+        'detection_dimensions': ['deterministic', 'agent_llm'],
         'shards': shard_ids,
         'steps': [
-            '1. For each shards/<id>/stage1_prompt.md: write shards/<id>/stage1.json {"findings":[...]}.',
+            '1. For each shards/<id>/stage1_prompt.md: Agent LLM Detection round — '
+            'write shards/<id>/stage1.json {"findings":[...]}.',
             '2. Run: python3 scripts/run_scan.py agent-stage2 --agent-dir <bundle_dir>',
             '3. For each shards/<id>/stage2_prompt.md: write shards/<id>/stage2.json {"findings":[...]} '
             '(optional dismissals for ambiguous SAST FPs).',
-            '4. Run: python3 scripts/run_scan.py finalize --agent-dir <bundle_dir> -o <report_dir>',
+            '4. Run: python3 scripts/run_scan.py finalize --agent-dir <bundle_dir> -o <report_dir> '
+            '(merges + dedupes deterministic ∪ agent_llm).',
         ],
     }
     write_json(os.path.join(b, 'MANIFEST.json'), manifest)

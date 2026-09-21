@@ -2,7 +2,7 @@
 
 [English](README.md) · [工作原理](HOW_IT_WORKS.zh-CN.md) · [已知边界](KNOWN_LIMITATIONS.zh-CN.md)
 
-`defect-detection` 先跑确定性的 SAST / lint / secrets / SCA，再由**调用本 skill 的宿主 agent**做两阶段语义审查（默认 `--llm-mode agent`，无需 API key）。输出按 **P0→P3** 排序的 `report_scan.json` / `.md` / `.html`。代码图与调用链对**所有语言**统一走公开的 **CodexQA CLI**（`@openqa-cn/codexqa`）。
+`defect-detection` 跑两条检测维度——确定性的 SAST / lint / secrets / SCA，再由**调用本 skill 的宿主 agent 内嵌大模型**做**一轮 Agent LLM 检测**（默认 `--llm-mode agent`，无需 API key）——然后**去重合并**成按 **P0→P3** 排序的 `report_scan.json` / `.md` / `.html`。代码图与调用链对**所有语言**统一走公开的 **CodexQA CLI**（`@openqa-cn/codexqa`）。
 
 **不是** [`ai-code-reviewer`](https://github.com/openqa-cn/codexqa/blob/main/skills/ai-code-reviewer/README.zh-CN.md)（CodexQA 证据包 HTML 评审），**不是** [`code-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-analyzer/README.zh-CN.md)（符号图影响面 / 测试缺口），也**不是** [`root-cause-diagnosis`](https://github.com/openqa-cn/codexqa/blob/main/skills/root-cause-diagnosis/README.zh-CN.md)（异常根因）。目标是代码风险 / 安全 / 逻辑的**扫描报告**时用本 skill。
 
@@ -33,7 +33,7 @@
 # 从用户话术推断场景
 python3 scripts/run_scan.py choose --infer "帮我看看这个 PR 有没有安全问题"
 
-# 增量准备（agent-inline handoff；再按 SKILL.md 做 Stage1 → Stage2 → finalize）
+# 增量准备（agent-inline handoff；再按 SKILL.md 做 Agent LLM 检测 Stage1 → Stage2 → finalize 去重合并）
 python3 scripts/run_scan.py incremental --repo /abs/path/to/repo --intent "PR review" -o /tmp/aid_report
 
 # 粘贴 / 单文件 adhoc（重扫务必 --fresh）
@@ -43,11 +43,11 @@ python3 scripts/run_scan.py adhoc --scan-mode incremental --paste-file /tmp/snip
 python3 scripts/run_scan.py incremental --repo . --dry-run -o /tmp/aid_report
 ```
 
-默认 agent 模式总会写出 `agent_llm/` 供 Stage1/Stage2。全量重扫 / adhoc 复测加 `--fresh`。在读到 `AGENT_LLM_HANDOFF` / `MANIFEST.json` 之前不要编造发现项。
+默认 agent 模式总会写出 `agent_llm/` 供 Agent LLM 检测（Stage1/Stage2）。全量重扫 / adhoc 复测加 `--fresh`。在读到 `AGENT_LLM_HANDOFF` / `MANIFEST.json` 之前不要编造发现项。
 
 ## Agent 说明
 
-`SKILL.md` 是 AI agent 入口。主路径：选场景 → 确定性准备 → Stage1 JSON → `agent-stage2` → Stage2 JSON → `finalize` → 展示 `report_scan.*`。
+`SKILL.md` 是 AI agent 入口。主路径：选场景 → 确定性准备 → Agent LLM 检测（`stage1.json`）→ `agent-stage2` → Stage2 JSON → `finalize`（去重 ∪ 合并）→ 展示 `report_scan.*`。
 
 运行时不要加载 `README` / `HOW_IT_WORKS` / `KNOWN_LIMITATIONS`。仅在上下文缺规则时再读 `references/`。
 
@@ -67,4 +67,4 @@ Apache License 2.0.
 
 ## 局限
 
-依赖可选的 SAST 二进制，以及闭源的 `@openqa-cn/codexqa` CLI 做实图分析；Stage1/Stage2 质量由模型判断。具体失败面见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。数据流见[工作原理](HOW_IT_WORKS.zh-CN.md)。
+依赖可选的 SAST 二进制，以及闭源的 `@openqa-cn/codexqa` CLI 做实图分析；Agent LLM 检测质量由模型判断。具体失败面见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。数据流见[工作原理](HOW_IT_WORKS.zh-CN.md)。

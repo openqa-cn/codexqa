@@ -4,9 +4,10 @@ description: >
   AI defect detection and code-risk scanning for engineering projects. Use when
   the user asks for AI defect detection, code-risk scan, review a diff/MR/PR/commit
   (incremental), baseline-scan a repository (full), OR upload/paste code snippets
-  for adhoc defect detection. Combines deterministic SAST/lint/secrets/SCA with
-  two-stage semantic review performed by the invoking agent model (no separate LLM
-  API key). Delivers structured findings ordered by severity (P0–P3) via
+  for adhoc defect detection. Combines two detection dimensions — (1) deterministic
+  SAST/lint/secrets/SCA and (2) one-round Agent LLM Detection by the invoking
+  agent's embedded model (no separate LLM API key) — then dedupes and merges them
+  into the final report. Delivers structured findings ordered by severity (P0–P3) via
   report_scan.json / report_scan.md / report_scan.html. Do NOT use to apply or
   autofix code style/formatting — lint may still surface hygiene findings.
   Code-graph / call-chain MUST use CodexQA CLI for all languages
@@ -22,7 +23,7 @@ compatibility: >
   call-chain on all languages. Default `--llm-mode agent` needs no API key.
 metadata:
   author: open-source
-  version: "0.0.1"
+  version: "0.0.2"
   open-standard: agentskills
 ---
 
@@ -39,15 +40,27 @@ CLI: `python3 {baseDir}/scripts/run_scan.py` (`$SKILL_SCRIPT`). Runtime artifact
 
 | Need | Skill |
 |---|---|
-| SAST + agent-inline semantic scan → `report_scan.*` (P0–P3) | **this skill** (`defect-detection`) |
-| CodexQA evidence-pack → bilingual `REVIEW-REPORT.html` | `ai-code-reviewer` |
+| SAST + Agent LLM Detection → `report_scan.*` (P0–P3) | **this skill** (`defect-detection`) |
+| CodexQA evidence-pack + Agent LLM judgment → bilingual `REVIEW-REPORT.html` | `ai-code-reviewer` |
 | Symbol-graph change impact, callers, test gaps | `code-analyzer` |
 | Exception RCA from stacks/logs on top of CLI analysis | `root-cause-diagnosis` |
 
+## Detection dimensions
+
+Final `report_scan.*` = **deduped merge** of two dimensions:
+
+| Dimension | Who runs it | Output / provenance |
+|-----------|-------------|---------------------|
+| **Deterministic** | Python adapters (SAST / lint / secrets / SCA) | `sast_only`; `dimension=deterministic` |
+| **Agent LLM Detection** | **You** — the host agent's embedded model (one analysis round + Stage2 verify) | `llm_judged`; `dimension=agent_llm` |
+| *(merged)* | Same-locus compatible hits | `sast_confirmed`; `dimension=deterministic+agent_llm` |
+
+Agent LLM Detection uses `prompts/agent_detect.md` (Stage1) then `prompts/review_filter.md` (Stage2). No `LLM_API_KEY` in default `--llm-mode agent`.
+
 ## Judgment model (default)
 
-**You (the agent invoking this skill) ARE the Stage1/Stage2 judgment model.**
-Do **not** require `LLM_API_KEY` / `LLM_BASE_URL`. Scripts prepare prompts; you write findings JSON; scripts merge the report.
+**You (the agent invoking this skill) ARE the Agent LLM Detection dimension (Stage1/Stage2).**
+Do **not** require `LLM_API_KEY` / `LLM_BASE_URL`. Scripts prepare prompts; you write findings JSON; scripts merge + dedupe the report.
 
 | `--llm-mode` | When |
 |--------------|------|
@@ -63,7 +76,7 @@ Do **not** require `LLM_API_KEY` / `LLM_BASE_URL`. Scripts prepare prompts; you 
 | `report_scan.md` | same dir | Human summary (Markdown) |
 | `report_scan.html` | same dir | Same content as `.md` in styled HTML (auto-generated at finalize) |
 
-Finding fields: `file`, `line`, `category`, `severity`, `title`, `evidence`, `suggestion`; `source` ∈ `sast_only` \| `sast_confirmed` \| `llm_judged`; judgment SHOULD include `rule_id`. Order **P0→P3**. Surface `tooling_status.missing` when present. Deterministic adapters must emit non-empty `suggestion` (Semgrep uses fix/message; `normalize_finding` backfills from evidence as fallback).
+Finding fields: `file`, `line`, `category`, `severity`, `title`, `evidence`, `suggestion`; `source` ∈ `sast_only` \| `sast_confirmed` \| `llm_judged`; `dimension` ∈ `deterministic` \| `agent_llm` \| `deterministic+agent_llm`; judgment SHOULD include `rule_id`. Order **P0→P3**. Surface `tooling_status.missing` when present. Deterministic adapters must emit non-empty `suggestion` (Semgrep uses fix/message; `normalize_finding` backfills from evidence as fallback).
 
 **Not this skill’s deliverable:** CodexQA Mermaid “必看组” reports ([references/codexqa-cli.md](references/codexqa-cli.md)), platform write-back, or exception RCA prose.
 
@@ -104,7 +117,7 @@ export PATH="$(npm prefix -g)/bin:$HOME/.local/bin:$HOME/go/bin:$PATH"
 
 ## Report cache (diff_hash)
 
-Incremental scans cache **finalized** reports keyed by `diff_hash`. **Agent-inline mode (default) never reads cache at prepare** — it always emits `agent_llm/` for Stage1/Stage2. Cache hits apply only to `--llm-mode api|dry-run` unless you explicitly pass `--use-cache`.
+Incremental scans cache **finalized** reports keyed by `diff_hash`. **Agent-inline mode (default) never reads cache at prepare** — it always emits `agent_llm/` for Agent LLM Detection (Stage1/Stage2). Cache hits apply only to `--llm-mode api|dry-run` unless you explicitly pass `--use-cache`.
 
 | Flag / command | When |
 |----------------|------|
@@ -159,11 +172,11 @@ Stdout/stderr includes `AGENT_LLM_HANDOFF` and `bundle_dir` → usually `/tmp/ai
 If you see `CACHE SKIP: agent-inline mode…` — proceed to Stage1 (expected). If you see `CACHE HIT` in agent mode, you passed `--use-cache` intentionally.
 Read `agent_llm/MANIFEST.json` for paths. Do **not** invent findings before this step.
 
-### 2) Stage1 (you)
+### 2) Stage1 — Agent LLM Detection (you)
 
-1. Read `agent_llm/stage1_prompt.md` (or each `shards/<id>/stage1_prompt.md` for full).
-2. Apply `prompts/` + injected policies; output **strict JSON** `{"findings":[...]}`.
-3. Write `stage1.json` (per shard if full). Empty `findings` is OK.
+1. Read `agent_llm/stage1_prompt.md` (from `prompts/agent_detect.md`; or each `shards/<id>/stage1_prompt.md` for full).
+2. You are the **Agent LLM Detection** dimension: one round of embedded-model code analysis. Apply `prompts/` + injected policies; output **strict JSON** `{"findings":[...]}`.
+3. Write `stage1.json` (per shard if full). Empty `findings` is OK when deterministic already covers risk.
 
 ### 3) Stage2 prepare + Stage2 (you)
 
@@ -178,13 +191,14 @@ python3 scripts/run_scan.py agent-stage2 --agent-dir /tmp/aid_report/agent_llm
      severity (merge keeps LLM severity), or dismiss via `dismissals` /
      `"dismissed": true` / `"verdict":"dismiss"` (clear SAST cannot be dismissed).
 3. Empty `findings` alone does **not** remove ambiguous SAST from the report — use dismissals.
-### 4) Finalize + present
+
+### 4) Finalize — merge + dedupe + present
 
 ```bash
 python3 scripts/run_scan.py finalize --agent-dir /tmp/aid_report/agent_llm -o /tmp/aid_report
 ```
 
-Read `report_scan.json` / `.md` / `.html`; present to user (Deliverable). HTML is written automatically by `finalize` / `merge_report.py` from the Markdown body. Then Section D if user verdicts.
+`finalize` / `merge_report.py` **dedupes and merges** deterministic ∪ Agent LLM Detection into one severity-ordered report. Read `report_scan.json` / `.md` / `.html`; present to user (Deliverable). HTML is written automatically from the Markdown body. Then Section D if user verdicts.
 
 ### Quick commands
 
@@ -231,6 +245,7 @@ Add rule: new unused id YAML + manifest + bump version + audit. Details in polic
 - Ask/choose when scenario unclear; do not autofix style.
 - Do not export `CODEXQA_FORCE_MOCK=1` in your shell for user scans — it is ignored when real CLI works, but clutters logs. Mock is auto-selected only when CLI is missing.
 - **Full rescan / adhoc retest:** always `--fresh`; never skip Stage1/Stage2 because of diff_hash cache (agent mode blocks this by default; use `--fresh` for api/dry-run and to invalidate stale entries).
+- **Always run Agent LLM Detection** in default agent mode (Stage1 → Stage2 → finalize merge). Do not skip the embedded-model round when presenting a final report.
 
 ## CI (advisory smoke)
 

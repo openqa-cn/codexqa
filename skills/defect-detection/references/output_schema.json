@@ -26,6 +26,8 @@
           "category": {"type": "string", "enum": ["security","null_safety","resource_leak","concurrency","transaction","logic","architecture","secret","hygiene","style","naming","simple_null_check","todo","security_design"]},
           "severity": {"type": "string", "enum": ["P0","P1","P2","P3"]},
           "source":   {"type": "string", "enum": ["llm_judged","sast_confirmed","sast_only"]},
+          "dimension": {"type": "string", "enum": ["deterministic","agent_llm","deterministic+agent_llm"],
+                        "description": "Detection dimension after merge/dedupe"},
           "rule_id":  {"type": "string", "description": "LLM policy id e.g. CONC-001"},
           "title":    {"type": "string"},
           "evidence": {"type": "string"},

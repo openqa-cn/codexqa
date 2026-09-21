@@ -15,7 +15,7 @@ SCRIPTS = os.path.dirname(os.path.abspath(__file__))
 PY = python_executable()
 
 # Bump when merge/validation/cache semantics change — invalidates stale cache entries.
-PIPELINE_VERSION = '1.2.10'
+PIPELINE_VERSION = '1.3.0'
 
 
 def resolve_llm_mode(args):
@@ -279,7 +279,7 @@ def scan_incremental(args, client):
     print(ctx.get('budget_note') or 'context level=%s within budget (~%d tokens)'
           % (ctx.get('level'), ctx['est_tokens']))
 
-    p1 = render('rule_checker.md', CONTEXT=ctx['context'])
+    p1 = render('agent_detect.md', CONTEXT=ctx['context'])
     mode = resolve_llm_mode(args)
     if mode == 'agent':
         write_incremental_handoff(args.output_dir, collect=collect, ctx=ctx,
@@ -479,7 +479,7 @@ def scan_full(args, client):
             ctx = context_map.get(shard)
             if not ctx:
                 continue
-            p1 = render('rule_checker.md', CONTEXT=ctx['context'])
+            p1 = render('agent_detect.md', CONTEXT=ctx['context'])
             agent_jobs.append({
                 'id': shard, 'stage1_prompt': p1, 'ctx': ctx, 'deep_files': deep,
             })
@@ -520,7 +520,7 @@ def scan_full(args, client):
         context_map = _build_shard_contexts_parallel(coll_f, context_jobs, tmp, rag_workers)
         for w in context_jobs:
             shard, ctx = w['shard'], context_map[w['shard']]
-            p1 = render('rule_checker.md', CONTEXT=ctx['context'])
+            p1 = render('agent_detect.md', CONTEXT=ctx['context'])
             f1, warn = llm_findings(client, 'small', p1, tokens)
             if warn:
                 print('shard %s stage1:' % shard, warn)

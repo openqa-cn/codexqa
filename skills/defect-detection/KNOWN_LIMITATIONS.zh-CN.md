@@ -12,13 +12,13 @@
 
 Semgrep、Bandit、gosec、gitleaks、语言 linter、osv-scanner 均为可选。缺失工具记入 `tooling_status.missing`；修复尝试后流水线继续。适配器缺失时覆盖面会缩小。
 
-## Stage1 / Stage2 由模型判断
+## Agent LLM 检测由模型判断
 
-Python 校验 schema、合并规则与排序。某条语义发现在本仓库是否*成立*，由宿主 agent（或可选 API 模型）决定。若模型编造证据或误读策略，写完的 `report_scan.*` 仍可能是错的。
+Agent LLM 检测维度（Stage1 `agent_detect` + Stage2 校验）由宿主 agent 内嵌模型（或可选 API）填写。Python 校验 schema、合并/去重规则与排序。某条语义发现在本仓库是否*成立*，由模型决定。若模型编造证据或误读策略，写完的 `report_scan.*` 仍可能是错的。未跑 agent 轮次的确定性发现保持 `sast_only`。
 
 ## 本仓库 CI 不跑完整实扫
 
-本地 `npm test` 在 Python 3.10+ 下覆盖流水线合并/校验与策略夹具。仓库 CI 不会安装全部 SAST 二进制，也不会对生产仓库跑实 agent Stage1/Stage2。把 `--dry-run` / mock 仅当作冒烟。
+本地 `npm test` 在 Python 3.10+ 下覆盖流水线合并/校验与策略夹具。仓库 CI 不会安装全部 SAST 二进制，也不会对生产仓库跑实 Agent LLM 检测 Stage1/Stage2。把 `--dry-run` / mock 仅当作冒烟。
 
 ## 无公开宿主 agent 成绩
 

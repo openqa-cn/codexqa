@@ -15,8 +15,8 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 | [`skill-router`](../skills/skill-router/README.zh-CN.md) | 发现现场兄弟 + 内置目录；按需安装；交接给匹配 skill |
 | [`code-analyzer`](../skills/code-analyzer/README.zh-CN.md) | 给本地仓库建符号图，再分析变更影响、回归范围、测试缺口、入口和报错 |
 | [`root-cause-diagnosis`](../skills/root-cause-diagnosis/README.zh-CN.md) | 在 CodexQA CLI 之上做异常根因诊断；带门禁的英文 RCA 报告 |
-| [`defect-detection`](../skills/defect-detection/README.zh-CN.md) | SAST/lint/secrets/SCA + agent 内联语义扫描 → `report_scan.*`（P0–P3） |
-| [`ai-code-reviewer`](../skills/ai-code-reviewer/README.zh-CN.md) | CodexQA 证据包 → 双语 `REVIEW-REPORT.html` |
+| [`defect-detection`](../skills/defect-detection/README.zh-CN.md) | SAST/lint/secrets/SCA + Agent LLM Detection → `report_scan.*`（P0–P3，去重合并） |
+| [`ai-code-reviewer`](../skills/ai-code-reviewer/README.zh-CN.md) | CodexQA 证据包 + 启发式维度 + Agent LLM judgment → 双语 `REVIEW-REPORT.html` |
 | [`requirements-analyzer`](../skills/requirements-analyzer/README.zh-CN.md) | 审需求文档的质量与风险，出一份缺口登记表 |
 | [`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) | 从本地需求生成测试方案与手工用例（Plan / Exec / Incremental）；双写 Markdown 并生成聚合 HTML 报告 |
 | [`testdata-generation`](../skills/testdata-generation/README.zh-CN.md) | 构造可复用测试数据，回填用例里的 `{placeholder}` |
@@ -34,15 +34,15 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 按任务选，不要按措辞选：
 
 - 不确定用哪个 / 自动路由含糊的 QA 请求 → `skill-router`
-- 对 diff / 仓库 / 粘贴做 SAST 与语义代码风险扫描 → `defect-detection`
+- 对 diff / 仓库 / 粘贴做 SAST 与 Agent LLM Detection → `defect-detection`
 - 在本地仓库追变更符号、调用方、回归范围、测试缺口和可达入口 → `code-analyzer`
 - 从堆栈 / 日志 / dump 做异常根因诊断 → `root-cause-diagnosis`
-- CodexQA 图证据包与双语 HTML 评审报告 → `ai-code-reviewer`
+- CodexQA 图证据包、启发式维度、Agent LLM judgment 与双语 HTML 评审 → `ai-code-reviewer`
 - 审 PRD 本身是否完整、一致 → `requirements-analyzer`
 - 写或更新手工用例库（并可生成聚合 HTML 报告） → `testcase-generation`
 - 构造数据、填用例 `{placeholder}` → `testdata-generation`
 
-只说「审这个 PR」不够选：`code-analyzer` 负责画出变更符号、调用方、入口和测试缺口；`defect-detection` 跑 SAST + agent 语义扫描并产出 `report_scan.*`；`ai-code-reviewer` 收集 CodexQA 证据包并渲染 `REVIEW-REPORT.html`；`root-cause-diagnosis` 需要异常证据做 RCA。一个请求可以串联多个 skill：先用 `code-analyzer` 收敛影响面，再用 `ai-code-reviewer` 做图证据 HTML 评审。先生成用例；占位符只能在 `.md` 落盘后再回填。
+只说「审这个 PR」不够选：`code-analyzer` 负责画出变更符号、调用方、入口和测试缺口；`defect-detection` 跑 SAST + Agent LLM Detection 并产出 `report_scan.*`；`ai-code-reviewer` 收集 CodexQA 证据包，跑启发式维度 + Agent LLM judgment（去重）并渲染 `REVIEW-REPORT.html`；`root-cause-diagnosis` 需要异常证据做 RCA。一个请求可以串联多个 skill：先用 `code-analyzer` 收敛影响面，再用 `ai-code-reviewer` 做图证据 HTML 评审。先生成用例；占位符只能在 `.md` 落盘后再回填。
 
 ## 每个 skill 要我交什么？
 

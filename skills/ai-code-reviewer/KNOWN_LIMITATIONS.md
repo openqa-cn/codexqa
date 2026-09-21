@@ -12,9 +12,9 @@ Structured repo analysis comes from the separately distributed npm package `@ope
 
 Local `bash scripts/validate-skill.sh` covers static layout, fixture validate/render smoke, and plan-coverage audit. The closed-source CLI is not installed or executed by the repository CI, so end-to-end index/query success depends on the user's machine and package version.
 
-## Review prose is model-judged
+## Review prose and Agent LLM judgment are model-judged
 
-Bash collects signals and renders HTML from `review-conclusion.json`. Whether findings, dimension cards, and bilingual prose are *true* for the business domain is decided by the host model. A pack that validates can still yield a wrong report if the model invents edges or ignores `confidence: UNKNOWN`.
+Bash collects signals, runs `merge-llm-findings.py` for deterministic dedupe, and renders HTML from `review-conclusion.json`. Whether findings, dimension cards, bilingual prose, and the order-16 Agent LLM judgment candidates are *true* for the business domain is decided by the host model. A pack that validates can still yield a wrong report if the model invents edges, ignores `confidence: UNKNOWN`, or proposes novel issues that miss the pack scope. Dedupe removes duplicate phrasing; it does not prove correctness.
 
 ## Graph gaps weaken evidence
 

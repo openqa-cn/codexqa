@@ -24,7 +24,7 @@ evidence_required  artifact globs that must exist for a strong claim
 evidence_optional  nice-to-have artifacts
 finding_category   value for review-conclusion.json category field
 severity_default   P0 | P1 | P2 guidance (see card)
-algorithm          derive (local) | reuse (read existing impact only)
+algorithm          derive (local) | reuse (read existing impact only) | agent (host LLM)
 max_extra_codexqa  integer; prefer 0
 skip_when          conditions to emit None / residual instead of findings
 card               path under references/dimensions/
@@ -49,6 +49,7 @@ card               path under references/dimensions/
 | 13 | `observability` | Observability | both | derive | 0 | [dimensions/observability.md](dimensions/observability.md) |
 | 14 | `maintainability` | Maintainability | both | derive | 0 | [dimensions/maintainability.md](dimensions/maintainability.md) |
 | 15 | `performance` | Performance | both | derive | 0 | [dimensions/performance.md](dimensions/performance.md) |
+| 16 | `llm_judgment` | Agent LLM judgment | both | agent | 0 | [dimensions/llm-judgment.md](dimensions/llm-judgment.md) |
 
 ## Pre-pipeline triage (mandatory before order 1)
 
@@ -74,6 +75,9 @@ It is **not** appended at the end of the finding pipeline.
 | `maintainability` | `18-maintainability-signals.json` | `scripts/lib/derive-maintainability.sh` |
 | `performance` | `21-performance-signals.json` | `scripts/lib/derive-performance.sh` |
 | `risk_tier` | `20-risk-tier.json` | `scripts/lib/derive-risk-tier.sh` |
+| `llm_judgment` | `22-llm-judgment.json` | host agent + `scripts/lib/merge-llm-findings.py` (not a collect-time derive) |
 
 Missing derived files on legacy packs → validate **WARN** only; review may still
 apply the dimension thinly from pack artifacts or skip with explicit None.
+`22-llm-judgment.json` is written **after** the agent LLM pass; collectors do not
+emit it, and validate must not hard-fail when it is absent.

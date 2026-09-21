@@ -3,6 +3,9 @@
 Each release has two sections. **Highlights** is what changes for someone using the skills. **Internal** is the full engineering record — refactors, test changes, and fixes with no user-visible effect. If you are upgrading, Highlights is enough.
 
 ## Unreleased
+- `ai-code-reviewer` v0.0.3: new **Agent LLM judgment** dimension (order 16) — host embedded model reviews pack-scoped diffs, then `merge-llm-findings.py` dedupes/merges against heuristic findings (`22-llm-judgment.json`).
+- `defect-detection` v0.0.2 / pipeline 1.3.0: first-class **Agent LLM Detection** dimension (`prompts/agent_detect.md`) — host embedded model runs one analysis round, then Stage2 verify; `finalize` dedupes/merges with deterministic SAST/lint/secrets/SCA and stamps `dimension` on findings.
+- Docs: synced root README, FAQ, ROADMAP, SUPPORT_MATRIX, Getting Started, skills index, and per-skill README/HOW_IT_WORKS/KNOWN_LIMITATIONS (EN/zh) to the Agent LLM judgment / Agent LLM Detection contracts; refreshed `skill-router` `catalog.json` from SKILL frontmatter.
 - Docs: listed `skill-router` across root README, FAQ, Getting Started, HOW_IT_WORKS index, ROADMAP, ARCHITECTURE, CONTRIBUTING, and PUBLISHING (EN/zh), including install commands, evidence rows, and catalog-refresh release steps.
 - Added `skill-router` v1.1: bundled `references/catalog.json` + `ensure_skill.py` so a solo router install can match workers and fetch them on demand before hand-off; `discover_skills.py --with-catalog` merges live siblings with the catalog.
 - Added `skill-router`: live discovery of sibling skills via `scripts/discover_skills.py`, semantic hand-off to the matched skill; new skills with `SKILL.md` are auto-routable without editing the router.
@@ -13,6 +16,8 @@ Each release has two sections. **Highlights** is what changes for someone using 
 
 ### Highlights
 
+- **`ai-code-reviewer` Agent LLM judgment (v0.0.3).** After heuristic dimension drafts, the host embedded model runs an order-16 semantic CR pass; `merge-llm-findings.py` dedupes/merges into final P0/P1/P2 (`22-llm-judgment.json`). Collect/validate/render still need no external LLM API.
+- **`defect-detection` Agent LLM Detection (v0.0.2).** First-class detection dimension via `prompts/agent_detect.md` (Stage1 + Stage2); `finalize` dedupes/merges with deterministic SAST/lint/secrets/SCA and stamps `dimension` on findings. Default `--llm-mode agent` needs no API key.
 - **`testcase-generation` rewritten to Plan / Exec / Incremental.** Conversation-driven test plans (stages 0–5) and cases (stage 6), plus post-submit incremental on a case baseline. Local Markdown under `run_dir`; Python 3.10+ gates via `scripts/tcg-python`. No case-platform / doc-platform binding. After dual-write, agents generate `testdesign/testcase_generation_report.html` (Web / Server / APP aggregate; Markdown remains the edit source).
 - **New `ai-code-reviewer` skill.** Graph-evidence code review via the CodexQA CLI only: collect a JSON evidence pack (PR/diff, full-repo, or adhoc), validate it, then render bilingual `REVIEW-REPORT.html` from `review-conclusion.json`. Replaces the removed playbook `code-reviewer` skill; not a SAST scan pipeline (`defect-detection`).
 - **New `code-analyzer` skill.** Index a local repository into a symbol graph, then review changes, bound regression scope, find test gaps, trace errors, and identify reachable HTTP / RPC / MQ / scheduled-task entries. The Skill, playbook, schemas, and examples are published here; the required `@openqa-cn/codexqa` package is a separately distributed closed-source local analysis engine. Indexing and graph queries run locally without an LLM.

@@ -52,8 +52,13 @@ Security or Rollout findings.
    ([dimensions/maintainability.md](dimensions/maintainability.md); signals: `18-maintainability-signals.json`)
 15. **Performance** — hot path, N+1, unbounded allocation (not profiler/SLO invention)
    ([dimensions/performance.md](dimensions/performance.md); signals: `21-performance-signals.json`)
+16. **Agent LLM judgment** — host-agent embedded model semantic CR on pack-scoped
+   diffs/sources, then **dedupe/merge** vs heuristic findings
+   ([dimensions/llm-judgment.md](dimensions/llm-judgment.md); audit: `22-llm-judgment.json`;
+   prompt: [prompts/llm-judgment-pass.md](../prompts/llm-judgment-pass.md))
 
-Finding `category` values include: `design | complexity | dependencies | correctness | resilience | security | privacy | contract | rollout | concurrency | regression | test_gaps | observability | maintainability | performance | risk_tier | …`.
+Finding `category` values include: `design | complexity | dependencies | correctness | resilience | security | privacy | contract | rollout | concurrency | regression | test_gaps | observability | maintainability | performance | risk_tier | llm_judgment | …`.
+Novel LLM findings should prefer a semantic category and set `source: "llm_judgment"`.
 
 ## Primary language (required)
 

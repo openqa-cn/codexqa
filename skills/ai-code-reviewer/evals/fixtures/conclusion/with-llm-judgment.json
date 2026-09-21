@@ -1,0 +1,76 @@
+{
+  "mode": "pr-diff",
+  "skill": "ai-code-reviewer",
+  "repo": "/tmp/fixture-repo",
+  "repo_label": "fixture/repo",
+  "diff_base": "origin/main",
+  "branch": "feature",
+  "primary_language": "Java",
+  "review_language_focus": "Java",
+  "language_confidence": "high",
+  "index_confidence": "high",
+  "overall_risk": "Medium",
+  "intent": "Fixture smoke with Agent LLM judgment section",
+  "scope": "1 symbol",
+  "summary": "Smoke conclusion including llm_judgment block after dedupe.",
+  "summary_en": "Smoke conclusion including llm_judgment block after dedupe.",
+  "intent_en": "Fixture smoke with Agent LLM judgment section",
+  "scope_en": "1 symbol",
+  "dimensions_covered": [
+    "design",
+    "complexity",
+    "correctness",
+    "performance",
+    "llm_judgment"
+  ],
+  "design_fit": {
+    "verdict": "ok",
+    "evidence": "10-design-fit-signals.json",
+    "signals_file": "10-design-fit-signals.json"
+  },
+  "complexity": {
+    "verdict": "ok",
+    "hotspots": "None",
+    "evidence": "11-complexity-signals.json",
+    "signals_file": "11-complexity-signals.json"
+  },
+  "llm_judgment": {
+    "verdict": "concern",
+    "risk": "合并后仍有 1 个新颖语义问题：空指针路径未处理。",
+    "risk_en": "After merge, 1 novel semantic issue remains: unhandled NPE path.",
+    "novel_count": 1,
+    "deduped_count": 2,
+    "enriched_count": 1,
+    "focus_files": "src/PayService.java (diff hunk)",
+    "focus_files_en": "src/PayService.java (diff hunk)",
+    "evidence": "22-llm-judgment.json + host-agent LLM pass",
+    "evidence_en": "22-llm-judgment.json + host-agent LLM pass",
+    "signals_file": "22-llm-judgment.json"
+  },
+  "p0_count": 0,
+  "p1_count": 1,
+  "p2_count": 0,
+  "p0": [],
+  "p1": [
+    {
+      "title": "支付回调空指针未防护",
+      "title_en": "Unhandled NPE on payment callback",
+      "location": "src/PayService.java:88",
+      "location_en": "src/PayService.java:88",
+      "category": "correctness",
+      "source": "llm_judgment",
+      "risk": "callback 在 amount 为空时直接解引用，会导致主路径 NPE。",
+      "risk_en": "Callback dereferences null amount and NPE on main path.",
+      "evidence": "diffs + on-disk PayService.java:88",
+      "evidence_en": "diffs + on-disk PayService.java:88",
+      "confidence": "medium",
+      "fix": "在解引用前校验 amount 并返回明确错误。",
+      "fix_en": "Null-check amount before dereference and return a clear error."
+    }
+  ],
+  "p2": [],
+  "regression_tests": [],
+  "test_gaps": [],
+  "sensitive": "None",
+  "sensitive_en": "None"
+}

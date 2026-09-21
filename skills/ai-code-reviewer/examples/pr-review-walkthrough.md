@@ -79,10 +79,11 @@ codexqa index "$REPO" --diff-base origin/main --full
 7. Continue security, then read `13-privacy-signals.json` and apply `references/dimensions/privacy.md` (PII / logging / retention / consent — never invent GDPR conclusions)
 8. Continue contract, then read `15-rollout-signals.json` and apply `references/dimensions/rollout.md` (migration / dual-write / flags / compat / announce / rollback — never invent canary/ops)
 9. Continue observability / maintainability, then read `21-performance-signals.json` and apply `references/dimensions/performance.md` (hot path / N+1 / unbounded allocation — never invent profiler/SLO/p99)
+9b. **Agent LLM judgment:** follow `prompts/llm-judgment-pass.md` — host embedded model reviews pack-scoped diffs; run `scripts/lib/merge-llm-findings.py` so final findings are deduped (`22-llm-judgment.json`)
 10. Continue `references/dimension-registry.md` / `references/review-dimensions.md` + `references/dimensions/correctness-family-checks.md` for `review_language_focus`
 10. Read group → `diffs/*.diff.json` → `impact/` (+ `paths/`) → `07-tags` / `08-hot-but-thin` / sensitive; for hot-but-thin `equals`/`hashCode`/`compare*` **open the diff body**
-11. Fill `templates/review-report.md` (Design fit + Complexity + Dependencies + Resilience + Privacy + Change/rollout + primary language in header)
-12. Write `<OUT_DIR>/review-conclusion.json` from `templates/review-conclusion.json` (optional `design_fit.sections`, optional `complexity`, optional `dependencies`, optional `resilience`, optional `privacy`, optional `rollout`, + `dimensions_covered`)
+11. Fill `templates/review-report.md` (Design fit + Complexity + Dependencies + Resilience + Privacy + Change/rollout + Performance + Agent LLM judgment + primary language in header)
+12. Write `<OUT_DIR>/review-conclusion.json` from `templates/review-conclusion.json` (optional `design_fit.sections`, optional `complexity`, optional `dependencies`, optional `resilience`, optional `privacy`, optional `rollout`, optional `performance`, optional `llm_judgment`, + `dimensions_covered`)
 13. Render HTML:
 
 ```bash

@@ -12,9 +12,9 @@
 
 本地 `bash scripts/validate-skill.sh` 覆盖静态布局、fixture 校验/渲染冒烟与 plan-coverage 审计。闭源 CLI 不会在本仓库 CI 中安装或执行，因此端到端 index/query 能否成功取决于用户机器和包版本。
 
-## 评审叙事由模型判断
+## 评审叙事与 Agent LLM judgment 由模型判断
 
-Bash 收集信号，并根据 `review-conclusion.json` 渲染 HTML。发现、维度卡与双语叙事在业务域是否*成立*，仍由宿主模型决定。校验通过的包仍可能产出错误报告——模型可能编造调用边或忽略 `confidence: UNKNOWN`。
+Bash 收集信号、用 `merge-llm-findings.py` 做确定性去重，并根据 `review-conclusion.json` 渲染 HTML。发现、维度卡、双语叙事以及第 16 维 Agent LLM judgment 候选在业务域是否*成立*，仍由宿主模型决定。校验通过的包仍可能产出错误报告——模型可能编造调用边、忽略 `confidence: UNKNOWN`，或提出超出包范围的新问题。去重只消除重复表述，不证明正确性。
 
 ## 图缺口会削弱证据
 

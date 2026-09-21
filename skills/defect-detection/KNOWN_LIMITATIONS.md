@@ -12,13 +12,13 @@ Repo code-graph / call-chain / RAG context comes from the separately distributed
 
 Semgrep, Bandit, gosec, gitleaks, language linters, and osv-scanner are optional. Missing tools are reported in `tooling_status.missing`; the pipeline continues after repair attempts. Coverage shrinks when adapters are absent.
 
-## Stage1 / Stage2 are model-judged
+## Agent LLM Detection is model-judged
 
-Python validates schema, merge rules, and ordering. Whether a semantic finding is *true* for this codebase is decided by the host agent (or optional API model). A finished `report_scan.*` can still be wrong if the model invents evidence or misreads policies.
+The Agent LLM Detection dimension (Stage1 `agent_detect` + Stage2 verify) is filled by the host agent's embedded model (or optional API). Python validates schema, merge/dedupe rules, and ordering. Whether a semantic finding is *true* for this codebase is model-decided. A finished `report_scan.*` can still be wrong if the model invents evidence or misreads policies. Deterministic findings without an agent round remain `sast_only`.
 
 ## Not a full live scan in repository CI
 
-Local `npm test` covers pipeline merge/validation and policy fixtures under Python 3.10+. Repository CI does not install every SAST binary or run a live agent Stage1/Stage2 against a production repo. Treat `--dry-run` / mock as smoke only.
+Local `npm test` covers pipeline merge/validation and policy fixtures under Python 3.10+. Repository CI does not install every SAST binary or run a live Agent LLM Detection Stage1/Stage2 against a production repo. Treat `--dry-run` / mock as smoke only.
 
 ## No published host-agent score
 

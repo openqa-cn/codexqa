@@ -1,0 +1,52 @@
+{
+  "skill_name": "ai-code-reviewer",
+  "evals": [
+    {
+      "id": 1,
+      "name": "validate-gate-completeness",
+      "prompt": "Run the ai-code-reviewer skill local gate at scripts/validate-skill.sh and report whether it passes. Summarize whether the Agent LLM judgment (llm_judgment) dimension and merge-llm-findings wiring are covered by the gate. Save the full validate stdout to outputs/validate-skill.log and a short outputs/summary.md.",
+      "expected_output": "validate-skill.sh exits 0; log shows status ok; new skill mentions llm_judgment/merge-llm tests; old skill may lack those tests but still pass overall.",
+      "files": [],
+      "expectations": [
+        "validate-skill.sh exited with status 0 (status: ok in log)",
+        "validate log contains PASS summary with FAIL=0",
+        "outputs/summary.md exists and states pass/fail clearly"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "pr-review-mini-pay",
+      "prompt": "Using the ai-code-reviewer skill, review the PR in fixtures/mini-pay-pr (branch feature/pay-callback vs main). A precollected evidence pack is at fixtures/mini-pay-pack \u2014 you may reuse it or recollect with collect-pr-evidence.sh --diff-base main. Follow the skill end-to-end: validate pack, review from artifacts, write review-conclusion.json, render REVIEW-REPORT.html. The change introduces an empty catch swallow and a null-amount NPE in PayService.java. Save review-conclusion.json, REVIEW-REPORT.html, and a short summary.md under outputs/.",
+      "expected_output": "REVIEW-REPORT.html and review-conclusion.json exist; findings mention swallow and/or NPE; bilingual fields present; new skill includes llm_judgment in dimensions_covered and preferably 22-llm-judgment.json after dedupe.",
+      "files": [
+        "/root/come_here/codexqa/skills/ai-code-reviewer-workspace/fixtures/mini-pay-pr",
+        "/root/come_here/codexqa/skills/ai-code-reviewer-workspace/fixtures/mini-pay-pack"
+      ],
+      "expectations": [
+        "outputs/review-conclusion.json exists and is valid JSON",
+        "outputs/REVIEW-REPORT.html exists and is non-empty",
+        "conclusion mentions empty catch / swallow OR resilience concern OR finding about catch",
+        "conclusion or findings mention null/NPE/parseAmount OR correctness risk on amount",
+        "dimensions_covered is a non-empty array",
+        "bilingual fields present (at least summary_en or one title_en)"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "llm-dedupe-against-heuristics",
+      "prompt": "Using the ai-code-reviewer skill on fixtures/mini-pay-pack (repo fixtures/mini-pay-pr), produce a review that exercises the Agent LLM judgment pass: draft heuristic findings (at least the empty-catch resilience hit), draft llm-candidates.json that intentionally duplicates the catch finding AND adds one novel NPE finding, run merge-llm-findings.py, then write final review-conclusion.json + render HTML. Save baseline-findings.json, llm-candidates.json, merged-findings.json, 22-llm-judgment.json, review-conclusion.json, REVIEW-REPORT.html, and summary.md under outputs/. Goal: prove duplicates are dropped and novel issues kept.",
+      "expected_output": "22-llm-judgment.json shows deduped>=1 and kept_novel>=1; final p0/p1/p2 do not contain two findings for the same catch line; novel NPE kept; HTML renders.",
+      "files": [
+        "/root/come_here/codexqa/skills/ai-code-reviewer-workspace/fixtures/mini-pay-pack",
+        "/root/come_here/codexqa/skills/ai-code-reviewer-workspace/fixtures/mini-pay-pr"
+      ],
+      "expectations": [
+        "outputs/22-llm-judgment.json exists with kind LlmJudgmentSignals OR summary explains why missing (old skill)",
+        "If 22-llm-judgment.json exists: kept_novel >= 1 and deduped_against_heuristics >= 1",
+        "Final findings do not list two separate issues for the same PayService catch/swallow line",
+        "outputs/REVIEW-REPORT.html exists",
+        "outputs/review-conclusion.json exists"
+      ]
+    }
+  ]
+}

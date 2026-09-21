@@ -9,10 +9,10 @@ codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。�
 | 能力 | 当前仓库状态 | 范围 |
 | --- | --- | --- |
 | 缺陷检测 | **已提供** | 面向代码变更、测试计划和交付任务的 Agent 静态与业务逻辑审查 |
-| 代码分析 | **已提供** | `code-analyzer` 为支持的语言建立本地符号图，`defect-detection` 另有 AST 规则和变更方法分析；parser 与框架覆盖仍有差异 |
+| 代码分析 | **已提供** | `code-analyzer` 为支持的语言建立本地符号图；`defect-detection` 另有 SAST/lint/secrets/SCA + Agent LLM Detection 扫描报告（去重合并）；parser 与框架覆盖仍有差异 |
 | 需求评审 | **已提供** | 对需求文档做缺口/冲突分析（`requirements-analyzer`）；实现是否符合需求仍是计划中 |
 | 规格评审 | **计划中** | 检查技术规格的完整性、一致性和可测试性 |
-| AI Code Review | **已提供** | CodexQA 证据包 → 双语 `REVIEW-REPORT.html`（`ai-code-reviewer`）；本地有 fixture validate+render 冒烟 |
+| AI Code Review | **已提供** | CodexQA 证据包 + 启发式维度 + Agent LLM judgment（去重）→ 双语 `REVIEW-REPORT.html`（`ai-code-reviewer`）；本地有 fixture validate+render 冒烟 |
 | 变更影响分析 | **已提供** | `code-analyzer` 在单个已索引仓库内从变更符号追到调用方及 HTTP / RPC / MQ / 定时任务入口；跨仓影响分析仍在规划 |
 | 测试缺口分析 | **已提供** | `code-analyzer` 核验符号级 `tests` 边，报告没有图关系测试罩住的已变更生产符号 |
 | 测试执行编排 | **计划中** | 在验证工作流中运行现有测试框架并采集结果 |

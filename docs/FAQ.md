@@ -15,8 +15,8 @@ The seven worker skills cover different parts of the delivery lifecycle, plus [`
 | [`skill-router`](../skills/skill-router/README.md) | Discover live siblings + bundled catalog; on-demand install; hand off to the matched skill |
 | [`code-analyzer`](../skills/code-analyzer/README.md) | Index a local repository, then trace change impact, regression scope, test gaps, entries, and errors through its symbol graph |
 | [`root-cause-diagnosis`](../skills/root-cause-diagnosis/README.md) | Exception RCA from stacks/logs on top of the CodexQA CLI; gated English root-cause report |
-| [`defect-detection`](../skills/defect-detection/README.md) | SAST/lint/secrets/SCA + agent-inline semantic scan → `report_scan.*` (P0–P3) |
-| [`ai-code-reviewer`](../skills/ai-code-reviewer/README.md) | CodexQA evidence pack → bilingual `REVIEW-REPORT.html` |
+| [`defect-detection`](../skills/defect-detection/README.md) | SAST/lint/secrets/SCA + Agent LLM Detection → `report_scan.*` (P0–P3, deduped) |
+| [`ai-code-reviewer`](../skills/ai-code-reviewer/README.md) | CodexQA evidence pack + heuristic dims + Agent LLM judgment → bilingual `REVIEW-REPORT.html` |
 | [`requirements-analyzer`](../skills/requirements-analyzer/README.md) | Quality-and-risk analysis of requirement documents; one gap register |
 | [`testcase-generation`](../skills/testcase-generation/README.md) | Generate test plans and manual cases (Plan / Exec / Incremental) from local requirements; dual-write Markdown plus aggregated HTML report |
 | [`testdata-generation`](../skills/testdata-generation/README.md) | Construct reusable test data and backfill `{placeholder}`s in those cases |
@@ -34,15 +34,15 @@ They solve different parts of the problem. Linters and static rules catch suspic
 Match the request, not the wording:
 
 - Unsure which skill / auto-route a vague QA request → `skill-router`
-- Scan a diff / repo / paste for SAST and semantic code-risk findings → `defect-detection`
+- Scan a diff / repo / paste for SAST and Agent LLM Detection findings → `defect-detection`
 - Trace changed symbols, callers, regression scope, test gaps, and reachable entries in a local repository → `code-analyzer`
 - Diagnose exception root cause from stacks / logs / dumps → `root-cause-diagnosis`
-- CodexQA graph-evidence pack and bilingual HTML review report → `ai-code-reviewer`
+- CodexQA graph-evidence pack, heuristic dimensions, Agent LLM judgment, and bilingual HTML review → `ai-code-reviewer`
 - Review whether the PRD itself is complete and consistent → `requirements-analyzer`
 - Write or update a manual case library (and optional aggregated HTML report) → `testcase-generation`
 - Build data that fills case `{placeholder}`s → `testdata-generation`
 
-“Review this PR” is not enough to choose: `code-analyzer` maps changed symbols, callers, entries, and test gaps; `defect-detection` runs SAST + agent semantic scan into `report_scan.*`; `ai-code-reviewer` collects a CodexQA pack and renders `REVIEW-REPORT.html`; `root-cause-diagnosis` needs exception evidence for RCA. A request can span skills: use `code-analyzer` to bound the impact, then `ai-code-reviewer` for graph-evidence HTML review. Generate cases first; placeholders can only be backfilled after the `.md` files exist.
+“Review this PR” is not enough to choose: `code-analyzer` maps changed symbols, callers, entries, and test gaps; `defect-detection` runs SAST + Agent LLM Detection into `report_scan.*`; `ai-code-reviewer` collects a CodexQA pack, runs heuristic dims + Agent LLM judgment (dedupe), and renders `REVIEW-REPORT.html`; `root-cause-diagnosis` needs exception evidence for RCA. A request can span skills: use `code-analyzer` to bound the impact, then `ai-code-reviewer` for graph-evidence HTML review. Generate cases first; placeholders can only be backfilled after the `.md` files exist.
 
 ## What do I have to give each skill?
 

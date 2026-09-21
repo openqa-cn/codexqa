@@ -45,18 +45,18 @@ AI 能很快产出一个绿 PR，但需求是否对齐、影响了谁、审查�
 | 测试数据 | [`testdata-generation`](skills/testdata-generation/README.zh-CN.md) | 哪些真实 ID 和前置条件能让用例跑起来？ | 后端实际返回值回写到用例前置条件 |
 | 变更影响 | [`code-analyzer`](skills/code-analyzer/README.zh-CN.md) | 改了什么、谁在调用、影响哪些入口、哪里没测试？ | 符号图证据、回归范围、测试缺口和关系图 |
 | 异常根因 | [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.zh-CN.md) | 这条堆栈 / 日志 / 崩溃的仓内根因是什么？ | 基于 CodexQA CLI facts 的带门禁英文 RCA 报告 |
-| 代码风险扫描 | [`defect-detection`](skills/defect-detection/README.zh-CN.md) | 这个 diff / 仓库 / 粘贴里有哪些 SAST / 密钥 / 逻辑风险？ | 按 P0–P3 排序的 `report_scan.json` / `.md` / `.html` |
-| 图证据审查 | [`ai-code-reviewer`](skills/ai-code-reviewer/README.zh-CN.md) | CodexQA 证据包对影响面、缺口和维度风险怎么说？ | 证据包 + 双语 `REVIEW-REPORT.html` |
+| 代码风险扫描 | [`defect-detection`](skills/defect-detection/README.zh-CN.md) | 这个 diff / 仓库 / 粘贴里有哪些 SAST / 密钥 / 逻辑风险？ | 按 P0–P3 排序的 `report_scan.json` / `.md` / `.html`（确定性 ∪ Agent LLM Detection，去重合并） |
+| 图证据审查 | [`ai-code-reviewer`](skills/ai-code-reviewer/README.zh-CN.md) | CodexQA 证据包对影响面、缺口和维度风险（含 Agent LLM judgment）怎么说？ | 证据包 + 双语 `REVIEW-REPORT.html` |
 | Skill 选择（元） | [`skill-router`](skills/skill-router/README.zh-CN.md) | 这次请求该交给哪个已发布 skill？ | 内置/现场目录匹配 → 按需安装（如需要）→ 交接给该 skill 的 `SKILL.md` |
 
 这些 Skill 的输入不同，这是设计选择。Agent 能明确判断这次该读文档、索引本地 checkout、克隆分支、写用例，还是调用造数后端。请求未点名 skill 时，先走 [`skill-router`](skills/skill-router/README.zh-CN.md)——它对照现场兄弟与内置 catalog 匹配，必要时把胜出 skill 拉到路由旁边再交接。
 
 ## 为什么用 codexqa？
 
-- `defect-detection` 把确定性 SAST/lint/secrets/SCA 与 agent 内联语义审查合成 P0–P3 `report_scan.*`。
+- `defect-detection` 把确定性 SAST/lint/secrets/SCA 与 **Agent LLM Detection**（宿主内嵌模型，Stage1/Stage2）去重合并成 P0–P3 `report_scan.*`。
 - `code-analyzer` 用本地符号图把变更符号追到调用方、入口和图关系测试。
 - `root-cause-diagnosis` 在同一套 CodexQA CLI 之上，把异常证据变成带门禁的英文 RCA 报告。
-- `ai-code-reviewer` 收集 CodexQA 证据包，并只依据包产物渲染双语 `REVIEW-REPORT.html`。
+- `ai-code-reviewer` 收集 CodexQA 证据包、评估启发式维度，再跑 **Agent LLM judgment** 并去重合并后渲染双语 `REVIEW-REPORT.html`。
 - 文档与测试类 Skill 把需求评审、用例设计和测试数据构造分开，不让一次 prompt 包办所有事情。
 - [`skill-router`](skills/skill-router/README.zh-CN.md) 用内置/现场目录自动选型，只装路由时也可按需安装干活 skill。
 - 每个 Skill 都有明确的输入契约、证据格式和停点。它们装进你已经在用的 Agent，发现项仍然交给人确认。
@@ -178,7 +178,7 @@ codexqa stats /path/to/repo
 用 ai-code-reviewer 对照 origin/main 收集 CodexQA 证据包并产出 REVIEW-REPORT.html。
 ```
 
-要做 SAST+agent 代码风险扫描，用 `defect-detection`。
+要做 SAST + Agent LLM Detection 代码风险扫描，用 `defect-detection`。要做 CodexQA HTML 评审（含 Agent LLM judgment），用 `ai-code-reviewer`。
 
 **分析需求（`requirements-analyzer`）** — 交文档，不要交仓库。
 
@@ -240,8 +240,8 @@ codexqa stats /path/to/repo
 | `skill-router` | `discover_skills.py --self-check` / `--with-catalog`；`ensure_skill.py --dry-run` / `--from-repo`；路由选择由模型判断；无公开宿主 agent 成绩 |
 | `code-analyzer` | 已公开 Skill 契约、schema、playbook、示例图和已知边界；单独分发的闭源引擎不在本仓库 CI 中运行 |
 | `root-cause-diagnosis` | 本地 CLI 测试（解析、落地、草稿、冒烟）；依赖 `@openqa-cn/codexqa`；无公开宿主 agent 成绩；RCA 叙事由模型判断 |
-| `defect-detection` | 本地 Python 流水线/策略夹具测试；可选 SAST 与闭源 CodexQA CLI；无公开宿主 agent 成绩；Stage1/Stage2 由模型判断 |
-| `ai-code-reviewer` | 本地 `validate-skill.sh` / fixture 校验+渲染冒烟（Python 3.10+）；本仓库 CI 不跑现场 CodexQA 建索引；评审叙事由模型判断 |
+| `defect-detection` | 本地 Python 流水线/策略夹具测试；可选 SAST 与闭源 CodexQA CLI；无公开宿主 agent 成绩；Agent LLM Detection Stage1/Stage2 由模型判断 |
+| `ai-code-reviewer` | 本地 `validate-skill.sh` / fixture 校验+渲染冒烟（Python 3.10+）；本仓库 CI 不跑现场 CodexQA 建索引；评审叙事与第 16 维 Agent LLM judgment 由模型判断 |
 | `requirements-analyzer` | eval 用例和解析/转换脚本；没有已记录宿主 Agent 成绩 |
 | `testcase-generation` | 阶段门禁 / close_stage / generate_case_report `--self-check`（Python 3.10+）；没有公开 Plan→Exec fixture 或已记录 Agent 运行 |
 | `testdata-generation` | packer、slot 检索和本地 catalog mock；运行结果取决于已配置的 adapter 与 slot |
@@ -263,7 +263,7 @@ node examples/checkout-boundary/verify.mjs
 python3 skills/skill-router/scripts/discover_skills.py --self-check
 ```
 
-这些检查覆盖文档链接、中英章节对齐、`defect-detection` Python 流水线/策略夹具、打包、边界 fixture、`testcase-generation` 离线门禁/报告冒烟，以及 `skill-router` 目录自检。它们不执行完整实 agent Stage1/Stage2 扫描，也不执行单独分发的 `code-analyzer` / `root-cause-diagnosis` 引擎路径，也不能证明所有缺陷都会被发现。
+这些检查覆盖文档链接、中英章节对齐、`defect-detection` Python 流水线/策略夹具、打包、边界 fixture、`testcase-generation` 离线门禁/报告冒烟，以及 `skill-router` 目录自检。它们不执行完整实 agent Agent LLM Detection Stage1/Stage2 扫描，也不执行单独分发的 `code-analyzer` / `root-cause-diagnosis` 引擎路径，也不能证明所有缺陷都会被发现。
 
 ## 文档
 

@@ -33,8 +33,8 @@ Pick the highest score. If top two are close, ask.
 
 | User says something like… | Prefer | Not |
 |---|---|---|
-| Scan diff/repo/paste for SAST / secrets / P0–P3 scan report | `defect-detection` | `ai-code-reviewer`, `code-analyzer` |
-| CodexQA evidence pack / bilingual REVIEW-REPORT.html | `ai-code-reviewer` | `defect-detection` |
+| Scan diff/repo/paste for SAST + Agent LLM Detection → `report_scan.*` | `defect-detection` | `ai-code-reviewer`, `code-analyzer` |
+| CodexQA evidence pack + Agent LLM judgment → bilingual REVIEW-REPORT.html | `ai-code-reviewer` | `defect-detection` |
 | Index repo, callers, regression scope, test gaps, `--diff-base` | `code-analyzer` | full HTML CR / SAST report |
 | Stack / log / crash → root cause | `root-cause-diagnosis` | structure-only or scan report |
 | PRD quality / gap / conflict register | `requirements-analyzer` | writing cases |

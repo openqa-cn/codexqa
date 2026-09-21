@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md) · [How it works](HOW_IT_WORKS.md) · [Known limitations](KNOWN_LIMITATIONS.md)
 
-`defect-detection` runs deterministic SAST / lint / secrets / SCA, then two-stage semantic review by the **invoking agent** (default `--llm-mode agent`, no API key). It writes `report_scan.json` / `.md` / `.html` with findings ordered **P0→P3**. Code-graph and call-chain analysis use the public **CodexQA CLI** (`@openqa-cn/codexqa`) for all languages.
+`defect-detection` runs two detection dimensions — deterministic SAST / lint / secrets / SCA, then **one-round Agent LLM Detection** by the **invoking agent's embedded model** (default `--llm-mode agent`, no API key) — and **dedupes/merges** them into `report_scan.json` / `.md` / `.html` ordered **P0→P3**. Code-graph and call-chain analysis use the public **CodexQA CLI** (`@openqa-cn/codexqa`) for all languages.
 
 It is **not** [`ai-code-reviewer`](https://github.com/openqa-cn/codexqa/blob/main/skills/ai-code-reviewer/README.md) (CodexQA evidence-pack HTML review), **not** [`code-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/code-analyzer/README.md) (symbol-graph impact / test gaps), and **not** [`root-cause-diagnosis`](https://github.com/openqa-cn/codexqa/blob/main/skills/root-cause-diagnosis/README.md) (exception RCA). Use this skill when the goal is a code-risk / security / logic **scan report**.
 
@@ -33,7 +33,7 @@ From this skill directory:
 # choose scenario from user utterance
 python3 scripts/run_scan.py choose --infer "review this PR for security issues"
 
-# incremental prepare (agent-inline handoff; then Stage1 → Stage2 → finalize per SKILL.md)
+# incremental prepare (agent-inline handoff; then Agent LLM Detection Stage1 → Stage2 → finalize merge per SKILL.md)
 python3 scripts/run_scan.py incremental --repo /abs/path/to/repo --intent "PR review" -o /tmp/aid_report
 
 # adhoc paste / file (always --fresh for rescan)
@@ -43,11 +43,11 @@ python3 scripts/run_scan.py adhoc --scan-mode incremental --paste-file /tmp/snip
 python3 scripts/run_scan.py incremental --repo . --dry-run -o /tmp/aid_report
 ```
 
-Default agent mode always emits `agent_llm/` for Stage1/Stage2. Pass `--fresh` for full rescan / adhoc retest. Do not invent findings before reading `AGENT_LLM_HANDOFF` / `MANIFEST.json`.
+Default agent mode always emits `agent_llm/` for Agent LLM Detection (Stage1/Stage2). Pass `--fresh` for full rescan / adhoc retest. Do not invent findings before reading `AGENT_LLM_HANDOFF` / `MANIFEST.json`.
 
 ## Agent instructions
 
-`SKILL.md` is the entry for an AI agent. Happy path: choose scenario → deterministic prepare → Stage1 JSON → `agent-stage2` → Stage2 JSON → `finalize` → present `report_scan.*`.
+`SKILL.md` is the entry for an AI agent. Happy path: choose scenario → deterministic prepare → Agent LLM Detection (`stage1.json`) → `agent-stage2` → Stage2 JSON → `finalize` (dedupe ∪ merge) → present `report_scan.*`.
 
 Do not load `README` / `HOW_IT_WORKS` / `KNOWN_LIMITATIONS` at runtime. Load `references/` only when the rule is missing from context.
 
@@ -67,4 +67,4 @@ Apache License 2.0.
 
 ## Limitations
 
-Depends on optional SAST binaries and the closed-source `@openqa-cn/codexqa` CLI for live graph analysis; Stage1/Stage2 quality is model-judged. For concrete failure cases see [Known limitations](KNOWN_LIMITATIONS.md). For the data flow see [How it works](HOW_IT_WORKS.md).
+Depends on optional SAST binaries and the closed-source `@openqa-cn/codexqa` CLI for live graph analysis; Agent LLM Detection quality is model-judged. For concrete failure cases see [Known limitations](KNOWN_LIMITATIONS.md). For the data flow see [How it works](HOW_IT_WORKS.md).

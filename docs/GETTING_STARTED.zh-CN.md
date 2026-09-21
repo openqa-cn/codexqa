@@ -63,9 +63,9 @@ python3 skills/defect-detection/scripts/run_scan.py --help
 
 安装后新建会话。给出可访问的仓库 URL 和分支，以及你能提供的需求或测试用例。可以直接这么说：
 
-> 用 defect-detection 审查我的仓库 REPOSITORY_URL，分支 BRANCH_NAME。对照这些需求检查改动实现：REQUIREMENTS。每个疑似缺陷给出代码位置、触发条件和依据。
+> 用 defect-detection 扫描仓库 /abs/path/to/repo 的本次 PR。跑 Agent LLM Detection（Stage1/Stage2），返回按 P0–P3 排序的 `report_scan.json` 发现项。
 
-把大写占位符换成真实内容。流程跑通的话，你会拿到一个任务、若干分析记录和一个报告链接。接受报告前，先确认有没有服务没跑完、工具不可用。疑似发现一律留给人复核，不是自动合并决定。
+期望先跑确定性 collect + agent handoff，再产出 `report_scan.json` / `.md` / `.html`。扫描器缺失时检查 `tooling_status.missing`。发现项一律留给人复核。
 
 ## 更新与卸载
 

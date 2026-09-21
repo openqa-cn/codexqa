@@ -60,7 +60,7 @@ python3 skills/defect-detection/scripts/run_scan.py --help
 
 Open a new session after installation. Provide a local repo path, PR/diff intent, upload, or paste. Example request:
 
-> Use defect-detection to scan my repository at /abs/path/to/repo for this PR. Run the agent-inline Stage1/Stage2 flow and return `report_scan.json` findings ordered P0–P3.
+> Use defect-detection to scan my repository at /abs/path/to/repo for this PR. Run Agent LLM Detection (Stage1/Stage2) and return `report_scan.json` findings ordered P0–P3.
 
 Expect deterministic collect + agent handoff, then `report_scan.json` / `.md` / `.html`. Inspect `tooling_status.missing` when scanners are absent. Keep findings under human review.
 

@@ -236,7 +236,8 @@ jq -c '
         "complexity":"复杂度","correctness":"正确性","test_gaps":"测试缺口","concurrency":"并发",
         "security":"安全","privacy":"隐私","resilience":"韧性","design":"设计契合",
         "dependencies":"依赖","rollout":"发布变更","observability":"可观测性",
-        "maintainability":"可维护性","contract":"契约","regression":"回归","performance":"性能"
+        "maintainability":"可维护性","contract":"契约","regression":"回归","performance":"性能",
+        "llm_judgment":"模型语义评审","risk_tier":"风险分档"
       }[$x] // null) as $zh
     | if $zh == null then ($raw | esc)
       else bi_text($zh; $raw)
@@ -604,6 +605,22 @@ jq -c '
             + field_bi("无界分配"; ""; $p.unbounded_allocation; $p.unbounded_allocation_en)
             + field_bi("依据"; ""; $p.evidence; $p.evidence_en)
             + field("信号文件"; "is-path"; $p.signals_file)
+            + "</section>\n"
+        end
+      ),
+      llm_judgment_html: (
+        if ($r.llm_judgment == null or (dim_issue($r.llm_judgment.verdict) | not)) then ""
+        else
+          ($r.llm_judgment) as $lj
+          | "<section>" + h2bi("模型语义评审"; "Agent LLM judgment")
+            + ("<div class=\"field\">" + field_k("结论") + "<div class=\"field-v is-cat\">" + verdict_bi($lj.verdict) + "</div></div>")
+            + field_bi("风险说明"; ""; $lj.risk; $lj.risk_en)
+            + field("新颖问题数"; ""; ($lj.novel_count // ""))
+            + field("去重合并数"; ""; ($lj.deduped_count // ""))
+            + field("enrich 数"; ""; ($lj.enriched_count // ""))
+            + field_bi("审阅焦点"; ""; $lj.focus_files; $lj.focus_files_en)
+            + field_bi("依据"; ""; $lj.evidence; $lj.evidence_en)
+            + field("信号文件"; "is-path"; $lj.signals_file)
             + "</section>\n"
         end
       ),
@@ -1140,6 +1157,7 @@ jq -n -r --slurpfile p "$FRAG" --arg css "$CSS" '
   + ($p.privacy_html // "")
   + ($p.rollout_html // "")
   + ($p.performance_html // "")
+  + ($p.llm_judgment_html // "")
   + "<section>" + h2bi("发现项"; "Findings") + "<div class=\"findings-stack\">\n" + $p.p0_html + "\n" + $p.p1_html + "\n" + $p.p2_html + "\n</div></section>\n"
   + "<section>" + h2bi("回归必测清单"; "Regression must-test")
   + "<p class=\"muted\" data-zh=\"目标列写清可执行场景（入口/条件/期望）；证据列用通俗依据，勿只填符号 UUID 或证据包路径。\" data-en=\"Write executable scenarios (entry/conditions/expected result). Evidence should be plain language — not only UUIDs or pack paths.\">目标列写清可执行场景（入口/条件/期望）；证据列用通俗依据，勿只填符号 UUID 或证据包路径。</p>\n"

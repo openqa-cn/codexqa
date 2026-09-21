@@ -39,7 +39,8 @@
     "test_gaps",
     "observability",
     "maintainability",
-    "performance"
+    "performance",
+    "llm_judgment"
   ],
   "risk_tier": {
     "tier": "T0 | T1 | T2 | T3",
@@ -131,6 +132,19 @@
     "evidence": "21-performance-signals.json",
     "signals_file": "21-performance-signals.json"
   },
+  "llm_judgment": {
+    "verdict": "ok | concern | unknown | none",
+    "risk": "REQUIRED when concern: plain-language summary of novel LLM-only issues after dedupe",
+    "risk_en": "English mirror of risk when concern",
+    "novel_count": 0,
+    "deduped_count": 0,
+    "enriched_count": 0,
+    "focus_files": "Bounded files/symbols the agent LLM read — or None",
+    "focus_files_en": "English mirror — or None",
+    "evidence": "22-llm-judgment.json + host-agent LLM pass (merged vs heuristic findings)",
+    "evidence_en": "22-llm-judgment.json + host-agent LLM pass",
+    "signals_file": "22-llm-judgment.json"
+  },
   "p0_count": 0,
   "p1_count": 1,
   "p2_count": 1,
@@ -143,7 +157,8 @@
       "location_en": "File / symbol (ASCII punctuation preferred)",
       "symbol_id": "(JSON audit only — omitted from HTML)",
       "change_status": "add|change|default — HTML maps to 本次新增/本次修改/既有代码…",
-      "category": "design | complexity | dependencies | correctness | resilience | security | privacy | contract | rollout | concurrency | regression | test_gaps | observability | maintainability | performance | risk_tier | …",
+      "category": "design | complexity | dependencies | correctness | resilience | security | privacy | contract | rollout | concurrency | regression | test_gaps | observability | maintainability | performance | risk_tier | llm_judgment | …",
+      "source": "optional — set \"llm_judgment\" for novel host-agent LLM findings (after dedupe)",
       "risk": "触发路径与影响（中文白话）",
       "risk_en": "Trigger path and impact in plain English",
       "call_chain": {

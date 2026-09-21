@@ -33,4 +33,4 @@
 
 ## 工作流边界
 
-`code-analyzer` 分析结构、变更影响、调用方、入口和测试缺口。它不执行测试、不证明不存在缺陷、不判断代码是否符合业务需求，也不替代 P0 / P1 / P2 代码审查。代码风险扫描用 `defect-detection`，CodexQA 证据包 HTML 评审用 `ai-code-reviewer`，完整异常根因报告用 `root-cause-diagnosis`（在 CodexQA CLI 分析之上）。
+`code-analyzer` 分析结构、变更影响、调用方、入口和测试缺口。它不执行测试、不证明不存在缺陷、不判断代码是否符合业务需求，也不替代图证据代码审查。代码风险扫描用 `defect-detection`（SAST + Agent LLM Detection），CodexQA 证据包 HTML 评审用 `ai-code-reviewer`（含 Agent LLM judgment），完整异常根因报告用 `root-cause-diagnosis`（在 CodexQA CLI 分析之上）。

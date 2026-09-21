@@ -3,10 +3,12 @@ name: ai-code-reviewer
 description: >
   Graph-evidence AI code review (ai-code-reviewer) for ANY language repo using
   ONLY the CodexQA CLI symbol graph (call chains, classes, methods, configs,
-  blast radius, test edges). Use when the user asks for ai-code-reviewer, code
-  review, PR review, 代码评审, impact analysis, 影响面, regression scope, test
-  gaps, full-repo health review, 全仓评审, CodexQA evidence-pack, 证据包, or
-  graph-backed review. Requires codexqa CLI for every language; never embeds
+  blast radius, test edges), then an order-16 Agent LLM judgment pass by the
+  host agent's embedded model with deterministic dedupe/merge against heuristic
+  findings. Use when the user asks for ai-code-reviewer, code review, PR review,
+  代码评审, impact analysis, 影响面, regression scope, test gaps, full-repo health
+  review, 全仓评审, CodexQA evidence-pack, 证据包, graph-backed review, or LLM
+  semantic CR on a pack. Requires codexqa CLI for every language; never embeds
   CodexQA source; never substitutes git-diff-only analysis.
   Not SAST+agent scan reports
   (that is defect-detection), not structure/impact mapping alone
@@ -15,12 +17,12 @@ license: Apache-2.0
 compatibility: >
   Requires Node.js >= 18, bash 3.2+, jq, Python 3.10+ (via `scripts/acr-python`),
   and the `codexqa` CLI (`npm i -g @openqa-cn/codexqa`) on PATH for every language.
-  Collect / validate / render scripts need no LLM; review prose is written by the
-  host agent from the evidence pack. Data lands under
+  Collect / validate / render / merge-llm-findings need no external LLM API; review
+  prose and the order-16 semantic pass use the host agent's embedded model. Data lands under
   `<repo>/.codexqa-review/<run-id>/`.
 metadata:
   author: open-source
-  version: "0.0.2"
+  version: "0.0.3"
   open-standard: agentskills
 ---
 
@@ -44,7 +46,7 @@ Do not copy into a skills library manually until the user names the install targ
 | Need | Skill |
 |---|---|
 | Graph-evidence pack → bilingual HTML CR (`REVIEW-REPORT.html`) | **this skill** (`ai-code-reviewer`) |
-| SAST + agent-inline code-risk scan → `report_scan.*` | `defect-detection` |
+| SAST + Agent LLM Detection → `report_scan.*` | `defect-detection` |
 | Symbol-graph change impact, callers, test gaps | `code-analyzer` |
 | Exception RCA from stacks/logs on top of CLI analysis | `root-cause-diagnosis` |
 
@@ -71,7 +73,8 @@ Task progress:
 - [ ] 2. Collect evidence pack → OUT_DIR
 - [ ] 3. Validate (auto unless --skip-validate)
 - [ ] 4. Lock primary_language / review_language_focus
-- [ ] 5. Review from pack artifacts only
+- [ ] 5. Review from pack artifacts only (heuristic dimensions)
+- [ ] 5b. Agent LLM judgment pass + dedupe merge (`merge-llm-findings.py`)
 - [ ] 6. Write review-conclusion.json + render REVIEW-REPORT.html
 ```
 
@@ -140,6 +143,7 @@ Adhoc: bootstraps a mini git repo when `--repo` is omitted so CodexQA index gate
 | Contract | `17-contract-signals.json` (breaking hints, XSS/HTML sinks, public-sig volume) |
 | Maintainability | `18-maintainability-signals.json` (TODO/FIXME, magic numbers, long files) |
 | Performance | `21-performance-signals.json` (hot path, N+1, unbounded allocation) |
+| Agent LLM judgment | `22-llm-judgment.json` (host-agent semantic CR + dedupe merge vs heuristic findings) |
 | Annotation callbacks | `19-annotation-edges.json` (Spring/Resilience4j synthetic callers when edges-in empty) |
 | Risk tier (blast-radius triage) | `20-risk-tier.json` (T0–T3 from paths + tags + sensitive + rollout surfaces; auth/pay/migration/IaC → T0) |
 | Blast radius | `impact/*/edges-in.json` / `reach-in.json` (PR + full-repo top hotspots) |
@@ -186,6 +190,10 @@ Fails: missing CodexQA provenance; empty change-groups; all `change_status=defau
 3. Lock language from `manifest.json` + `09-language-profile.json`.
 4. For top risks: `diffs/`, `impact/<id>/`, `paths/`, then tags / hot-but-thin / sensitive.
 5. Mermaid from [references/mermaid-evidence.md](references/mermaid-evidence.md).
+6. **Agent LLM judgment (order 16):** follow [prompts/llm-judgment-pass.md](prompts/llm-judgment-pass.md)
+   — host embedded model reviews pack-scoped diffs/sources; run
+   `scripts/lib/merge-llm-findings.py` so final `p0`/`p1`/`p2` are **deduped** against
+   heuristic findings (`22-llm-judgment.json`).
 
 ### 5. Deliver
 
@@ -195,11 +203,12 @@ Fails: missing CodexQA provenance; empty change-groups; all `change_status=defau
 3. **Required:** `./scripts/render-review-html.sh --dir <OUT_DIR>` → **`REVIEW-REPORT.html`**
 
 Cover: 变更摘要、主开发语言、**有问题的维度**（Design / Complexity / Dependencies /
-Resilience / Privacy / Rollout 等 — `ok`/`none` 不进报告）、总风险、P0/P1/P2、
+Resilience / Privacy / Rollout / Performance / Agent LLM judgment 等 — `ok`/`none` 不进报告）、总风险、P0/P1/P2、
 回归必测清单、测试缺口、敏感路径、卡片内调用链路。
 **不渲染：** 建议修复顺序、残留风险与假设、独立影响面示意。
 `render-review-html.sh` 会过滤干净维度；仍须在 `review-conclusion.json` 写全评估结果与
-`dimensions_covered`。
+`dimensions_covered`。Final findings must already be **dedupe-merged** (no duplicate
+heuristic + LLM cards for the same defect).
 
 High-severity findings cite: symbol id/file/lines, callers or entry path,
 `tested_count` / tests-reach, confidence (high|medium|low|**UNKNOWN**).
@@ -249,6 +258,8 @@ End-to-end walkthrough: [examples/pr-review-walkthrough.md](examples/pr-review-w
 - Contract card: [references/dimensions/contract.md](references/dimensions/contract.md)
 - Maintainability card: [references/dimensions/maintainability.md](references/dimensions/maintainability.md)
 - Performance card: [references/dimensions/performance.md](references/dimensions/performance.md)
+- Agent LLM judgment card: [references/dimensions/llm-judgment.md](references/dimensions/llm-judgment.md)
+- LLM judgment pass prompt: [prompts/llm-judgment-pass.md](prompts/llm-judgment-pass.md)
 - Correctness family checks: [references/dimensions/correctness-family-checks.md](references/dimensions/correctness-family-checks.md)
 - Eval gate: `scripts/validate-skill.sh` + [evals/eval.yaml](evals/eval.yaml)
 - Plan audit: `scripts/audit-plan-coverage.sh` → [examples/plan-coverage-audit.md](examples/plan-coverage-audit.md)

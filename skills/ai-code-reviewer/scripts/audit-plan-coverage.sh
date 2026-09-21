@@ -343,6 +343,8 @@ FILES=(
   references/dimensions/contract.md
   references/dimensions/maintainability.md
   references/dimensions/performance.md
+  references/dimensions/llm-judgment.md
+  prompts/llm-judgment-pass.md
   references/dimensions/correctness-family-checks.md
   references/mermaid-evidence.md
   prompts/pr-diff-review.md
@@ -364,6 +366,7 @@ FILES=(
   scripts/lib/derive-contract.sh
   scripts/lib/derive-maintainability.sh
   scripts/lib/derive-performance.sh
+  scripts/lib/merge-llm-findings.py
   examples/pr-review-walkthrough.md
 )
 i=1

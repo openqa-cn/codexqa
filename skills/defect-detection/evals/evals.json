@@ -1,0 +1,83 @@
+{
+  "skill_name": "defect-detection",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "agent-detect-concurrency-race",
+      "prompt": "Use the defect-detection skill to scan this pasted Python inventory debit for defects. Run the default agent-inline path (deterministic prepare \u2192 Agent LLM Detection Stage1 \u2192 Stage2 \u2192 finalize merge). Save final report_scan.json under the outputs dir. The code is at evals/fixtures/race_order.py \u2014 focus on concurrency / check-then-act.",
+      "expected_output": "report_scan.json that includes an agent_llm (or confirmed) finding about non-atomic stock debit / race; dimension field present after merge",
+      "files": [
+        "evals/fixtures/race_order.py"
+      ],
+      "assertions": [
+        {
+          "id": "reports_concurrency_defect",
+          "text": "Final report includes a concurrency/race/check-then-act style finding",
+          "type": "rubric"
+        },
+        {
+          "id": "has_dimension_or_llm_source",
+          "text": "At least one finding has dimension agent_llm or source llm_judged/sast_confirmed",
+          "type": "rubric"
+        },
+        {
+          "id": "report_scan_exists",
+          "text": "outputs/report_scan.json exists and is valid JSON with findings array",
+          "type": "programmatic"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "merge-dedupe-auth-and-secret",
+      "prompt": "Scan evals/fixtures/auth_bypass.py with defect-detection (adhoc incremental, --fresh). Complete Agent LLM Detection and finalize so deterministic \u222a agent_llm are deduped/merged. Expect both a secret/hygiene style hit if scanners fire AND an architecture/auth bypass finding from the agent dimension when applicable; final findings must have dimension stamps and no duplicate same-locus clones.",
+      "expected_output": "report_scan.json with dimension on findings; auth-bypass style agent finding; merged/deduped sources",
+      "files": [
+        "evals/fixtures/auth_bypass.py"
+      ],
+      "assertions": [
+        {
+          "id": "auth_or_arch_finding",
+          "text": "Report includes an auth-bypass / architecture / AUTH|ARCH policy finding from agent dimension",
+          "type": "rubric"
+        },
+        {
+          "id": "dimensions_stamped",
+          "text": "Findings include dimension field (deterministic|agent_llm|deterministic+agent_llm) after merge",
+          "type": "programmatic"
+        },
+        {
+          "id": "no_duplicate_same_locus_clones",
+          "text": "No two findings share same file and identical line with duplicate titles after merge",
+          "type": "programmatic"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "dimension-contract-in-manifest",
+      "prompt": "Prepare an adhoc incremental scan of evals/fixtures/race_order.py with defect-detection agent mode. After prepare, read agent_llm/MANIFEST.json and confirm detection_dimensions includes deterministic and agent_llm. Then complete Stage1 (can be empty if justified), Stage2, finalize. In the final report_scan.json summary.coverage, by_dimension or dimensions should reflect the two-dimension design.",
+      "expected_output": "MANIFEST detection_dimensions + report coverage dimensions/by_dimension",
+      "files": [
+        "evals/fixtures/race_order.py"
+      ],
+      "assertions": [
+        {
+          "id": "manifest_lists_dimensions",
+          "text": "MANIFEST.json detection_dimensions includes deterministic and agent_llm",
+          "type": "programmatic"
+        },
+        {
+          "id": "coverage_by_dimension",
+          "text": "report_scan.json summary.coverage includes by_dimension or dimensions list",
+          "type": "programmatic"
+        },
+        {
+          "id": "finalize_completed",
+          "text": "report_scan.json exists after finalize",
+          "type": "programmatic"
+        }
+      ]
+    }
+  ]
+}

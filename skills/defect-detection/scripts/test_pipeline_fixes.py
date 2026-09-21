@@ -583,6 +583,33 @@ def test_clear_sast_still_blocks_llm_demotion():
             'clear SAST must not be demoted by LLM, got %s' % conf)
 
 
+def test_merge_stamps_detection_dimensions():
+    sast = [{'file': 'a.py', 'line': 10, 'category': 'security', 'severity': 'P1',
+             'title': 'xss', 'evidence': 'e', 'suggestion': 's', 'confidence': 0.9}]
+    llm = [
+        {'file': 'a.py', 'line': 10, 'category': 'security', 'severity': 'P1',
+         'title': 'xss confirm', 'evidence': 'e2', 'suggestion': 's', 'confidence': 0.8},
+        {'file': 'b.py', 'line': 20, 'category': 'concurrency', 'severity': 'P1',
+         'title': 'race', 'evidence': 'check-then-act', 'suggestion': 'lock',
+         'confidence': 0.7, 'rule_id': 'CONC-001'},
+    ]
+    m = merge_sast_llm(sast, llm)
+    by_dim = {f['dimension']: f for f in m}
+    _assert('deterministic+agent_llm' in by_dim, 'confirmed should be dual dimension')
+    _assert(any(f.get('dimension') == 'agent_llm' for f in m), 'llm-only needs agent_llm dim')
+    only_sast = merge_sast_llm(sast, [])
+    _assert(only_sast[0]['dimension'] == 'deterministic', 'sast_only → deterministic')
+
+
+def test_agent_detect_prompt_exists():
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    p = os.path.join(root, 'prompts', 'agent_detect.md')
+    _assert(os.path.isfile(p), 'prompts/agent_detect.md missing')
+    body = open(p).read()
+    _assert('Agent LLM Detection' in body, 'prompt must name the dimension')
+    _assert('dedupe' in body.lower() or 'dedup' in body.lower(), 'prompt must mention dedupe/merge')
+
+
 def test_infer_完整_maps_repo_full():
     from choose_scenario import infer_from_text
     s = infer_from_text('对当前工程进行完整缺陷检测')
@@ -666,6 +693,8 @@ def main():
     test_ambiguous_sast_dismissal_drops()
     test_ambiguous_sast_dismissed_flag_on_finding()
     test_clear_sast_still_blocks_llm_demotion()
+    test_merge_stamps_detection_dimensions()
+    test_agent_detect_prompt_exists()
     test_infer_完整_maps_repo_full()
     test_scope_excludes_data_adhoc()
     test_bandit_b324_maps_to_p2_hygiene()

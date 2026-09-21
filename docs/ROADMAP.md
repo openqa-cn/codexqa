@@ -9,10 +9,10 @@ codexqa's product direction covers the full AI software engineering quality life
 | Capability | Current repository status | Scope |
 | --- | --- | --- |
 | Defect detection | **Available** | Agent-led static and business-logic review for code changes, test plans, and delivery tasks |
-| Code analysis | **Available** | Local symbol graph for supported languages (`code-analyzer`); `defect-detection` adds SAST/lint/secrets/SCA plus agent-inline semantic scan reports; parser and framework coverage still varies |
+| Code analysis | **Available** | Local symbol graph for supported languages (`code-analyzer`); `defect-detection` adds SAST/lint/secrets/SCA plus Agent LLM Detection scan reports (dedupe/merge); parser and framework coverage still varies |
 | Requirement review | **Available** | Gap/conflict analysis of requirement documents (`requirements-analyzer`); implementation-vs-requirement check is still planned |
 | Specification review | **Planned** | Review technical specifications for completeness, consistency, and testability |
-| AI Code Review | **Available** | CodexQA evidence-pack → bilingual `REVIEW-REPORT.html` (`ai-code-reviewer`); fixture validate+render smoke locally |
+| AI Code Review | **Available** | CodexQA evidence-pack + heuristic dims + Agent LLM judgment (dedupe) → bilingual `REVIEW-REPORT.html` (`ai-code-reviewer`); fixture validate+render smoke locally |
 | Change-impact analysis | **Available** | `code-analyzer` traces changed symbols to callers and HTTP / RPC / MQ / scheduled-task entries inside one indexed repository; cross-repository impact analysis is planned |
 | Test-gap analysis | **Available** | `code-analyzer` checks symbol-level `tests` edges and reports changed production symbols with no graph-backed test relation |
 | Test execution orchestration | **Planned** | Run and collect results from existing test frameworks as part of the verification workflow |

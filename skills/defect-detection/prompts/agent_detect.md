@@ -1,6 +1,3 @@
-<!-- Compat alias: Stage1 Agent LLM Detection lives in agent_detect.md.
-     Kept so older docs / external callers that name rule_checker.md still resolve. -->
-
 Stage 1 — **Agent LLM Detection dimension** (one-round code defect analysis).
 
 {{SYSTEM_BASE}}

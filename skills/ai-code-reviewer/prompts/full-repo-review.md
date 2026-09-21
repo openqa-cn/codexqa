@@ -38,7 +38,8 @@ Do **not** invent `change_status` / PR conclusions without a diff index.
 13. Entry concentration: tagged samples under `entries/tagged/` — flag overly central entries if evidenced.
 14. Continue remaining registry dimensions (concurrency / regression / test gaps / observability / maintainability) per [references/dimension-registry.md](../references/dimension-registry.md) / [references/review-dimensions.md](../references/review-dimensions.md) for the primary language.
 14b. From `21-performance-signals.json`, apply **Performance** ([references/dimensions/performance.md](../references/dimensions/performance.md)) (hot path / N+1 / unbounded allocation). **Hard gate:** non-empty `n_plus_one_risks` / `hot_path_risks` / `unbounded_allocation` must become findings or explicit deferred residuals with `path:line` — never Performance `None` while those arrays have hits. Never invent profiler/SLO/p99; do not re-litigate Complexity nesting or Resilience timeout/retry. If `residual_performance` is non-empty, report as residual (not automatic P1).
-15. Produce prioritized remediation backlog (P0/P1/P2) — systemic risks, not style nits.
+14c. **Agent LLM judgment last (order 16):** follow [prompts/llm-judgment-pass.md](llm-judgment-pass.md) + [references/dimensions/llm-judgment.md](../references/dimensions/llm-judgment.md). Host-agent embedded model reviews hotspot / sample sources; merge via `scripts/lib/merge-llm-findings.py` so final findings are deduped (`22-llm-judgment.json`). Include `llm_judgment` in `dimensions_covered`.
+15. Produce prioritized remediation backlog (P0/P1/P2) — systemic risks, not style nits — from the **merged** finding lists.
 16. State confidence limits (sample size of symbol query, stub/collision rate, language confidence).
 
 ## Output
@@ -62,6 +63,7 @@ Sections emphasis:
 6. Privacy / compliance posture
 7. Change / rollout posture
 7b. Performance / N+1 / hot-path / unbounded alloc (`21-performance-signals.json`)
+7c. Agent LLM judgment (novel only after dedupe; `22-llm-judgment.json`)
 8. Critical hotspots (untested high fan-in)
 9. Sensitive / trust surfaces
 10. Entry concentration (if tags exist)
@@ -71,12 +73,14 @@ Sections emphasis:
 ## Minimum coverage
 
 - Repo snapshot: primary language, polyglot flag, scale, index quality
-- Evaluate **Design fit / Complexity / Dependencies / Resilience / Privacy / Rollout / Performance** into
+- Evaluate **Design fit / Complexity / Dependencies / Resilience / Privacy / Rollout / Performance / Agent LLM judgment** into
   `review-conclusion.json` + `dimensions_covered`. **HTML/report:** only issue dims
   (`concern`/`unknown`; Design-fit issue subsections only) — omit `ok`/`none` filler;
   renderer enforces the same filter. **Reader prose:** dimension notes / finding risk text
   must explain risks in plain language (see review-dimensions **Reader prose**) — never dump
   `loc_high+untested` / pack paths as the whole field.
+- **Agent LLM judgment:** run host-agent pass + `merge-llm-findings.py`; never ship duplicate
+  heuristic+LLM cards for one defect.
 - **Risk tier** locked from `20-risk-tier.json` (T0–T3 evidence floor) before deep dimensions
 - Critical hotspots (untested high fan-in) with graph cites
 - Sensitive / trust surfaces (or none)
@@ -96,3 +100,4 @@ Do **not** emit HTML「建议修复顺序」or「残留风险与假设」.
 - Privacy must stay pack/source-backed (bounded local heuristics) — no network legal lookups.
 - Resilience must stay pack/source-backed (bounded local heuristics) — no chaos/SLO probes.
 - Change / rollout must stay pack/source-backed (bounded local heuristics) — no ops/canary probes.
+- Agent LLM judgment must stay pack-scoped and **dedupe-merged** — no parallel duplicate finding lists.

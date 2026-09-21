@@ -1,6 +1,11 @@
-Stage 2 — VERIFY, GRADE, and FILTER.
+Stage 2 — VERIFY, GRADE, and FILTER (Agent LLM Detection dimension).
 
 {{SYSTEM_BASE}}
+
+Suspected findings below come from the **Agent LLM Detection** round (Stage1 /
+`agent_detect.md`). Your job is precision: keep real defects, drop clones of
+clear deterministic hits, grade/dismiss ambiguous SAST residue. Python then
+**dedupes and merges** your output with the deterministic dimension.
 
 ## Few-shot examples (format only)
 

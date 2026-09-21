@@ -45,18 +45,18 @@ AI can produce a green pull request quickly. Teams still have to check whether t
 | Test data | [`testdata-generation`](skills/testdata-generation/README.md) | What real IDs and preconditions make those cases runnable? | Backend-returned values written back into case preconditions |
 | Change impact | [`code-analyzer`](skills/code-analyzer/README.md) | What changed, who calls it, which entries are hit, and what is untested? | Symbol-graph evidence, regression scope, test gaps, and diagrams |
 | Exception RCA | [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.md) | What is the in-repo root cause of this stack / log / crash? | Gated English root-cause report on top of CodexQA CLI facts |
-| Code-risk scan | [`defect-detection`](skills/defect-detection/README.md) | What SAST / secrets / logic risks are in this diff, repo, or paste? | `report_scan.json` / `.md` / `.html` findings ordered P0–P3 |
-| Graph-evidence review | [`ai-code-reviewer`](skills/ai-code-reviewer/README.md) | What does the CodexQA pack say about impact, gaps, and dimension risks? | Evidence pack + bilingual `REVIEW-REPORT.html` |
+| Code-risk scan | [`defect-detection`](skills/defect-detection/README.md) | What SAST / secrets / logic risks are in this diff, repo, or paste? | `report_scan.json` / `.md` / `.html` findings ordered P0–P3 (deterministic ∪ Agent LLM Detection, deduped) |
+| Graph-evidence review | [`ai-code-reviewer`](skills/ai-code-reviewer/README.md) | What does the CodexQA pack say about impact, gaps, and dimension risks (incl. Agent LLM judgment)? | Evidence pack + bilingual `REVIEW-REPORT.html` |
 | Skill selection (meta) | [`skill-router`](skills/skill-router/README.md) | Which published skill should handle this request? | Bundled/live catalog match → on-demand install if needed → hand-off to that skill's `SKILL.md` |
 
 The skills use different inputs by design. The Agent can tell whether it should read documents, index a local checkout, clone a branch, write cases, or call a data backend. When the request does not name a skill, start with [`skill-router`](skills/skill-router/README.md) — it matches against live siblings plus a bundled catalog, can fetch the winner beside the router, and hands off.
 
 ## Why codexqa?
 
-- `defect-detection` combines deterministic SAST/lint/secrets/SCA with agent-inline semantic review into a P0–P3 `report_scan.*`.
+- `defect-detection` combines deterministic SAST/lint/secrets/SCA with **Agent LLM Detection** (host embedded model, Stage1/Stage2) then dedupe/merge into a P0–P3 `report_scan.*`.
 - `code-analyzer` uses a local symbol graph to trace changed symbols to callers, entries, and graph-backed test relationships.
 - `root-cause-diagnosis` turns exception evidence into a gated English RCA report on top of the same CodexQA CLI.
-- `ai-code-reviewer` collects a CodexQA evidence pack and renders bilingual `REVIEW-REPORT.html` from pack artifacts only.
+- `ai-code-reviewer` collects a CodexQA evidence pack, evaluates heuristic dimensions, then runs an **Agent LLM judgment** pass with dedupe/merge before rendering bilingual `REVIEW-REPORT.html`.
 - The document and test skills keep requirement review, case design, and data construction separate instead of asking one prompt to do everything.
 - [`skill-router`](skills/skill-router/README.md) auto-selects a worker from a bundled/live catalog and can install it on demand when only the router is present.
 - Each skill has a narrow input contract, evidence format, and stop conditions. The skills install into the Agent you already use; findings remain candidates for human review.
@@ -176,7 +176,7 @@ I am not sure which skill to use. Route this: review the repo against origin/mai
 Run ai-code-reviewer against origin/main and produce REVIEW-REPORT.html from the CodexQA pack.
 ```
 
-For SAST+agent code-risk scanning, use `defect-detection`. For CodexQA HTML review, use `ai-code-reviewer`.
+For SAST + Agent LLM Detection code-risk scanning, use `defect-detection`. For CodexQA HTML review (incl. Agent LLM judgment), use `ai-code-reviewer`.
 
 **Analyze requirements (`requirements-analyzer`)** — give documents, not a repo.
 
@@ -236,8 +236,8 @@ The workflows do not have the same public evidence maturity:
 | `skill-router` | `discover_skills.py --self-check` / `--with-catalog`; `ensure_skill.py --dry-run` / `--from-repo`; routing choice is model-judged; no published host-agent score |
 | `code-analyzer` | Published Skill contract, schemas, playbook, example diagram, and limitations; the separately distributed closed-source engine is not run by this repository's CI |
 | `root-cause-diagnosis` | Local CLI tests (parse, materialize, draft, smoke); uses `@openqa-cn/codexqa`; no published host-agent score; RCA narrative is model-judged |
-| `defect-detection` | Local Python pipeline/policy-fixture tests; optional SAST + closed-source CodexQA CLI; no published host-agent score; Stage1/Stage2 are model-judged |
-| `ai-code-reviewer` | Local `validate-skill.sh` / fixture validate+render smoke (Python 3.10+); live CodexQA index not run by repository CI; review prose is model-judged |
+| `defect-detection` | Local Python pipeline/policy-fixture tests; optional SAST + closed-source CodexQA CLI; no published host-agent score; Agent LLM Detection Stage1/Stage2 are model-judged |
+| `ai-code-reviewer` | Local `validate-skill.sh` / fixture validate+render smoke (Python 3.10+); live CodexQA index not run by repository CI; review prose and order-16 Agent LLM judgment are model-judged |
 | `requirements-analyzer` | Evaluation cases and parse/convert scripts; no recorded host-Agent score |
 | `testcase-generation` | Stage gate / close_stage / generate_case_report `--self-check` (Python 3.10+); no public Plan→Exec fixture or recorded Agent run |
 | `testdata-generation` | Packer, slot search, and local catalog mock; runtime depends on configured adapters and slots |

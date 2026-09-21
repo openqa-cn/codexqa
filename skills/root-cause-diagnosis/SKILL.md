@@ -6,7 +6,7 @@ description: >
   the user mentions root-cause-diagnosis, exception RCA, crash analysis, AI code
   diagnosis, stack diagnosis, 异常根因, 堆栈诊断, 崩溃分析, 异常诊断, or asks to
   turn an exception into a root-cause report. Not structure/impact analysis
-  (that is code-analyzer), not SAST+agent code-risk scan reports (that is
+  (that is code-analyzer), not SAST + Agent LLM Detection code-risk scan reports (that is
   defect-detection), and not CodexQA evidence-pack HTML review (that is ai-code-reviewer).
 license: Apache-2.0
 compatibility: >
@@ -33,8 +33,8 @@ CLI: `node {baseDir}/scripts/diagnose.ts` (`$SKILL_SCRIPT`). Task data: `{baseDi
 |---|---|
 | Symbol-graph change impact, callers, test gaps, entry risk | `code-analyzer` |
 | Exception RCA from stacks/logs on top of CLI analysis | **this skill** |
-| SAST + agent-inline code-risk scan → `report_scan.*` | `defect-detection` |
-| CodexQA evidence-pack → bilingual `REVIEW-REPORT.html` | `ai-code-reviewer` |
+| SAST + Agent LLM Detection → `report_scan.*` | `defect-detection` |
+| CodexQA evidence-pack + Agent LLM judgment → bilingual `REVIEW-REPORT.html` | `ai-code-reviewer` |
 
 ## Split of work
 

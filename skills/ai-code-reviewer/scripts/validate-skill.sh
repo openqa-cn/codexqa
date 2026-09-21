@@ -1989,6 +1989,122 @@ else
   fail "render should omit performance section when conclusion lacks performance"
 fi
 
+# HTML with llm_judgment section present
+RENDER_LJ="$TMP/render-llm-judgment"
+mkdir -p "$RENDER_LJ"
+cp "$ROOT/evals/fixtures/conclusion/with-llm-judgment.json" "$RENDER_LJ/review-conclusion.json"
+set +e
+RO="$("$ROOT/scripts/render-review-html.sh" --dir "$RENDER_LJ" 2>&1)"
+REC=$?
+set -e
+if [[ "$REC" -eq 0 ]] && grep -q '模型语义评审' "$RENDER_LJ/REVIEW-REPORT.html"; then
+  pass "render-review-html shows llm_judgment section when present"
+else
+  fail "render-review-html should render llm_judgment when conclusion has llm_judgment"
+  echo "$RO" >&2
+fi
+# with-llm-judgment has no performance → skip
+if ! grep -q '性能专项' "$RENDER_LJ/REVIEW-REPORT.html"; then
+  pass "render-review-html skips performance when llm_judgment-only conclusion"
+else
+  fail "render should omit performance when conclusion lacks performance"
+fi
+# optional llm_judgment absent on performance fixture → skip
+if ! grep -q '模型语义评审' "$RENDER_PF/REVIEW-REPORT.html"; then
+  pass "render-review-html skips llm_judgment when absent (legacy conclusion)"
+else
+  fail "render should omit llm_judgment section when conclusion lacks llm_judgment"
+fi
+
+# merge-llm-findings: duplicate dropped, novel kept
+if [[ -x "$ROOT/scripts/lib/merge-llm-findings.py" ]] || [[ -f "$ROOT/scripts/lib/merge-llm-findings.py" ]]; then
+  pass "merge-llm-findings.py present"
+else
+  fail "merge-llm-findings.py missing"
+fi
+MERGE_DIR="$TMP/merge-llm"
+mkdir -p "$MERGE_DIR"
+cat >"$MERGE_DIR/baseline.json" <<'EOF'
+{
+  "p0": [],
+  "p1": [
+    {
+      "title": "空 catch 吞异常",
+      "location": "src/PayService.java:42",
+      "category": "resilience",
+      "risk": "catch 块为空导致支付失败被静默吞掉",
+      "evidence": "14-resilience-signals.json"
+    }
+  ],
+  "p2": []
+}
+EOF
+cat >"$MERGE_DIR/candidates.json" <<'EOF'
+{
+  "p0": [],
+  "p1": [
+    {
+      "title": "静默吞掉支付异常",
+      "location": "src/PayService.java:42",
+      "category": "llm_judgment",
+      "risk": "空的 catch 把支付失败吞掉了",
+      "evidence": "LLM read PayService.java"
+    },
+    {
+      "title": "回调空指针未防护",
+      "location": "src/PayService.java:88",
+      "category": "correctness",
+      "risk": "amount 为空时解引用会 NPE",
+      "evidence": "LLM read PayService.java:88"
+    }
+  ],
+  "p2": []
+}
+EOF
+"$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
+  --baseline "$MERGE_DIR/baseline.json" \
+  --candidates "$MERGE_DIR/candidates.json" \
+  --out "$MERGE_DIR/merged.json" \
+  --report "$MERGE_DIR/22-llm-judgment.json" \
+  --mode pr >/dev/null
+if jq -e '
+  (.p1|length) == 2
+  and ([.p1[].title]|index("回调空指针未防护")) != null
+  and ([.p1[].title]|index("空 catch 吞异常")) != null
+  and ([.p1[].title]|index("静默吞掉支付异常")) == null
+' "$MERGE_DIR/merged.json" >/dev/null \
+  && jq -e '
+  .kind == "LlmJudgmentSignals"
+  and .kept_novel == 1
+  and .deduped_against_heuristics == 1
+  and .enriched_existing == 1
+' "$MERGE_DIR/22-llm-judgment.json" >/dev/null; then
+  pass "merge-llm-findings dedupes same-line resilience hit and keeps novel"
+else
+  fail "merge-llm-findings should drop duplicate and keep novel finding"
+  jq '{merged:.}' "$MERGE_DIR/merged.json" >&2
+  jq '.' "$MERGE_DIR/22-llm-judgment.json" >&2
+fi
+# enriched evidence on baseline duplicate target
+if jq -e '
+  [.p1[]|select(.title=="空 catch 吞异常")|.evidence]
+  | map(test("llm_judgment enrich")) | any
+' "$MERGE_DIR/merged.json" >/dev/null; then
+  pass "merge-llm-findings enriches duplicate baseline evidence"
+else
+  fail "merge-llm-findings should enrich matched baseline evidence"
+  jq '.p1' "$MERGE_DIR/merged.json" >&2
+fi
+
+if grep -q 'llm_judgment' "$ROOT/references/dimension-registry.md" \
+  && grep -q 'merge-llm-findings.py' "$ROOT/prompts/llm-judgment-pass.md" \
+  && grep -q 'llm-judgment-pass.md' "$ROOT/prompts/pr-diff-review.md" \
+  && grep -q 'llm_judgment' "$ROOT/templates/review-conclusion.json"; then
+  pass "llm_judgment dimension wired in registry/prompts/template"
+else
+  fail "llm_judgment dimension missing from registry/prompts/template"
+fi
+
 # derive schema v2 fields present (backward compatible arrays)
 if jq -e '.schema_version == 2
   and (.import_cross_layer|type)=="array"

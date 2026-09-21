@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Merge SAST + LLM findings with confirmed/sast_only/llm_judged; validate; emit report."""
+"""Merge deterministic + Agent LLM dimensions; dedupe; validate; emit report.
+
+Dimensions:
+  - deterministic — SAST / lint / secrets / SCA (`sast_only`)
+  - agent_llm     — host-agent embedded model Stage1/Stage2 (`llm_judged`)
+  - both          — same-locus compatible merge (`sast_confirmed`)
+"""
 import argparse, datetime, html, json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from lib import (VALID_SOURCES, append_sast_evidence, filter_valid_findings,
@@ -81,12 +87,26 @@ def _resolve_merged_severity(sast_f, llm_f):
     return ls
 
 
+def stamp_dimension(f):
+    """Annotate cross-dimension provenance for report consumers."""
+    f = dict(f)
+    src = f.get('source') or 'llm_judged'
+    if src == 'sast_confirmed':
+        f['dimension'] = 'deterministic+agent_llm'
+    elif src == 'sast_only':
+        f['dimension'] = 'deterministic'
+    else:
+        f['dimension'] = 'agent_llm'
+    return f
+
+
 def merge_sast_llm(sast, llm, line_window=3, dismissals=None):
     """
-    Design §5.5 (+ ambiguous residue grading):
-      SAST hit + LLM confirm (same file, compatible vuln class, line±window) → sast_confirmed
-      SAST hit + no compatible LLM → sast_only
-      LLM only → llm_judged
+    Cross-dimension merge + proximity dedupe:
+      Deterministic hit + Agent LLM confirm (same file, compatible class, line±window)
+        → sast_confirmed (dimension deterministic+agent_llm)
+      Deterministic only → sast_only (dimension deterministic)
+      Agent LLM only → llm_judged (dimension agent_llm)
 
     Ambiguous SAST residue (ambiguous=True):
       - Matching LLM finding → severity follows LLM (Stage2 may demote)
@@ -166,7 +186,7 @@ def merge_sast_llm(sast, llm, line_window=3, dismissals=None):
     for f in deduped:
         if f.get('source') not in VALID_SOURCES:
             f['source'] = 'llm_judged'
-    return deduped
+    return [stamp_dimension(f) for f in deduped]
 
 def render_md(report):
     L = ['# %s Scan Report' % report['scan_type'].capitalize(),
@@ -182,9 +202,12 @@ def render_md(report):
          '- summary: %s\n' % json.dumps(report['summary'], ensure_ascii=False)]
     cov = (report.get('summary') or {}).get('coverage') or {}
     if cov:
-        L.append('- deterministic-first coverage: det=%.1f%% llm=%.1f%% (target det≥70%%) sources=%s\n'
+        L.append('- deterministic-first coverage: det=%.1f%% llm=%.1f%% agent_dim=%.1f%% '
+                 '(target det≥70%%) sources=%s dimensions=%s\n'
                  % (cov.get('deterministic_share', 0), cov.get('llm_share', 0),
-                    json.dumps(cov.get('by_source') or {})))
+                    cov.get('agent_llm_dimension_share', 0),
+                    json.dumps(cov.get('by_source') or {}),
+                    json.dumps(cov.get('by_dimension') or {})))
         if cov.get('by_rule_id'):
             L.append('- by_rule_id: %s\n' % json.dumps(cov['by_rule_id'], ensure_ascii=False))
     if report.get('policy_pack'):
@@ -809,16 +832,26 @@ def main():
         by_rule[rid] = by_rule.get(rid, 0) + 1
     det_n = by_source['sast_only'] + by_source['sast_confirmed']
     total = max(1, len(findings))
+    by_dimension = {
+        'deterministic': sum(1 for f in findings if f.get('dimension') == 'deterministic'),
+        'agent_llm': sum(1 for f in findings if f.get('dimension') == 'agent_llm'),
+        'deterministic+agent_llm': sum(
+            1 for f in findings if f.get('dimension') == 'deterministic+agent_llm'),
+    }
     coverage = {
         'by_source': by_source,
+        'by_dimension': by_dimension,
         'by_rule_id': by_rule,
         'deterministic_share': round(100.0 * det_n / total, 1),
         'llm_share': round(100.0 * by_source['llm_judged'] / total, 1),
+        'agent_llm_dimension_share': round(
+            100.0 * (by_dimension['agent_llm'] + by_dimension['deterministic+agent_llm']) / total, 1),
         'target_deterministic_share_pct': 70,
         'sast_clear_count': meta.get('sast_clear_count'),
         'sast_ambiguous_count': meta.get('sast_ambiguous_count'),
         'code_metrics': meta.get('code_metrics'),
         'deterministic_first': bool(meta.get('deterministic_first')),
+        'dimensions': ['deterministic', 'agent_llm'],
     }
     summary = {'files_scanned': files_scanned, 'total': len(findings),
                'findings': sev_counts, **sev_counts, 'coverage': coverage,
