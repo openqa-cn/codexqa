@@ -118,9 +118,11 @@ npx skills add openqa-cn/codexqa --skill codexqa-skill-router
 
 Pick Cursor, Claude Code, Codex, or OpenClaw when prompted. No npm login.
 
-Zero-model install check:
+Zero-model install check (`examples/` is not copied by `npx skills add` — clone this repo first, then run from its root):
 
 ```bash
+git clone --depth 1 https://github.com/openqa-cn/codexqa.git
+cd codexqa
 node examples/checkout-boundary/verify.mjs
 ```
 
@@ -179,7 +181,7 @@ Not a hosted test cloud. Not a replacement for your test suite, SAST license, or
 
 ## Star this repo
 
-If a local skill pack like this is what you wanted instead of another QA platform, a star on [openqa-cn/codexqa](https://github.com/openqa-cn/codexqa/stargazers) is the quiet way to keep it discoverable. Issues and reproductions help more than stars when something is wrong.
+If a local skill pack like this is what you wanted instead of another QA platform, [⭐ Star](https://github.com/openqa-cn/codexqa) this repo (then click **Star** in the top-right). See [who starred](https://github.com/openqa-cn/codexqa/stargazers). Issues and reproductions help more than stars when something is wrong.
 
 ## Changelog
 
@@ -187,7 +189,7 @@ If a local skill pack like this is what you wanted instead of another QA platfor
 [![Last commit](https://img.shields.io/github/last-commit/openqa-cn/codexqa)](https://github.com/openqa-cn/codexqa/commits)
 [![Commit activity](https://img.shields.io/github/commit-activity/m/openqa-cn/codexqa)](https://github.com/openqa-cn/codexqa/graphs/commit-activity)
 
-**Unreleased** — `codexqa-*` skill names; architecture wiki; Agent LLM Detection / judgment; canonical docs at [openqa.cn](https://openqa.cn/?utm_source=github&utm_medium=readme&utm_campaign=oss-seo&utm_content=changelog).
+**0.3.0** — `codexqa-*` skill names; architecture wiki; Agent LLM Detection / judgment; canonical docs at [openqa.cn](https://openqa.cn/?utm_source=github&utm_medium=readme&utm_campaign=oss-seo&utm_content=changelog).
 
 **0.2.0** — first five published skills, sample reports, inventory-service 7/7 blind eval (one model, one run).
 
@@ -330,9 +332,11 @@ npx skills add openqa-cn/codexqa --skill codexqa-skill-router
 
 按提示选 Cursor、Claude Code、Codex 或 OpenClaw。不用登录 npm。
 
-不需要模型的安装验收：
+不需要模型的安装验收（`npx skills add` 只装 skill，不会带上 `examples/`；先克隆本仓库，再在仓库根目录执行）：
 
 ```bash
+git clone --depth 1 https://github.com/openqa-cn/codexqa.git
+cd codexqa
 node examples/checkout-boundary/verify.mjs
 ```
 
@@ -391,7 +395,7 @@ npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
 
 <h2 id="Star 这个仓库">Star 这个仓库</h2>
 
-如果你要的就是这种本地 skill 包、而不是再上一套 QA 平台，给 [openqa-cn/codexqa](https://github.com/openqa-cn/codexqa/stargazers) 一颗星，能让后来的人更容易搜到。出了问题，Issue 和最小复现比星更有用。
+如果你要的就是这种本地 skill 包、而不是再上一套 QA 平台，点 [⭐ Star](https://github.com/openqa-cn/codexqa) 打开仓库后，再点右上角 **Star**，能让后来的人更容易搜到。查看谁加过星：[openqa-cn/codexqa](https://github.com/openqa-cn/codexqa/stargazers)。出了问题，Issue 和最小复现比星更有用。
 
 <h2 id="更新日志">更新日志</h2>
 
@@ -399,7 +403,7 @@ npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
 [![Last commit](https://img.shields.io/github/last-commit/openqa-cn/codexqa)](https://github.com/openqa-cn/codexqa/commits)
 [![Commit activity](https://img.shields.io/github/commit-activity/m/openqa-cn/codexqa)](https://github.com/openqa-cn/codexqa/graphs/commit-activity)
 
-**Unreleased** — `codexqa-*` 命名；架构 Wiki；Agent LLM Detection / judgment；文档主站 [openqa.cn](https://openqa.cn/?utm_source=github&utm_medium=readme&utm_campaign=oss-seo&utm_content=changelog-zh)。
+**0.3.0** — `codexqa-*` 命名；架构 Wiki；Agent LLM Detection / judgment；文档主站 [openqa.cn](https://openqa.cn/?utm_source=github&utm_medium=readme&utm_campaign=oss-seo&utm_content=changelog-zh)。
 
 **0.2.0** — 首批五个已发布 skill、样例报告、inventory-service 7/7 盲测（一个模型、一次运行）。
 
