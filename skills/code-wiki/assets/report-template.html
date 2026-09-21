@@ -182,9 +182,10 @@
   .howto b { color: var(--term-fg); font-weight: 500; }
 
   #hero { margin: 8px 0 10px; }
-  #hero-total { font-size: 40px; font-weight: 700; line-height: 1; font-family: var(--mono); }
-  #hero-total .unit { color: var(--clay); font-size: 18px; margin-left: 6px; }
-  #hero-total .label { font-size: 14px; font-weight: 400; color: var(--dim); margin-left: 8px; font-family: var(--sans); }
+  #hero-total { display: flex; align-items: baseline; line-height: 1; }
+  #hero-total .num { font-size: 40px; font-weight: 700; font-family: var(--mono); }
+  #hero-total .unit { color: var(--clay); font-size: 18px; margin-left: 2px; font-weight: 700; }
+  #hero-total .label { font-size: 14px; font-weight: 400; color: var(--dim); margin-left: 6px; font-family: var(--sans); }
   #hero-split { color: var(--dim); margin-top: 8px; }
   #hero-split b { color: var(--term-fg); font-weight: 500; }
   #hero-split .ok { color: var(--green); }
@@ -362,7 +363,7 @@
     .wiki-shell { grid-template-columns: 1fr; }
     .sidebar { display: none; }
     .article { padding: 20px 16px 56px; }
-    #hero-total { font-size: 32px; }
+    #hero-total .num { font-size: 32px; }
     .bar { grid-template-columns: 14ch 1fr 5ch; gap: 8px; }
     .drill summary { grid-template-columns: 5ch 1fr; }
     .drill .body { padding-left: 8px; }
@@ -484,7 +485,7 @@
     </div>
 
     <div id="hero">
-      <div id="hero-total">— <span class="unit">个模块</span><span class="label">本报告收录</span></div>
+      <div id="hero-total"><span class="num">—</span><span class="unit">个模块</span><span class="label">本报告收录</span></div>
       <div id="hero-split">有依赖的模块走主阅读路径 · 无依赖的放在文末「独立模块」</div>
     </div>
 

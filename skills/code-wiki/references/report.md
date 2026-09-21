@@ -29,7 +29,7 @@
      - `#nav-peripheral` — 没有依赖的页；没有则保留「未列出」
      - `#layer-entry-list` 等四个列表与侧栏四层一致
    - `#data-flow` — 主链路怎么穿过各层，只写有依赖的边
-   - `#hero-total` / `#hero-split`（数字 = 本报告收录的模块数，单位写「个模块」）
+   - `#hero-total` / `#hero-split`（数字写在 `.num` 里，紧贴 `.unit`，不要在数字后加空格；单位写「个模块」）
    - `#howto` 可按本仓改一句，但必须告诉读者先看发现、再按路径读
    - `#overall-grid`（模块社区 / 本报告收录 / 独立模块 / 依赖关系）
    - `#takeaways` — **3～5** 条，每条 = 事实 + 对读者意味着什么。精确 markup：
