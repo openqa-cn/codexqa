@@ -13,18 +13,25 @@ const VIEW_H = 960;
 const SCALE = 2;
 const PORT = 9333;
 
+const LIGHT = `
+      document.documentElement.setAttribute('data-theme','light');
+      document.querySelectorAll('[data-set-theme]').forEach(function(b){
+        b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
+      });
+      window.scrollTo(0,0);
+    `;
+
 const shots = [
   {
     html: "defect-report.html",
     png: "defect-report.png",
     prepare: `
-      document.documentElement.setAttribute('data-theme','day');
-      var btn=document.getElementById('aidThemeToggle');
-      var label=document.getElementById('aidThemeLabel');
-      if(btn){ btn.setAttribute('aria-pressed','true'); btn.setAttribute('aria-label','切换为黑夜视图'); }
-      if(label) label.textContent='DAY';
-      var meta=document.querySelector('.meta-panel');
-      if(meta) meta.style.display='none';
+      document.documentElement.setAttribute('data-theme','light');
+      document.querySelectorAll('[data-set-theme]').forEach(function(b){
+        b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
+      });
+      var rules=document.querySelectorAll('.panel');
+      if(rules[0]) rules[0].style.display='none';
       window.scrollTo(0,0);
     `,
   },
@@ -33,15 +40,9 @@ const shots = [
     png: "review-report.png",
     prepare: `
       document.documentElement.setAttribute('data-theme','light');
-      var btn=document.getElementById('btn-theme');
-      if(btn){
-        btn.setAttribute('aria-pressed','false');
-        btn.setAttribute('data-zh','黑夜');
-        btn.setAttribute('data-en','Dark');
-        btn.textContent='黑夜';
-      }
-      var hero=document.querySelector('.hero');
-      if(hero) hero.style.display='none';
+      document.querySelectorAll('[data-set-theme]').forEach(function(b){
+        b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
+      });
       document.querySelectorAll('article.finding.empty').forEach(function(el){ el.style.display='none'; });
       document.querySelectorAll('section').forEach(function(sec){
         var h=sec.querySelector('h2');
@@ -57,22 +58,22 @@ const shots = [
   {
     html: "code-wiki.html",
     png: "code-wiki.png",
-    prepare: `window.scrollTo(0,0);`,
+    prepare: LIGHT,
   },
   {
     html: "code-analyzer.html",
     png: "code-analyzer.png",
-    prepare: `window.scrollTo(0,0);`,
+    prepare: LIGHT,
   },
   {
     html: "rootcause.html",
     png: "rootcause.png",
-    prepare: `window.scrollTo(0,0);`,
+    prepare: LIGHT,
   },
   {
     html: "ra-register.html",
     png: "ra-register.png",
-    prepare: `window.scrollTo(0,0);`,
+    prepare: LIGHT,
   },
   {
     html: "testcase-report.html",
@@ -90,12 +91,12 @@ const shots = [
   {
     html: "testdata-writeback.html",
     png: "testdata-writeback.png",
-    prepare: `window.scrollTo(0,0);`,
+    prepare: LIGHT,
   },
   {
     html: "testcase-sample.html",
     png: "testcase-sample.png",
-    prepare: `window.scrollTo(0,0);`,
+    prepare: LIGHT,
   },
 ];
 

@@ -72,8 +72,9 @@ Change review, callers, test gaps, and stack traces belong to `codexqa-code-anal
 ## Report contract
 
 Deliver a **self-contained HTML knowledge-graph report** in DeepWiki
-wiki layout with the original dark Claude chrome (`#1a1918`, clay
-`#D97757`, JetBrains Mono, left sidebar tree, article, on-this-page TOC).
+wiki layout (left sidebar tree, article, on-this-page TOC) using the same
+daytime HTML chrome as `codexqa-testcase-generator` (light default, 中文/EN
+and 白天/黑夜 toggles, green accent `#0f6b4c`).
 Copy [assets/report-template.html](assets/report-template.html)
 into the working directory, then fill slots with Edit (do not rewrite CSS).
 **Default the filled report to Simplified Chinese** (headings, stats, findings,
@@ -105,7 +106,7 @@ Reject the whole report and rewrite if any of these hold:
 - Invented a module, group, or edge that is not in `communities` / `deps` / `cross_community` / visualization `candidates`
 - Put an isolated module (empty `deps`) into a functional layer
 - Ran `codexqa wiki` without `--no-llm`, or ran `wiki embed` / `query wiki`
-- Mermaid is missing the Claude paper `init`, the three `classDef` lines, or a core module that should be `risk` has no `class ... risk`
+- Mermaid is missing the paper `init`, the three `classDef` lines, or a core module that should be `risk` has no `class ... risk`
 - Architecture `subgraph` titles are package names (Renderer / Compiler / Shared) instead of **Entry → Application → Domain → Storage**
 - HTML is missing the bundled wiki chrome (sidebar + article + TOC), or was written from scratch instead of copying the template
 - Report was delivered as Markdown-only / chat-only with no HTML file

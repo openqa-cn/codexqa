@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from lib import (VALID_SOURCES, append_sast_evidence, filter_valid_findings,
                  findings_merge_compatible, findings_same_bucket, generate_finding_id,
                  load_config, normalize_finding)
+from html_chrome import boot_script, chrome_css, chrome_js, prefs_html
 
 SEV_ICON = {'P0': '[P0]', 'P1': '[P1]', 'P2': '[P2]', 'P3': '[P3]'}
 SEV_RANK = {'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3}
@@ -270,40 +271,38 @@ def _source_class(source):
 
 
 def _render_finding_card(finding, index):
-    sev = finding.get('severity', 'P3').lower()
+    sev = (finding.get('severity') or 'P3')
+    sev_l = sev.lower()
     conf = int(round(float(finding.get('confidence', 0)) * 100))
     rid = finding.get('rule_id') or '—'
     fid = finding.get('id') or '—'
-    return '''<article class="finding sev-%s" style="--i:%d">
-  <div class="finding-accent"></div>
-  <header class="finding-head">
-    <div class="finding-top">
-      <code class="loc">%s:%s</code>
-      <span class="tag %s">%s</span>
-      <span class="tag tag-rule">%s</span>
-      <span class="tag tag-conf">%d%%</span>
-      <span class="tag tag-id">%s</span>
-    </div>
-    <h3 class="finding-title">%s</h3>
-    <span class="finding-cat">%s</span>
-  </header>
-  <div class="finding-body">
-    <div class="field field-evidence">
-      <span class="field-label">Evidence</span>
-      <p>%s</p>
-    </div>
-    <div class="field field-fix">
-      <span class="field-label">Remediation</span>
-      <p>%s</p>
-    </div>
+    return '''<article class="case open" id="finding-%d">
+  <div class="case-head">
+    <span class="badge pri %s">%s</span>
+    <span class="badge type">%s</span>
+    <span class="badge type">%s</span>
+    <h3>%s</h3>
+    <span class="meta-id">%s:%s · %d%% · %s</span>
+  </div>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt data-zh="分类" data-en="Category">分类</dt><dd>%s</dd></div>
+      <div><dt>ID</dt><dd><code>%s</code></dd></div>
+    </dl>
+    <h4 data-zh="证据" data-en="Evidence">证据</h4>
+    <div class="block"><p>%s</p></div>
+    <h4 data-zh="修复建议" data-en="Remediation">修复建议</h4>
+    <div class="block"><p>%s</p></div>
   </div>
 </article>''' % (
-        sev, index,
-        _h(finding.get('file', '?')), _h(finding.get('line', '?')),
-        _source_class(finding.get('source')), _h(_source_label(finding.get('source'))),
-        _h(rid), conf, _h(fid),
+        index, sev_l, _h(sev),
+        _h(_source_label(finding.get('source'))),
+        _h(rid),
         _h(finding.get('title', '')),
+        _h(finding.get('file', '?')), _h(finding.get('line', '?')),
+        conf, _h(fid),
         _h(finding.get('category', '')),
+        _h(fid),
         _h(finding.get('evidence', '')),
         _h(finding.get('suggestion', '')),
     )
@@ -317,21 +316,19 @@ def _render_severity_section(sev, findings, start_index):
     for f in findings:
         cards.append(_render_finding_card(f, idx))
         idx += 1
-    return '''<section class="severity-block sev-%s" id="sev-%s">
-  <div class="severity-head">
-    <span class="severity-badge">%s</span>
-    <h2 class="severity-title">%s Findings</h2>
-    <span class="severity-count">%d</span>
+    return '''<section class="panel" id="sev-%s">
+  <div class="panel-head">
+    <h2><span class="badge pri %s">%s</span> <span data-zh="发现项" data-en="Findings">发现项</span> <span class="count">%d</span></h2>
+    <p class="desc" data-zh="本级别的典型检测结果" data-en="Typical findings at this severity">本级别的典型检测结果</p>
   </div>
-  <div class="findings-grid">%s</div>
+  %s
 </section>''' % (
-        sev.lower(), sev.lower(),
-        _h(sev), _h(sev), len(findings), '\n'.join(cards),
+        sev.lower(), sev.lower(), _h(sev), len(findings), '\n'.join(cards),
     ), idx
 
 
 def render_html_report(report):
-    """Render a premium standalone HTML report from structured report dict."""
+    """Render a standalone HTML report using the testcase-generator chrome."""
     summary = report.get('summary') or {}
     sev_counts = summary.get('findings') or {
         k: summary.get(k, 0) for k in ('P0', 'P1', 'P2', 'P3')
@@ -345,20 +342,20 @@ def render_html_report(report):
     title = '%s Scan Report' % scan_type
     total = summary.get('total') or sum(sev_counts.get(k, 0) for k in ('P0', 'P1', 'P2', 'P3'))
 
-    stat_pills = ''.join(
-        '<a class="stat-pill sev-%s" href="#sev-%s"><span class="stat-label">%s</span>'
-        '<span class="stat-num">%d</span></a>' % (s.lower(), s.lower(), s, sev_counts.get(s, 0))
+    chips = ''.join(
+        "<a class='stat-chip %s' href='#sev-%s'><span class='n'>%d</span><span class='l'>%s</span></a>"
+        % (s.lower(), s.lower(), sev_counts.get(s, 0), s)
         for s in ('P0', 'P1', 'P2', 'P3'))
 
+    max_rule = max(by_rule.values()) if by_rule else 1
     rule_rows = ''.join(
-        '<div class="rule-row"><span class="rule-id">%s</span><span class="rule-bar-wrap">'
-        '<span class="rule-bar" style="width:%.0f%%"></span></span><span class="rule-n">%d</span></div>'
-        % (_h(rid), 100 * n / max(1, max(by_rule.values())), n)
+        "<div class='bar-row'><span>%s</span><div class='bar'><i style='width:%.0f%%'></i></div><b>%d</b></div>"
+        % (_h(rid), 100 * n / max_rule, n)
         for rid, n in sorted(by_rule.items(), key=lambda x: -x[1])[:8]
-    ) if by_rule else '<p class="muted">—</p>'
+    ) if by_rule else "<p class='muted'>—</p>"
 
     source_rows = ''.join(
-        '<div class="source-chip"><span class="source-n">%d</span><span class="source-l">%s</span></div>'
+        "<div class='stat-chip'><span class='n'>%d</span><span class='l'>%s</span></div>"
         % (by_source.get(k, 0), _h(k.replace('_', ' ')))
         for k in ('sast_confirmed', 'sast_only', 'llm_judged')
     )
@@ -374,346 +371,86 @@ def render_html_report(report):
 
     alerts = []
     if ts.get('missing'):
-        alerts.append('<div class="alert alert-warn">Scanners missing: %s</div>' % _h(', '.join(ts['missing'])))
+        alerts.append('<div class="alert alert-warn"><span data-zh="缺失扫描器：" data-en="Scanners missing: ">缺失扫描器：</span>%s</div>' % _h(', '.join(ts['missing'])))
     if report.get('budget_note'):
         alerts.append('<div class="alert alert-warn">%s</div>' % _h(report['budget_note']))
     if report.get('validation_dropped'):
-        alerts.append('<div class="alert alert-drop">Dropped %d findings failing schema/file:line checks.</div>'
+        alerts.append('<div class="alert alert-drop"><span data-zh="已丢弃 " data-en="Dropped ">已丢弃 </span>%d<span data-zh=" 条未通过 schema/file:line 校验的发现。" data-en=" findings failing schema/file:line checks."> 条未通过 schema/file:line 校验的发现。</span></div>'
                       % len(report['validation_dropped']))
 
     extra_sections = []
     if report.get('module_summaries'):
-        items = ''.join('<div class="module-card"><h4>%s</h4><p>%s</p></div>'
+        items = ''.join("<article class='case open'><div class='case-head'><h3>%s</h3></div><div class='case-body'><div class='block'><p>%s</p></div></div></article>"
                         % (_h(m.get('module')), _h(m.get('summary', '')))
                         for m in report['module_summaries'][:12])
-        extra_sections.append('<section class="extra-block"><h2>Module Risk</h2>%s</section>' % items)
+        extra_sections.append('<section class="panel"><div class="panel-head"><h2 data-zh="模块风险" data-en="Module risk">模块风险</h2></div>%s</section>' % items)
     if report.get('heat_map'):
-        rows = ''.join('<div class="heat-row"><code>%s</code><span class="heat-score">%.1f</span></div>'
-                       % (_h(h['path']), h.get('hot_score', 0))
+        rows = ''.join("<tr><td><code>%s</code></td><td>%s</td></tr>"
+                       % (_h(h['path']), _h('%.1f' % h.get('hot_score', 0)))
                        for h in report['heat_map'][:20])
-        extra_sections.append('<section class="extra-block"><h2>Hot Files</h2>%s</section>' % rows)
+        extra_sections.append('<section class="panel"><div class="panel-head"><h2 data-zh="热点文件" data-en="Hot files">热点文件</h2></div><table class="steps"><thead><tr><th data-zh="路径" data-en="Path">路径</th><th>score</th></tr></thead><tbody>%s</tbody></table></section>' % rows)
 
-    return '''<!DOCTYPE html>
-<html lang="zh-CN" data-theme="night">
+    det = cov.get('deterministic_share', 0) or 0
+    llm = cov.get('llm_share', 0) or 0
+    tooling = 'Degraded' if ts.get('degraded') else 'Ready: %s' % _h(', '.join(ts.get('ready') or []))
+    css = chrome_css()
+    js = chrome_js()
+    return f'''<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" data-lang="zh" data-store="aid-report">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>%s</title>
-<script>
-(function(){
-  try{
-    var q=new URLSearchParams(location.search).get('theme');
-    var t=(q==='day'||q==='night')?q:localStorage.getItem('aid-report-theme');
-    if(t!=='day'&&t!=='night') t='night';
-    document.documentElement.setAttribute('data-theme',t);
-  }catch(e){}
-})();
-</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Karla:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title data-zh="{_h(title)}" data-en="{_h(title)}">{_h(title)}</title>
+{boot_script()}
 <style>
-  :root,html[data-theme="night"] {
-    --bg:#0c0c0f; --bg2:#12121a; --surface:#18181f; --surface2:#1f1f28;
-    --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.12);
-    --text:#ece8df; --muted:#8b8780; --dim:#5c5954;
-    --p0:#ff4d4d; --p0-glow:rgba(255,77,77,.25);
-    --p1:#ff9f43; --p1-glow:rgba(255,159,67,.2);
-    --p2:#54a0ff; --p2-glow:rgba(84,160,255,.18);
-    --p3:#8395a7; --p3-glow:rgba(131,149,167,.15);
-    --accent:#c9a962; --accent-dim:rgba(201,169,98,.12);
-    --confirmed:#2ecc71; --sast:#54a0ff; --llm:#b388ff;
-    --wash-gold:rgba(201,169,98,.08); --wash-alert:rgba(255,77,77,.06);
-    --grid:rgba(255,255,255,.025); --finding-shadow:0 8px 32px rgba(0,0,0,.35);
-    --alert-drop-fg:#ff8080; --toggle-shadow:0 10px 32px rgba(0,0,0,.4);
-    --thumb:linear-gradient(180deg,#ead7a4,#c9a962);
-    --radius:14px; --font-display:"Fraunces",Georgia,serif;
-    --font-body:"Karla",system-ui,sans-serif; --font-mono:"IBM Plex Mono",monospace;
-  }
-  html[data-theme="day"] {
-    --bg:#e7dcc6; --bg2:#d9cdb4; --surface:#f6edd8; --surface2:#efe3c8;
-    --border:rgba(62,46,18,.14); --border2:rgba(62,46,18,.26);
-    --text:#1a150e; --muted:#6a5d45; --dim:#8d8068;
-    --p0:#b42318; --p0-glow:rgba(180,35,24,.14);
-    --p1:#a34b0a; --p1-glow:rgba(163,75,10,.14);
-    --p2:#1558b0; --p2-glow:rgba(21,88,176,.12);
-    --p3:#4d5a66; --p3-glow:rgba(77,90,102,.12);
-    --accent:#7a5810; --accent-dim:rgba(122,88,16,.16);
-    --confirmed:#176c3a; --sast:#1558b0; --llm:#5c32b0;
-    --wash-gold:rgba(201,169,98,.32); --wash-alert:rgba(180,35,24,.07);
-    --grid:rgba(62,46,18,.07); --finding-shadow:0 12px 28px rgba(72,48,12,.1);
-    --alert-drop-fg:#9b1c12; --toggle-shadow:0 10px 24px rgba(72,48,12,.14);
-    --thumb:linear-gradient(180deg,#f4d27a,#b8861c);
-  }
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth;color-scheme:dark}
-  html[data-theme="day"]{color-scheme:light}
-  body{font-family:var(--font-body);background:var(--bg);color:var(--text);
-       line-height:1.6;-webkit-font-smoothing:antialiased}
-  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
-    background:
-      radial-gradient(ellipse 80%% 50%% at 15%% -10%%,var(--wash-gold),transparent 55%%),
-      radial-gradient(ellipse 60%% 40%% at 90%% 5%%,var(--wash-alert),transparent 50%%),
-      linear-gradient(var(--grid) 1px,transparent 1px),
-      linear-gradient(90deg,var(--grid) 1px,transparent 1px);
-    background-size:auto,auto,48px 48px,48px 48px}
-  html.theme-ready body,html.theme-ready .stat-pill,html.theme-ready .meta-card,
-  html.theme-ready .finding,html.theme-ready .source-chip,html.theme-ready .loc,
-  html.theme-ready .watch-toggle,html.theme-ready .module-card,html.theme-ready .heat-row,
-  html.theme-ready .alert,html.theme-ready .hero-sub code{
-    transition:background-color .45s ease,color .45s ease,border-color .45s ease,box-shadow .45s ease}
-  .page{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:3rem 1.5rem 4rem}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
-  @keyframes shimmer{0%%,100%%{opacity:.4}50%%{opacity:1}}
-  .hero{animation:fadeUp .7s ease both;margin-bottom:2.5rem;padding-right:9.5rem}
-  @media(max-width:640px){.hero{padding-right:3.5rem}}
-  .hero-eyebrow{font-size:.72rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;
-    color:var(--accent);margin-bottom:.75rem;display:flex;align-items:center;gap:.6rem}
-  .hero-eyebrow::before{content:"";width:28px;height:1px;background:var(--accent);animation:shimmer 2.5s ease infinite}
-  .hero h1{font-family:var(--font-display);font-size:clamp(2rem,5vw,3rem);font-weight:700;
-    letter-spacing:-.02em;line-height:1.1;margin-bottom:.5rem}
-  .hero-sub{color:var(--muted);font-size:.95rem}
-  .hero-sub code{font-family:var(--font-mono);font-size:.82rem;background:var(--surface2);
-    padding:.15em .5em;border-radius:6px;border:1px solid var(--border)}
-  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin:2rem 0;
-    animation:fadeUp .7s .1s ease both}
-  @media(max-width:640px){.stats-row{grid-template-columns:repeat(2,1fr)}}
-  .stat-pill{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:1rem .75rem;
-    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-    text-decoration:none;color:inherit;transition:transform .2s,border-color .2s,box-shadow .2s}
-  .stat-pill:hover{transform:translateY(-2px);border-color:var(--border2)}
-  .stat-pill.sev-p0:hover{box-shadow:0 0 24px var(--p0-glow);border-color:var(--p0)}
-  .stat-pill.sev-p1:hover{box-shadow:0 0 24px var(--p1-glow);border-color:var(--p1)}
-  .stat-pill.sev-p2:hover{box-shadow:0 0 24px var(--p2-glow);border-color:var(--p2)}
-  .stat-pill.sev-p3:hover{box-shadow:0 0 24px var(--p3-glow);border-color:var(--p3)}
-  .stat-label{font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-  .stat-num{font-family:var(--font-display);font-size:2rem;font-weight:700;line-height:1}
-  .stat-pill.sev-p0 .stat-num{color:var(--p0)}
-  .stat-pill.sev-p1 .stat-num{color:var(--p1)}
-  .stat-pill.sev-p2 .stat-num{color:var(--p2)}
-  .stat-pill.sev-p3 .stat-num{color:var(--p3)}
-  .meta-panel{display:grid;grid-template-columns:1.2fr 1fr;gap:1rem;margin-bottom:2.5rem;
-    animation:fadeUp .7s .18s ease both}
-  @media(max-width:768px){.meta-panel{grid-template-columns:1fr}}
-  .meta-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.4rem}
-  .meta-card h3{font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
-    color:var(--accent);margin-bottom:1rem}
-  .meta-kv{display:grid;gap:.55rem;font-size:.88rem}
-  .meta-kv dt{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em}
-  .meta-kv dd{color:var(--text);margin-bottom:.35rem}
-  .meta-kv dd code{font-family:var(--font-mono);font-size:.78rem;color:var(--accent)}
-  .coverage-bar{display:flex;height:6px;border-radius:99px;overflow:hidden;background:var(--surface2);margin:.6rem 0}
-  .coverage-bar span{height:100%%}
-  .coverage-bar .det{background:var(--confirmed)}
-  .coverage-bar .llm{background:var(--llm)}
-  .source-chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem}
-  .source-chip{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-    padding:.35rem .65rem;font-size:.78rem;display:flex;gap:.4rem;align-items:center}
-  .source-n{font-weight:600;color:var(--text)}
-  .source-l{color:var(--muted);text-transform:capitalize}
-  .rule-row{display:grid;grid-template-columns:72px 1fr 28px;gap:.5rem;align-items:center;
-    font-size:.82rem;margin-bottom:.4rem}
-  .rule-id{font-family:var(--font-mono);font-size:.72rem;color:var(--muted)}
-  .rule-bar-wrap{height:4px;background:var(--surface2);border-radius:99px;overflow:hidden}
-  .rule-bar{display:block;height:100%%;background:linear-gradient(90deg,var(--accent),var(--p1));border-radius:99px}
-  .rule-n{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
-  .severity-block{margin-bottom:2.5rem;animation:fadeUp .6s calc(.25s + var(--i,0)*.05s) ease both}
-  .severity-head{display:flex;align-items:center;gap:.85rem;margin-bottom:1.25rem;padding-bottom:.75rem;
-    border-bottom:1px solid var(--border)}
-  .severity-badge{font-family:var(--font-mono);font-size:.72rem;font-weight:500;padding:.3em .75em;
-    border-radius:6px;letter-spacing:.06em}
-  .sev-p0 .severity-badge{background:var(--p0-glow);color:var(--p0);border:1px solid rgba(255,77,77,.35)}
-  .sev-p1 .severity-badge{background:var(--p1-glow);color:var(--p1);border:1px solid rgba(255,159,67,.35)}
-  .sev-p2 .severity-badge{background:var(--p2-glow);color:var(--p2);border:1px solid rgba(84,160,255,.35)}
-  .sev-p3 .severity-badge{background:var(--p3-glow);color:var(--p3);border:1px solid rgba(131,149,167,.35)}
-  .severity-title{font-family:var(--font-display);font-size:1.35rem;font-weight:500;flex:1}
-  .severity-count{font-family:var(--font-display);font-size:1.5rem;color:var(--muted);font-weight:500}
-  .findings-grid{display:flex;flex-direction:column;gap:1rem}
-  .finding{position:relative;background:var(--surface);border:1px solid var(--border);
-    border-radius:var(--radius);overflow:hidden;
-    animation:fadeUp .5s calc(.08s * var(--i,0)) ease both;
-    transition:border-color .25s,box-shadow .25s}
-  .finding:hover{border-color:var(--border2);box-shadow:var(--finding-shadow)}
-  .finding-accent{position:absolute;left:0;top:0;bottom:0;width:3px}
-  .sev-p0 .finding-accent{background:linear-gradient(180deg,var(--p0),transparent)}
-  .sev-p1 .finding-accent{background:linear-gradient(180deg,var(--p1),transparent)}
-  .sev-p2 .finding-accent{background:linear-gradient(180deg,var(--p2),transparent)}
-  .sev-p3 .finding-accent{background:linear-gradient(180deg,var(--p3),transparent)}
-  .finding-head{padding:1.1rem 1.25rem 1rem 1.4rem}
-  .finding-top{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-bottom:.65rem}
-  .loc{font-family:var(--font-mono);font-size:.78rem;background:var(--surface2);padding:.2em .55em;
-    border-radius:6px;border:1px solid var(--border);color:var(--accent)}
-  .tag{font-size:.68rem;font-weight:600;padding:.22em .55em;border-radius:5px;
-    letter-spacing:.04em;text-transform:uppercase}
-  .tag-confirmed{background:rgba(46,204,113,.12);color:var(--confirmed);border:1px solid rgba(46,204,113,.3)}
-  .tag-sast{background:rgba(84,160,255,.12);color:var(--sast);border:1px solid rgba(84,160,255,.3)}
-  .tag-llm{background:rgba(179,136,255,.12);color:var(--llm);border:1px solid rgba(179,136,255,.3)}
-  .tag-rule,.tag-conf,.tag-id{background:var(--surface2);color:var(--muted);border:1px solid var(--border);
-    font-family:var(--font-mono);font-size:.65rem;text-transform:none;letter-spacing:0}
-  .finding-title{font-family:var(--font-display);font-size:1.08rem;font-weight:500;line-height:1.35;
-    margin-bottom:.35rem}
-  .finding-cat{font-size:.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
-  .finding-body{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--border)}
-  @media(max-width:720px){.finding-body{grid-template-columns:1fr}}
-  .field{padding:1rem 1.25rem 1.1rem 1.4rem}
-  .field-evidence{border-right:1px solid var(--border)}
-  @media(max-width:720px){.field-evidence{border-right:none;border-bottom:1px solid var(--border)}}
-  .field-label{display:block;font-size:.65rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
-    color:var(--muted);margin-bottom:.45rem}
-  .field-evidence .field-label{color:var(--p1)}
-  .field-fix .field-label{color:var(--confirmed)}
-  .field p{font-size:.86rem;color:var(--text);line-height:1.55;word-break:break-word}
-  .alert{padding:.85rem 1.1rem;border-radius:10px;font-size:.86rem;margin-bottom:1.25rem;
-    animation:fadeUp .5s ease both}
-  .alert-warn{background:rgba(255,159,67,.1);border:1px solid rgba(255,159,67,.3);color:var(--p1)}
-  .alert-drop{background:rgba(255,77,77,.08);border:1px solid rgba(255,77,77,.25);color:var(--alert-drop-fg)}
-  .extra-block{margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
-  .extra-block h2{font-family:var(--font-display);font-size:1.2rem;margin-bottom:1rem;color:var(--accent)}
-  .module-card,.heat-row{background:var(--surface);border:1px solid var(--border);border-radius:10px;
-    padding:.85rem 1rem;margin-bottom:.5rem;font-size:.86rem}
-  .heat-row{display:flex;justify-content:space-between;align-items:center}
-  .heat-score{font-family:var(--font-mono);color:var(--p1)}
-  .footer{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border);
-    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem;
-    font-size:.78rem;color:var(--dim)}
-  .footer-brand{font-family:var(--font-mono);letter-spacing:.06em}
-  .footer-meta{color:var(--muted)}
-  .muted{color:var(--muted);font-size:.85rem}
-  .total-badge{display:inline-flex;align-items:center;gap:.4rem;margin-left:.5rem;
-    font-size:.82rem;color:var(--muted);font-weight:400}
-  .total-badge strong{color:var(--text);font-weight:600}
-  .watch-toggle{position:fixed;top:1.15rem;right:1.15rem;z-index:30;display:inline-flex;
-    align-items:center;gap:.65rem;padding:.32rem .75rem .32rem .32rem;border-radius:999px;
-    border:1px solid var(--accent);background:var(--surface);
-    color:var(--text);cursor:pointer;font-family:var(--font-mono);box-shadow:var(--toggle-shadow);
-    appearance:none;-webkit-appearance:none}
-  .watch-toggle:hover{border-color:var(--accent)}
-  .watch-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-  .watch-rail{position:relative;display:flex;align-items:center;justify-content:space-between;
-    width:64px;height:28px;padding:0 7px;border-radius:99px;background:var(--bg2);
-    border:1px solid var(--border);box-shadow:inset 0 0 0 1px var(--accent-dim)}
-  .watch-icon-sun,.watch-icon-moon{position:relative;z-index:1;width:10px;height:10px;border-radius:50%%}
-  .watch-icon-sun{background:#e8b84a;box-shadow:0 0 0 1.5px #e8b84a,0 0 8px rgba(232,184,74,.55)}
-  .watch-icon-moon{background:#d8d4cc;box-shadow:inset -3px -1px 0 0 #6b675f}
-  .watch-thumb{position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%%;
-    background:var(--thumb);box-shadow:0 2px 6px rgba(0,0,0,.35);z-index:2;
-    transform:translateX(34px);transition:transform .4s cubic-bezier(.4,.15,.2,1)}
-  html[data-theme="day"] .watch-thumb{transform:translateX(0)}
-  .watch-meta{display:flex;flex-direction:column;align-items:flex-start;line-height:1.1;min-width:3.2rem}
-  .watch-mode{font-size:.68rem;font-weight:500;letter-spacing:.14em;color:var(--accent)}
-  .watch-hint{font-size:.58rem;letter-spacing:.16em;color:var(--dim);margin-top:.15rem}
-  @media(max-width:640px){.watch-hint{display:none}.watch-toggle{padding:.3rem .55rem .3rem .3rem}}
-  @media(prefers-reduced-motion:reduce){
-    html{scroll-behavior:auto}
-    .watch-thumb,html.theme-ready body,html.theme-ready .stat-pill,html.theme-ready .meta-card,
-    html.theme-ready .finding,html.theme-ready .source-chip,html.theme-ready .loc,
-    html.theme-ready .watch-toggle,html.theme-ready .module-card,html.theme-ready .heat-row,
-    html.theme-ready .alert,html.theme-ready .hero-sub code{transition:none}
-  }
+{css}
 </style>
 </head>
 <body>
-<div class="page">
-  <button type="button" class="watch-toggle" id="aidThemeToggle" aria-pressed="false" aria-label="切换为白天视图">
-    <span class="watch-rail" aria-hidden="true">
-      <span class="watch-icon-sun"></span>
-      <span class="watch-thumb"></span>
-      <span class="watch-icon-moon"></span>
-    </span>
-    <span class="watch-meta">
-      <span class="watch-mode" id="aidThemeLabel">NIGHT</span>
-      <span class="watch-hint">VIEW</span>
-    </span>
-  </button>
+{prefs_html()}
+<div class="wrap">
   <header class="hero">
-    <p class="hero-eyebrow">AI Defect Detection</p>
-    <h1>%s Report<span class="total-badge"><strong>%d</strong> findings</span></h1>
-    <p class="hero-sub">Target <code>%s</code> · Generated %s</p>
-  </header>
-
-  <nav class="stats-row" aria-label="Severity summary">%s</nav>
-
-  <div class="meta-panel">
-    <div class="meta-card">
-      <h3>Scan Coverage</h3>
-      <dl class="meta-kv">
-        <dt>Files Scanned</dt><dd>%s</dd>
-        <dt>Deterministic Share</dt><dd>%.1f%% <span class="muted">(target ≥70%%)</span></dd>
-        <dt>LLM Share</dt><dd>%.1f%%</dd>
-      </dl>
-      <div class="coverage-bar" title="Deterministic vs LLM">
-        <span class="det" style="width:%.1f%%"></span><span class="llm" style="width:%.1f%%"></span>
+    <p class="kicker">codexqa-defect-analyzer · {_h(scan_type)}</p>
+    <h1><span data-zh="缺陷扫描报告" data-en="{_h(title)}">缺陷扫描报告</span>
+      <span class="total-pill">{total} <span class="unit-zh">条</span><span class="unit-en"> findings</span></span>
+    </h1>
+    <p class="sub"><span data-zh="目标" data-en="Target">目标</span> <code>{_h(report.get('target', '—'))}</code></p>
+    <div class="meta-row">
+      <span data-zh="生成时间" data-en="Generated">生成时间</span>: <code>{_h(report.get('generated_at', '—'))}</code>
+      <span data-zh="扫描文件" data-en="Files scanned">扫描文件</span>: {_h(summary.get('files_scanned', '—'))}
+      <span>Policy: <code>{_h(pp.get('pack_id', '—'))}</code> v{_h(pp.get('version', '—'))}</span>
+      <span>Tooling: {tooling}</span>
+    </div>
+    <div class="stats">
+      <div class="card">
+        <h2 data-zh="按严重级别" data-en="By severity">按严重级别</h2>
+        <div class="chip-row">{chips}</div>
       </div>
-      <div class="source-chips">%s</div>
+      <div class="card">
+        <h2 data-zh="扫描覆盖" data-en="Scan coverage">扫描覆盖</h2>
+        <div class="bar-row"><span>DET</span><div class="bar"><i style="width:{det:.1f}%"></i></div><b>{det:.0f}%</b></div>
+        <div class="bar-row"><span>LLM</span><div class="bar"><i style="width:{llm:.1f}%"></i></div><b>{llm:.0f}%</b></div>
+        <div class="chip-row" style="margin-top:10px">{source_rows}</div>
+      </div>
     </div>
-    <div class="meta-card">
-      <h3>Policy &amp; Rules</h3>
-      <dl class="meta-kv">
-        <dt>Policy Pack</dt><dd><code>%s</code> v%s</dd>
-        <dt>Active Rules</dt><dd>%s</dd>
-        <dt>Tooling</dt><dd>%s</dd>
-      </dl>
-      %s
+  </header>
+  {''.join(alerts)}
+  <section class="panel">
+    <div class="panel-head">
+      <h2 data-zh="规则命中" data-en="Rule hits">规则命中</h2>
+      <p class="desc">Active rules: {_h(pp.get('rule_count_active', '—'))}</p>
     </div>
-  </div>
-
-  %s
-
-  %s
-
-  <footer class="footer">
-    <span class="footer-brand">codexqa-defect-analyzer</span>
-    <span class="footer-meta">report_scan.html · %s</span>
-  </footer>
+    {rule_rows}
+  </section>
+  {''.join(findings_html)}
+  {''.join(extra_sections)}
+  <p class="footer">codexqa-defect-analyzer · report_scan.html · {_h(report.get('generated_at', ''))}</p>
 </div>
 <script>
-(function(){
-  var KEY='aid-report-theme';
-  var root=document.documentElement;
-  var btn=document.getElementById('aidThemeToggle');
-  var label=document.getElementById('aidThemeLabel');
-  function apply(theme,persist){
-    root.setAttribute('data-theme',theme);
-    var isDay=theme==='day';
-    if(btn){
-      btn.setAttribute('aria-pressed',isDay?'true':'false');
-      btn.setAttribute('aria-label',isDay?'切换为黑夜视图':'切换为白天视图');
-    }
-    if(label) label.textContent=isDay?'DAY':'NIGHT';
-    if(persist){try{localStorage.setItem(KEY,theme)}catch(e){}}
-  }
-  var saved=null;
-  try{
-    var q=new URLSearchParams(location.search).get('theme');
-    if(q==='day'||q==='night') saved=q;
-    else saved=localStorage.getItem(KEY);
-  }catch(e){}
-  apply((saved==='day'||saved==='night')?saved:'night',false);
-  requestAnimationFrame(function(){root.classList.add('theme-ready')});
-  if(btn) btn.addEventListener('click',function(){
-    apply(root.getAttribute('data-theme')==='day'?'night':'day',true);
-  });
-})();
+{js}
 </script>
 </body>
-</html>''' % (
-        _h(title),
-        _h(scan_type), total,
-        _h(report.get('target', '—')), _h(report.get('generated_at', '—')),
-        stat_pills,
-        summary.get('files_scanned', '—'),
-        cov.get('deterministic_share', 0), cov.get('llm_share', 0),
-        cov.get('deterministic_share', 0), cov.get('llm_share', 0),
-        source_rows,
-        _h(pp.get('pack_id', '—')), _h(pp.get('version', '—')),
-        _h(pp.get('rule_count_active', '—')),
-        'Degraded' if ts.get('degraded') else 'Ready: %s' % _h(', '.join(ts.get('ready') or [])),
-        ('<div style="margin-top:1rem">%s</div>' % rule_rows) if by_rule else '',
-        '\n'.join(alerts),
-        '\n'.join(findings_html) + '\n'.join(extra_sections),
-        _h(report.get('generated_at', '')),
-    )
-
+</html>'''
 
 def render_html(report_or_md, title='AI Defect Detection Report'):
     """Render HTML from report dict (preferred) or JSON string."""

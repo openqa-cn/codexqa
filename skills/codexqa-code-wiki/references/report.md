@@ -4,7 +4,7 @@
 
 交付物是**一份自包含 HTML**。对话里的 Markdown 只负责指向这个文件，不是报告本身。
 
-外观沿用 DeepWiki 三栏 Wiki + 原来的深色 Claude chrome：象牙页衬底、终端底 `#1a1918`、陶土色 `#D97757`、JetBrains Mono。左侧是可展开的完整 Wiki 树（总览 / 快速上手 / 系统架构 / 入口 / 应用 / 领域 / 存储 / 核心模块 / 独立模块 / 参考），右侧「本页目录」。不要改成浅色 SaaS、卡片看板或 Archify 画布。Mermaid 仍用 [diagrams.md](diagrams.md) 的象牙纸色 `init`。
+外观沿用 DeepWiki 三栏 Wiki，皮肤与 `codexqa-testcase-generator` 的 HTML 报告一致：白天默认、右上角中文/EN 与白天/黑夜开关、绿色强调 `#0f6b4c`。左侧是可展开的完整 Wiki 树（总览 / 快速上手 / 系统架构 / 入口 / 应用 / 领域 / 存储 / 核心模块 / 独立模块 / 参考），右侧「本页目录」。不要改成 Archify 画布。Mermaid 仍用 [diagrams.md](diagrams.md) 的纸色 `init`。
 
 **默认语言是简体中文。** 标题、指标、发现、概览、表格、导览、笔记、图注都用中文。编号 `p01` 和符号名原样保留。用户没要求英文时，不要把栏目标成 findings / overview / pages selected。
 

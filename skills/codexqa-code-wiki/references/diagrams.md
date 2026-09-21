@@ -7,7 +7,7 @@ An Archify / grouped-swimlane architecture canvas is **not** the deliverable.
 
 ## Diagram quality bar (redraw if any item is missing)
 
-1. The first line must copy the `%%{init:...}%%` below verbatim (Claude paper look: ivory ground, slate text, warm-gray borders).
+1. The first line must copy the `%%{init:...}%%` below verbatim (CodexQA paper look: light ground, ink text, green accent).
 2. The end must copy the three `classDef` lines verbatim, then write `class`.
 3. Architecture / risk diagrams need at least one core module `class ... risk` (high `node_count`, high `called_by`, or a hub in `deps`).
 4. Isolated modules (empty `deps`) stay outside functional layers — put them in a peripheral cluster or omit them from the layer diagram and say so.
@@ -21,7 +21,7 @@ Do not use: `theme:neutral` / Material green-orange-red, plain white or cold-gra
 Copy this as the first line of every diagram:
 
 ```text
-%%{init: {'theme':'base','themeVariables':{'background':'#FAF9F5','primaryColor':'#F0EEE6','primaryTextColor':'#141413','primaryBorderColor':'#D1CFC5','lineColor':'#87867F','secondaryColor':'#E8E6DC','tertiaryColor':'#FAF9F5','clusterBkg':'#F0EEE6','clusterBorder':'#D1CFC5','fontFamily':'Georgia,serif'}}}%%
+%%{init: {'theme':'base','themeVariables':{'background':'#f0f3f6','primaryColor':'#ffffff','primaryTextColor':'#1a2332','primaryBorderColor':'#d5dde8','lineColor':'#5a6578','secondaryColor':'#e6f4ee','tertiaryColor':'#f0f3f6','clusterBkg':'#f8fafc','clusterBorder':'#d5dde8','fontFamily':'Segoe UI,PingFang SC,sans-serif'}}}%%
 ```
 
 ## Which diagram for which scenario
@@ -34,20 +34,20 @@ Copy this as the first line of every diagram:
 | Explain one module (neighbors) | This page + `cross_community` / `dependencies` | `flowchart LR` |
 | Reading guide | Ordered path along real deps | `flowchart LR` |
 
-Semantic color is only these three overlays (ivory paper + Claude accent colors, light fill / dark text):
+Semantic color is only these three overlays (paper + testcase-generator accent colors, light fill / dark text):
 
 | class | When | Color |
 |---|---|---|
 | `add` | New community vs a previous wiki run (rare; skip if unknown) | olive `#E4EDD8` / `#788C5D` |
-| `change` | Hub page (many `deps` or high `node_count`) | clay orange `#F6E4D8` / `#D97757` |
-| `risk` | Core / high fan-in / sensitive name in signatures | terracotta `#F3DDD8` / `#C6613F` |
+| `change` | Hub page (many `deps` or high `node_count`) | amber `#ffedd5` / `#c2410c` |
+| `risk` | Core / high fan-in / sensitive name in signatures | rose `#fde8e4` / `#b42318` |
 
-Every other node uses the default ivory fill `#F0EEE6`. Do not add Material green / bright orange / pure red. Copy this at the end of every diagram:
+Every other node uses the default sheet fill `#ffffff`. Do not add Material green / bright orange / pure red. Copy this at the end of every diagram:
 
 ```text
-classDef add fill:#E4EDD8,stroke:#788C5D,color:#141413
-classDef change fill:#F6E4D8,stroke:#D97757,color:#141413
-classDef risk fill:#F3DDD8,stroke:#C6613F,color:#141413
+classDef add fill:#e6f4ee,stroke:#0f6b4c,color:#1a2332
+classDef change fill:#ffedd5,stroke:#c2410c,color:#1a2332
+classDef risk fill:#fde8e4,stroke:#b42318,color:#1a2332
 ```
 
 ## Templates (replace nodes/edges with real `wiki inputs`; do not change init or classDef)
@@ -55,7 +55,7 @@ classDef risk fill:#F3DDD8,stroke:#C6613F,color:#141413
 **Layered module map** (`architecture` `input`):
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'background':'#FAF9F5','primaryColor':'#F0EEE6','primaryTextColor':'#141413','primaryBorderColor':'#D1CFC5','lineColor':'#87867F','secondaryColor':'#E8E6DC','tertiaryColor':'#FAF9F5','clusterBkg':'#F0EEE6','clusterBorder':'#D1CFC5','fontFamily':'Georgia,serif'}}}%%
+%%{init: {'theme':'base','themeVariables':{'background':'#f0f3f6','primaryColor':'#ffffff','primaryTextColor':'#1a2332','primaryBorderColor':'#d5dde8','lineColor':'#5a6578','secondaryColor':'#e6f4ee','tertiaryColor':'#f0f3f6','clusterBkg':'#f8fafc','clusterBorder':'#d5dde8','fontFamily':'Segoe UI,PingFang SC,sans-serif'}}}%%
 flowchart TB
   subgraph entry["Entry"]
     P01["p01 http-route"]
@@ -72,41 +72,41 @@ flowchart TB
   P01 -->|deps| P02
   P02 -->|deps| P03
   P03 -->|deps| P04
-  classDef add fill:#E4EDD8,stroke:#788C5D,color:#141413
-  classDef change fill:#F6E4D8,stroke:#D97757,color:#141413
-  classDef risk fill:#F3DDD8,stroke:#C6613F,color:#141413
+classDef add fill:#e6f4ee,stroke:#0f6b4c,color:#1a2332
+classDef change fill:#ffedd5,stroke:#c2410c,color:#1a2332
+classDef risk fill:#fde8e4,stroke:#b42318,color:#1a2332
   class P03 risk
 ```
 
 **Reading guide** (consecutive steps must exist in `deps`):
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'background':'#FAF9F5','primaryColor':'#F0EEE6','primaryTextColor':'#141413','primaryBorderColor':'#D1CFC5','lineColor':'#87867F','secondaryColor':'#E8E6DC','tertiaryColor':'#FAF9F5','clusterBkg':'#F0EEE6','clusterBorder':'#D1CFC5','fontFamily':'Georgia,serif'}}}%%
+%%{init: {'theme':'base','themeVariables':{'background':'#f0f3f6','primaryColor':'#ffffff','primaryTextColor':'#1a2332','primaryBorderColor':'#d5dde8','lineColor':'#5a6578','secondaryColor':'#e6f4ee','tertiaryColor':'#f0f3f6','clusterBkg':'#f8fafc','clusterBorder':'#d5dde8','fontFamily':'Segoe UI,PingFang SC,sans-serif'}}}%%
 flowchart LR
   G1["p01 http-route"]
   G2["p02 checkout"]
   G3["p03 pricing"]
   G1 -->|deps| G2
   G2 -->|deps| G3
-  classDef add fill:#E4EDD8,stroke:#788C5D,color:#141413
-  classDef change fill:#F6E4D8,stroke:#D97757,color:#141413
-  classDef risk fill:#F3DDD8,stroke:#C6613F,color:#141413
+classDef add fill:#e6f4ee,stroke:#0f6b4c,color:#1a2332
+classDef change fill:#ffedd5,stroke:#c2410c,color:#1a2332
+classDef risk fill:#fde8e4,stroke:#b42318,color:#1a2332
   class G3 risk
 ```
 
 **In-module flow** (`page` `call_chain` or visualization `flow`):
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'background':'#FAF9F5','primaryColor':'#F0EEE6','primaryTextColor':'#141413','primaryBorderColor':'#D1CFC5','lineColor':'#87867F','secondaryColor':'#E8E6DC','tertiaryColor':'#FAF9F5','clusterBkg':'#F0EEE6','clusterBorder':'#D1CFC5','fontFamily':'Georgia,serif'}}}%%
+%%{init: {'theme':'base','themeVariables':{'background':'#f0f3f6','primaryColor':'#ffffff','primaryTextColor':'#1a2332','primaryBorderColor':'#d5dde8','lineColor':'#5a6578','secondaryColor':'#e6f4ee','tertiaryColor':'#f0f3f6','clusterBkg':'#f8fafc','clusterBorder':'#d5dde8','fontFamily':'Segoe UI,PingFang SC,sans-serif'}}}%%
 flowchart TB
   Entry["handleCheckout"]
   Price["applyDiscount"]
   Store["saveOrder"]
   Entry -->|calls| Price
   Price -->|calls| Store
-  classDef add fill:#E4EDD8,stroke:#788C5D,color:#141413
-  classDef change fill:#F6E4D8,stroke:#D97757,color:#141413
-  classDef risk fill:#F3DDD8,stroke:#C6613F,color:#141413
+classDef add fill:#e6f4ee,stroke:#0f6b4c,color:#1a2332
+classDef change fill:#ffedd5,stroke:#c2410c,color:#1a2332
+classDef risk fill:#fde8e4,stroke:#b42318,color:#1a2332
   class Price risk
 ```
 
