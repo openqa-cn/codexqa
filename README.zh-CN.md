@@ -118,14 +118,6 @@ npx skills add openqa-cn/codexqa --skill codexqa-skill-router
 
 按提示选 Cursor、Claude Code、Codex 或 OpenClaw。不用登录 npm。
 
-不需要模型的安装验收（`npx skills add` 只装 skill，不会带上 `examples/`；先克隆本仓库，再在仓库根目录执行）：
-
-```bash
-git clone --depth 1 https://github.com/openqa-cn/codexqa.git
-cd codexqa
-node examples/checkout-boundary/verify.mjs
-```
-
 **2. 运行** — 新建 Agent 会话，粘贴：
 
 ```text
@@ -156,15 +148,15 @@ npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
 
 | | Skill | 什么时候用，以及验证环节你拿到什么 |
 | --- | --- | --- |
-| 🧭 | [`codexqa-skill-router`](skills/codexqa-skill-router/README.zh-CN.md) | **什么时候用** 不确定该走缺陷扫描、影响面、用例还是造数；或者干活 skill 还没装。<br>**验证结果** 按你的话匹配到对应 skill，没有就按需装上再交接。你不用自己记八套入口，验证工作从「选对工具」开始。 |
-| 📋 | [`codexqa-requirement-analyzer`](skills/codexqa-requirement-analyzer/README.zh-CN.md) | **什么时候用** 需求评审、提测前对 PRD / 故事 / 一包材料做完整性检查。代码还没写，先看需求能不能测、有没有打架。<br>**验证结果** 一份可指派的缺口与冲突登记表（P0/P1）。高优先级条目带前置、操作、期望和证据，标出需求层哪些地方会让后续测试做不下去。 |
-| 🧪 | [`codexqa-testcase-generator`](skills/codexqa-testcase-generator/README.zh-CN.md) | **什么时候用** 提测、补回归，或要把 Web / 服务端 / APP 从需求落到可执行用例。<br>**验证结果** 本地测试方案 + 用例 + 聚合 HTML：覆盖哪些场景、优先级怎么排。需求没写清的标 TBD，不会把空缺编成假用例。 |
-| 🗃️ | [`codexqa-testdata-generator`](skills/codexqa-testdata-generator/README.zh-CN.md) | **什么时候用** 用例写好了但跑不起来，缺账号、商品、订单等前置数据；复制一个假 ID 过不了真实接口。<br>**验证结果** 对着后端造数，把返回的业务 ID 回写进用例前置条件。你拿到的是能真正打接口的物料，成功以后端给了 ID 为准。 |
-| 🗺️ | [`codexqa-code-wiki`](skills/codexqa-code-wiki/README.zh-CN.md) | **什么时候用** 新人上手、Agent 进仓、架构评审，或怀疑这次改动把分层改乱了。<br>**验证结果** 架构知识图谱 HTML：模块社区、真实依赖、枢纽、阅读路径。核对的是系统怎么分层、该从哪读、架构有没有被拆散，不是又一份 README。 |
-| 📈 | [`codexqa-code-analyzer`](skills/codexqa-code-analyzer/README.zh-CN.md) | **什么时候用** 评 PR、定回归范围、问「改这几行会打到谁」。只看 git diff 看不到调用链。<br>**验证结果** 变更影响面：命中哪些接口 / 方法 / 调用链、请求从哪进、哪些边还没测试。用来圈回归名单，而不是全文搜索猜。 |
-| 🧯 | [`codexqa-rootcause-analyzer`](skills/codexqa-rootcause-analyzer/README.zh-CN.md) | **什么时候用** 线上或本地异常，堆栈和日志对回仓库后，仍说不清到底卡在哪一层。<br>**验证结果** 带门禁的英文 RCA：触发点、根因、置信度分开写，并给一条可验证的修复方向。避免把抛错的那一行当成根因。 |
-| 🛡️ | [`codexqa-defect-analyzer`](skills/codexqa-defect-analyzer/README.zh-CN.md) | **什么时候用** 合码前扫分支，或贴一段刚写的代码，问有没有 bug、密钥、危险写法。<br>**验证结果** P0–P3 HTML 扫描报告。规则扫描（SAST / lint / 密钥）和 Agent 语义检测合并去重：位置、证据、建议。关注缺陷和安全风险，不是评审意见书。 |
-| ⚖️ | [`codexqa-code-reviewer`](skills/codexqa-code-reviewer/README.zh-CN.md) | **什么时候用** 要发给评审人、过合并门禁，不能只丢一份 git diff。<br>**验证结果** 双语 `REVIEW-REPORT.html`。基于符号图证据包（调用链、影响面、测试边）给出能否合、风险点和测试缺口，适合当 CR 附件。 |
+| 🧭 | [codexqa-skill-router](skills/codexqa-skill-router/README.zh-CN.md) | **什么时候用** 不确定该走缺陷扫描、影响面、用例还是造数；或者干活 skill 还没装。<br>**验证结果** 按你的话匹配到对应 skill，没有就按需装上再交接。你不用自己记八套入口，验证工作从「选对工具」开始。 |
+| 📋 | [codexqa-requirement-analyzer](skills/codexqa-requirement-analyzer/README.zh-CN.md) | **什么时候用** 需求评审、提测前对 PRD / 故事 / 一包材料做完整性检查。代码还没写，先看需求能不能测、有没有打架。<br>**验证结果** 一份可指派的缺口与冲突登记表（P0/P1）。高优先级条目带前置、操作、期望和证据，标出需求层哪些地方会让后续测试做不下去。 |
+| 🧪 | [codexqa-testcase-generator](skills/codexqa-testcase-generator/README.zh-CN.md) | **什么时候用** 提测、补回归，或要把 Web / 服务端 / APP 从需求落到可执行用例。<br>**验证结果** 本地测试方案 + 用例 + 聚合 HTML：覆盖哪些场景、优先级怎么排。需求没写清的标 TBD，不会把空缺编成假用例。 |
+| 🗃️ | [codexqa-testdata-generator](skills/codexqa-testdata-generator/README.zh-CN.md) | **什么时候用** 用例写好了但跑不起来，缺账号、商品、订单等前置数据；复制一个假 ID 过不了真实接口。<br>**验证结果** 对着后端造数，把返回的业务 ID 回写进用例前置条件。你拿到的是能真正打接口的物料，成功以后端给了 ID 为准。 |
+| 🗺️ | [codexqa-code-wiki](skills/codexqa-code-wiki/README.zh-CN.md) | **什么时候用** 新人上手、Agent 进仓、架构评审，或怀疑这次改动把分层改乱了。<br>**验证结果** 架构知识图谱 HTML：模块社区、真实依赖、枢纽、阅读路径。核对的是系统怎么分层、该从哪读、架构有没有被拆散，不是又一份 README。 |
+| 📈 | [codexqa-code-analyzer](skills/codexqa-code-analyzer/README.zh-CN.md) | **什么时候用** 评 PR、定回归范围、问「改这几行会打到谁」。只看 git diff 看不到调用链。<br>**验证结果** 变更影响面：命中哪些接口 / 方法 / 调用链、请求从哪进、哪些边还没测试。用来圈回归名单，而不是全文搜索猜。 |
+| 🧯 | [codexqa-rootcause-analyzer](skills/codexqa-rootcause-analyzer/README.zh-CN.md) | **什么时候用** 线上或本地异常，堆栈和日志对回仓库后，仍说不清到底卡在哪一层。<br>**验证结果** 带门禁的英文 RCA：触发点、根因、置信度分开写，并给一条可验证的修复方向。避免把抛错的那一行当成根因。 |
+| 🛡️ | [codexqa-defect-analyzer](skills/codexqa-defect-analyzer/README.zh-CN.md) | **什么时候用** 合码前扫分支，或贴一段刚写的代码，问有没有 bug、密钥、危险写法。<br>**验证结果** P0–P3 HTML 扫描报告。规则扫描（SAST / lint / 密钥）和 Agent 语义检测合并去重：位置、证据、建议。关注缺陷和安全风险，不是评审意见书。 |
+| ⚖️ | [codexqa-code-reviewer](skills/codexqa-code-reviewer/README.zh-CN.md) | **什么时候用** 要发给评审人、过合并门禁，不能只丢一份 git diff。<br>**验证结果** 双语 `REVIEW-REPORT.html`。基于符号图证据包（调用链、影响面、测试边）给出能否合、风险点和测试缺口，适合当 CR 附件。 |
 
 输入契约窄、有停点、产物落本地。运行时就是你已经在用的 Agent。
 
@@ -172,10 +164,10 @@ npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
 
 | | 谁 | 典型用法：用什么、走哪些 skill、拿到什么 |
 | --- | --- | --- |
-| 🏢 | **企业** | **用什么** 现有的 Cursor / Claude Code / Codex / OpenClaw。一次 `npx skills add` 把验证接到 Coding Agent 旁边，不用账号、不用网关、不必把 QA 迁到另一套 SaaS。<br>**常用 skill** [`codexqa-skill-router`](skills/codexqa-skill-router/README.zh-CN.md) 按话路由；合 PR 走 [`codexqa-code-analyzer`](skills/codexqa-code-analyzer/README.zh-CN.md) + [`codexqa-defect-analyzer`](skills/codexqa-defect-analyzer/README.zh-CN.md) + [`codexqa-code-reviewer`](skills/codexqa-code-reviewer/README.zh-CN.md)；提测走 [`codexqa-requirement-analyzer`](skills/codexqa-requirement-analyzer/README.zh-CN.md) → [`codexqa-testcase-generator`](skills/codexqa-testcase-generator/README.zh-CN.md) → [`codexqa-testdata-generator`](skills/codexqa-testdata-generator/README.zh-CN.md)；架构评审用 [`codexqa-code-wiki`](skills/codexqa-code-wiki/README.zh-CN.md)；线上异常用 [`codexqa-rootcause-analyzer`](skills/codexqa-rootcause-analyzer/README.zh-CN.md)。<br>**拿到什么** 变更影响面（接口 / 方法 / 调用链、回归名单、测试缺口）、P0–P3 缺陷与安全扫描 HTML、可发给评审人的双语 `REVIEW-REPORT.html`、需求缺口登记表、Web/服务端/APP 用例、后端真实 ID 前置数据、架构知识图谱、带门禁的 RCA。产物落本地，发现项仍需人工确认。 |
-| 👤 | **个人** | **用什么** 自己的 Cursor 或 Codex 会话。装 [`codexqa-skill-router`](skills/codexqa-skill-router/README.zh-CN.md) 即可，需要时再拉干活 skill。<br>**常用 skill** 合自己的 PR 前：[`codexqa-defect-analyzer`](skills/codexqa-defect-analyzer/README.zh-CN.md) 扫 bug 和密钥，[`codexqa-code-analyzer`](skills/codexqa-code-analyzer/README.zh-CN.md) 看会打到谁，[`codexqa-code-reviewer`](skills/codexqa-code-reviewer/README.zh-CN.md) 出一份能打开的评审页。进陌生仓库用 [`codexqa-code-wiki`](skills/codexqa-code-wiki/README.zh-CN.md)；自己写需求/用例再用生成器和造数。<br>**拿到什么** 打开就能看的 HTML：有没有明显缺陷、影响面清不清楚、评审意见能不能发出去。不用再上一套测试平台。 |
-| 🎓 | **教育** | **用什么** 任意支持 Agent Skills 的 IDE，加上仓库里的 [inventory-service](examples/inventory-service/README.md) 样例（7 个语义缺陷、4 个诱饵，答案键可复现）。<br>**常用 skill** 用 [`codexqa-defect-analyzer`](skills/codexqa-defect-analyzer/README.zh-CN.md) 教「扫描报告长什么样、发现项怎么分级」；用 [`codexqa-code-wiki`](skills/codexqa-code-wiki/README.zh-CN.md) / [`codexqa-code-analyzer`](skills/codexqa-code-analyzer/README.zh-CN.md) 对照模块枢纽和变更调用链；用 [`codexqa-requirement-analyzer`](skills/codexqa-requirement-analyzer/README.zh-CN.md) 与 [`codexqa-testcase-generator`](skills/codexqa-testcase-generator/README.zh-CN.md) 教需求能不能测、用例从哪来。<br>**拿到什么** 可打开的报告和学生可以对照的答案键，讲的是「可核查产物」而不是聊天里一段评语。一次记录运行的召回数字见样例 README，不是多模型榜。 |
-| 🤖 | **AI 开发** | **用什么** 你已经在跑的 Agent 运行时（Cursor · Claude Code · Codex · OpenClaw）+ Agent Skills 包，不是再写一个超级 prompt。<br>**常用 skill** [`codexqa-skill-router`](skills/codexqa-skill-router/README.zh-CN.md) 做入口，其余八个干活 skill 按契约交接：需求缺口、用例、造数、架构图谱、影响面、RCA、缺陷扫描、图证据评审。<br>**拿到什么** 磁盘上的 Markdown / HTML（登记表、用例、扫描页、`REVIEW-REPORT.html`、RCA），输入窄、有停点。把验证环节接进 Agent 产品时，交的是 skill 而不是一段不可复核的对话。 |
+| 🏢 | **企业** | **用什么** 现有的 Cursor / Claude Code / Codex / OpenClaw。一次 `npx skills add` 把验证接到 Coding Agent 旁边，不用账号、不用网关、不必把 QA 迁到另一套 SaaS。<br>**常用 skill** [codexqa-skill-router](skills/codexqa-skill-router/README.zh-CN.md) 按话路由；合 PR 走 [codexqa-code-analyzer](skills/codexqa-code-analyzer/README.zh-CN.md) + [codexqa-defect-analyzer](skills/codexqa-defect-analyzer/README.zh-CN.md) + [codexqa-code-reviewer](skills/codexqa-code-reviewer/README.zh-CN.md)；提测走 [codexqa-requirement-analyzer](skills/codexqa-requirement-analyzer/README.zh-CN.md) → [codexqa-testcase-generator](skills/codexqa-testcase-generator/README.zh-CN.md) → [codexqa-testdata-generator](skills/codexqa-testdata-generator/README.zh-CN.md)；架构评审用 [codexqa-code-wiki](skills/codexqa-code-wiki/README.zh-CN.md)；线上异常用 [codexqa-rootcause-analyzer](skills/codexqa-rootcause-analyzer/README.zh-CN.md)。<br>**拿到什么** 变更影响面（接口 / 方法 / 调用链、回归名单、测试缺口）、P0–P3 缺陷与安全扫描 HTML、可发给评审人的双语 `REVIEW-REPORT.html`、需求缺口登记表、Web/服务端/APP 用例、后端真实 ID 前置数据、架构知识图谱、带门禁的 RCA。产物落本地，发现项仍需人工确认。 |
+| 👤 | **个人** | **用什么** 自己的 Cursor 或 Codex 会话。装 [codexqa-skill-router](skills/codexqa-skill-router/README.zh-CN.md) 即可，需要时再拉干活 skill。<br>**常用 skill** 合自己的 PR 前：[codexqa-defect-analyzer](skills/codexqa-defect-analyzer/README.zh-CN.md) 扫 bug 和密钥，[codexqa-code-analyzer](skills/codexqa-code-analyzer/README.zh-CN.md) 看会打到谁，[codexqa-code-reviewer](skills/codexqa-code-reviewer/README.zh-CN.md) 出一份能打开的评审页。进陌生仓库用 [codexqa-code-wiki](skills/codexqa-code-wiki/README.zh-CN.md)；自己写需求/用例再用生成器和造数。<br>**拿到什么** 打开就能看的 HTML：有没有明显缺陷、影响面清不清楚、评审意见能不能发出去。不用再上一套测试平台。 |
+| 🎓 | **教育** | **用什么** 任意支持 Agent Skills 的 IDE，加上仓库里的 [inventory-service](examples/inventory-service/README.md) 样例（7 个语义缺陷、4 个诱饵，答案键可复现）。<br>**常用 skill** 用 [codexqa-defect-analyzer](skills/codexqa-defect-analyzer/README.zh-CN.md) 教「扫描报告长什么样、发现项怎么分级」；用 [codexqa-code-wiki](skills/codexqa-code-wiki/README.zh-CN.md) / [codexqa-code-analyzer](skills/codexqa-code-analyzer/README.zh-CN.md) 对照模块枢纽和变更调用链；用 [codexqa-requirement-analyzer](skills/codexqa-requirement-analyzer/README.zh-CN.md) 与 [codexqa-testcase-generator](skills/codexqa-testcase-generator/README.zh-CN.md) 教需求能不能测、用例从哪来。<br>**拿到什么** 可打开的报告和学生可以对照的答案键，讲的是「可核查产物」而不是聊天里一段评语。一次记录运行的召回数字见样例 README，不是多模型榜。 |
+| 🤖 | **AI 开发** | **用什么** 你已经在跑的 Agent 运行时（Cursor · Claude Code · Codex · OpenClaw）+ Agent Skills 包，不是再写一个超级 prompt。<br>**常用 skill** [codexqa-skill-router](skills/codexqa-skill-router/README.zh-CN.md) 做入口，其余八个干活 skill 按契约交接：需求缺口、用例、造数、架构图谱、影响面、RCA、缺陷扫描、图证据评审。<br>**拿到什么** 磁盘上的 Markdown / HTML（登记表、用例、扫描页、`REVIEW-REPORT.html`、RCA），输入窄、有停点。把验证环节接进 Agent 产品时，交的是 skill 而不是一段不可复核的对话。 |
 
 不是托管测试云。也不替代你的测试套件、SAST 授权或维护者判断。
 
