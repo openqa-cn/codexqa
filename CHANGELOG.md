@@ -3,6 +3,7 @@
 Each release has two sections. **Highlights** is what changes for someone using the skills. **Internal** is the full engineering record — refactors, test changes, and fixes with no user-visible effect. If you are upgrading, Highlights is enough.
 
 ## Unreleased
+- Root README (EN/zh-CN) rewritten as a product landing page: first-screen value line, eight skill HTML report screenshots, three-step start, capability icons, audience, star CTA, changelog badges, and openqa.cn links.
 - Renamed `code-wiki` to `codexqa-code-wiki` (directory, frontmatter `name`, catalog, and docs).
 - Canonical docs/product URL is [openqa.cn](https://openqa.cn/). Removed the in-repo VitePress `website/` tree and GitHub Pages docs workflow so ranking is not split.
 - Search playbooks in `seo/` (intent map, directories, measurement).
@@ -21,6 +22,7 @@ Each release has two sections. **Highlights** is what changes for someone using 
 
 ### Highlights
 
+- **README is a landing page.** Root README leads with who it is for, eight skill HTML report screenshots, a three-step start, and activity badges. Documentation still points at [openqa.cn](https://openqa.cn/).
 - **Search landing is openqa.cn.** README Documentation points at [openqa.cn](https://openqa.cn/). There is no second docs host in this repository.
 - **New `codexqa-code-wiki` skill.** Index a local repository, export Leiden communities and digests with `wiki inputs` (no model), and write a Claude Code official-style HTML architecture wiki (module map, real deps, reading guides). The Skill, playbook, report template, and limitations are published here; it uses the same separately distributed `@openqa-cn/codexqa` engine as `codexqa-code-analyzer`.
 - **Skill rename to `codexqa-*`.** Every published skill directory and frontmatter `name` now uses the `codexqa-` prefix (see Unreleased). Update install flags and docs bookmarks accordingly (`--skill codexqa-defect-analyzer`, etc.).

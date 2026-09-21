@@ -2,320 +2,197 @@
 
 # codexqa
 
-**本地优先的 AI 验证 Agent Skills** — 八个工作流外加 `codexqa-skill-router`：需求评审、测试设计、测试数据、架构 Wiki、变更影响分析、异常根因、SAST/代码风险扫描、图证据代码审查。
+**写得快已经不够。CodeXQA 让你立刻知道写得好不好。**
+
+AI Coding 之后，最大的痛点是**快速验证代码质量**：刚写的代码有没有 bug、会不会打到老功能、完整测试用例怎么建、变更知识图谱打了哪些接口 / 方法 / 调用链、架构有没有被破坏、有没有安全风险、是否满足业务需求、对应测试数据怎么尽快造出来。**codexqa 聚焦代码测试验证阶段**，用多维度 Skill 做 360° 覆盖，让你不但写得快，更能快速感知写得好不好，把开发闭环从「写完」走到「验完」。
+
+Cursor · Claude Code · Codex · OpenClaw。本地优先，不用账号、不用网关、不用迁 QA 平台。
+
+<p>
+  <strong>8</strong> 个 skill &nbsp;·&nbsp;
+  <strong>0</strong> 个账号 &nbsp;·&nbsp;
+  <strong>7/7</strong> 盲测召回 &nbsp;·&nbsp;
+  <strong>0</strong> 次诱饵误报 &nbsp;·&nbsp;
+  <strong>10</strong> 种语言
+</p>
+
+<sub>可复现数字来自 <a href="examples/inventory-service/README.md">inventory-service</a>：7 个语义缺陷 + 4 个诱饵。召回 7/7、精确率 7/7、陷阱误报 0 — Composer，2026-09-08，<em>一次记录运行，不是多模型 benchmark</em>。Semgrep 种子规则 102 条 / 10 种语言。</sub>
+
+GitHub 是 skill 源码；产品站：[openqa.cn](https://openqa.cn/?utm_source=github&utm_medium=readme&utm_campaign=oss-seo&utm_content=hero-zh)。
 
 [![CI](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml)
-[![Docs](https://img.shields.io/badge/docs-openqa.cn-111827)](https://openqa.cn/)
-[![Release](https://img.shields.io/github/v/tag/openqa-cn/codexqa?label=release&style=flat)](https://github.com/openqa-cn/codexqa/releases)
-[![GitHub stars](https://img.shields.io/github/stars/openqa-cn/codexqa?style=flat)](https://github.com/openqa-cn/codexqa/stargazers)
+[![Docs](https://img.shields.io/badge/docs-openqa.cn-111827)](https://openqa.cn/?utm_source=github&utm_medium=readme&utm_campaign=oss-seo&utm_content=badge-docs)
+[![Release](https://img.shields.io/github/v/tag/openqa-cn/codexqa?label=release)](https://github.com/openqa-cn/codexqa/releases)
+[![Last commit](https://img.shields.io/github/last-commit/openqa-cn/codexqa)](https://github.com/openqa-cn/codexqa/commits)
+[![Commit activity](https://img.shields.io/github/commit-activity/m/openqa-cn/codexqa)](https://github.com/openqa-cn/codexqa/graphs/commit-activity)
+[![Stars](https://img.shields.io/github/stars/openqa-cn/codexqa?style=flat)](https://github.com/openqa-cn/codexqa/stargazers)
 [![License](https://img.shields.io/github/license/openqa-cn/codexqa)](LICENSE)
 
 **[English](README.md) | 简体中文**
 
-<a href="https://openqa.cn/"><strong>文档站</strong></a> ·
-<a href="#quick-start"><strong>快速开始</strong></a> ·
-<a href="docs/assets/previews/defect-report.html"><strong>报告样例</strong></a> ·
-<a href="docs/HOW_IT_WORKS.zh-CN.md"><strong>工作原理</strong></a> ·
-<a href="examples/inventory-service/README.md"><strong>盲测评估</strong></a> ·
-<a href="#evidence-and-limitations"><strong>证据与边界</strong></a> ·
-<a href="docs/GETTING_STARTED.zh-CN.md"><strong>安装入门</strong></a> ·
-<a href="docs/FAQ.zh-CN.md"><strong>FAQ</strong></a> ·
-<a href="docs/SUPPORT_MATRIX.zh-CN.md"><strong>支持矩阵</strong></a>
+<a href="https://openqa.cn/?utm_source=github&utm_medium=readme&utm_campaign=oss-seo&utm_content=nav-docs-zh"><strong>文档站</strong></a> ·
+<a href="#快速开始"><strong>快速开始</strong></a> ·
+<a href="#产物长什么样"><strong>报告样例</strong></a> ·
+<a href="docs/GETTING_STARTED.zh-CN.md"><strong>安装说明</strong></a> ·
+<a href="CHANGELOG.md"><strong>更新日志</strong></a>
 
 </div>
 
 <p align="center">
-  <a href="docs/assets/previews/defect-report.html"><img src="docs/assets/previews/defect-report.png" alt="缺陷检测 HTML 报告：三条和需求对不上的发现" width="100%"></a>
+  <a href="docs/assets/previews/code-wiki.html"><img src="docs/assets/previews/code-wiki.png" alt="codexqa-code-wiki 为 inventory-service 生成的架构知识图谱 HTML 报告" width="100%"></a>
 </p>
+<p align="center"><sub>首屏：一份填好的 <code>codexqa-code-wiki</code> HTML 报告。下面八个 skill 各自产出可打开的页面，而不是一段聊天记录。</sub></p>
 
-<p align="center">
-  <sub><em>Coding Agent 负责写出变更；codexqa 让意图、影响面、审查证据、用例和测试数据都能核查。<br>（上图是验证类产物样例之一：使用同一渲染器和预置发现项的 codexqa-defect-analyzer 样例页。）</em></sub>
-</p>
+## 产物长什么样
 
----
+每一格对应一个已发布 skill 的 HTML 报告。页面用的是仓库里的渲染器和预置样例数据，只说明产物形态，不是已记录的 Agent 成绩。
 
-AI 能很快产出一个绿 PR，但需求是否对齐、影响了谁、审查证据是否够、测试能否运行，仍然需要逐项确认。codexqa 把这些验证工作拆成八个 Agent Skills；请求未点名 skill 时再用 [`codexqa-skill-router`](skills/codexqa-skill-router/README.zh-CN.md)。
+<table>
+<tr>
+<td width="50%" valign="top">
+<a href="docs/assets/previews/defect-report.html"><img src="docs/assets/previews/defect-report.png" alt="codexqa-defect-analyzer HTML 扫描报告"></a>
+<p align="center"><sub><b>codexqa-defect-analyzer</b> — P0–P3 扫描页</sub></p>
+</td>
+<td width="50%" valign="top">
+<a href="docs/assets/previews/review-report.html"><img src="docs/assets/previews/review-report.png" alt="codexqa-code-reviewer 双语 REVIEW-REPORT.html"></a>
+<p align="center"><sub><b>codexqa-code-reviewer</b> — 双语 REVIEW-REPORT.html</sub></p>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<a href="docs/assets/previews/code-wiki.html"><img src="docs/assets/previews/code-wiki.png" alt="codexqa-code-wiki 架构 Wiki HTML 报告"></a>
+<p align="center"><sub><b>codexqa-code-wiki</b> — 架构知识图谱</sub></p>
+</td>
+<td width="50%" valign="top">
+<a href="docs/assets/previews/code-analyzer.html"><img src="docs/assets/previews/code-analyzer.png" alt="codexqa-code-analyzer 变更影响图"></a>
+<p align="center"><sub><b>codexqa-code-analyzer</b> — 调用方、入口、测试缺口</sub></p>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<a href="docs/assets/previews/rootcause.html"><img src="docs/assets/previews/rootcause.png" alt="codexqa-rootcause-analyzer 英文 RCA 报告"></a>
+<p align="center"><sub><b>codexqa-rootcause-analyzer</b> — 带门禁的英文 RCA</sub></p>
+</td>
+<td width="50%" valign="top">
+<a href="docs/assets/previews/ra-register.html"><img src="docs/assets/previews/ra-register.png" alt="codexqa-requirement-analyzer 缺口登记表"></a>
+<p align="center"><sub><b>codexqa-requirement-analyzer</b> — 一份缺口/冲突登记表</sub></p>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<a href="docs/assets/previews/testcase-report.html"><img src="docs/assets/previews/testcase-report.png" alt="codexqa-testcase-generator 聚合 HTML 用例报告"></a>
+<p align="center"><sub><b>codexqa-testcase-generator</b> — Web / 服务端 / APP 用例</sub></p>
+</td>
+<td width="50%" valign="top">
+<a href="docs/assets/previews/testdata-writeback.html"><img src="docs/assets/previews/testdata-writeback.png" alt="codexqa-testdata-generator 后端 ID 回写"></a>
+<p align="center"><sub><b>codexqa-testdata-generator</b> — 后端 ID 回写前置条件</sub></p>
+</td>
+</tr>
+</table>
 
-`codexqa` 是面向 [Cursor](https://cursor.com)、[Claude Code](https://claude.com/claude-code)、[Codex](https://openai.com/codex) 和 OpenClaw 的公开、本地优先 [Agent Skills](https://agentskills.io/specification) 包。用 `npx skills add` 只安装当前任务需要的工作流；不用 codexqa 账号、网关，也不用迁移现有平台。产品和搜索主落地：[openqa.cn](https://openqa.cn/)。GitHub 仍是 skill 源码。自然搜索运营手册在 [`seo/`](seo/README.zh-CN.md)。
+点表格里的 HTML 即可打开。重新出图见 [`docs/assets/previews/README.md`](docs/assets/previews/README.md)。<a id="证据与边界"></a><a id="evidence-and-limitations"></a>发现项仍需人工确认；本仓库 CI 不跑现场 `@openqa-cn/codexqa` 建索引。
 
-## 各 skill 如何配合
+<a id="快速开始"></a>
 
-| 阶段 | Skill | 它回答什么问题 | 可核查产物 |
-| --- | --- | --- | --- |
-| 需求评审 | [`codexqa-requirement-analyzer`](skills/codexqa-requirement-analyzer/README.zh-CN.md) | PRD 是否完整、一致、可测试？ | 一份带 P0 / P1 验证项的缺口/冲突登记表 |
-| 测试设计 | [`codexqa-testcase-generator`](skills/codexqa-testcase-generator/README.zh-CN.md) | 根据需求应该写什么测试方案和手工用例？ | 本地 Markdown 方案 + 用例 + 聚合 HTML 报告；未知信息标出，不编造 |
-| 测试数据 | [`codexqa-testdata-generator`](skills/codexqa-testdata-generator/README.zh-CN.md) | 哪些真实 ID 和前置条件能让用例跑起来？ | 后端实际返回值回写到用例前置条件 |
-| 架构 Wiki | [`codexqa-code-wiki`](skills/codexqa-code-wiki/README.zh-CN.md) | 仓库怎么分层、枢纽模块是谁、新人从哪读起？ | 社区地图、真实依赖、阅读导览和 Claude Code 风格 HTML 报告 |
-| 变更影响 | [`codexqa-code-analyzer`](skills/codexqa-code-analyzer/README.zh-CN.md) | 改了什么、谁在调用、影响哪些入口、哪里没测试？ | 符号图证据、回归范围、测试缺口和关系图 |
-| 异常根因 | [`codexqa-rootcause-analyzer`](skills/codexqa-rootcause-analyzer/README.zh-CN.md) | 这条堆栈 / 日志 / 崩溃的仓内根因是什么？ | 基于 CodexQA CLI facts 的带门禁英文 RCA 报告 |
-| 代码风险扫描 | [`codexqa-defect-analyzer`](skills/codexqa-defect-analyzer/README.zh-CN.md) | 这个 diff / 仓库 / 粘贴里有哪些 SAST / 密钥 / 逻辑风险？ | 按 P0–P3 排序的 `report_scan.json` / `.md` / `.html` |
-| 图证据审查 | [`codexqa-code-reviewer`](skills/codexqa-code-reviewer/README.zh-CN.md) | CodexQA 证据包对影响面、缺口和维度风险怎么说？ | 证据包 + 双语 `REVIEW-REPORT.html` |
-| Skill 选择（元） | [`codexqa-skill-router`](skills/codexqa-skill-router/README.zh-CN.md) | 这次请求该交给哪个已发布 skill？ | 内置/现场目录匹配 → 按需安装（如需要）→ 交接给该 skill 的 `SKILL.md` |
+## 快速开始
 
-这些 Skill 的输入不同，这是设计选择。Agent 能明确判断这次该读文档、索引本地 checkout、克隆分支、写用例，还是调用造数后端。请求未点名 skill 时，先走 [`codexqa-skill-router`](skills/codexqa-skill-router/README.zh-CN.md)——它对照现场兄弟与内置 catalog 匹配，必要时把胜出 skill 拉到路由旁边再交接。
-
-## 为什么用 codexqa？
-
-- `codexqa-defect-analyzer` 把确定性 SAST/lint/secrets/SCA 与 **Agent LLM Detection**（宿主内嵌模型，Stage1/Stage2）去重合并成 P0–P3 `report_scan.*`。
-- `codexqa-code-analyzer` 用本地符号图把变更符号追到调用方、入口和图关系测试。
-- `codexqa-code-wiki` 把同一张图导出成社区和真实 `deps`，再写出架构知识图谱报告，全程不调模型。
-- `codexqa-rootcause-analyzer` 在同一套 CodexQA CLI 之上，把异常证据变成带门禁的英文 RCA 报告。
-- `codexqa-code-reviewer` 收集 CodexQA 证据包，、评估启发式维度，再跑 **Agent LLM judgment** 并去重合并后渲染双语 `REVIEW-REPORT.html`。
-- 文档与测试类 Skill 把需求评审、用例设计和测试数据构造分开，不让一次 prompt 包办所有事情。
-- [`codexqa-skill-router`](skills/codexqa-skill-router/README.zh-CN.md) 用内置/现场目录自动选型，只装路由时也可按需安装干活 skill。
-- 每个 Skill 都有明确的输入契约、证据格式和停点。它们装进你已经在用的 Agent，发现项仍然交给人确认。
-
-## 选对代码工作流
-
-五个面向代码的 skill 会接触同一个仓库，但回答的问题不同：
-
-| Skill | 核心问题 | 输入 | 它不替代什么 |
-| --- | --- | --- | --- |
-| [`codexqa-code-wiki`](skills/codexqa-code-wiki/README.zh-CN.md) | 系统怎么组织、新人从哪读起？ | 本地仓库（建索引 + `wiki inputs`） | 变更影响、异常 RCA 或完整评审报告 |
-| [`codexqa-code-analyzer`](skills/codexqa-code-analyzer/README.zh-CN.md) | 改了什么、能打到哪里、有哪些测试缺口？ | 本地仓库 + 可选 diff 基线 | 需求语义判断、异常 RCA 或完整评审报告 |
-| [`codexqa-rootcause-analyzer`](skills/codexqa-rootcause-analyzer/README.zh-CN.md) | 这条异常的仓内根因是什么？ | 异常证据 + git / 目录 / 文件 / 已打开工作区 | 结构/影响面映射或代码风险扫描 |
-| [`codexqa-defect-analyzer`](skills/codexqa-defect-analyzer/README.zh-CN.md) | 哪些代码风险 / 安全 / 逻辑发现该进扫描报告？ | Diff / 仓库 / 上传 / 粘贴 | 图证据 CR、结构/影响面问答或异常 RCA |
-| [`codexqa-code-reviewer`](skills/codexqa-code-reviewer/README.zh-CN.md) | CodexQA 证据包对这次变更 / 仓库意味着什么？ | 本地 checkout + 收集脚本（`--diff-base` / 全仓 / adhoc） | SAST 扫描报告或单独的结构/影响面问答 |
-
-各 Skill 的详细工作流和边界放在各自目录中：[codexqa-skill-router](skills/codexqa-skill-router/HOW_IT_WORKS.zh-CN.md)、[架构 Wiki](skills/codexqa-code-wiki/README.zh-CN.md)（[已知边界](skills/codexqa-code-wiki/KNOWN_LIMITATIONS.zh-CN.md)）、[代码分析](skills/codexqa-code-analyzer/README.zh-CN.md)（[已知边界](skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)）、[异常根因](skills/codexqa-rootcause-analyzer/HOW_IT_WORKS.zh-CN.md)、[代码风险扫描](skills/codexqa-defect-analyzer/HOW_IT_WORKS.zh-CN.md)、[图证据审查](skills/codexqa-code-reviewer/HOW_IT_WORKS.zh-CN.md)、[需求分析](skills/codexqa-requirement-analyzer/HOW_IT_WORKS.zh-CN.md)、[用例生成](skills/codexqa-testcase-generator/HOW_IT_WORKS.zh-CN.md)和[数据构造](skills/codexqa-testdata-generator/HOW_IT_WORKS.zh-CN.md)。宿主、语言和验证状态统一见[支持矩阵](docs/SUPPORT_MATRIX.zh-CN.md)。
-
-## 在 Cursor、Claude Code、Codex 上安装
-
-先检查基础工具。`codexqa-code-analyzer` 和 `codexqa-code-wiki` 要求 Node.js 18+；`codexqa-defect-analyzer` 要求 Python 3.10+（推荐 3.11），实图可选 CodexQA CLI；`codexqa-testcase-generator` 要求 Python 3.10+（用该 skill 的 `scripts/tcg-python`）；`codexqa-skill-router` 的发现/按需安装需要 Python 3.10+（按需安装需网络）。
-
-```bash
-node --version
-npx --version
-git --version
-python3 --version   # 3.10+：codexqa-skill-router / codexqa-defect-analyzer / codexqa-testcase-generator
-```
-
-只安装当前任务需要的那个 skill：
+**1. 安装**（只装路由即可，它能按需拉取干活 skill）：
 
 ```bash
 npx skills add openqa-cn/codexqa --skill codexqa-skill-router
-npx skills add openqa-cn/codexqa --skill codexqa-code-analyzer
-npx skills add openqa-cn/codexqa --skill codexqa-code-wiki
-npx skills add openqa-cn/codexqa --skill codexqa-rootcause-analyzer
+```
+
+按提示选 Cursor、Claude Code、Codex 或 OpenClaw。不用登录 npm。
+
+**2. 运行** — 新建 Agent 会话，粘贴：
+
+```text
+我不确定该用哪个 skill。请路由：对照 origin/main 审查这个仓库，
+产出一份可以发给评审人的 HTML 报告。
+```
+
+也可以点名：`用 codexqa-defect-analyzer 审这个分支。需求：退款不得超过剩余可退余额。`
+
+**3. 看报告** — Agent 把 HTML/Markdown 写到磁盘。对照上面的截图。
+
+不需要模型的安装验收：
+
+```bash
+node examples/checkout-boundary/verify.mjs
+```
+
+<details>
+<summary>按需安装某一个 skill · 代码图 CLI</summary>
+
+```bash
 npx skills add openqa-cn/codexqa --skill codexqa-defect-analyzer
 npx skills add openqa-cn/codexqa --skill codexqa-code-reviewer
+npx skills add openqa-cn/codexqa --skill codexqa-code-wiki
+npx skills add openqa-cn/codexqa --skill codexqa-code-analyzer
+npx skills add openqa-cn/codexqa --skill codexqa-rootcause-analyzer
 npx skills add openqa-cn/codexqa --skill codexqa-requirement-analyzer
 npx skills add openqa-cn/codexqa --skill codexqa-testcase-generator
 npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
 ```
 
-`codexqa-code-analyzer`、`codexqa-code-wiki` 与 `codexqa-rootcause-analyzer` 需要 Node.js 与 `@openqa-cn/codexqa`；`codexqa-defect-analyzer` 需要 Python 3.10+（推荐 3.11）与可选的 CodexQA CLI。详见 [codexqa-code-analyzer 边界](skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.zh-CN.md) · [codexqa-code-wiki 边界](skills/codexqa-code-wiki/KNOWN_LIMITATIONS.zh-CN.md) · [codexqa-rootcause-analyzer 边界](skills/codexqa-rootcause-analyzer/KNOWN_LIMITATIONS.zh-CN.md) · [codexqa-defect-analyzer 边界](skills/codexqa-defect-analyzer/KNOWN_LIMITATIONS.zh-CN.md)。
-
-按提示选择 Agent。全局安装到 Codex 时加 `--agent codex --global`。每个 `--skill` 只复制一个目录。
-
-无需 codexqa 或 npm 账号。运行要求、安装范围和故障排查见[安装与入门](docs/GETTING_STARTED.zh-CN.md)。
-
-<a id="quick-start"></a>
-
-## 快速开始
-
-1. 用上面的命令安装你需要的那个 skill。
-2. 新建一个 Coding Agent 会话。
-3. 把**该 skill 要的材料**交给 Agent。它们不能互相顶替。
-
-### 路径 A：检查分支中的需求类缺陷
-
-```text
-用 codexqa-defect-analyzer 审查 https://github.com/<ORG>/<REPO>.git 的 feature/refund-limit 分支。
-需求：退款金额不能超过订单剩余可退余额。
-对每个疑似缺陷给出位置、触发条件、依据和修复建议。
-```
-
-Git 地址支持 HTTPS 和 SSH；分支可以写 `main` 或 `feature/refund-limit` 这样的名称。需求可以直接粘贴，也可以作为文档提供。
-
-**安装验收，不需要模型：**
-
-```bash
-node examples/checkout-boundary/verify.mjs
-```
-
-结尾应看到：
-
-```text
-PASS: known-good implementation satisfies sampled contract
-EXPECTED FAILURE: defective implementation accepts zero
-Fixture verified; no AI detection claim.
-```
-
-### 路径 B：分析本地工作副本的变更影响
-
-```bash
-npm install -g @openqa-cn/codexqa
-codexqa --help
-codexqa index /path/to/repo --diff-base origin/main
-codexqa stats /path/to/repo
-```
-
-`codexqa --help` 应列出 CLI 命令；`stats` 应显示已索引的文件、符号和语言。随后在 Agent 中打开该仓库并说：
-
-```text
-用 codexqa-code-analyzer 对照 origin/main 分析这个仓库。
-先列高风险变更组，再给受影响调用方、入口，以及没有图关系测试罩住的变更符号。
-```
-
-这条路径依赖单独分发的闭源本地分析引擎。本仓库 CI 当前不安装或执行该引擎，详见[已知边界](skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)。
-
-### 路径 C：诊断异常根因
-
-```text
-用 codexqa-rootcause-analyzer 分析这段 NullPointerException 堆栈和 order-service 工作区。
-出英文根因报告：触发点与根因、映射调用路径，以及 Confidence。
-```
-
-提供异常文本或文件，外加 git 地址、本地目录、单个文件，或已打开的工作区。这条路径同样依赖 `@openqa-cn/codexqa`；见 [codexqa-rootcause-analyzer 已知边界](skills/codexqa-rootcause-analyzer/KNOWN_LIMITATIONS.zh-CN.md)。
-
-### 路径 D：把仓库画成架构 Wiki
-
-```bash
-npm install -g @openqa-cn/codexqa
-codexqa index /path/to/repo
-codexqa wiki inputs /path/to/repo --kind architecture --limit 8
-```
-
-随后在 Agent 中打开该仓库并说：
-
-```text
-用 codexqa-code-wiki 给这个仓库建一份代码知识图谱。只用 wiki inputs，不要走 LLM wiki。
-先出架构地图，再解释核心模块和一条阅读路径。
-```
-
-填好的报告是一份 Claude Code 官方风格的自包含 HTML。这条路径和 `codexqa-code-analyzer` 共用同一套本地引擎，详见[已知边界](skills/codexqa-code-wiki/KNOWN_LIMITATIONS.zh-CN.md)。
-
-<details>
-<summary><b>另外几个 skill 分别怎么开口</b></summary>
-
-**自动路由（`codexqa-skill-router`）** — 不确定用哪个 skill 时；可只装路由并按需拉取干活 skill。
-
-```text
-我不确定用哪个 skill。请自动路由：对照 origin/main 审仓库，产出能打开的双语 HTML 审查报告，不要漏洞扫描清单。
-```
-
-**图证据审查（`codexqa-code-reviewer`）** — 在 Agent 里打开该仓库；需要 `PATH` 上的 `codexqa` + `jq`。
-
-```text
-用 codexqa-code-reviewer 对照 origin/main 收集 CodexQA 证据包并产出 REVIEW-REPORT.html。
-```
-
-要做 SAST+agent 代码风险扫描，用 `codexqa-defect-analyzer`。
-
-**分析需求（`codexqa-requirement-analyzer`）** — 交文档，不要交仓库。
-
-```text
-用 codexqa-requirement-analyzer 分析这些需求文档。
-只出一份缺口/冲突登记表。P0 必须带验证字段。
-源材料没有的接口和 SLA 不要编。
-```
-
-这是在审 PRD。要根据需求写测试方案和/或用例库，用 `codexqa-testcase-generator`。
-
-**生成测试方案 / 用例（`codexqa-testcase-generator`）** — 给出本地文件、目录、粘贴正文，或本轮 HTTPS 文档 URL。
-
-```text
-用 codexqa-testcase-generator 根据 /path/to/prd.md 生成测试方案。
-不要编造源里没有的业务事实，标 TBD。
-```
-
-方案落盘后若还要用例，确认一次即可。提测后增量请说明，并指向基线（可选 PR/git URL）。
-
-**构造测试数据（`codexqa-testdata-generator`）** — 不是 git 克隆。直接说要造什么，或指向已写好的用例 / OpenAPI：
-
-```text
-用 codexqa-testdata-generator 建一个叫 Northwind Standard 的标准目录商品。
-没配企业网关就走本地 mock。
-```
-
-回写用例前置：
-
-```text
-这份用例帮我准备测试数据，并把 ID 回写到前置条件。
-```
-
-默认后端是 `http://127.0.0.1:8765` 上的本地 mock。demo 拿到 ID **不等于** 写入了真实系统。
+Wiki、影响分析、RCA、图证据审查还需要 Node.js 18+ 和 `npm install -g @openqa-cn/codexqa`（闭源本地引擎，在你的机器上跑）。详见[安装入门](docs/GETTING_STARTED.zh-CN.md) · [FAQ](docs/FAQ.zh-CN.md)。
 
 </details>
 
-## 产物长什么样
+## 核心能力
 
-顶部大图是 `codexqa-defect-analyzer` 的 HTML 报告。其他样例产物：
+| | Skill | 你得到什么 |
+| --- | --- | --- |
+| 🧭 | [`codexqa-skill-router`](skills/codexqa-skill-router/README.zh-CN.md) | 按请求匹配干活 skill，必要时按需安装 |
+| 📋 | [`codexqa-requirement-analyzer`](skills/codexqa-requirement-analyzer/README.zh-CN.md) | 从 PRD 得到一份带 P0/P1 的缺口与冲突登记表 |
+| 🧪 | [`codexqa-testcase-generator`](skills/codexqa-testcase-generator/README.zh-CN.md) | 本地 Markdown 方案 + 用例 + 聚合 HTML；未知标 TBD |
+| 🗃️ | [`codexqa-testdata-generator`](skills/codexqa-testdata-generator/README.zh-CN.md) | 把后端真实 ID 回写进用例前置条件 |
+| 🗺️ | [`codexqa-code-wiki`](skills/codexqa-code-wiki/README.zh-CN.md) | 社区地图、真实依赖、阅读路径、Claude Code 风格 HTML |
+| 📈 | [`codexqa-code-analyzer`](skills/codexqa-code-analyzer/README.zh-CN.md) | 变更符号 → 调用方、入口、未覆盖边 |
+| 🧯 | [`codexqa-rootcause-analyzer`](skills/codexqa-rootcause-analyzer/README.zh-CN.md) | 带门禁的英文 RCA：触发点 / 根因 / 置信度 |
+| 🛡️ | [`codexqa-defect-analyzer`](skills/codexqa-defect-analyzer/README.zh-CN.md) | SAST/lint/密钥 + Agent LLM Detection，P0–P3 HTML |
+| ⚖️ | [`codexqa-code-reviewer`](skills/codexqa-code-reviewer/README.zh-CN.md) | CodexQA 证据包 → 双语 `REVIEW-REPORT.html` |
 
-| Skill | 样例 |
+输入契约窄、有停点、产物落本地。运行时就是你已经在用的 Agent。
+
+## 适用场景
+
+| | 谁 | 典型用法 |
+| --- | --- | --- |
+| 🏢 | **企业** | 验证工作跟 Coding Agent 走：影响面、SAST、CR 证据，不必把 QA 迁到另一套 SaaS |
+| 👤 | **个人** | 在 Cursor/Codex 里一次 `npx skills add`，合并自己的 PR 前先打开 HTML |
+| 🎓 | **教育** | 用 [inventory-service](examples/inventory-service/README.md) 教「可核查产物」（7 个埋点缺陷、4 个诱饵） |
+| 🤖 | **AI 开发** | 给 Agent 的是 skill，不是超级 prompt：路由 → 干活 → 磁盘上的报告 |
+
+不是托管测试云。也不替代你的测试套件、SAST 授权或维护者判断。
+
+## Star 这个仓库
+
+如果你要的就是这种本地 skill 包、而不是再上一套 QA 平台，给 [openqa-cn/codexqa](https://github.com/openqa-cn/codexqa/stargazers) 一颗星，能让后来的人更容易搜到。出了问题，Issue 和最小复现比星更有用。
+
+## 更新日志
+
+[![Release](https://img.shields.io/github/v/tag/openqa-cn/codexqa?label=latest)](https://github.com/openqa-cn/codexqa/releases)
+[![Last commit](https://img.shields.io/github/last-commit/openqa-cn/codexqa)](https://github.com/openqa-cn/codexqa/commits)
+[![Commit activity](https://img.shields.io/github/commit-activity/m/openqa-cn/codexqa)](https://github.com/openqa-cn/codexqa/graphs/commit-activity)
+
+**Unreleased** — `codexqa-*` 命名；架构 Wiki；Agent LLM Detection / judgment；文档主站 [openqa.cn](https://openqa.cn/?utm_source=github&utm_medium=readme&utm_campaign=oss-seo&utm_content=changelog-zh)。
+
+**0.2.0** — 首批五个已发布 skill、样例报告、inventory-service 7/7 盲测（一个模型、一次运行）。
+
+全文：[CHANGELOG.md](CHANGELOG.md) · [Releases](https://github.com/openqa-cn/codexqa/releases)（Release 正文都带 openqa.cn）。
+
+## 产品与文档
+
+| 我想… | 去这里 |
 | --- | --- |
-| `codexqa-code-wiki` | [HTML 报告模板](skills/codexqa-code-wiki/assets/report-template.html) |
-| `codexqa-code-analyzer` | [变更影响关系图](skills/codexqa-code-analyzer/assets/checkout-change-impact.svg) |
-| `codexqa-requirement-analyzer` | [缺口/冲突登记表](docs/assets/previews/ra-register.html) |
-| `codexqa-testcase-generator` | [结构化手工用例](docs/assets/previews/testcase-sample.html)（V56 服务端模板；运行时另写 `testdesign/testcase_generation_report.html`） |
-| `codexqa-testdata-generator` | [后端返回值回写用例前置条件](docs/assets/previews/testdata-writeback.html) |
+| 打开产品站 | [openqa.cn](https://openqa.cn/?utm_source=github&utm_medium=readme&utm_campaign=oss-seo&utm_content=docs-home-zh) |
+| 浏览 skills | [Skill Hub](https://openqa.cn/skills?utm_source=github&utm_medium=readme&utm_campaign=oss-seo&utm_content=docs-skills-zh) |
+| 看商业产品 | [openqa.cn/agent](https://openqa.cn/agent?utm_source=github&utm_medium=readme&utm_campaign=oss-seo&utm_content=docs-product-zh) |
+| 按步骤安装 | [安装入门](docs/GETTING_STARTED.zh-CN.md) · [支持矩阵](docs/SUPPORT_MATRIX.zh-CN.md) |
+| 理解结论怎么来的 | [工作原理](docs/HOW_IT_WORKS.zh-CN.md) |
+| 复现盲测 | [inventory-service](examples/inventory-service/README.md) · [评估方法](benchmarks/README.md) |
+| 报缺陷 | [Issues](https://github.com/openqa-cn/codexqa/issues) · [安全](SECURITY.md) |
+| 提 PR | [贡献指南](CONTRIBUTING.md) · Apache-2.0 |
 
-这些页面使用项目内的渲染器和预置样例数据，只用于说明产物形态，不是已记录的 Agent 运行。
-
-<a id="evidence-and-limitations"></a>
-
-## 证据与边界
-
-各工作流的公开证据成熟度并不相同：
-
-| Skill | 当前公开证据 |
-| --- | --- |
-| `codexqa-skill-router` | `discover_skills.py --self-check` / `--with-catalog`；`ensure_skill.py --dry-run` / `--from-repo`；路由选择由模型判断；无公开宿主 agent 成绩 |
-| `codexqa-code-wiki` | 已公开 Skill 契约、playbook、报告模板和已知边界；`wiki inputs` 依赖同一套闭源引擎，本仓库 CI 不运行 |
-| `codexqa-code-analyzer` | 已公开 Skill 契约、schema、playbook、示例图和已知边界；单独分发的闭源引擎不在本仓库 CI 中运行 |
-| `codexqa-rootcause-analyzer` | 本地 CLI 测试（解析、落地、草稿、冒烟）；依赖 `@openqa-cn/codexqa`；无公开宿主 agent 成绩；RCA 叙事由模型判断 |
-| `codexqa-defect-analyzer` | 本地 Python 流水线/策略夹具测试；可选 SAST 与闭源 CodexQA CLI；无公开宿主 agent 成绩；Stage1/Stage2 由模型判断 |
-| `codexqa-code-reviewer` | 本地 `validate-skill.sh` / fixture 校验+渲染冒烟（Python 3.10+）；本仓库 CI 不跑现场 CodexQA 建索引；评审叙事由模型判断 |
-| `codexqa-requirement-analyzer` | eval 用例和解析/转换脚本；没有已记录宿主 Agent 成绩 |
-| `codexqa-testcase-generator` | 阶段门禁 / close_stage / generate_case_report `--self-check`（Python 3.10+）；没有公开 Plan→Exec fixture 或已记录 Agent 运行 |
-| `codexqa-testdata-generator` | packer、slot 检索和本地 catalog mock；运行结果取决于已配置的 adapter 与 slot |
-
-发现项需要人工确认。codexqa 不替代测试、静态分析、安全审查或维护者判断，也不能推断没有提供的业务规则。本地工作流会写磁盘；仓库克隆、文档获取、外部 provider、工具安装以及宿主 Agent/模型都可能联网。
-
-处理私有源码或比较质量结论前，请查看[支持矩阵](docs/SUPPORT_MATRIX.zh-CN.md)、[FAQ](docs/FAQ.zh-CN.md)、各 Skill 的已知边界和[评估方法](benchmarks/README.md)。
-
-## 开发者验证
-
-参与贡献前，请运行仓库检查：
-
-```bash
-python3 scripts/check-docs.py
-export NODE_OPTIONS=--experimental-strip-types
-(cd skills/codexqa-defect-analyzer && npm test)
-node examples/checkout-boundary/verify.mjs
-(cd skills/codexqa-testcase-generator && ./scripts/tcg-python scripts/close_stage.py --self-check && ./scripts/tcg-python scripts/check_run_gate.py --self-check && ./scripts/tcg-python scripts/generate_case_report.py --self-check)
-python3 skills/codexqa-skill-router/scripts/discover_skills.py --self-check
-```
-
-这些检查覆盖文档链接、中英章节对齐、`codexqa-defect-analyzer` Python 流水线/策略夹具、打包、边界 fixture、`codexqa-testcase-generator` 离线门禁/报告冒烟，以及 `codexqa-skill-router` 目录自检。它们不执行完整实 agent Stage1/Stage2 扫描，也不执行单独分发的 `codexqa-code-analyzer` / `codexqa-code-wiki` / `codexqa-rootcause-analyzer` 引擎路径，也不能证明所有缺陷都会被发现。
-
-## 文档
-
-| 我想…… | 从这里看 |
-| --- | --- |
-| 今天就跑一次审查 | [安装与入门](docs/GETTING_STARTED.zh-CN.md) · [快速开始](#quick-start) |
-| 搞清楚它凭什么下结论、怎么防模型敷衍 | [各 skill 的工作原理](docs/HOW_IT_WORKS.zh-CN.md) · [缺陷检测原理](skills/codexqa-defect-analyzer/HOW_IT_WORKS.zh-CN.md) |
-| 知道某个 Skill 会漏什么、什么时候别信它 | [各 Skill 的工作原理](docs/HOW_IT_WORKS.zh-CN.md) · [架构 Wiki 边界](skills/codexqa-code-wiki/KNOWN_LIMITATIONS.zh-CN.md) · [代码分析边界](skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.zh-CN.md) · [缺陷检测边界](skills/codexqa-defect-analyzer/KNOWN_LIMITATIONS.zh-CN.md) · [支持矩阵](docs/SUPPORT_MATRIX.zh-CN.md) |
-| 确认代码和数据会不会离开本机 | [FAQ](docs/FAQ.zh-CN.md) · [安全说明](SECURITY.zh-CN.md) |
-| 自己复现那次 7/7 盲测 | [示例](examples/README.zh-CN.md) · [inventory-service](examples/inventory-service/README.md) · [评估方法](benchmarks/README.md) |
-| 知道下一步做什么、哪些还只是计划 | [能力地图与路线图](docs/ROADMAP.zh-CN.md) · [更新日志](CHANGELOG.md) |
-| 弄懂仓库结构、文档为什么这么放 | [架构说明](docs/ARCHITECTURE.md)（英文） |
-| 知道开源做到哪、商业从哪开始 | [商业边界](docs/COMMERCIAL_BOUNDARY.md)（英文） · [LICENSE](LICENSE) |
-| 提 PR 或发一个版本 | [贡献指南](CONTRIBUTING.zh-CN.md) · [发布流程](PUBLISHING.zh-CN.md) |
-
-## 获取支持
-
-- 通过 [GitHub Issues](https://github.com/openqa-cn/codexqa/issues) 报告可复现问题
-- 在 [GitHub Discussions](https://github.com/openqa-cn/codexqa/discussions) 提问和讨论实现方案
-- 安全漏洞请按照[安全说明](SECURITY.zh-CN.md)反馈
-
-寻求帮助时，请提供 commit 或 skill 版本、操作系统、Agent、命令、预期结果和实际结果。分享前请移除凭据、私有源码和专有日志。
-
-其他去处：[官网](https://openqa.cn) · [产品](https://openqa.cn/agent) · [Skill Hub](https://openqa.cn/skills)
-
-## 参与贡献
-
-欢迎提交误报或漏报的最小公开复现、正常对照、新分析规则、案例和文档改进。分享前请移除凭据、私有源码和专有日志。请从[贡献指南](CONTRIBUTING.zh-CN.md)、[示例](examples/README.zh-CN.md)和[发布流程](PUBLISHING.zh-CN.md)开始。
-
-Apache-2.0 · [GitHub](https://github.com/openqa-cn/codexqa)
+自然搜索运营（只指向 openqa.cn，不再另起文档站）：[`seo/`](seo/README.zh-CN.md)。

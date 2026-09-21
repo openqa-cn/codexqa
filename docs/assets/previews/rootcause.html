@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>codexqa-rootcause-analyzer · Exception diagnosis</title>
+  <style>
+    :root { color-scheme: light; --bg:#f4f6f8; --card:#fff; --ink:#1c2333; --muted:#5c6778; --line:#d8dee6; --acc:#8a3b2b; --ok:#0f6b3a; }
+    * { box-sizing: border-box; }
+    body { margin:0; font:15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); }
+    .wrap { max-width:920px; margin:0 auto; padding:28px 20px 48px; }
+    .kicker { margin:0 0 6px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+    h1 { margin:0 0 8px; font-size:24px; }
+    .meta { color:var(--muted); margin-bottom:16px; }
+    .conf { display:inline-block; background:#fff4d6; color:#8a5a00; font-size:12px; font-weight:700; padding:2px 8px; border-radius:999px; }
+    article { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:12px; }
+    h2 { margin:0 0 8px; font-size:15px; color:var(--acc); }
+    p { margin:0 0 8px; }
+    p:last-child { margin:0; }
+    code { font-family: ui-monospace, Menlo, monospace; font-size:12.5px; background:#eef2f6; padding:1px 5px; border-radius:4px; }
+    .path { font-family: ui-monospace, Menlo, monospace; font-size:12.5px; background:#eef2f6; padding:10px 12px; border-radius:8px; overflow-x:auto; }
+    .note { font-size:12px; color:var(--muted); margin-top:14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="kicker">codexqa-rootcause-analyzer · sample English RCA (Markdown report rendered for preview)</p>
+    <h1>Exception diagnosis</h1>
+    <p class="meta">inventory-service · <code>NullPointerException</code> on refund · <span class="conf">Confidence: medium</span> · illustration, not a live <code>@openqa-cn/codexqa</code> run</p>
+
+    <article>
+      <h2>Executive summary</h2>
+      <p><code>NullPointerException</code> on <code>refund.js#resolveRefundAmount</code>. In-repo root is <code>reservation.js#commitReservation</code> leaving status unset, so refund loads a missing order. Confidence: medium.</p>
+    </article>
+    <article>
+      <h2>Symptom and exception facts</h2>
+      <p>Type <code>java.lang.NullPointerException</code>. Message gist: order is null when reading <code>paidAmount</code>. Primary throw <code>refund.js#resolveRefundAmount:18</code>.</p>
+    </article>
+    <article>
+      <h2>Mapped call path</h2>
+      <p class="path">POST /refunds → refund.js#refundOrder:44 → refund.js#resolveRefundAmount:18 → NPE</p>
+      <p>Entry is the refund HTTP handler. Hop <code>refundOrder</code> loads the order by reservation id then calls <code>resolveRefundAmount</code>. Throw is <code>NullPointerException</code>. Branch then-call is the amount dereference; the commit path never marked <code>COMMITTED</code>.</p>
+    </article>
+    <article>
+      <h2>Root cause</h2>
+      <p>Throw <code>NullPointerException</code> is the trigger, not the root. <code>reservation.js#commitReservation</code> returns success without writing status <code>COMMITTED</code>, so the refund lookup misses the row and <code>resolveRefundAmount</code> dereferences a null order. Not a race: <code>facts.raceEvidence</code> is false.</p>
+    </article>
+    <article>
+      <h2>Trigger</h2>
+      <p>Throw site <code>refund.js#resolveRefundAmount</code> reads <code>order.paidAmount</code>. This is not the root.</p>
+    </article>
+    <article>
+      <h2>Contributing factors</h2>
+      <p>No catch-all swallow in facts. Evidence gap: live CodexQA index is not run by repository CI, so caller edges are fixture-grounded.</p>
+    </article>
+    <article>
+      <h2>Suggested fix and verification</h2>
+      <p>Set status to <code>COMMITTED</code> in <code>commitReservation</code> before return. Replay this stack: commit then POST /refunds and expect an order row, not NPE.</p>
+    </article>
+    <article>
+      <h2>Confidence and gaps</h2>
+      <p>medium. Gap: line numbers follow the inventory-service fixture, not a recorded host-agent score.</p>
+    </article>
+    <p class="note">Headings match the skill’s English <code>report.md</code> template. Native delivery is Markdown; this HTML is the README screenshot surface.</p>
+  </div>
+</body>
+</html>

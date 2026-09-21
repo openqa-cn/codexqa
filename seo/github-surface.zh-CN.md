@@ -4,7 +4,7 @@ GitHub Settings 无法进 git。定位一变，就在 `https://github.com/openqa
 
 ## About
 
-- **Description（≤350 字）：** 本地优先的 AI 验证 Agent Skills：需求评审、测试设计、测试数据、架构 Wiki、变更影响、异常根因、SAST/代码风险扫描、图证据审查。适用 Cursor、Claude Code、Codex、OpenClaw。`npx skills add openqa-cn/codexqa`
+- **Description（≤350 字）：** AI Coding 之后最大痛点是快速验证：缺陷、老功能影响、用例、变更图谱（接口/方法/链路）、架构、安全、需求符合度、测试数据。8 个本地 Skill，360° 覆盖测试验证阶段。适用 Cursor、Claude Code、Codex、OpenClaw。`npx skills add openqa-cn/codexqa`
 - **Website：** [https://openqa.cn/](https://openqa.cn/)（不要把 About 指到 GitHub Pages）。
 - **Releases：** 打开。推送版本 tag 或点 Publish Release 时，`.github/workflows/release-notes.yml` 会用 `.github/release-notes.md` 填正文，并始终带上 `https://openqa.cn/`。
 
@@ -21,8 +21,9 @@ GitHub Settings 无法进 git。定位一变，就在 `https://github.com/openqa
 ## README 约定
 
 - H1 仍是 `codexqa`。
-- H1 下一行先写品类（Agent Skills、本地优先验证），再列九个 skill。
-- **Documentation** 链 [openqa.cn](https://openqa.cn/)，GitHub 当源码仓。
+- H1 下一行是「写得快 vs 立刻知道写得好不好」；紧跟测试验证阶段的 360° 维度（缺陷、回归、用例、图谱、架构、安全、需求、造数），再跟上可核对数字和截图。
+- 首屏视觉是 skill HTML 报告截图；八个干活 skill 在 `docs/assets/previews/` 各有一份预览。
+- **Documentation** 链 [openqa.cn](https://openqa.cn/)（可用 `utm_source=github&utm_medium=readme&utm_campaign=oss-seo`），GitHub 当源码仓。
 
 ## Releases
 

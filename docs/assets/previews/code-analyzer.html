@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>codexqa-code-analyzer · checkout change impact</title>
+  <style>
+    :root { color-scheme: light; --bg:#FAF9F5; --ink:#141413; --muted:#87867F; --acc:#C96E52; }
+    * { box-sizing: border-box; }
+    body { margin:0; font:15px/1.5 "Noto Sans", "Helvetica Neue", sans-serif; background:var(--bg); color:var(--ink); }
+    .wrap { max-width:1480px; margin:0 auto; padding:20px 20px 8px; }
+    .kicker { margin:0 0 4px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+    h1 { margin:0 0 6px; font-size:22px; font-weight:600; }
+    .meta { color:var(--muted); font-size:13px; margin:0 0 12px; }
+    .tag { display:inline-block; background:#F6E4D8; color:var(--acc); font-size:11px; padding:2px 8px; border-radius:999px; margin-right:6px; }
+    figure { margin:0; }
+    img { width:100%; height:auto; display:block; border-radius:16px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="kicker">codexqa-code-analyzer · sample change-impact graph</p>
+    <h1>Checkout: who calls the change, which entries fire, which tests miss it</h1>
+    <p class="meta">
+      <span class="tag">symbol graph</span>
+      Entry → impact → changed symbols → graph-backed tests · illustration from the published SVG
+    </p>
+    <figure>
+      <img src="checkout-change-impact.svg" alt="Checkout change-impact graph: POST /orders to checkout, changed symbols, and tests that miss the path">
+    </figure>
+  </div>
+</body>
+</html>

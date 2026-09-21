@@ -1,24 +1,21 @@
 # README preview assets
 
-Sample pages used as screenshots in the repository README. They are **illustrations**, not recorded agent output.
+Sample HTML used as screenshots in the repository README. They are **illustrations**, not recorded agent output. Eight published worker skills each have a page + PNG.
 
-| File | What it shows |
-|---|---|
-| `defect-report.html` | Real `render_report_html` output with three inventory-hold findings |
-| `testcase-sample.html` | V56 server-end manual case table (`case-tpl-server` fields; TBD for unknowns). Runtime Exec also writes an aggregated Web/Server/APP HTML report under `{run_dir}/testdesign/testcase_generation_report.html` (not a static preview here) |
-| `ra-register.html` | One `codexqa-requirement-analyzer` gap / conflict register |
-| `testdata-writeback.html` | `{placeholder}` replaced with a backend-returned id |
+| File | Skill | How it was produced |
+|---|---|---|
+| `defect-report.html` / `.png` | `codexqa-defect-analyzer` | Live skill pipeline: `run_scan.py adhoc --from-dir examples/inventory-service/head` → Stage1/Stage2 → `finalize` (`report_scan.html`) |
+| `review-report.html` / `.png` | `codexqa-code-reviewer` | `scripts/render-review-html.sh` on `evals/fixtures/conclusion/with-llm-judgment.json` |
+| `code-wiki.html` / `.png` | `codexqa-code-wiki` | Official `assets/report-template.html` filled for `examples/inventory-service` (no live `wiki inputs`; mermaid CDN stripped for offline shot) |
+| `code-analyzer.html` / `.png` | `codexqa-code-analyzer` | Wrapper around published `checkout-change-impact.svg` |
+| `rootcause.html` / `.png` | `codexqa-rootcause-analyzer` | English `report.md` template headings, inventory-service NPE illustration (native delivery is Markdown) |
+| `ra-register.html` / `.png` | `codexqa-requirement-analyzer` | Sample gap/conflict register |
+| `testcase-report.html` / `.png` | `codexqa-testcase-generator` | `generate_case_report.py --run-dir` (Web / Server / APP aggregate) |
+| `testdata-writeback.html` / `.png` | `codexqa-testdata-generator` | `{placeholder}` replaced with a backend-returned id |
+| `testcase-sample.html` / `.png` | `codexqa-testcase-generator` | Extra: one V56 server-end case table |
 
-Regenerate the defect report:
-
-```bash
-export NODE_OPTIONS=--experimental-strip-types
-node docs/assets/previews/render-defect-report.ts
-```
-
-Then capture PNGs (needs Chromium):
+Capture PNGs (needs the Playwright Chromium cache or `PLAYWRIGHT_CHROME`):
 
 ```bash
-# uses PLAYWRIGHT_CHROME if set, else the local Playwright cache
 node docs/assets/previews/screenshot.mjs
 ```

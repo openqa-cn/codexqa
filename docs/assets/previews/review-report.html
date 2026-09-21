@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title data-zh="Code Review 结论 · inventory-service" data-en="Code Review Report · inventory-service">Code Review 结论 · inventory-service</title>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap");
+:root{
+  --paper:#efe6d4;
+  --sheet:#f7f1e4;
+  --ink:#1a1714;
+  --muted:#6b645c;
+  --line:#d7ccb8;
+  --steel:#1c2228;
+  --steel-2:#2a323a;
+  --hazard:#e3b341;
+  --eyebrow:#8a6914;
+  --link:#8a5a12;
+  --lang-bg:#e8edc8;
+  --lang-fg:#3f4d1a;
+  --diagram-ink:#334155;
+  --inset-hi:rgba(255,255,255,.85);
+  --p0:#b42318;
+  --p0-bg:#fde8e4;
+  --p1:#c2410c;
+  --p1-bg:#ffedd5;
+  --p2:#9a6700;
+  --p2-bg:#fef3c7;
+  --ok:#17663a;
+  --ok-bg:#dcfce7;
+  --med:#b45309;
+  --med-bg:#ffedd5;
+  --hero-0:#fbf8f1;
+  --hero-1:#f3ebe0;
+  --hero-2:#efe6d4;
+  --hero-border:#cfc3ae;
+  --card:#fffdf8;
+  --chip:#f3ead6;
+  --grid:rgba(28,34,40,.045);
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --sans:"IBM Plex Sans","PingFang SC","Noto Sans SC",sans-serif;
+  --display:"Barlow Condensed","IBM Plex Sans Condensed","PingFang SC",sans-serif;
+}
+html[data-theme="dark"]{
+  --paper:#14181e;
+  --sheet:#1b222b;
+  --ink:#e8edf2;
+  --muted:#b0bac4;
+  --line:#3a4654;
+  --steel:#0f1318;
+  --steel-2:#1a222b;
+  --hazard:#e3b341;
+  --eyebrow:#e3b341;
+  --link:#f0c14d;
+  --lang-bg:#2a3520;
+  --lang-fg:#d4e89a;
+  --diagram-ink:#c5d0db;
+  --inset-hi:rgba(255,255,255,.06);
+  --p0:#ff8a80;
+  --p0-bg:#3a1d1c;
+  --p1:#ffb074;
+  --p1-bg:#3a2718;
+  --p2:#e6c35c;
+  --p2-bg:#3a3218;
+  --ok:#7ddea4;
+  --ok-bg:#163526;
+  --med:#ffb86b;
+  --med-bg:#3a2718;
+  --hero-0:#1a222b;
+  --hero-1:#171e26;
+  --hero-2:#14181e;
+  --hero-border:#2f3a46;
+  --card:#1b222b;
+  --chip:#24303b;
+  --grid:rgba(232,237,242,.05);
+}
+*{box-sizing:border-box}
+html,body{max-width:100%;margin:0}
+body{
+  color:var(--ink);
+  font-family:var(--sans);
+  line-height:1.6;
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px;
+}
+.toolbar{
+  position:sticky;
+  top:0;
+  z-index:50;
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  padding:10px 12px;
+  background:color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+}
+.toolbar button{
+  appearance:none;
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--ink);
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.04em;
+  padding:6px 10px;
+  cursor:pointer;
+}
+.toolbar button[aria-pressed="true"]{
+  background:var(--chip);
+  border-color:var(--hazard);
+}
+.wrap{
+  width:min(1120px,calc(100% - 24px));
+  margin:0 auto;
+  padding:28px 0 72px;
+  min-width:0;
+}
+header.hero{
+  position:relative;
+  color:var(--ink);
+  background:
+    linear-gradient(180deg,var(--hero-0) 0%,var(--hero-1) 55%,var(--hero-2) 100%);
+  border:1px solid var(--hero-border);
+  box-shadow:0 14px 32px rgba(28,34,40,.10);
+  overflow:hidden;
+  min-width:0;
+}
+header.hero::before{
+  content:"";
+  display:block;
+  height:10px;
+  background:repeating-linear-gradient(-45deg,#e3b341 0 10px,#1a1714 10px 20px);
+}
+.hero-inner{padding:22px 24px 24px;min-width:0}
+.eyebrow{
+  margin:0 0 8px;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--eyebrow);
+}
+h1{
+  margin:0 0 8px;
+  font-family:var(--display);
+  font-weight:800;
+  font-size:clamp(1.7rem,4vw,2.55rem);
+  letter-spacing:.04em;
+  line-height:1.05;
+  color:var(--ink);
+  overflow-wrap:anywhere;
+}
+.sub{
+  margin:0;
+  color:var(--muted);
+  max-width:70ch;
+  overflow-wrap:anywhere;
+}
+.badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.badge{
+  display:inline-flex;
+  align-items:center;
+  max-width:100%;
+  padding:4px 10px;
+  border:1px solid var(--line);
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.04em;
+  background:var(--card);
+  color:var(--ink);
+  overflow-wrap:anywhere;
+}
+.badge.risk-med{background:var(--med-bg);color:var(--med);border-color:transparent}
+.badge.risk-high{background:var(--p0-bg);color:var(--p0);border-color:transparent}
+.badge.risk-low{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+.badge.lang{background:var(--lang-bg);color:var(--lang-fg);border-color:transparent}
+.badge.ok{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+.meta-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));
+  gap:10px;
+  margin-top:20px;
+}
+.meta{
+  min-width:0;
+  padding:10px 12px;
+  background:var(--card);
+  border:1px solid var(--line);
+  box-shadow:0 1px 0 var(--inset-hi) inset;
+  color:var(--ink);
+}
+.meta .k{
+  display:block;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.meta .v{
+  display:block;
+  margin-top:4px;
+  font-size:13px;
+  font-weight:500;
+  color:var(--ink);
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+section{
+  margin-top:18px;
+  min-width:0;
+  padding:22px 22px 20px;
+  background:var(--sheet);
+  border:1px solid var(--line);
+  box-shadow:0 1px 0 var(--inset-hi) inset;
+}
+h2{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0 0 16px;
+  font-family:var(--display);
+  font-size:1.35rem;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+h2::before{
+  content:"";
+  width:10px;
+  height:18px;
+  background:var(--hazard);
+  flex:0 0 auto;
+}
+h3{font-size:1rem;margin:16px 0 8px;color:var(--ink)}
+.muted{color:var(--muted)}
+a{color:var(--link)}
+a:hover{filter:brightness(1.12)}
+code{
+  font-family:var(--mono);
+  font-size:.86em;
+  background:var(--chip);
+  padding:1px 5px;
+  overflow-wrap:anywhere;
+}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+}
+.stat{
+  min-width:0;
+  padding:14px 10px;
+  text-align:center;
+  background:var(--card);
+  border:1px solid var(--line);
+}
+.stat .n{
+  font-family:var(--display);
+  font-size:clamp(1.15rem,2.8vw,2rem);
+  font-weight:800;
+  line-height:1.1;
+  margin-bottom:6px;
+  overflow-wrap:anywhere;
+}
+.stat .l{font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.stat.p0 .n{color:var(--p0)}
+.stat.p1 .n{color:var(--p1)}
+.stat.p2 .n{color:var(--p2)}
+.stat.risk .n{color:var(--med);font-size:clamp(1rem,2.4vw,1.55rem)}
+.lede{
+  margin:16px 0 0;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.findings-stack{display:grid;gap:14px;min-width:0;max-width:100%}
+.finding{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  max-width:100%;
+  margin:0;
+  background:var(--card);
+  border:1px solid var(--line);
+  overflow:visible;
+}
+.finding.p0{border-left:5px solid var(--p0)}
+.finding.p1{border-left:5px solid var(--p1)}
+.finding.p2{border-left:5px solid var(--p2)}
+.finding.empty{border-left:5px solid var(--ok);background:var(--ok-bg)}
+.finding-head{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:14px 16px 12px;
+  background:linear-gradient(180deg,var(--chip) 0%,var(--card) 100%);
+  border-bottom:1px solid var(--line);
+  min-width:0;
+}
+.sev{
+  flex:0 0 auto;
+  font-family:var(--display);
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.12em;
+  padding:3px 8px;
+  border:1px solid currentColor;
+}
+.sev.p0{background:var(--p0-bg);color:var(--p0)}
+.sev.p1{background:var(--p1-bg);color:var(--p1)}
+.sev.p2{background:var(--p2-bg);color:var(--p2)}
+.finding h3{
+  margin:2px 0 0;
+  flex:1 1 auto;
+  min-width:0;
+  font-family:var(--display);
+  font-size:clamp(1.05rem,2vw,1.35rem);
+  font-weight:700;
+  letter-spacing:.02em;
+  line-height:1.25;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.finding-body{
+  display:grid;
+  gap:0;
+  min-width:0;
+}
+.field{
+  display:grid;
+  grid-template-columns:76px minmax(0,1fr);
+  gap:12px;
+  padding:12px 16px;
+  border-top:1px dashed var(--line);
+  min-width:0;
+}
+.field:first-child{border-top:0}
+.field-k{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--muted);
+  padding-top:3px;
+}
+.field-v{
+  min-width:0;
+  margin:0;
+  font-size:13.5px;
+  line-height:1.65;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  white-space:pre-wrap;
+}
+.field-v.is-path{
+  font-family:var(--mono);
+  font-size:12px;
+  background:var(--chip);
+  padding:8px 10px;
+  word-break:break-all;
+}
+.field-v.is-cat,.field-v.is-conf{
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.04em;
+}
+.pad{padding:12px 16px}
+.table-wrap{max-width:100%;overflow-x:auto}
+table{
+  width:100%;
+  table-layout:fixed;
+  border-collapse:collapse;
+  font-size:13px;
+  background:var(--card);
+  border:1px solid var(--line);
+}
+th,td{
+  text-align:left;
+  padding:10px 12px;
+  border-bottom:1px solid var(--line);
+  vertical-align:top;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+th{
+  background:var(--chip);
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+tr:last-child td{border-bottom:0}
+ol.fix,ul{padding-left:1.2rem;overflow-wrap:anywhere}
+ol.fix li,ul li{margin:6px 0}
+.diagram{
+  background:var(--card);
+  border:1px dashed var(--line);
+  padding:14px;
+  margin:10px 0 16px;
+  overflow-x:auto;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.45;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  color:var(--diagram-ink);
+}
+.field-v,.lede,p,td,li,footer{
+  color:var(--ink);
+}
+.field-v.is-chain{padding:4px 0}
+.call-chain{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  min-width:0;
+  max-width:100%;
+  padding:12px;
+  background:var(--card);
+  border:1px dashed var(--line);
+}
+.chain-title{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.call-chain-path{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+}
+.chain-node{
+  display:inline-block;
+  max-width:100%;
+  padding:6px 10px;
+  border:1px solid var(--line);
+  background:var(--chip);
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.35;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.chain-node.is-risk{
+  background:var(--p1-bg);
+  border-color:var(--p1);
+  color:var(--p1);
+  font-weight:600;
+}
+.chain-arrow{
+  flex:0 0 auto;
+  color:var(--muted);
+  font-family:var(--mono);
+  font-size:14px;
+}
+footer{
+  margin-top:28px;
+  color:var(--muted);
+  font-size:12px;
+  text-align:center;
+  font-family:var(--mono);
+  letter-spacing:.04em;
+}
+.path{overflow-wrap:anywhere;word-break:break-all;font-family:var(--mono);font-size:12px}
+@media (max-width:720px){
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .field{grid-template-columns:1fr}
+  .field-k{padding-top:0}
+  section,.hero-inner{padding-left:16px;padding-right:16px}
+}
+</style>
+</head>
+<body>
+<div class="toolbar" role="toolbar" aria-label="Report controls">
+<button type="button" id="btn-lang-zh" aria-pressed="true" data-zh="中文" data-en="中文">中文</button>
+<button type="button" id="btn-lang-en" aria-pressed="false" data-zh="EN" data-en="EN">EN</button>
+<button type="button" id="btn-theme" aria-pressed="false" data-zh="黑夜" data-en="Dark">黑夜</button>
+</div>
+<div class="wrap">
+<header class="hero"><div class="hero-inner">
+<p class="eyebrow" data-zh="审查档案 · codexqa-code-reviewer · CodexQA" data-en="INSPECTION DOSSIER · codexqa-code-reviewer · CodexQA">审查档案 · codexqa-code-reviewer · CodexQA</p>
+<h1 data-zh="Code Review 结论报告" data-en="Code Review Report">Code Review 结论报告</h1>
+<p class="sub">inventory-service · <span class="mode-bi"><span data-zh="PR 评审" data-en="pr">PR 评审</span></span> · <strong>feature/reservation-v2</strong> vs <strong>main</strong></p>
+<div class="badge-row">
+<span class="badge risk-med"><span data-zh="总体风险" data-en="Overall risk">总体风险</span> <span data-zh="中等" data-en="Medium">中等</span></span>
+<span class="badge lang"><span data-zh="主语言" data-en="Primary language">主语言</span> JavaScript · high</span>
+<span class="badge ok">P0=0 · P1=1 · P2=0</span>
+<span class="badge"><span data-zh="焦点语言" data-en="focus">焦点语言</span>: JavaScript</span>
+</div>
+<div class="meta-grid">
+<div class="meta"><span class="k">repo</span><span class="v">examples/inventory-service</span></div>
+<div class="meta"><span class="k">diff_base</span><span class="v">main</span></div>
+<div class="meta"><span class="k">codexqa</span><span class="v">codexqa 0.1.0</span></div>
+<div class="meta"><span class="k" data-zh="evidence" data-en="evidence">evidence</span><span class="v">/tmp/inventory-service-review</span></div>
+<div class="meta"><span class="k" data-zh="generated" data-en="generated">generated</span><span class="v"></span></div>
+</div>
+</div></header>
+<section><h2 data-zh="结论一览" data-en="Overview">结论一览</h2>
+<div class="stats">
+<div class="stat p0"><div class="n">0</div><div class="l" data-zh="P0 阻断" data-en="P0 Blocker">P0 阻断</div></div>
+<div class="stat p1"><div class="n">1</div><div class="l" data-zh="P1 本迭代应修" data-en="P1 fix this iteration">P1 本迭代应修</div></div>
+<div class="stat p2"><div class="n">0</div><div class="l" data-zh="P2 可选 / 债" data-en="P2 optional / debt">P2 可选 / 债</div></div>
+<div class="stat risk"><div class="n"><span data-zh="中等" data-en="Medium">中等</span></div><div class="l" data-zh="总体风险" data-en="Overall risk">总体风险</div></div>
+</div>
+<p class="lede" data-zh="Agent LLM judgment after graph pack: one novel semantic issue remains on the refund path." data-en="Agent LLM judgment after graph pack: one novel semantic issue remains on the refund path.">Agent LLM judgment after graph pack: one novel semantic issue remains on the refund path.</p>
+<p class="muted lede"><span data-zh="意图：" data-en="Intent: ">意图：</span><span data-zh="Hold expiry, volume discount, refund cap" data-en="Hold expiry, volume discount, refund cap">Hold expiry, volume discount, refund cap</span></p>
+<p class="muted lede"><span data-zh="范围：" data-en="Scope: ">范围：</span><span data-zh="reservation / pricing / refund" data-en="reservation / pricing / refund">reservation / pricing / refund</span></p>
+<p class="muted lede" data-zh="合入决策留给人工；本报告不自动通过合入。" data-en="Merge decision is left to humans; this report does not auto-approve.">合入决策留给人工；本报告不自动通过合入。</p>
+</section>
+<section><h2 data-zh="模型语义评审" data-en="Agent LLM judgment">模型语义评审</h2>
+<div class="field"><span class="field-k" data-zh="结论" data-en="Verdict">结论</span><div class="field-v is-cat"><span data-zh="需关注" data-en="concern">需关注</span></div></div><div class="field"><span class="field-k" data-zh="风险说明" data-en="Risk">风险说明</span><div class="field-v " data-zh="合并后仍有 1 个新颖语义问题：空指针路径未处理。" data-en="After merge, 1 novel semantic issue remains: unhandled NPE path.">合并后仍有 1 个新颖语义问题：空指针路径未处理。</div></div><div class="field"><span class="field-k" data-zh="新颖问题数" data-en="新颖问题数">新颖问题数</span><div class="field-v " data-zh="1" data-en="1">1</div></div><div class="field"><span class="field-k" data-zh="去重合并数" data-en="去重合并数">去重合并数</span><div class="field-v " data-zh="2" data-en="2">2</div></div><div class="field"><span class="field-k" data-zh="enrich 数" data-en="enrich 数">enrich 数</span><div class="field-v " data-zh="1" data-en="1">1</div></div><div class="field"><span class="field-k" data-zh="审阅焦点" data-en="审阅焦点">审阅焦点</span><div class="field-v " data-zh="src/refund.js (diff hunk)" data-en="src/refund.js (diff hunk)">src/refund.js (diff hunk)</div></div><div class="field"><span class="field-k" data-zh="依据" data-en="Evidence">依据</span><div class="field-v " data-zh="22-llm-judgment.json + host-agent LLM pass" data-en="22-llm-judgment.json + host-agent LLM pass">22-llm-judgment.json + host-agent LLM pass</div></div><div class="field"><span class="field-k" data-zh="信号文件" data-en="Signals file">信号文件</span><div class="field-v is-path" data-zh="22-llm-judgment.json" data-en="22-llm-judgment.json">22-llm-judgment.json</div></div></section>
+<section><h2 data-zh="发现项" data-en="Findings">发现项</h2>
+<div class="findings-stack">
+<article class="finding empty"><div class="finding-head"><span class="sev p0">P0</span><h3 data-zh="无" data-en="None">无</h3></div><p class="muted pad" data-zh="无此项。" data-en="None.">无此项。</p></article>
+<article class="finding p1"><div class="finding-head"><span class="sev p1">P1</span><h3 data-zh="退款回调空指针未防护" data-en="Unhandled NPE on refund callback">退款回调空指针未防护</h3></div><div class="finding-body"><div class="field"><span class="field-k" data-zh="位置" data-en="Location">位置</span><div class="field-v is-path" data-zh="src/refund.js:18" data-en="src/refund.js:18">src/refund.js:18</div></div><div class="field"><span class="field-k" data-zh="变更" data-en="Change">变更</span><div class="field-v is-cat"><span data-zh="未纳入本次 diff（既有代码）" data-en="Not in this diff (existing code)">未纳入本次 diff（既有代码）</span></div></div><div class="field"><span class="field-k" data-zh="分类" data-en="Category">分类</span><div class="field-v is-cat"><span data-zh="正确性" data-en="correctness">正确性</span></div></div><div class="field"><span class="field-k" data-zh="风险" data-en="Risk">风险</span><div class="field-v " data-zh="callback 在 amount 为空时直接解引用，会导致主路径 NPE。" data-en="Callback dereferences null amount and NPE on main path.">callback 在 amount 为空时直接解引用，会导致主路径 NPE。</div></div><div class="field"><span class="field-k" data-zh="依据" data-en="Evidence">依据</span><div class="field-v " data-zh="diffs + on-disk PayService.java:88" data-en="diffs + on-disk PayService.java:88">diffs + on-disk PayService.java:88</div></div><div class="field"><span class="field-k" data-zh="修复建议" data-en="Fix">修复建议</span><div class="field-v " data-zh="在解引用前校验 amount 并返回明确错误。" data-en="Null-check amount before dereference and return a clear error.">在解引用前校验 amount 并返回明确错误。</div></div></div></article>
+<article class="finding empty"><div class="finding-head"><span class="sev p2">P2</span><h3 data-zh="无" data-en="None">无</h3></div><p class="muted pad" data-zh="无此项。" data-en="None.">无此项。</p></article>
+</div></section>
+<section><h2 data-zh="回归必测清单" data-en="Regression must-test">回归必测清单</h2>
+<p class="muted" data-zh="目标列写清可执行场景（入口/条件/期望）；证据列用通俗依据，勿只填符号 UUID 或证据包路径。" data-en="Write executable scenarios (entry/conditions/expected result). Evidence should be plain language — not only UUIDs or pack paths.">目标列写清可执行场景（入口/条件/期望）；证据列用通俗依据，勿只填符号 UUID 或证据包路径。</p>
+<div class="table-wrap"><table><thead><tr><th data-zh="回归测试场景" data-en="Regression scenario">回归测试场景</th><th data-zh="为什么必测" data-en="Why required">为什么必测</th><th data-zh="依据说明" data-en="Evidence">依据说明</th></tr></thead><tbody>
+<tr><td colspan="3" class="muted" data-zh="无" data-en="None">无</td></tr>
+</tbody></table></div></section>
+<section><h2 data-zh="测试缺口" data-en="Test gaps">测试缺口</h2>
+<p class="muted" data-zh="统计口径：看调用图里该生产符号是否被测试覆盖边罩住——tested_count&gt;0 或 tests-reach 非空才算已测。这不是「仓库有没有 tests 目录 / 有没有单测文件」。测试文件里普通调用了函数、或文件名带 test，都不算覆盖。因此可能出现：仓库里已有测试代码，但图上仍记为缺口。" data-en="Criterion: a production symbol counts as tested only when the call graph has a tests coverage edge (tested_count&gt;0 or non-empty tests-reach). This is not about whether a tests/ folder or unit-test files exist. Ordinary calls from test files, or test-like filenames, do not count as coverage. So the repo may already have tests while the graph still shows a gap.">统计口径：看调用图里该生产符号是否被测试覆盖边罩住——tested_count>0 或 tests-reach 非空才算已测。这不是「仓库有没有 tests 目录 / 有没有单测文件」。测试文件里普通调用了函数、或文件名带 test，都不算覆盖。因此可能出现：仓库里已有测试代码，但图上仍记为缺口。</p>
+<div class="table-wrap"><table><thead><tr><th data-zh="符号" data-en="Symbol">符号</th><th>tested_count</th><th>tests-reach</th><th data-zh="说明" data-en="Notes">说明</th></tr></thead><tbody>
+<tr><td colspan="4" class="muted" data-zh="无" data-en="None">无</td></tr>
+</tbody></table></div>
+<p class="muted lede"><span data-zh="敏感路径：" data-en="Sensitive paths: ">敏感路径：</span><span data-zh="None" data-en="None">None</span></p></section>
+<footer><span data-zh="由技能 codexqa-code-reviewer · CodexQA CLI · scripts/render-review-html.sh 生成" data-en="Generated by skill codexqa-code-reviewer · CodexQA CLI · scripts/render-review-html.sh">由技能 codexqa-code-reviewer · CodexQA CLI · scripts/render-review-html.sh 生成</span> · <span class="path">/tmp/inventory-service-review</span></footer>
+</div>
+<script>
+(function(){
+var root=document.documentElement;
+var LANG_KEY="acr-report-lang";
+var THEME_KEY="acr-report-theme";
+function applyLang(lang){
+  root.setAttribute("lang", lang==="en"?"en":"zh-CN");
+  document.querySelectorAll("[data-zh][data-en]").forEach(function(el){
+    var v=el.getAttribute(lang==="en"?"data-en":"data-zh");
+    if(v!=null) el.textContent=v;
+  });
+  var zh=document.getElementById("btn-lang-zh");
+  var en=document.getElementById("btn-lang-en");
+  if(zh) zh.setAttribute("aria-pressed", lang==="zh"?"true":"false");
+  if(en) en.setAttribute("aria-pressed", lang==="en"?"true":"false");
+  try{localStorage.setItem(LANG_KEY, lang);}catch(e){}
+}
+function applyTheme(theme){
+  root.setAttribute("data-theme", theme);
+  var btn=document.getElementById("btn-theme");
+  if(btn){
+    btn.setAttribute("aria-pressed", theme==="dark"?"true":"false");
+    btn.setAttribute("data-zh", theme==="dark"?"白天":"黑夜");
+    btn.setAttribute("data-en", theme==="dark"?"Light":"Dark");
+    var lang=root.getAttribute("lang")==="en"?"en":"zh";
+    btn.textContent=btn.getAttribute(lang==="en"?"data-en":"data-zh");
+  }
+  try{localStorage.setItem(THEME_KEY, theme);}catch(e){}
+}
+var lang="zh", theme="light";
+try{lang=localStorage.getItem(LANG_KEY)||lang; theme=localStorage.getItem(THEME_KEY)||theme;}catch(e){}
+applyTheme(theme==="dark"?"dark":"light");
+applyLang(lang==="en"?"en":"zh");
+document.getElementById("btn-lang-zh").addEventListener("click", function(){applyLang("zh");});
+document.getElementById("btn-lang-en").addEventListener("click", function(){applyLang("en");});
+document.getElementById("btn-theme").addEventListener("click", function(){
+  applyTheme(root.getAttribute("data-theme")==="dark"?"light":"dark");
+});
+})();
+</script>
+</body>
+</html>
+

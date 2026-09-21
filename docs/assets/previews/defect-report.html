@@ -1,360 +1,484 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN" data-theme="night">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Inventory reservation v2 - Task 12</title>
-  <style>
-:root {
-  color-scheme: light;
-  --bg: #F8FAFC;
-  --card: #FFFFFF;
-  --ink: #0F172A;
-  --heading: #1E3A8A;
-  --muted: #475569;
-  --line: #DBEAFE;
-  --primary: #1E40AF;
-  --accent: #D97706;
-  --danger: #DC2626;
-  --ok: #047857;
-  --chip: #E9EEF6;
-  --shadow: 0 1px 2px rgb(15 23 42 / 6%);
-  --topbar: 108px;
-  --sans: ui-sans-serif, "PingFang SC", "Noto Sans SC", "Segoe UI", sans-serif;
-  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-}
-html[data-theme="dark"] {
-  color-scheme: dark;
-  --bg: #0B1220;
-  --card: #111827;
-  --ink: #E2E8F0;
-  --heading: #BFDBFE;
-  --muted: #94A3B8;
-  --line: #1E3A8A;
-  --chip: #1E293B;
-  --shadow: 0 1px 2px rgb(0 0 0 / 40%);
-}
-* { box-sizing: border-box; }
-html { scroll-padding-top: calc(var(--topbar) + 12px); }
-body {
-  margin: 0;
-  font-family: var(--sans);
-  background: var(--bg);
-  color: var(--ink);
-  line-height: 1.55;
-  font-size: 14px;
-}
-.skip-link {
-  position: absolute; left: 12px; top: -40px; z-index: 20;
-  background: var(--primary); color: #fff; padding: 8px 12px; border-radius: 8px;
-}
-.skip-link:focus { top: 12px; }
-.topbar {
-  position: sticky; top: 0; z-index: 10;
-  background: color-mix(in srgb, var(--bg) 92%, transparent);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--line);
-}
-.topbar-inner, .toc, main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
-.topbar-inner {
-  display: flex; justify-content: space-between; align-items: center;
-  gap: 16px; padding: 12px 0 8px;
-}
-.brand { display: flex; gap: 12px; align-items: center; min-width: 0; }
-.brand-mark {
-  display: grid; place-items: center; width: 36px; height: 36px; flex: 0 0 auto;
-  border-radius: 10px; background: var(--primary); color: #fff;
-}
-.eyebrow { margin: 0; color: var(--muted); font-size: 12px; }
-h1 {
-  margin: 0; font-size: 20px; color: var(--heading); font-weight: 650;
-  text-wrap: balance;
-}
-.topbar-actions { display: flex; align-items: center; gap: 8px; }
-.toc {
-  display: flex; flex-wrap: wrap; gap: 8px 14px; padding: 0 0 10px;
-}
-.toc a {
-  color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 600;
-}
-.toc a:hover, .toc a:focus-visible { color: var(--primary); }
-main { padding: 20px 0 72px; }
-.meta-grid, .kpi-row, .note-grid, .confirm-list {
-  display: grid; gap: 10px; margin: 0 0 16px;
-}
-.meta-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
-.kpi-row { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
-.meta-item, .kpi, .panel, .confirm-card, .finding {
-  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
-  box-shadow: var(--shadow);
-}
-.meta-item { padding: 10px 12px; min-width: 0; }
-.meta-item span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 2px; }
-.meta-item code, .finding summary code, td code {
-  font-family: var(--mono); font-size: 12px; word-break: break-all;
-}
-.kpi { padding: 12px 14px; }
-.kpi strong { display: block; font-size: 28px; line-height: 1.1; color: var(--heading); }
-.kpi-bug strong { color: var(--danger); }
-.kpi-opt strong { color: var(--accent); }
-.kpi-confirm strong { color: var(--primary); }
-.kpi span { color: var(--muted); font-size: 12px; }
-.panel { padding: 16px 18px; margin: 0 0 14px; }
-.panel-head {
-  display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between;
-  gap: 12px; margin: 0 0 12px;
-}
-.panel-head h2 { margin: 0; }
-.toolbar {
-  margin-left: auto; display: flex; flex-direction: column; align-items: flex-end;
-  gap: 8px; max-width: 100%;
-}
-h2 {
-  display: flex; align-items: center; gap: 8px; margin: 0 0 12px;
-  font-size: 16px; color: var(--heading);
-}
-.sec-icon { display: grid; place-items: center; color: var(--primary); }
-.count {
-  margin-left: 8px; background: var(--chip); color: var(--muted);
-  border-radius: 999px; padding: 1px 8px; font-size: 12px;
-}
-.prose { margin: 0; }
-.table-wrap { overflow-x: auto; }
-table.data { width: 100%; border-collapse: collapse; font-size: 13px; }
-table.data th, table.data td {
-  text-align: left; vertical-align: top; padding: 8px 10px;
-  border-bottom: 1px solid var(--line);
-}
-table.data th { color: var(--muted); font-weight: 650; font-size: 12px; }
-.index-table { margin: 0; }
-.findings-table .finding-row { cursor: pointer; }
-.findings-table .finding-row:hover, .findings-table .finding-row.is-open { background: var(--chip); }
-.findings-table .finding-row.is-open td { border-bottom-color: transparent; }
-.finding-jump { color: inherit; text-decoration: none; font-weight: 650; }
-.finding-detail td {
-  padding: 4px 10px 16px; background: color-mix(in srgb, var(--chip) 45%, var(--card));
-}
-.finding-detail .finding-dl, .finding-detail .tags { margin: 8px 0 0; }
-.finding-detail pre.code { margin: 12px 0 0; }
-.muted { color: var(--muted); font-size: 12px; }
-.badge, .tag, .tag-confirm, .sev, .chip {
-  display: inline-flex; align-items: center; gap: 4px;
-  border-radius: 999px; padding: 2px 8px; font-size: 12px; font-weight: 650;
-  white-space: nowrap;
-}
-.badge { background: #DBEAFE; color: var(--primary); }
-.status-completed { background: #D1FAE5; color: var(--ok); }
-.status-failed, .status-aborted { background: #FEE2E2; color: var(--danger); }
-.kind-bug { background: #FEE2E2; color: var(--danger); }
-.kind-opt { background: #FEF3C7; color: #92400E; }
-.kind-other { background: var(--chip); color: var(--muted); }
-.sev-high { background: #FEE2E2; color: var(--danger); }
-.sev-med { background: #FEF3C7; color: #92400E; }
-.sev-low { background: #DBEAFE; color: var(--primary); }
-.tag, .tag-confirm { background: var(--chip); color: var(--muted); }
-.tag-confirm { background: #FEF3C7; color: #92400E; }
-.chip-list { display: flex; flex-wrap: wrap; gap: 8px; }
-.toolbar .chip-list { justify-content: flex-end; }
-.chip {
-  border: 1px solid var(--line); background: var(--card); color: var(--muted); cursor: pointer;
-}
-.chip.is-on { background: var(--primary); color: #fff; border-color: var(--primary); }
-.search {
-  display: flex; align-items: center; gap: 8px; width: min(320px, 100%);
-  border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; background: var(--card);
-}
-.search input {
-  border: 0; outline: none; width: 100%; background: transparent; color: var(--ink); font: inherit;
-}
-.icon-btn {
-  border: 1px solid var(--line); background: var(--card); color: var(--heading);
-  width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: grid; place-items: center;
-}
-.confirm-list { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-.confirm-card, .note-grid > div { padding: 12px 14px; }
-.confirm-card h3, .note-grid h3 { margin: 0 0 8px; font-size: 14px; color: var(--heading); }
-.note-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin: 0; }
-.note-grid > div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
-.note-grid p, .confirm-card dd, .finding-dl dd { margin: 0; color: var(--ink); }
-dl { margin: 0; display: grid; gap: 8px; }
-dt { color: var(--muted); font-size: 12px; font-weight: 650; }
-.finding { padding: 0; margin: 0 0 10px; }
-.finding summary {
-  list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; gap: 8px 12px;
-  align-items: center; padding: 12px 14px;
-}
-.finding summary::-webkit-details-marker { display: none; }
-.finding summary strong { color: var(--heading); }
-.finding details[open] summary { border-bottom: 1px solid var(--line); }
-.finding-dl, .tags, .finding .code { margin: 12px 14px; }
-.finding .code, pre.code {
-  white-space: pre-wrap; word-break: break-word; background: #0F172A; color: #E2E8F0;
-  border-radius: 8px; padding: 12px; overflow-x: auto; font-family: var(--mono); font-size: 12px;
-}
-.empty { color: var(--muted); }
-.hidden { display: none !important; }
-.sr-only {
-  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0,0,0,0); border: 0;
-}
-a, button, input, summary { outline: none; }
-a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 35%, transparent);
-}
-@media (max-width: 720px) {
-  h1 { font-size: 18px; }
-  .kpi strong { font-size: 22px; }
-  table.data th:nth-child(n+5), table.data td:nth-child(n+5) { display: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; scroll-behavior: auto !important; }
-}
-@media print {
-  .topbar { position: static; }
-  .toolbar, .skip-link, .icon-btn { display: none !important; }
-  .finding-detail, .finding-detail.hidden { display: table-row !important; }
-  .finding-row, .finding-detail { break-inside: avoid; }
-}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Incremental Scan Report</title>
+<script>
+(function(){
+  try{
+    var q=new URLSearchParams(location.search).get('theme');
+    var t=(q==='day'||q==='night')?q:localStorage.getItem('aid-report-theme');
+    if(t!=='day'&&t!=='night') t='night';
+    document.documentElement.setAttribute('data-theme',t);
+  }catch(e){}
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Karla:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root,html[data-theme="night"] {
+    --bg:#0c0c0f; --bg2:#12121a; --surface:#18181f; --surface2:#1f1f28;
+    --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.12);
+    --text:#ece8df; --muted:#8b8780; --dim:#5c5954;
+    --p0:#ff4d4d; --p0-glow:rgba(255,77,77,.25);
+    --p1:#ff9f43; --p1-glow:rgba(255,159,67,.2);
+    --p2:#54a0ff; --p2-glow:rgba(84,160,255,.18);
+    --p3:#8395a7; --p3-glow:rgba(131,149,167,.15);
+    --accent:#c9a962; --accent-dim:rgba(201,169,98,.12);
+    --confirmed:#2ecc71; --sast:#54a0ff; --llm:#b388ff;
+    --wash-gold:rgba(201,169,98,.08); --wash-alert:rgba(255,77,77,.06);
+    --grid:rgba(255,255,255,.025); --finding-shadow:0 8px 32px rgba(0,0,0,.35);
+    --alert-drop-fg:#ff8080; --toggle-shadow:0 10px 32px rgba(0,0,0,.4);
+    --thumb:linear-gradient(180deg,#ead7a4,#c9a962);
+    --radius:14px; --font-display:"Fraunces",Georgia,serif;
+    --font-body:"Karla",system-ui,sans-serif; --font-mono:"IBM Plex Mono",monospace;
+  }
+  html[data-theme="day"] {
+    --bg:#e7dcc6; --bg2:#d9cdb4; --surface:#f6edd8; --surface2:#efe3c8;
+    --border:rgba(62,46,18,.14); --border2:rgba(62,46,18,.26);
+    --text:#1a150e; --muted:#6a5d45; --dim:#8d8068;
+    --p0:#b42318; --p0-glow:rgba(180,35,24,.14);
+    --p1:#a34b0a; --p1-glow:rgba(163,75,10,.14);
+    --p2:#1558b0; --p2-glow:rgba(21,88,176,.12);
+    --p3:#4d5a66; --p3-glow:rgba(77,90,102,.12);
+    --accent:#7a5810; --accent-dim:rgba(122,88,16,.16);
+    --confirmed:#176c3a; --sast:#1558b0; --llm:#5c32b0;
+    --wash-gold:rgba(201,169,98,.32); --wash-alert:rgba(180,35,24,.07);
+    --grid:rgba(62,46,18,.07); --finding-shadow:0 12px 28px rgba(72,48,12,.1);
+    --alert-drop-fg:#9b1c12; --toggle-shadow:0 10px 24px rgba(72,48,12,.14);
+    --thumb:linear-gradient(180deg,#f4d27a,#b8861c);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;color-scheme:dark}
+  html[data-theme="day"]{color-scheme:light}
+  body{font-family:var(--font-body);background:var(--bg);color:var(--text);
+       line-height:1.6;-webkit-font-smoothing:antialiased}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(ellipse 80% 50% at 15% -10%,var(--wash-gold),transparent 55%),
+      radial-gradient(ellipse 60% 40% at 90% 5%,var(--wash-alert),transparent 50%),
+      linear-gradient(var(--grid) 1px,transparent 1px),
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:auto,auto,48px 48px,48px 48px}
+  html.theme-ready body,html.theme-ready .stat-pill,html.theme-ready .meta-card,
+  html.theme-ready .finding,html.theme-ready .source-chip,html.theme-ready .loc,
+  html.theme-ready .watch-toggle,html.theme-ready .module-card,html.theme-ready .heat-row,
+  html.theme-ready .alert,html.theme-ready .hero-sub code{
+    transition:background-color .45s ease,color .45s ease,border-color .45s ease,box-shadow .45s ease}
+  .page{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:3rem 1.5rem 4rem}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  @keyframes shimmer{0%,100%{opacity:.4}50%{opacity:1}}
+  .hero{animation:fadeUp .7s ease both;margin-bottom:2.5rem;padding-right:9.5rem}
+  @media(max-width:640px){.hero{padding-right:3.5rem}}
+  .hero-eyebrow{font-size:.72rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:.75rem;display:flex;align-items:center;gap:.6rem}
+  .hero-eyebrow::before{content:"";width:28px;height:1px;background:var(--accent);animation:shimmer 2.5s ease infinite}
+  .hero h1{font-family:var(--font-display);font-size:clamp(2rem,5vw,3rem);font-weight:700;
+    letter-spacing:-.02em;line-height:1.1;margin-bottom:.5rem}
+  .hero-sub{color:var(--muted);font-size:.95rem}
+  .hero-sub code{font-family:var(--font-mono);font-size:.82rem;background:var(--surface2);
+    padding:.15em .5em;border-radius:6px;border:1px solid var(--border)}
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin:2rem 0;
+    animation:fadeUp .7s .1s ease both}
+  @media(max-width:640px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+  .stat-pill{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:1rem .75rem;
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    text-decoration:none;color:inherit;transition:transform .2s,border-color .2s,box-shadow .2s}
+  .stat-pill:hover{transform:translateY(-2px);border-color:var(--border2)}
+  .stat-pill.sev-p0:hover{box-shadow:0 0 24px var(--p0-glow);border-color:var(--p0)}
+  .stat-pill.sev-p1:hover{box-shadow:0 0 24px var(--p1-glow);border-color:var(--p1)}
+  .stat-pill.sev-p2:hover{box-shadow:0 0 24px var(--p2-glow);border-color:var(--p2)}
+  .stat-pill.sev-p3:hover{box-shadow:0 0 24px var(--p3-glow);border-color:var(--p3)}
+  .stat-label{font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .stat-num{font-family:var(--font-display);font-size:2rem;font-weight:700;line-height:1}
+  .stat-pill.sev-p0 .stat-num{color:var(--p0)}
+  .stat-pill.sev-p1 .stat-num{color:var(--p1)}
+  .stat-pill.sev-p2 .stat-num{color:var(--p2)}
+  .stat-pill.sev-p3 .stat-num{color:var(--p3)}
+  .meta-panel{display:grid;grid-template-columns:1.2fr 1fr;gap:1rem;margin-bottom:2.5rem;
+    animation:fadeUp .7s .18s ease both}
+  @media(max-width:768px){.meta-panel{grid-template-columns:1fr}}
+  .meta-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.4rem}
+  .meta-card h3{font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:1rem}
+  .meta-kv{display:grid;gap:.55rem;font-size:.88rem}
+  .meta-kv dt{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em}
+  .meta-kv dd{color:var(--text);margin-bottom:.35rem}
+  .meta-kv dd code{font-family:var(--font-mono);font-size:.78rem;color:var(--accent)}
+  .coverage-bar{display:flex;height:6px;border-radius:99px;overflow:hidden;background:var(--surface2);margin:.6rem 0}
+  .coverage-bar span{height:100%}
+  .coverage-bar .det{background:var(--confirmed)}
+  .coverage-bar .llm{background:var(--llm)}
+  .source-chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem}
+  .source-chip{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+    padding:.35rem .65rem;font-size:.78rem;display:flex;gap:.4rem;align-items:center}
+  .source-n{font-weight:600;color:var(--text)}
+  .source-l{color:var(--muted);text-transform:capitalize}
+  .rule-row{display:grid;grid-template-columns:72px 1fr 28px;gap:.5rem;align-items:center;
+    font-size:.82rem;margin-bottom:.4rem}
+  .rule-id{font-family:var(--font-mono);font-size:.72rem;color:var(--muted)}
+  .rule-bar-wrap{height:4px;background:var(--surface2);border-radius:99px;overflow:hidden}
+  .rule-bar{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--p1));border-radius:99px}
+  .rule-n{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+  .severity-block{margin-bottom:2.5rem;animation:fadeUp .6s calc(.25s + var(--i,0)*.05s) ease both}
+  .severity-head{display:flex;align-items:center;gap:.85rem;margin-bottom:1.25rem;padding-bottom:.75rem;
+    border-bottom:1px solid var(--border)}
+  .severity-badge{font-family:var(--font-mono);font-size:.72rem;font-weight:500;padding:.3em .75em;
+    border-radius:6px;letter-spacing:.06em}
+  .sev-p0 .severity-badge{background:var(--p0-glow);color:var(--p0);border:1px solid rgba(255,77,77,.35)}
+  .sev-p1 .severity-badge{background:var(--p1-glow);color:var(--p1);border:1px solid rgba(255,159,67,.35)}
+  .sev-p2 .severity-badge{background:var(--p2-glow);color:var(--p2);border:1px solid rgba(84,160,255,.35)}
+  .sev-p3 .severity-badge{background:var(--p3-glow);color:var(--p3);border:1px solid rgba(131,149,167,.35)}
+  .severity-title{font-family:var(--font-display);font-size:1.35rem;font-weight:500;flex:1}
+  .severity-count{font-family:var(--font-display);font-size:1.5rem;color:var(--muted);font-weight:500}
+  .findings-grid{display:flex;flex-direction:column;gap:1rem}
+  .finding{position:relative;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);overflow:hidden;
+    animation:fadeUp .5s calc(.08s * var(--i,0)) ease both;
+    transition:border-color .25s,box-shadow .25s}
+  .finding:hover{border-color:var(--border2);box-shadow:var(--finding-shadow)}
+  .finding-accent{position:absolute;left:0;top:0;bottom:0;width:3px}
+  .sev-p0 .finding-accent{background:linear-gradient(180deg,var(--p0),transparent)}
+  .sev-p1 .finding-accent{background:linear-gradient(180deg,var(--p1),transparent)}
+  .sev-p2 .finding-accent{background:linear-gradient(180deg,var(--p2),transparent)}
+  .sev-p3 .finding-accent{background:linear-gradient(180deg,var(--p3),transparent)}
+  .finding-head{padding:1.1rem 1.25rem 1rem 1.4rem}
+  .finding-top{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-bottom:.65rem}
+  .loc{font-family:var(--font-mono);font-size:.78rem;background:var(--surface2);padding:.2em .55em;
+    border-radius:6px;border:1px solid var(--border);color:var(--accent)}
+  .tag{font-size:.68rem;font-weight:600;padding:.22em .55em;border-radius:5px;
+    letter-spacing:.04em;text-transform:uppercase}
+  .tag-confirmed{background:rgba(46,204,113,.12);color:var(--confirmed);border:1px solid rgba(46,204,113,.3)}
+  .tag-sast{background:rgba(84,160,255,.12);color:var(--sast);border:1px solid rgba(84,160,255,.3)}
+  .tag-llm{background:rgba(179,136,255,.12);color:var(--llm);border:1px solid rgba(179,136,255,.3)}
+  .tag-rule,.tag-conf,.tag-id{background:var(--surface2);color:var(--muted);border:1px solid var(--border);
+    font-family:var(--font-mono);font-size:.65rem;text-transform:none;letter-spacing:0}
+  .finding-title{font-family:var(--font-display);font-size:1.08rem;font-weight:500;line-height:1.35;
+    margin-bottom:.35rem}
+  .finding-cat{font-size:.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
+  .finding-body{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--border)}
+  @media(max-width:720px){.finding-body{grid-template-columns:1fr}}
+  .field{padding:1rem 1.25rem 1.1rem 1.4rem}
+  .field-evidence{border-right:1px solid var(--border)}
+  @media(max-width:720px){.field-evidence{border-right:none;border-bottom:1px solid var(--border)}}
+  .field-label{display:block;font-size:.65rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:.45rem}
+  .field-evidence .field-label{color:var(--p1)}
+  .field-fix .field-label{color:var(--confirmed)}
+  .field p{font-size:.86rem;color:var(--text);line-height:1.55;word-break:break-word}
+  .alert{padding:.85rem 1.1rem;border-radius:10px;font-size:.86rem;margin-bottom:1.25rem;
+    animation:fadeUp .5s ease both}
+  .alert-warn{background:rgba(255,159,67,.1);border:1px solid rgba(255,159,67,.3);color:var(--p1)}
+  .alert-drop{background:rgba(255,77,77,.08);border:1px solid rgba(255,77,77,.25);color:var(--alert-drop-fg)}
+  .extra-block{margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+  .extra-block h2{font-family:var(--font-display);font-size:1.2rem;margin-bottom:1rem;color:var(--accent)}
+  .module-card,.heat-row{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+    padding:.85rem 1rem;margin-bottom:.5rem;font-size:.86rem}
+  .heat-row{display:flex;justify-content:space-between;align-items:center}
+  .heat-score{font-family:var(--font-mono);color:var(--p1)}
+  .footer{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border);
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem;
+    font-size:.78rem;color:var(--dim)}
+  .footer-brand{font-family:var(--font-mono);letter-spacing:.06em}
+  .footer-meta{color:var(--muted)}
+  .muted{color:var(--muted);font-size:.85rem}
+  .total-badge{display:inline-flex;align-items:center;gap:.4rem;margin-left:.5rem;
+    font-size:.82rem;color:var(--muted);font-weight:400}
+  .total-badge strong{color:var(--text);font-weight:600}
+  .watch-toggle{position:fixed;top:1.15rem;right:1.15rem;z-index:30;display:inline-flex;
+    align-items:center;gap:.65rem;padding:.32rem .75rem .32rem .32rem;border-radius:999px;
+    border:1px solid var(--accent);background:var(--surface);
+    color:var(--text);cursor:pointer;font-family:var(--font-mono);box-shadow:var(--toggle-shadow);
+    appearance:none;-webkit-appearance:none}
+  .watch-toggle:hover{border-color:var(--accent)}
+  .watch-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .watch-rail{position:relative;display:flex;align-items:center;justify-content:space-between;
+    width:64px;height:28px;padding:0 7px;border-radius:99px;background:var(--bg2);
+    border:1px solid var(--border);box-shadow:inset 0 0 0 1px var(--accent-dim)}
+  .watch-icon-sun,.watch-icon-moon{position:relative;z-index:1;width:10px;height:10px;border-radius:50%}
+  .watch-icon-sun{background:#e8b84a;box-shadow:0 0 0 1.5px #e8b84a,0 0 8px rgba(232,184,74,.55)}
+  .watch-icon-moon{background:#d8d4cc;box-shadow:inset -3px -1px 0 0 #6b675f}
+  .watch-thumb{position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;
+    background:var(--thumb);box-shadow:0 2px 6px rgba(0,0,0,.35);z-index:2;
+    transform:translateX(34px);transition:transform .4s cubic-bezier(.4,.15,.2,1)}
+  html[data-theme="day"] .watch-thumb{transform:translateX(0)}
+  .watch-meta{display:flex;flex-direction:column;align-items:flex-start;line-height:1.1;min-width:3.2rem}
+  .watch-mode{font-size:.68rem;font-weight:500;letter-spacing:.14em;color:var(--accent)}
+  .watch-hint{font-size:.58rem;letter-spacing:.16em;color:var(--dim);margin-top:.15rem}
+  @media(max-width:640px){.watch-hint{display:none}.watch-toggle{padding:.3rem .55rem .3rem .3rem}}
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .watch-thumb,html.theme-ready body,html.theme-ready .stat-pill,html.theme-ready .meta-card,
+    html.theme-ready .finding,html.theme-ready .source-chip,html.theme-ready .loc,
+    html.theme-ready .watch-toggle,html.theme-ready .module-card,html.theme-ready .heat-row,
+    html.theme-ready .alert,html.theme-ready .hero-sub code{transition:none}
+  }
 </style>
 </head>
 <body>
-  <a class="skip-link" href="#findings">Skip to findings</a>
-  <header class="topbar">
-    <div class="topbar-inner">
-      <div class="brand">
-        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6l-8-3z"/></svg></span>
-        <div>
-          <p class="eyebrow">Defect detection report - Task 12</p>
-          <h1>Inventory reservation v2</h1>
-        </div>
-      </div>
-      <div class="topbar-actions">
-        <span class="badge status-completed">Completed</span>
-        <button type="button" class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"/></svg></button>
-      </div>
-    </div>
-    <nav class="toc" aria-label="Report outline"><a href="#sec-change">Requirement changes</a><a href="#sec-scope">Analysis scope</a><a href="#sec-risks">Risks</a><a href="#sec-confirm">Pending confirmation</a><a href="#sec-notes">Notes</a><a href="#sec-verdict">Conclusion</a><a href="#findings">Findings</a></nav>
+<div class="page">
+  <button type="button" class="watch-toggle" id="aidThemeToggle" aria-pressed="false" aria-label="切换为白天视图">
+    <span class="watch-rail" aria-hidden="true">
+      <span class="watch-icon-sun"></span>
+      <span class="watch-thumb"></span>
+      <span class="watch-icon-moon"></span>
+    </span>
+    <span class="watch-meta">
+      <span class="watch-mode" id="aidThemeLabel">NIGHT</span>
+      <span class="watch-hint">VIEW</span>
+    </span>
+  </button>
+  <header class="hero">
+    <p class="hero-eyebrow">AI Defect Detection</p>
+    <h1>Incremental Report<span class="total-badge"><strong>7</strong> findings</span></h1>
+    <p class="hero-sub">Target <code>inventory-service@reservation-v2</code> · Generated 2026-09-21T14:34:12.651036</p>
   </header>
-  <main id="main">
-    <section class="meta-grid" aria-label="Task info">
-      <div class="meta-item"><span>Repo</span><code title="https://github.com/example/inventory-service.git">https://github.com/example/inventory-service.git</code></div>
-      <div class="meta-item"><span>Detection branch</span><code>feature/reservation-v2</code></div>
-      <div class="meta-item"><span>Baseline branch</span><code>main</code></div>
-      <div class="meta-item"><span>Submitter</span><strong>reviewer</strong></div>
-      <div class="meta-item"><span>Created</span>2026-09-08 10:00:00</div>
-      <div class="meta-item"><span>Updated</span>2026-09-08 11:20:00</div>
-    </section>
-    <section class="kpi-row" aria-label="Results overview"><div class="kpi kpi-total"><strong>3</strong><span>Total findings</span></div><div class="kpi kpi-bug"><strong>3</strong><span>Suspected defect</span></div><div class="kpi kpi-opt"><strong>0</strong><span>Improvement</span></div><div class="kpi kpi-risk"><strong>4</strong><span>Summary risks</span></div><div class="kpi kpi-confirm"><strong>1</strong><span>Pending confirmation</span></div></section>
-    <section class="panel" id="sec-change"><h2 data-marker="📋[Requirement changes]"><span class="sec-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg></span>Requirement changes<span class="sr-only">📋[Requirement changes]</span></h2><p class="prose">Inventory hold, volume discount, and refund cap on feature/reservation-v2</p></section><section class="panel" id="sec-scope"><h2 data-marker="🔍[Analysis scope]"><span class="sec-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg></span>Analysis scope<span class="sr-only">🔍[Analysis scope]</span></h2><p class="prose">reservation.js, pricing.js, refund.js against docs/requirements.md</p></section><section class="panel" id="sec-risks"><h2 data-marker="⚠️[Risks]"><span class="sec-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 21h20L12 3z"/><path d="M12 9v5"/><path d="M12 17h.01"/></svg></span>Risks<span class="sr-only">⚠️[Risks]</span></h2><div class="table-wrap"><table class="data"><thead><tr><th>#</th><th>Severity</th><th>Introduced</th><th>Location</th><th>Trigger conditions</th><th>Impact</th></tr></thead><tbody><tr><td>1</td><td><span class="sev sev-med">Med</span></td><td>This change</td><td><code>▎[This change]</code></td><td>—</td><td>—</td></tr><tr><td>2</td><td><span class="sev sev-high">High</span></td><td>This change</td><td><code>reservation.js#expireStaleReservations lines 162-168</code></td><td>Trigger: expire a hold then call checkAvailability</td><td>storefront still shows held stock.▎[This change]</td></tr><tr><td>3</td><td><span class="sev sev-high">High</span></td><td>This change</td><td><code>pricing.js#volumeDiscountRate lines 32-39</code></td><td>Trigger: order exactly 10 units</td><td>published 5% discount is skipped.▎[This change]</td></tr><tr><td>4</td><td><span class="sev sev-high">High</span></td><td>This change</td><td><code>refund.js#resolveRefundAmount lines 18-28</code></td><td>Trigger: second partial refund</td><td>refundedTotal can exceed paidAmount</td></tr></tbody></table></div></section><section class="panel" id="sec-confirm"><h2 data-marker="🔔[Pending confirmation]"><span class="sec-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.2 2.4c-.8.3-1.2.8-1.2 1.6V14"/><path d="M12 17h.01"/></svg></span>Pending confirmation<span class="sr-only">🔔[Pending confirmation]</span></h2><div class="confirm-list"><article class="confirm-card"><h3>#1 Hold window</h3><dl><div><dt>Open question</dt><dd>should expiry notify the storefront immediately?</dd></div><div><dt>Current assumption</dt><dd>yes, via cache invalidate.</dd></div><div><dt>Please confirm</dt><dd>product owner.</dd></div></dl></article></div></section><section class="panel" id="sec-notes"><h2 data-marker="📌[Notes]"><span class="sec-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.2"/></svg></span>Notes<span class="sr-only">📌[Notes]</span></h2><div class="note-grid"><div><h3>Test</h3><p>hold, expire, then checkAvailability on the same SKU</p></div><div><h3>Release</h3><p>do not ship refund or discount until the three defects are fixed</p></div></div></section><section class="panel" id="sec-verdict"><h2 data-marker="✅[Conclusion]"><span class="sec-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.8 2.8L16 9.5"/></svg></span>Conclusion<span class="sr-only">✅[Conclusion]</span></h2><p class="prose">Three requirement mismatches found. None came from Semgrep seed rules. Fix before release.</p></section>
-    <section class="panel" id="findings">
-      <div class="panel-head">
-        <h2>Findings<span class="count">3</span></h2>
-        <div class="toolbar">
-          <label class="search">
-            <span class="sr-only">Search findings</span>
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.2-3.2"/></svg>
-            <input id="finding-search" type="search" placeholder="Search class, method, or summary" autocomplete="off">
-          </label>
-          <div class="chip-list" role="group" aria-label="Filter by type">
-            <button type="button" class="chip is-on" data-filter="all">All 3</button>
-            <button type="button" class="chip" data-filter="bug">Suspected defect 3</button>
-            <button type="button" class="chip" data-filter="opt">Improvement 0</button>
-            <button type="button" class="chip" data-filter="confirm">Please confirm 0</button>
-          </div>
-        </div>
+
+  <nav class="stats-row" aria-label="Severity summary"><a class="stat-pill sev-p0" href="#sev-p0"><span class="stat-label">P0</span><span class="stat-num">4</span></a><a class="stat-pill sev-p1" href="#sev-p1"><span class="stat-label">P1</span><span class="stat-num">3</span></a><a class="stat-pill sev-p2" href="#sev-p2"><span class="stat-label">P2</span><span class="stat-num">0</span></a><a class="stat-pill sev-p3" href="#sev-p3"><span class="stat-label">P3</span><span class="stat-num">0</span></a></nav>
+
+  <div class="meta-panel">
+    <div class="meta-card">
+      <h3>Scan Coverage</h3>
+      <dl class="meta-kv">
+        <dt>Files Scanned</dt><dd>6</dd>
+        <dt>Deterministic Share</dt><dd>0.0% <span class="muted">(target ≥70%)</span></dd>
+        <dt>LLM Share</dt><dd>100.0%</dd>
+      </dl>
+      <div class="coverage-bar" title="Deterministic vs LLM">
+        <span class="det" style="width:0.0%"></span><span class="llm" style="width:100.0%"></span>
       </div>
-      <div id="finding-list"><div class="table-wrap index-table"><table class="data findings-table"><thead><tr><th>#</th><th>Type</th><th>Location</th><th>Summary</th></tr></thead><tbody><tr class="finding-row" id="finding-1-row" data-finding="1" data-kind="bug" data-confirm="" data-text="js#expirestalereservations expiry releases reserved units without invalidating the availability cache" role="button" tabindex="0" aria-expanded="false" aria-controls="finding-1"><td><a class="finding-jump" href="#finding-1">1</a></td><td><span class="badge kind-bug">Suspected defect</span></td><td><code>js#expireStaleReservations</code> <span class="muted">Lines 162-168</span></td><td>Expiry releases reserved units without invalidating the availability cache</td></tr><tr class="finding-detail hidden" id="finding-1" data-kind="bug" data-confirm="" data-text="js#expirestalereservations expiry releases reserved units without invalidating the availability cache"><td colspan="4"><dl class='finding-dl'><div><dt>Problem description</dt><dd>expireStaleReservations calls db.adjustReserved but never availabilityCache.invalidate. checkAvailability keeps serving the held (lower) count.</dd></div><div><dt>Affected business</dt><dd>customers cannot buy stock that is already free
+      <div class="source-chips"><div class="source-chip"><span class="source-n">0</span><span class="source-l">sast confirmed</span></div><div class="source-chip"><span class="source-n">0</span><span class="source-l">sast only</span></div><div class="source-chip"><span class="source-n">7</span><span class="source-l">llm judged</span></div></div>
+    </div>
+    <div class="meta-card">
+      <h3>Policy &amp; Rules</h3>
+      <dl class="meta-kv">
+        <dt>Policy Pack</dt><dd><code>codexqa-defect-analyzer-default</code> v1.1.0</dd>
+        <dt>Active Rules</dt><dd>27</dd>
+        <dt>Tooling</dt><dd>Ready: semgrep, gitleaks, bandit, ruff, eslint, osv-api</dd>
+      </dl>
+      <div style="margin-top:1rem"><div class="rule-row"><span class="rule-id">CONC-001</span><span class="rule-bar-wrap"><span class="rule-bar" style="width:100%"></span></span><span class="rule-n">1</span></div><div class="rule-row"><span class="rule-id">LOGIC-002</span><span class="rule-bar-wrap"><span class="rule-bar" style="width:100%"></span></span><span class="rule-n">1</span></div><div class="rule-row"><span class="rule-id">LOGIC-003</span><span class="rule-bar-wrap"><span class="rule-bar" style="width:100%"></span></span><span class="rule-n">1</span></div><div class="rule-row"><span class="rule-id">LOGIC-001</span><span class="rule-bar-wrap"><span class="rule-bar" style="width:100%"></span></span><span class="rule-n">1</span></div><div class="rule-row"><span class="rule-id">RES-001</span><span class="rule-bar-wrap"><span class="rule-bar" style="width:100%"></span></span><span class="rule-n">1</span></div><div class="rule-row"><span class="rule-id">LOGIC-004</span><span class="rule-bar-wrap"><span class="rule-bar" style="width:100%"></span></span><span class="rule-n">1</span></div><div class="rule-row"><span class="rule-id">LOGIC-005</span><span class="rule-bar-wrap"><span class="rule-bar" style="width:100%"></span></span><span class="rule-n">1</span></div></div>
+    </div>
+  </div>
 
-Trigger: create a reservation (warms cache), wait until it expires, run expireStaleReservations, then checkAvailability for the same SKU</dd></div><div><dt>Expected vs actual</dt><dd>availability should recover after expiry; it stays at the held value until TTL</dd></div><div><dt>Fix suggestion</dt><dd>invalidate the same cache key holdStock / releaseStock already invalidate</dd></div></dl><pre class='code'><code>db.adjustReserved(sku, -qty);
-availabilityCache.invalidate(sku);</code></pre></td></tr><tr class="finding-row" id="finding-2-row" data-finding="2" data-kind="bug" data-confirm="" data-text="js#volumediscountrate volume tiers use exclusive &gt; so exactly 10 units get no 5% discount" role="button" tabindex="0" aria-expanded="false" aria-controls="finding-2"><td><a class="finding-jump" href="#finding-2">2</a></td><td><span class="badge kind-bug">Suspected defect</span></td><td><code>js#volumeDiscountRate</code> <span class="muted">Lines 32-39</span></td><td>Volume tiers use exclusive &gt; so exactly 10 units get no 5% discount</td></tr><tr class="finding-detail hidden" id="finding-2" data-kind="bug" data-confirm="" data-text="js#volumediscountrate volume tiers use exclusive &gt; so exactly 10 units get no 5% discount"><td colspan="4"><dl class='finding-dl'><div><dt>Problem description</dt><dd>spec says discount at 10 and 50 units; code uses units &gt; 10 and units &gt; 50</dd></div><div><dt>Affected business</dt><dd>published tier boundaries
+  
 
-Trigger: volumeDiscountRate(10) or computeOrderTotal with 10 units</dd></div><div><dt>Fix suggestion</dt><dd>use inclusive bounds (&gt;= 10, &gt;= 50)</dd></div></dl></td></tr><tr class="finding-row" id="finding-3-row" data-finding="3" data-kind="bug" data-confirm="" data-text="js#resolverefundamount requested refund is not capped at the remaining paid balance" role="button" tabindex="0" aria-expanded="false" aria-controls="finding-3"><td><a class="finding-jump" href="#finding-3">3</a></td><td><span class="badge kind-bug">Suspected defect</span></td><td><code>js#resolveRefundAmount</code> <span class="muted">Lines 18-28</span></td><td>Requested refund is not capped at the remaining paid balance</td></tr><tr class="finding-detail hidden" id="finding-3" data-kind="bug" data-confirm="" data-text="js#resolverefundamount requested refund is not capped at the remaining paid balance"><td colspan="4"><dl class='finding-dl'><div><dt>Problem description</dt><dd>remaining is computed then ignored; the function returns the requested amount</dd></div><div><dt>Affected business</dt><dd>over-refund
+  <section class="severity-block sev-p0" id="sev-p0">
+  <div class="severity-head">
+    <span class="severity-badge">P0</span>
+    <h2 class="severity-title">P0 Findings</h2>
+    <span class="severity-count">4</span>
+  </div>
+  <div class="findings-grid"><article class="finding sev-p0" style="--i:0">
+  <div class="finding-accent"></div>
+  <header class="finding-head">
+    <div class="finding-top">
+      <code class="loc">src/inventory.js:49</code>
+      <span class="tag tag-llm">LLM</span>
+      <span class="tag tag-rule">CONC-001</span>
+      <span class="tag tag-conf">87%</span>
+      <span class="tag tag-id">fr-20260921-002</span>
+    </div>
+    <h3 class="finding-title">holdStock is check-then-act; two last-unit holds can both succeed</h3>
+    <span class="finding-cat">concurrency</span>
+  </header>
+  <div class="finding-body">
+    <div class="field field-evidence">
+      <span class="field-label">Evidence</span>
+      <p>readStock → available = onHand - reserved → await appendAudit → reserved += qty → putStock with no lock. Two concurrent quantity=1 holds when available=1 both pass the check. Intent: no double holding.</p>
+    </div>
+    <div class="field field-fix">
+      <span class="field-label">Remediation</span>
+      <p>Make the availability check and reserved increment one atomic update under withLock, or compare-and-swap the row.</p>
+    </div>
+  </div>
+</article>
+<article class="finding sev-p0" style="--i:1">
+  <div class="finding-accent"></div>
+  <header class="finding-head">
+    <div class="finding-top">
+      <code class="loc">src/refund.js:27</code>
+      <span class="tag tag-llm">LLM</span>
+      <span class="tag tag-rule">LOGIC-002</span>
+      <span class="tag tag-conf">93%</span>
+      <span class="tag tag-id">fr-20260921-004</span>
+    </div>
+    <h3 class="finding-title">resolveRefundAmount ignores remaining balance and can over-refund</h3>
+    <span class="finding-cat">logic</span>
+  </header>
+  <div class="finding-body">
+    <div class="field field-evidence">
+      <span class="field-label">Evidence</span>
+      <p>remaining is computed then unused. When requested is set, the function returns roundMoney(requested) with no min(requested, remaining). Second partial refund can make refundedTotal exceed paidAmount.</p>
+    </div>
+    <div class="field field-fix">
+      <span class="field-label">Remediation</span>
+      <p>return min(amount, remaining) after the &lt;=0 guard; never exceed remaining.</p>
+    </div>
+  </div>
+</article>
+<article class="finding sev-p0" style="--i:2">
+  <div class="finding-accent"></div>
+  <header class="finding-head">
+    <div class="finding-top">
+      <code class="loc">src/refund.js:72</code>
+      <span class="tag tag-llm">LLM</span>
+      <span class="tag tag-rule">LOGIC-003</span>
+      <span class="tag tag-conf">91%</span>
+      <span class="tag tag-id">fr-20260921-005</span>
+    </div>
+    <h3 class="finding-title">Gateway refund failure fabricates a local receipt and still settles</h3>
+    <span class="finding-cat">logic</span>
+  </header>
+  <div class="finding-body">
+    <div class="field field-evidence">
+      <span class="field-label">Evidence</span>
+      <p>catch of gateway.refund writes a localOnly receipt and continues. Callers see a settled refund while the payment provider did not capture it. Intent: gateway is the source of truth.</p>
+    </div>
+    <div class="field field-fix">
+      <span class="field-label">Remediation</span>
+      <p>Return { ok: false } on gateway failure; do not invent a receipt or increment refundedTotal.</p>
+    </div>
+  </div>
+</article>
+<article class="finding sev-p0" style="--i:3">
+  <div class="finding-accent"></div>
+  <header class="finding-head">
+    <div class="finding-top">
+      <code class="loc">src/reservation.js:166</code>
+      <span class="tag tag-llm">LLM</span>
+      <span class="tag tag-rule">LOGIC-001</span>
+      <span class="tag tag-conf">89%</span>
+      <span class="tag tag-id">fr-20260921-007</span>
+    </div>
+    <h3 class="finding-title">Expiry sweep frees reserved units without invalidating availability cache</h3>
+    <span class="finding-cat">logic</span>
+  </header>
+  <div class="finding-body">
+    <div class="field field-evidence">
+      <span class="field-label">Evidence</span>
+      <p>expireStaleReservations calls db.adjustReserved(hold.sku, -hold.qty) then saves EXPIRED, but never availabilityCache.invalidate. checkAvailability keeps serving the held (lower) count until TTL. Intent: hold expiry must be visible immediately.</p>
+    </div>
+    <div class="field field-fix">
+      <span class="field-label">Remediation</span>
+      <p>Invalidate the same cache key holdStock / releaseStock already invalidate after adjustReserved.</p>
+    </div>
+  </div>
+</article></div>
+</section>
+<section class="severity-block sev-p1" id="sev-p1">
+  <div class="severity-head">
+    <span class="severity-badge">P1</span>
+    <h2 class="severity-title">P1 Findings</h2>
+    <span class="severity-count">3</span>
+  </div>
+  <div class="findings-grid"><article class="finding sev-p1" style="--i:4">
+  <div class="finding-accent"></div>
+  <header class="finding-head">
+    <div class="finding-top">
+      <code class="loc">src/db.js:191</code>
+      <span class="tag tag-llm">LLM</span>
+      <span class="tag tag-rule">RES-001</span>
+      <span class="tag tag-conf">88%</span>
+      <span class="tag tag-id">fr-20260921-001</span>
+    </div>
+    <h3 class="finding-title">withLock releases the lock after await fn() with no finally</h3>
+    <span class="finding-cat">resource_leak</span>
+  </header>
+  <div class="finding-body">
+    <div class="field field-evidence">
+      <span class="field-label">Evidence</span>
+      <p>acquireLock, then await fn(), then releaseLock. If fn() throws, releaseLock never runs and the key stays held. Intent: locks release even on failure.</p>
+    </div>
+    <div class="field field-fix">
+      <span class="field-label">Remediation</span>
+      <p>Wrap fn() in try/finally and always releaseLock(key).</p>
+    </div>
+  </div>
+</article>
+<article class="finding sev-p1" style="--i:5">
+  <div class="finding-accent"></div>
+  <header class="finding-head">
+    <div class="finding-top">
+      <code class="loc">src/pricing.js:33</code>
+      <span class="tag tag-llm">LLM</span>
+      <span class="tag tag-rule">LOGIC-004</span>
+      <span class="tag tag-conf">95%</span>
+      <span class="tag tag-id">fr-20260921-003</span>
+    </div>
+    <h3 class="finding-title">Volume tiers use exclusive &gt; so exactly 10 units miss the 5% discount</h3>
+    <span class="finding-cat">logic</span>
+  </header>
+  <div class="finding-body">
+    <div class="field field-evidence">
+      <span class="field-label">Evidence</span>
+      <p>volumeDiscountRate uses units &gt; 50 and units &gt; 10. Spec/intent is inclusive lower bounds (10 and 50). volumeDiscountRate(10) returns 0.</p>
+    </div>
+    <div class="field field-fix">
+      <span class="field-label">Remediation</span>
+      <p>Use units &gt;= VOLUME_TIER_LARGE and units &gt;= VOLUME_TIER_SMALL.</p>
+    </div>
+  </div>
+</article>
+<article class="finding sev-p1" style="--i:6">
+  <div class="finding-accent"></div>
+  <header class="finding-head">
+    <div class="finding-top">
+      <code class="loc">src/reservation.js:95</code>
+      <span class="tag tag-llm">LLM</span>
+      <span class="tag tag-rule">LOGIC-005</span>
+      <span class="tag tag-conf">83%</span>
+      <span class="tag tag-id">fr-20260921-006</span>
+    </div>
+    <h3 class="finding-title">commitReservation never sets status COMMITTED so the hold stays replayable</h3>
+    <span class="finding-cat">logic</span>
+  </header>
+  <div class="finding-body">
+    <div class="field field-evidence">
+      <span class="field-label">Evidence</span>
+      <p>committedAt is written but status stays HELD. A second commitReservation can pass the NOT_HELD guard and consume stock again. Intent: commit semantics.</p>
+    </div>
+    <div class="field field-fix">
+      <span class="field-label">Remediation</span>
+      <p>Set reservation.status = &#x27;COMMITTED&#x27; before saveReservation returns.</p>
+    </div>
+  </div>
+</article></div>
+</section>
 
-Trigger: paidAmount=100, refundedTotal=80, resolveRefundAmount(order, 80)</dd></div><div><dt>Fix suggestion</dt><dd>return min(requested, remaining)</dd></div></dl></td></tr></tbody></table></div></div>
-      <p class="empty hidden" id="finding-empty">No matching findings.</p>
-    </section>
-  </main>
-  <script>
-(function () {
-  var root = document.documentElement;
-  var pref = localStorage.getItem("dd-theme");
-  if (pref) root.setAttribute("data-theme", pref);
-  else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)
-    root.setAttribute("data-theme", "dark");
-  var toggle = document.getElementById("theme-toggle");
-  if (toggle) toggle.addEventListener("click", function () {
-    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    root.setAttribute("data-theme", next);
-    localStorage.setItem("dd-theme", next);
-  });
-  var filter = "all";
-  var search = document.getElementById("finding-search");
-  var chips = document.querySelectorAll(".chip[data-filter]");
-  function detailFor(row) {
-    return document.getElementById("finding-" + row.getAttribute("data-finding"));
-  }
-  function isOpen(row) {
-    return row.getAttribute("aria-expanded") === "true";
-  }
-  function setOpen(row, open, scroll) {
-    var detail = detailFor(row);
-    row.setAttribute("aria-expanded", open ? "true" : "false");
-    row.classList.toggle("is-open", open);
-    if (detail) {
-      var visible = open && !row.classList.contains("hidden");
-      detail.classList.toggle("hidden", !visible);
-      if (visible && scroll) detail.scrollIntoView({ block: "nearest" });
+  <footer class="footer">
+    <span class="footer-brand">codexqa-defect-analyzer</span>
+    <span class="footer-meta">report_scan.html · 2026-09-21T14:34:12.651036</span>
+  </footer>
+</div>
+<script>
+(function(){
+  var KEY='aid-report-theme';
+  var root=document.documentElement;
+  var btn=document.getElementById('aidThemeToggle');
+  var label=document.getElementById('aidThemeLabel');
+  function apply(theme,persist){
+    root.setAttribute('data-theme',theme);
+    var isDay=theme==='day';
+    if(btn){
+      btn.setAttribute('aria-pressed',isDay?'true':'false');
+      btn.setAttribute('aria-label',isDay?'切换为黑夜视图':'切换为白天视图');
     }
-    if (open) {
-      try { history.replaceState(null, "", "#finding-" + row.getAttribute("data-finding")); }
-      catch (err) { location.hash = "finding-" + row.getAttribute("data-finding"); }
-    }
+    if(label) label.textContent=isDay?'DAY':'NIGHT';
+    if(persist){try{localStorage.setItem(KEY,theme)}catch(e){}}
   }
-  function toggleRow(row, scroll) {
-    setOpen(row, !isOpen(row), scroll);
-  }
-  function apply() {
-    var q = (search && search.value || "").trim().toLowerCase();
-    var shown = 0;
-    document.querySelectorAll(".finding-row").forEach(function (row) {
-      var kind = row.getAttribute("data-kind") || "";
-      var confirm = row.getAttribute("data-confirm") === "1";
-      var text = row.getAttribute("data-text") || row.textContent.toLowerCase();
-      var ok = (filter === "all") || (filter === "confirm" ? confirm : kind === filter);
-      if (q && text.indexOf(q) === -1) ok = false;
-      row.classList.toggle("hidden", !ok);
-      setOpen(row, isOpen(row), false);
-      if (ok) shown += 1;
-    });
-    var empty = document.getElementById("finding-empty");
-    if (empty) empty.classList.toggle("hidden", shown !== 0);
-  }
-  chips.forEach(function (chip) {
-    chip.addEventListener("click", function () {
-      filter = chip.getAttribute("data-filter") || "all";
-      chips.forEach(function (c) { c.classList.toggle("is-on", c === chip); });
-      apply();
-    });
+  var saved=null;
+  try{
+    var q=new URLSearchParams(location.search).get('theme');
+    if(q==='day'||q==='night') saved=q;
+    else saved=localStorage.getItem(KEY);
+  }catch(e){}
+  apply((saved==='day'||saved==='night')?saved:'night',false);
+  requestAnimationFrame(function(){root.classList.add('theme-ready')});
+  if(btn) btn.addEventListener('click',function(){
+    apply(root.getAttribute('data-theme')==='day'?'night':'day',true);
   });
-  if (search) search.addEventListener("input", apply);
-  document.querySelectorAll(".finding-row").forEach(function (row) {
-    row.addEventListener("click", function (ev) {
-      ev.preventDefault();
-      toggleRow(row, true);
-    });
-    row.addEventListener("keydown", function (ev) {
-      if (ev.key === "Enter" || ev.key === " ") {
-        ev.preventDefault();
-        toggleRow(row, true);
-      }
-    });
-  });
-  var hash = (location.hash || "").replace(/^#/, "");
-  var match = hash.match(/^finding-(\d+)$/);
-  if (match) {
-    var target = document.getElementById("finding-" + match[1] + "-row");
-    if (target) setOpen(target, true, true);
-  }
 })();
 </script>
 </body>
