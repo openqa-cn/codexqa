@@ -28,7 +28,7 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 [![Stars](https://img.shields.io/github/stars/openqa-cn/codexqa?style=flat)](https://github.com/openqa-cn/codexqa/stargazers)
 [![License](https://img.shields.io/github/license/openqa-cn/codexqa)](LICENSE)
 
-**[English](README.md) | 简体中文**
+**[English](https://github.com/openqa-cn/codexqa#readme-en) | 简体中文**
 
 <a href="https://openqa.cn/?utm_source=github&utm_medium=readme&utm_campaign=oss-seo&utm_content=nav-docs-zh"><strong>产品站点</strong></a> ·
 <a href="#快速开始"><strong>快速开始</strong></a> ·
