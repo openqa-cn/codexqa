@@ -151,6 +151,7 @@
     border: 1px solid var(--outline);
     border-radius: 8px;
     background: var(--titlebar);
+    scroll-margin-top: calc(var(--topbar-h) + 16px);
   }
   .sources-box > summary {
     list-style: none; cursor: pointer;
@@ -168,7 +169,8 @@
     text-decoration: none; color: var(--term-fg); border-radius: 4px; overflow: hidden;
     line-height: 1;
   }
-  .file:hover, .file-static:hover { opacity: 0.8; color: var(--term-fg); }
+  .file:hover { color: var(--clay); }
+  .file-static:hover { opacity: 0.8; color: var(--term-fg); }
   .file-path { background: var(--chip); padding: 5px 8px; }
   .file-loc { background: var(--chip-loc); padding: 5px 8px; color: var(--dim); }
 
@@ -676,7 +678,7 @@
   }
 
   const links = [...document.querySelectorAll('.nav a[href^="#"], .toc a[href^="#"]')];
-  const targets = [...document.querySelectorAll('section[id], #page-top, #howto')];
+  const targets = [...document.querySelectorAll('section[id], #page-top, #sec-sources, #howto')];
   const mark = () => {
     let current = 'page-top';
     for (const el of targets) {
@@ -687,6 +689,19 @@
       a.classList.toggle('active', a.getAttribute('href') === href);
     }
   };
+  const openHashDetails = (id) => {
+    if (!id) return;
+    const el = document.getElementById(decodeURIComponent(id));
+    if (el && el.tagName === 'DETAILS') el.open = true;
+  };
+  document.querySelectorAll('a[href^="#"]').forEach((a) => {
+    a.addEventListener('click', () => {
+      const href = a.getAttribute('href') || '';
+      openHashDetails(href.slice(1));
+    });
+  });
+  window.addEventListener('hashchange', () => openHashDetails(location.hash.slice(1)));
+  openHashDetails(location.hash.slice(1));
   document.addEventListener('scroll', mark, { passive: true });
   mark();
 </script>

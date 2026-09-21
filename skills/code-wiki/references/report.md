@@ -20,7 +20,9 @@
    仓库名更清楚时写成 `code-wiki-<repo-slug>-YYYYMMDD-HHMM.html`。
 3. **用 Edit 改副本**（不要用 Write，不要改 CSS 和 mermaid 加载器）：
    - `<title>`、`h1`、`#title-path`、`#cmd-repo`、`#cmd-flags`、`#meta-line`
-   - `#source-files` — 本页相关路径，写成 `<span class="file-static"><span class="file-path">app/foo.py</span><span class="file-loc">12-18</span></span>`（有行号才加 loc）
+   - `#source-files` — 本页相关路径。远程已知时写成可点链接（新标签打开，分支用本次索引的 `@branch`，不要猜 `main`）：
+     `<a class="file" href="https://github.com/org/repo/blob/<branch>/app/foo.py#L12-L18" target="_blank" rel="noopener"><span class="file-path">app/foo.py</span><span class="file-loc">12-18</span></a>`
+     只有本地路径、不知道远程时才用 `<span class="file-static">…</span>`。有行号才加 loc 和 `#L12-L18`。侧栏「相关源文件」会跳到并展开 `#sec-sources`，不要改成别的锚点。
    - 侧栏树按层填写，**不要只留「模块笔记」两三个链接**：
      - `#nav-entry` / `#nav-app` / `#nav-domain` / `#nav-storage` — 该层每个页一条 `<a href="#p01">p01 人话名</a>`，替换「按层填写模块」
      - `#nav-modules` — 每个收录页一条，替换 `p01 待填`…；多出来的待填删掉，不够就补
@@ -79,9 +81,10 @@
 <div class="callout risk"><b>2. p03 计价</b> — 从 p02 列有依赖；这里是枢纽，先搞清对外接口再往下读。<span class="why">改这里会同时碰到结算和存储。</span></div>
 ```
 
-源文件 chip（`#source-files`，以及图下「依据」需要落到真实路径时）：
+源文件 chip（`#source-files`，以及图下「依据」需要落到真实路径时）。有远程用 `.file` 链接，没有远程用 `.file-static`：
 
 ```html
+<a class="file" href="https://github.com/org/repo/blob/main/app/asgi.py#L21-L47" target="_blank" rel="noopener"><span class="file-path">app/asgi.py</span><span class="file-loc">21-47</span></a>
 <span class="file-static"><span class="file-path">app/asgi.py</span><span class="file-loc">21-47</span></span>
 ```
 
