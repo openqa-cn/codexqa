@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Rebuild README preview HTML with the shared testcase-generator chrome."""
 from pathlib import Path
+import os
+import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -43,6 +45,18 @@ PREFS = """<div class="prefs" role="toolbar" aria-label="Language and theme">
 def page(store, title_zh, title_en, body, lang="zh"):
     html_lang = "en" if lang == "en" else "zh-CN"
     shown = title_zh if lang == "zh" else title_en
+    zh_on = "true" if lang == "zh" else "false"
+    en_on = "true" if lang == "en" else "false"
+    prefs = f"""<div class="prefs" role="toolbar" aria-label="Language and theme">
+  <div class="group" role="group" aria-label="Language">
+    <button type="button" data-set-lang="zh" aria-pressed="{zh_on}">中文</button>
+    <button type="button" data-set-lang="en" aria-pressed="{en_on}">EN</button>
+  </div>
+  <div class="group" role="group" aria-label="Theme">
+    <button type="button" data-set-theme="light" aria-pressed="true"><span data-zh="白天" data-en="Light">{"Light" if lang == "en" else "白天"}</span></button>
+    <button type="button" data-set-theme="dark" aria-pressed="false"><span data-zh="黑夜" data-en="Dark">{"Dark" if lang == "en" else "黑夜"}</span></button>
+  </div>
+</div>"""
     return f"""<!DOCTYPE html>
 <html lang="{html_lang}" data-theme="light" data-lang="{lang}" data-store="{store}">
 <head>
@@ -55,7 +69,7 @@ def page(store, title_zh, title_en, body, lang="zh"):
 </style>
 </head>
 <body>
-{PREFS}
+{prefs}
 <div class="wrap">
 {body}
 </div>
@@ -185,95 +199,93 @@ def write_wiki():
 def write_analyzer():
     body = """
   <header class="hero">
-    <p class="kicker">codexqa-code-analyzer · change-impact graph</p>
-    <h1>Checkout: who calls the change, which entries fire, which tests miss it</h1>
-    <p class="sub"><span class="badge type">symbol graph</span> Entry → impact → changed symbols → graph-backed tests</p>
+    <p class="kicker"><span data-zh="codexqa-code-analyzer · 变更影响图" data-en="codexqa-code-analyzer · change-impact graph">codexqa-code-analyzer · 变更影响图</span></p>
+    <h1><span data-zh="结账：谁调用了这次变更、哪些入口会打到、哪些测试没罩住" data-en="Checkout: who calls the change, which entries fire, which tests miss it">结账：谁调用了这次变更、哪些入口会打到、哪些测试没罩住</span></h1>
+    <p class="sub"><span class="badge type" data-zh="符号图" data-en="symbol graph">符号图</span> <span data-zh="入口 → 影响面 → 变更符号 → 图上的测试边" data-en="Entry → impact → changed symbols → graph-backed tests">入口 → 影响面 → 变更符号 → 图上的测试边</span></p>
   </header>
   <section class="panel">
-    <div class="panel-head"><h2>Change-impact graph</h2></div>
+    <div class="panel-head"><h2 data-zh="变更影响图" data-en="Change-impact graph">变更影响图</h2></div>
     <div class="figure-frame">
-      <img src="checkout-change-impact.svg" alt="Checkout change-impact graph">
+      <img src="checkout-change-impact.svg" alt="结账变更影响图" data-zh-alt="结账变更影响图" data-en-alt="Checkout change-impact graph">
     </div>
   </section>
-  <p class="footer">codexqa-code-analyzer · illustration from the published SVG</p>
+  <p class="footer"><span data-zh="codexqa-code-analyzer · 插图来自已发布的 SVG" data-en="codexqa-code-analyzer · illustration from the published SVG">codexqa-code-analyzer · 插图来自已发布的 SVG</span></p>
 """
     (PREVIEWS / "code-analyzer.html").write_text(
-        page("analyzer-report", "变更影响图", "codexqa-code-analyzer · checkout change impact", body, lang="en"),
+        page("analyzer-report", "变更影响图", "codexqa-code-analyzer · checkout change impact", body),
         encoding="utf-8")
     print("code-analyzer.html")
 
 
 def write_rootcause():
-    body = """
-  <header class="hero">
-    <p class="kicker">codexqa-rootcause-analyzer · RCA</p>
-    <h1>Exception diagnosis</h1>
-    <p class="sub">inventory-service · <code>NullPointerException</code> on refund · <span class="badge pri p1">Confidence: medium</span></p>
-  </header>
-  <section class="panel">
-    <div class="panel-head"><h2>Executive summary</h2></div>
-    <div class="block"><p><code>NullPointerException</code> on <code>refund.js#resolveRefundAmount</code>. Root is <code>reservation.js#commitReservation</code> leaving status unset.</p></div>
-  </section>
-  <section class="panel">
-    <div class="panel-head"><h2>Mapped call path</h2></div>
-    <div class="block"><p><code>POST /refunds → refund.js#refundOrder:44 → refund.js#resolveRefundAmount:18 → NPE</code></p></div>
-  </section>
-  <section class="panel">
-    <div class="panel-head"><h2>Root cause</h2></div>
-    <div class="block"><p>Throw is the trigger, not the root. <code>commitReservation</code> returns success without writing <code>COMMITTED</code>.</p></div>
-  </section>
-  <p class="footer">Native delivery is Markdown; this HTML is the README screenshot surface.</p>
-"""
-    (PREVIEWS / "rootcause.html").write_text(
-        page("rca-report", "异常诊断", "Exception diagnosis", body, lang="en"),
-        encoding="utf-8")
+    skill = ROOT / "skills" / "codexqa-rootcause-analyzer"
+    dest = PREVIEWS / "rootcause.html"
+    env = os.environ.copy()
+    env["NODE_OPTIONS"] = (env.get("NODE_OPTIONS") or "") + " --experimental-strip-types"
+    subprocess.check_call(
+        ["node", str(skill / "scripts" / "render_html.ts"), "--preview", str(dest)],
+        cwd=str(skill),
+        env=env,
+    )
     print("rootcause.html")
 
 
 def write_ra():
     body = """
   <header class="hero">
-    <p class="kicker">codexqa-requirement-analyzer · gap register</p>
-    <h1>Inventory hold v2 — one register, not three lists</h1>
-    <p class="sub">PRD §3 hold rules · API note <code>POST /v1/holds</code> · no SLA</p>
+    <p class="kicker"><span data-zh="codexqa-requirement-analyzer · 缺口登记表" data-en="codexqa-requirement-analyzer · gap register">codexqa-requirement-analyzer · 缺口登记表</span></p>
+    <h1><span data-zh="库存预占 v2 — 一张登记表，不是三份清单" data-en="Inventory hold v2 — one register, not three lists">库存预占 v2 — 一张登记表，不是三份清单</span></h1>
+    <p class="sub"><span data-zh="PRD §3 预占规则" data-en="PRD §3 hold rules">PRD §3 预占规则</span> · API note <code>POST /v1/holds</code> · <span data-zh="无 SLA" data-en="no SLA">无 SLA</span></p>
     <div class="stats">
       <div class="card">
-        <h2>By risk</h2>
+        <h2 data-zh="按风险" data-en="By risk">按风险</h2>
         <div class="chip-row">
           <div class="stat-chip p0"><span class="n">2</span><span class="l">P0</span></div>
           <div class="stat-chip p1"><span class="n">1</span><span class="l">P1</span></div>
         </div>
       </div>
       <div class="card">
-        <h2>Kind</h2>
+        <h2 data-zh="类型" data-en="Kind">类型</h2>
         <div class="chip-row">
-          <div class="stat-chip"><span class="n">1</span><span class="l">Conflict</span></div>
-          <div class="stat-chip"><span class="n">2</span><span class="l">Gap</span></div>
+          <div class="stat-chip"><span class="n">1</span><span class="l" data-zh="冲突" data-en="Conflict">冲突</span></div>
+          <div class="stat-chip"><span class="n">2</span><span class="l" data-zh="缺口" data-en="Gap">缺口</span></div>
         </div>
       </div>
     </div>
   </header>
   <section class="panel">
-    <div class="panel-head"><h2>Gap register</h2></div>
+    <div class="panel-head"><h2 data-zh="缺口登记表" data-en="Gap register">缺口登记表</h2></div>
     <table class="steps">
-      <thead><tr><th>ID</th><th>Kind</th><th>Risk</th><th>What is missing or in conflict</th><th>P0 / P1 check</th></tr></thead>
+      <thead><tr>
+        <th>ID</th>
+        <th data-zh="类型" data-en="Kind">类型</th>
+        <th data-zh="风险" data-en="Risk">风险</th>
+        <th data-zh="缺失或冲突点" data-en="What is missing or in conflict">缺失或冲突点</th>
+        <th data-zh="P0 / P1 核验" data-en="P0 / P1 check">P0 / P1 核验</th>
+      </tr></thead>
       <tbody>
-        <tr><td><code>RA-01</code></td><td>Conflict</td><td><span class="badge pri p0">P0</span></td>
-          <td>PRD says a hold expires after 15 minutes. The API note says until the client releases it.</td>
-          <td>Create a hold, wait 16 minutes, call get. Fail if the two sources still disagree.</td></tr>
-        <tr><td><code>RA-02</code></td><td>Gap</td><td><span class="badge pri p0">P0</span></td>
-          <td>Over-sell when two holds race on the last unit is not specified.</td>
-          <td>Two concurrent <code>quantity=1</code> requests when available=1. Expect one 200 and one 409.</td></tr>
-        <tr><td><code>RA-03</code></td><td>Gap</td><td><span class="badge pri p1">P1</span></td>
-          <td>No success metric for hold conversion to order.</td>
-          <td>Marked <code>untestable</code> until product names the metric.</td></tr>
+        <tr><td><code>RA-01</code></td><td><span data-zh="冲突" data-en="Conflict">冲突</span></td><td><span class="badge pri p0">P0</span></td>
+          <td data-zh="PRD 写预占 15 分钟后过期；接口说明写直到客户端主动释放。" data-en="PRD says a hold expires after 15 minutes. The API note says until the client releases it.">PRD 写预占 15 分钟后过期；接口说明写直到客户端主动释放。</td>
+          <td data-zh="创建一笔预占，等 16 分钟后查询。若两份材料仍不一致则判失败。" data-en="Create a hold, wait 16 minutes, call get. Fail if the two sources still disagree.">创建一笔预占，等 16 分钟后查询。若两份材料仍不一致则判失败。</td></tr>
+        <tr><td><code>RA-02</code></td><td><span data-zh="缺口" data-en="Gap">缺口</span></td><td><span class="badge pri p0">P0</span></td>
+          <td data-zh="最后一件库存被两笔预占并发抢占时如何避免超卖，没有写清。" data-en="Over-sell when two holds race on the last unit is not specified.">最后一件库存被两笔预占并发抢占时如何避免超卖，没有写清。</td>
+          <td>
+            <span class="unit-zh">available=1 时并发两个 <code>quantity=1</code> 请求。期望一个 200、一个 409。</span>
+            <span class="unit-en">Two concurrent <code>quantity=1</code> requests when available=1. Expect one 200 and one 409.</span>
+          </td></tr>
+        <tr><td><code>RA-03</code></td><td><span data-zh="缺口" data-en="Gap">缺口</span></td><td><span class="badge pri p1">P1</span></td>
+          <td data-zh="预占转订单没有成功指标。" data-en="No success metric for hold conversion to order.">预占转订单没有成功指标。</td>
+          <td>
+            <span class="unit-zh">在产品给出指标前标为 <code>untestable</code>。</span>
+            <span class="unit-en">Marked <code>untestable</code> until product names the metric.</span>
+          </td></tr>
       </tbody>
     </table>
   </section>
-  <p class="footer">codexqa-requirement-analyzer · sample register</p>
+  <p class="footer"><span data-zh="codexqa-requirement-analyzer · 样例登记表" data-en="codexqa-requirement-analyzer · sample register">codexqa-requirement-analyzer · 样例登记表</span></p>
 """
     (PREVIEWS / "ra-register.html").write_text(
-        page("ra-report", "需求缺口登记表", "Sample requirements gap register", body, lang="en"),
+        page("ra-report", "需求缺口登记表", "Sample requirements gap register", body),
         encoding="utf-8")
     print("ra-register.html")
 
@@ -281,33 +293,50 @@ def write_ra():
 def write_testdata():
     body = """
   <header class="hero">
-    <p class="kicker">codexqa-testdata-generator · write-back</p>
-    <h1>Placeholders filled with IDs the backend returned</h1>
-    <p class="sub"><span class="badge type">case-executable.md</span> · mock catalog</p>
+    <p class="kicker"><span data-zh="codexqa-testdata-generator · 回写" data-en="codexqa-testdata-generator · write-back">codexqa-testdata-generator · write-back</span></p>
+    <h1><span data-zh="占位符已替换为后端返回的 ID" data-en="Placeholders filled with IDs the backend returned">Placeholders filled with IDs the backend returned</span></h1>
+    <p class="sub"><span class="badge type">case-executable.md</span> · <span data-zh="mock 目录" data-en="mock catalog">mock catalog</span></p>
   </header>
   <section class="panel">
-    <div class="panel-head"><h2>Before (from codexqa-testcase-generator)</h2></div>
+    <div class="panel-head"><h2 data-zh="回写前（来自 codexqa-testcase-generator）" data-en="Before (from codexqa-testcase-generator)">Before (from codexqa-testcase-generator)</h2></div>
     <table class="steps">
-      <thead><tr><th>Entity</th><th>Content</th><th>Construction</th></tr></thead>
-      <tbody><tr><td>Catalog product</td><td><code>productId</code>: {placeholder}</td><td><em>(empty)</em></td></tr></tbody>
-    </table>
-  </section>
-  <section class="panel">
-    <div class="panel-head"><h2>After (backend created the row)</h2></div>
-    <table class="steps">
-      <thead><tr><th>Entity</th><th>Content</th><th>Construction</th></tr></thead>
+      <thead><tr>
+        <th data-zh="实体" data-en="Entity">Entity</th>
+        <th data-zh="内容" data-en="Content">Content</th>
+        <th data-zh="构造" data-en="Construction">Construction</th>
+      </tr></thead>
       <tbody><tr>
-        <td>Catalog product</td>
-        <td><code>productId</code>: <span class="was">{placeholder}</span> <span class="now">prd_8f21</span></td>
-        <td>Created via <code>POST /v1/catalog/products</code>; id from <code>data.id</code></td>
+        <td data-zh="目录商品" data-en="Catalog product">Catalog product</td>
+        <td><code>productId</code>: {placeholder}</td>
+        <td><em data-zh="（空）" data-en="(empty)">(empty)</em></td>
       </tr></tbody>
     </table>
   </section>
-  <p class="footer">codexqa-testdata-generator · sample write-back</p>
+  <section class="panel">
+    <div class="panel-head"><h2 data-zh="回写后（后端已创建记录）" data-en="After (backend created the row)">After (backend created the row)</h2></div>
+    <table class="steps">
+      <thead><tr>
+        <th data-zh="实体" data-en="Entity">Entity</th>
+        <th data-zh="内容" data-en="Content">Content</th>
+        <th data-zh="构造" data-en="Construction">Construction</th>
+      </tr></thead>
+      <tbody><tr>
+        <td data-zh="目录商品" data-en="Catalog product">Catalog product</td>
+        <td><code>productId</code>: <span class="was">{placeholder}</span> <span class="now">prd_8f21</span></td>
+        <td>
+          <span class="unit-zh">通过 <code>POST /v1/catalog/products</code> 创建；id 取自 <code>data.id</code></span>
+          <span class="unit-en">Created via <code>POST /v1/catalog/products</code>; id from <code>data.id</code></span>
+        </td>
+      </tr></tbody>
+    </table>
+  </section>
+  <p class="footer"><span data-zh="codexqa-testdata-generator · 回写样例" data-en="codexqa-testdata-generator · sample write-back">codexqa-testdata-generator · sample write-back</span></p>
 """
-    (PREVIEWS / "testdata-writeback.html").write_text(
-        page("tdg-report", "测试数据回写", "Sample testdata write-back", body, lang="en"),
-        encoding="utf-8")
+    html = page("tdg-report", "测试数据回写", "Sample testdata write-back", body, lang="en")
+    pairs = html.count("data-zh=")
+    if pairs < 12 or 'data-zh="占位符已替换为后端返回的 ID"' not in html:
+        raise SystemExit(f"testdata-writeback i18n incomplete: {pairs} data-zh attrs")
+    (PREVIEWS / "testdata-writeback.html").write_text(html, encoding="utf-8")
     print("testdata-writeback.html")
 
 

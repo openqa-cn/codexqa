@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light" data-lang="en" data-store="ra-report">
+<html lang="zh-CN" data-theme="light" data-lang="zh" data-store="ra-report">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title data-zh="需求缺口登记表" data-en="Sample requirements gap register">Sample requirements gap register</title>
+<title data-zh="需求缺口登记表" data-en="Sample requirements gap register">需求缺口登记表</title>
 <script>
 (function(){
   try {
@@ -140,8 +140,8 @@ h1 { margin:0 0 8px; font-size:24px; letter-spacing:-.02em; }
 .alert { padding:10px 12px; border-radius:10px; font-size:13px; margin-bottom:12px; border:1px solid var(--line); }
 .alert-warn { background:var(--p1-bg); color:var(--p1); border-color:transparent; }
 .alert-drop { background:var(--p0-bg); color:var(--p0); border-color:transparent; }
+html:not([data-lang="en"]) .unit-en { display:none; }
 html[data-lang="en"] .unit-zh { display:none; }
-html[data-lang="zh"] .unit-en { display:none; }
 .was { color:var(--p0); text-decoration:line-through; }
 .now { color:var(--acc); font-weight:600; }
 .figure-frame { background:var(--sheet); border:1px solid var(--line); border-radius:14px; padding:8px; }
@@ -163,44 +163,56 @@ html[data-lang="zh"] .unit-en { display:none; }
 <div class="wrap">
 
   <header class="hero">
-    <p class="kicker">codexqa-requirement-analyzer · gap register</p>
-    <h1>Inventory hold v2 — one register, not three lists</h1>
-    <p class="sub">PRD §3 hold rules · API note <code>POST /v1/holds</code> · no SLA</p>
+    <p class="kicker"><span data-zh="codexqa-requirement-analyzer · 缺口登记表" data-en="codexqa-requirement-analyzer · gap register">codexqa-requirement-analyzer · 缺口登记表</span></p>
+    <h1><span data-zh="库存预占 v2 — 一张登记表，不是三份清单" data-en="Inventory hold v2 — one register, not three lists">库存预占 v2 — 一张登记表，不是三份清单</span></h1>
+    <p class="sub"><span data-zh="PRD §3 预占规则" data-en="PRD §3 hold rules">PRD §3 预占规则</span> · API note <code>POST /v1/holds</code> · <span data-zh="无 SLA" data-en="no SLA">无 SLA</span></p>
     <div class="stats">
       <div class="card">
-        <h2>By risk</h2>
+        <h2 data-zh="按风险" data-en="By risk">按风险</h2>
         <div class="chip-row">
           <div class="stat-chip p0"><span class="n">2</span><span class="l">P0</span></div>
           <div class="stat-chip p1"><span class="n">1</span><span class="l">P1</span></div>
         </div>
       </div>
       <div class="card">
-        <h2>Kind</h2>
+        <h2 data-zh="类型" data-en="Kind">类型</h2>
         <div class="chip-row">
-          <div class="stat-chip"><span class="n">1</span><span class="l">Conflict</span></div>
-          <div class="stat-chip"><span class="n">2</span><span class="l">Gap</span></div>
+          <div class="stat-chip"><span class="n">1</span><span class="l" data-zh="冲突" data-en="Conflict">冲突</span></div>
+          <div class="stat-chip"><span class="n">2</span><span class="l" data-zh="缺口" data-en="Gap">缺口</span></div>
         </div>
       </div>
     </div>
   </header>
   <section class="panel">
-    <div class="panel-head"><h2>Gap register</h2></div>
+    <div class="panel-head"><h2 data-zh="缺口登记表" data-en="Gap register">缺口登记表</h2></div>
     <table class="steps">
-      <thead><tr><th>ID</th><th>Kind</th><th>Risk</th><th>What is missing or in conflict</th><th>P0 / P1 check</th></tr></thead>
+      <thead><tr>
+        <th>ID</th>
+        <th data-zh="类型" data-en="Kind">类型</th>
+        <th data-zh="风险" data-en="Risk">风险</th>
+        <th data-zh="缺失或冲突点" data-en="What is missing or in conflict">缺失或冲突点</th>
+        <th data-zh="P0 / P1 核验" data-en="P0 / P1 check">P0 / P1 核验</th>
+      </tr></thead>
       <tbody>
-        <tr><td><code>RA-01</code></td><td>Conflict</td><td><span class="badge pri p0">P0</span></td>
-          <td>PRD says a hold expires after 15 minutes. The API note says until the client releases it.</td>
-          <td>Create a hold, wait 16 minutes, call get. Fail if the two sources still disagree.</td></tr>
-        <tr><td><code>RA-02</code></td><td>Gap</td><td><span class="badge pri p0">P0</span></td>
-          <td>Over-sell when two holds race on the last unit is not specified.</td>
-          <td>Two concurrent <code>quantity=1</code> requests when available=1. Expect one 200 and one 409.</td></tr>
-        <tr><td><code>RA-03</code></td><td>Gap</td><td><span class="badge pri p1">P1</span></td>
-          <td>No success metric for hold conversion to order.</td>
-          <td>Marked <code>untestable</code> until product names the metric.</td></tr>
+        <tr><td><code>RA-01</code></td><td><span data-zh="冲突" data-en="Conflict">冲突</span></td><td><span class="badge pri p0">P0</span></td>
+          <td data-zh="PRD 写预占 15 分钟后过期；接口说明写直到客户端主动释放。" data-en="PRD says a hold expires after 15 minutes. The API note says until the client releases it.">PRD 写预占 15 分钟后过期；接口说明写直到客户端主动释放。</td>
+          <td data-zh="创建一笔预占，等 16 分钟后查询。若两份材料仍不一致则判失败。" data-en="Create a hold, wait 16 minutes, call get. Fail if the two sources still disagree.">创建一笔预占，等 16 分钟后查询。若两份材料仍不一致则判失败。</td></tr>
+        <tr><td><code>RA-02</code></td><td><span data-zh="缺口" data-en="Gap">缺口</span></td><td><span class="badge pri p0">P0</span></td>
+          <td data-zh="最后一件库存被两笔预占并发抢占时如何避免超卖，没有写清。" data-en="Over-sell when two holds race on the last unit is not specified.">最后一件库存被两笔预占并发抢占时如何避免超卖，没有写清。</td>
+          <td>
+            <span class="unit-zh">available=1 时并发两个 <code>quantity=1</code> 请求。期望一个 200、一个 409。</span>
+            <span class="unit-en">Two concurrent <code>quantity=1</code> requests when available=1. Expect one 200 and one 409.</span>
+          </td></tr>
+        <tr><td><code>RA-03</code></td><td><span data-zh="缺口" data-en="Gap">缺口</span></td><td><span class="badge pri p1">P1</span></td>
+          <td data-zh="预占转订单没有成功指标。" data-en="No success metric for hold conversion to order.">预占转订单没有成功指标。</td>
+          <td>
+            <span class="unit-zh">在产品给出指标前标为 <code>untestable</code>。</span>
+            <span class="unit-en">Marked <code>untestable</code> until product names the metric.</span>
+          </td></tr>
       </tbody>
     </table>
   </section>
-  <p class="footer">codexqa-requirement-analyzer · sample register</p>
+  <p class="footer"><span data-zh="codexqa-requirement-analyzer · 样例登记表" data-en="codexqa-requirement-analyzer · sample register">codexqa-requirement-analyzer · 样例登记表</span></p>
 
 </div>
 <script>
@@ -215,12 +227,22 @@ html[data-lang="zh"] .unit-en { display:none; }
     document.querySelectorAll('[data-zh][data-en]').forEach(el => {
       const v = el.getAttribute(attr);
       if (v == null) return;
-      if (el.tagName === 'TITLE') document.title = v;
-      else if (el.tagName === 'OPTION') el.textContent = v;
-      else el.textContent = v;
+      if (el.tagName === 'TITLE') {
+        document.title = v;
+        return;
+      }
+      if (el.tagName === 'OPTION') {
+        el.textContent = v;
+        return;
+      }
+      if (el.children.length) return;
+      el.textContent = v;
     });
     document.querySelectorAll('[data-zh-placeholder][data-en-placeholder]').forEach(el => {
       el.setAttribute('placeholder', el.getAttribute(lang === 'en' ? 'data-en-placeholder' : 'data-zh-placeholder') || '');
+    });
+    document.querySelectorAll('[data-zh-alt][data-en-alt]').forEach(el => {
+      el.setAttribute('alt', el.getAttribute(lang === 'en' ? 'data-en-alt' : 'data-zh-alt') || '');
     });
   }
 

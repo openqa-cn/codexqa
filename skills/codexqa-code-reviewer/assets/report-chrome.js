@@ -16,6 +16,9 @@
     document.querySelectorAll('[data-zh-placeholder][data-en-placeholder]').forEach(el => {
       el.setAttribute('placeholder', el.getAttribute(lang === 'en' ? 'data-en-placeholder' : 'data-zh-placeholder') || '');
     });
+    document.querySelectorAll('[data-zh-alt][data-en-alt]').forEach(el => {
+      el.setAttribute('alt', el.getAttribute(lang === 'en' ? 'data-en-alt' : 'data-zh-alt') || '');
+    });
   }
 
   function setLang(lang) {

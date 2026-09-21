@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light" data-lang="en" data-store="analyzer-report">
+<html lang="zh-CN" data-theme="light" data-lang="zh" data-store="analyzer-report">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title data-zh="变更影响图" data-en="codexqa-code-analyzer · checkout change impact">codexqa-code-analyzer · checkout change impact</title>
+<title data-zh="变更影响图" data-en="codexqa-code-analyzer · checkout change impact">变更影响图</title>
 <script>
 (function(){
   try {
@@ -140,8 +140,8 @@ h1 { margin:0 0 8px; font-size:24px; letter-spacing:-.02em; }
 .alert { padding:10px 12px; border-radius:10px; font-size:13px; margin-bottom:12px; border:1px solid var(--line); }
 .alert-warn { background:var(--p1-bg); color:var(--p1); border-color:transparent; }
 .alert-drop { background:var(--p0-bg); color:var(--p0); border-color:transparent; }
+html:not([data-lang="en"]) .unit-en { display:none; }
 html[data-lang="en"] .unit-zh { display:none; }
-html[data-lang="zh"] .unit-en { display:none; }
 .was { color:var(--p0); text-decoration:line-through; }
 .now { color:var(--acc); font-weight:600; }
 .figure-frame { background:var(--sheet); border:1px solid var(--line); border-radius:14px; padding:8px; }
@@ -163,17 +163,17 @@ html[data-lang="zh"] .unit-en { display:none; }
 <div class="wrap">
 
   <header class="hero">
-    <p class="kicker">codexqa-code-analyzer · change-impact graph</p>
-    <h1>Checkout: who calls the change, which entries fire, which tests miss it</h1>
-    <p class="sub"><span class="badge type">symbol graph</span> Entry → impact → changed symbols → graph-backed tests</p>
+    <p class="kicker"><span data-zh="codexqa-code-analyzer · 变更影响图" data-en="codexqa-code-analyzer · change-impact graph">codexqa-code-analyzer · 变更影响图</span></p>
+    <h1><span data-zh="结账：谁调用了这次变更、哪些入口会打到、哪些测试没罩住" data-en="Checkout: who calls the change, which entries fire, which tests miss it">结账：谁调用了这次变更、哪些入口会打到、哪些测试没罩住</span></h1>
+    <p class="sub"><span class="badge type" data-zh="符号图" data-en="symbol graph">符号图</span> <span data-zh="入口 → 影响面 → 变更符号 → 图上的测试边" data-en="Entry → impact → changed symbols → graph-backed tests">入口 → 影响面 → 变更符号 → 图上的测试边</span></p>
   </header>
   <section class="panel">
-    <div class="panel-head"><h2>Change-impact graph</h2></div>
+    <div class="panel-head"><h2 data-zh="变更影响图" data-en="Change-impact graph">变更影响图</h2></div>
     <div class="figure-frame">
-      <img src="checkout-change-impact.svg" alt="Checkout change-impact graph">
+      <img src="checkout-change-impact.svg" alt="结账变更影响图" data-zh-alt="结账变更影响图" data-en-alt="Checkout change-impact graph">
     </div>
   </section>
-  <p class="footer">codexqa-code-analyzer · illustration from the published SVG</p>
+  <p class="footer"><span data-zh="codexqa-code-analyzer · 插图来自已发布的 SVG" data-en="codexqa-code-analyzer · illustration from the published SVG">codexqa-code-analyzer · 插图来自已发布的 SVG</span></p>
 
 </div>
 <script>
@@ -188,12 +188,22 @@ html[data-lang="zh"] .unit-en { display:none; }
     document.querySelectorAll('[data-zh][data-en]').forEach(el => {
       const v = el.getAttribute(attr);
       if (v == null) return;
-      if (el.tagName === 'TITLE') document.title = v;
-      else if (el.tagName === 'OPTION') el.textContent = v;
-      else el.textContent = v;
+      if (el.tagName === 'TITLE') {
+        document.title = v;
+        return;
+      }
+      if (el.tagName === 'OPTION') {
+        el.textContent = v;
+        return;
+      }
+      if (el.children.length) return;
+      el.textContent = v;
     });
     document.querySelectorAll('[data-zh-placeholder][data-en-placeholder]').forEach(el => {
       el.setAttribute('placeholder', el.getAttribute(lang === 'en' ? 'data-en-placeholder' : 'data-zh-placeholder') || '');
+    });
+    document.querySelectorAll('[data-zh-alt][data-en-alt]').forEach(el => {
+      el.setAttribute('alt', el.getAttribute(lang === 'en' ? 'data-en-alt' : 'data-zh-alt') || '');
     });
   }
 

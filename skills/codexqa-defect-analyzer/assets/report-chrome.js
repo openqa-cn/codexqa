@@ -9,12 +9,22 @@
     document.querySelectorAll('[data-zh][data-en]').forEach(el => {
       const v = el.getAttribute(attr);
       if (v == null) return;
-      if (el.tagName === 'TITLE') document.title = v;
-      else if (el.tagName === 'OPTION') el.textContent = v;
-      else el.textContent = v;
+      if (el.tagName === 'TITLE') {
+        document.title = v;
+        return;
+      }
+      if (el.tagName === 'OPTION') {
+        el.textContent = v;
+        return;
+      }
+      if (el.children.length) return;
+      el.textContent = v;
     });
     document.querySelectorAll('[data-zh-placeholder][data-en-placeholder]').forEach(el => {
       el.setAttribute('placeholder', el.getAttribute(lang === 'en' ? 'data-en-placeholder' : 'data-zh-placeholder') || '');
+    });
+    document.querySelectorAll('[data-zh-alt][data-en-alt]').forEach(el => {
+      el.setAttribute('alt', el.getAttribute(lang === 'en' ? 'data-en-alt' : 'data-zh-alt') || '');
     });
   }
 

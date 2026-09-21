@@ -8,6 +8,7 @@ import { parse_exception } from "./parse_exception.ts";
 import { analyze_frames, analysis_brief, ensure_index } from "./query_graph.ts";
 import { persist_draft, agent_protocol, story_gaps, split_first_paragraphs } from "./draft_report.ts";
 import { validate_report, write_report } from "./report.ts";
+import { render_html_report } from "./html_report.ts";
 import { materialize_for_codexqa, origin_from_inputs } from "./materialize_repo.ts";
 import { resolve_repo } from "./resolve_repo.ts";
 import { elapsed_ms, push_timing, set_wall_ms } from "./timing.ts";
@@ -584,9 +585,11 @@ function cmd_write_report(flags: Record<string, any>): void {
     });
   }
   const saved = write_report(task_id, String(markdown));
+  writeFileSync(saved.htmlPath, render_html_report(String(markdown), { lang: "en", store: "rca-report" }), "utf8");
   meta.reportPath = saved.path;
   meta.reportEnPath = saved.enPath;
   meta.reportZhPath = saved.zhPath || null;
+  meta.reportHtmlPath = saved.htmlPath;
   meta.reportValidated = check.ok;
   meta.reportMissingHeadings = check.missing;
   meta.reportOverLimit = check.overLimit;
@@ -599,6 +602,7 @@ function cmd_write_report(flags: Record<string, any>): void {
       reportPath: saved.path,
       reportEnPath: saved.enPath,
       reportZhPath: saved.zhPath || null,
+      reportHtmlPath: saved.htmlPath,
       bytes: saved.bytes,
       validated: check.ok,
       missingHeadings: check.missing,
