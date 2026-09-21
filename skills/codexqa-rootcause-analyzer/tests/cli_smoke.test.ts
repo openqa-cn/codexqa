@@ -130,6 +130,8 @@ OrderService#checkout L42
     assert.match(readFileSync(writtenBody.reportEnPath, "utf8"), /Root cause/);
     assert.equal(writtenBody.reportZhPath, null);
     assert.equal(existsSync(join(dataDir, "1", "report.zh.md")), false);
+    assert.equal(existsSync(join(dataDir, "1", "report.html")), true);
+    assert.match(readFileSync(join(dataDir, "1", "report.html"), "utf8"), /data-zh="摘要"/);
   });
 
   it("fails submit without exception", () => {

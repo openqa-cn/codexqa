@@ -156,14 +156,15 @@ export function validate_report(markdown: string): {
 export function write_report(
   task_id: number,
   markdown: string,
-): { path: string; enPath: string; zhPath: string; bytes: number } {
+): { path: string; enPath: string; zhPath: string; htmlPath: string; bytes: number } {
   const dir = task_dir(task_id);
   const combined = String(markdown || "").trim() + "\n";
   const { en } = split_bilingual(combined);
   const english = `${(en || combined).trim()}\n`;
   const path = join(dir, "report.md");
   const enPath = join(dir, "report.en.md");
+  const htmlPath = join(dir, "report.html");
   writeFileSync(path, english, "utf8");
   writeFileSync(enPath, english, "utf8");
-  return { path, enPath, zhPath: "", bytes: Buffer.byteLength(english) };
+  return { path, enPath, zhPath: "", htmlPath, bytes: Buffer.byteLength(english) };
 }

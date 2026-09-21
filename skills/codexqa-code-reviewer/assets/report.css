@@ -172,7 +172,9 @@ h1 { margin:0 0 10px; font-size:24px; letter-spacing:-.02em; text-wrap:balance; 
 .alert { padding:12px 14px; border-radius:10px; font-size:13px; margin:0; border:1px solid var(--line); }
 .alert-warn { background:var(--p1-bg); color:var(--p1); border-color:transparent; }
 .alert-drop { background:var(--p0-bg); color:var(--p0); border-color:transparent; }
+.unit-en { display:none; }
 html[data-lang="en"] .unit-zh { display:none; }
+html[data-lang="en"] .unit-en { display:inline; }
 html[data-lang="zh"] .unit-en { display:none; }
 .was { color:var(--p0); text-decoration:line-through; }
 .now { color:var(--acc); font-weight:600; }

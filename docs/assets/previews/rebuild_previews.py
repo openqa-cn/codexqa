@@ -74,6 +74,18 @@ def case_card(title, body, badges="", pri="", cid=""):
 def page(store, title_zh, title_en, body, lang="zh"):
     html_lang = "en" if lang == "en" else "zh-CN"
     shown = title_zh if lang == "zh" else title_en
+    zh_on = "true" if lang == "zh" else "false"
+    en_on = "true" if lang == "en" else "false"
+    prefs = f"""<div class="prefs" role="toolbar" aria-label="Language and theme">
+  <div class="group" role="group" aria-label="Language">
+    <button type="button" data-set-lang="zh" aria-pressed="{zh_on}">中文</button>
+    <button type="button" data-set-lang="en" aria-pressed="{en_on}">EN</button>
+  </div>
+  <div class="group" role="group" aria-label="Theme">
+    <button type="button" data-set-theme="light" aria-pressed="true"><span data-zh="白天" data-en="Light">{"Light" if lang == "en" else "白天"}</span></button>
+    <button type="button" data-set-theme="dark" aria-pressed="false"><span data-zh="黑夜" data-en="Dark">{"Dark" if lang == "en" else "黑夜"}</span></button>
+  </div>
+</div>"""
     return f"""<!DOCTYPE html>
 <html lang="{html_lang}" data-theme="light" data-lang="{lang}" data-store="{store}">
 <head>
@@ -86,7 +98,7 @@ def page(store, title_zh, title_en, body, lang="zh"):
 </style>
 </head>
 <body>
-{PREFS}
+{prefs}
 <div class="wrap">
 {body}
 </div>
@@ -242,25 +254,43 @@ def write_analyzer():
 
 
 def write_rootcause():
+    summary = (
+        '<div class="block">'
+        '<div class="unit-en"><p><code>NullPointerException</code> on <code>refund.js#resolveRefundAmount</code>. '
+        'Root is <code>reservation.js#commitReservation</code> leaving status unset. Confidence: medium</p></div>'
+        '<div class="unit-zh"><p><code>refund.js#resolveRefundAmount</code> 触发 <code>NullPointerException</code>。'
+        '根因是 <code>reservation.js#commitReservation</code> 成功返回却未写入 <code>COMMITTED</code>。Confidence: medium</p></div>'
+        '</div>'
+    )
+    path = (
+        '<div class="block"><p><code>POST /refunds → refund.js#refundOrder:44 → '
+        'refund.js#resolveRefundAmount:18 → NPE</code></p></div>'
+    )
+    root = (
+        '<div class="block">'
+        '<div class="unit-en"><p>Throw is the trigger, not the root. <code>commitReservation</code> returns success without writing <code>COMMITTED</code>.</p></div>'
+        '<div class="unit-zh"><p>抛错只是触发点，不是根因。<code>commitReservation</code> 返回成功但未把状态写成 <code>COMMITTED</code>。</p></div>'
+        '</div>'
+    )
     body = f"""
   <header class="hero">
     <p class="kicker">codexqa-rootcause-analyzer · RCA</p>
-    <h1>Exception diagnosis</h1>
-    <p class="sub">inventory-service · <code>NullPointerException</code> on refund · <span class="badge pri p1">Confidence: medium</span></p>
+    <h1><span data-zh="异常诊断" data-en="Exception diagnosis">Exception diagnosis</span></h1>
+    <p class="sub"><span class="unit-en">inventory-service · <code>NullPointerException</code> on refund</span><span class="unit-zh">inventory-service · <code>NullPointerException</code> 退款路径</span> · <span class="badge pri p1"><span data-zh="置信度：中等" data-en="Confidence: medium">Confidence: medium</span></span></p>
   </header>
 {toolbar([("all", "All (3)")])}
   <section class="panel">
     <div class="panel-head">
-      <h2>Diagnosis records</h2>
-      <p class="desc">Click a card to expand summary, call path, and root cause</p>
+      <h2><span data-zh="诊断记录" data-en="Diagnosis records">Diagnosis records</span></h2>
+      <p class="desc"><span data-zh="点击卡片展开摘要、调用链和根因" data-en="Click a card to expand summary, call path, and root cause">Click a card to expand summary, call path, and root cause</span></p>
     </div>
     <div class="case-list">
-      {case_card("Executive summary", '<div class="block"><p><code>NullPointerException</code> on <code>refund.js#resolveRefundAmount</code>. Root is <code>reservation.js#commitReservation</code> leaving status unset.</p></div>', badges='<span class="badge type">summary</span>', cid="rca-1")}
-      {case_card("Mapped call path", '<div class="block"><p><code>POST /refunds → refund.js#refundOrder:44 → refund.js#resolveRefundAmount:18 → NPE</code></p></div>', badges='<span class="badge type">path</span>', cid="rca-2")}
-      {case_card("Root cause", '<div class="block"><p>Throw is the trigger, not the root. <code>commitReservation</code> returns success without writing <code>COMMITTED</code>.</p></div>', badges='<span class="badge pri p1">cause</span>', pri="P1", cid="rca-3")}
+      {case_card('<span data-zh="摘要" data-en="Executive summary">Executive summary</span>', summary, badges='<span class="badge type">summary</span>', cid="rca-1")}
+      {case_card('<span data-zh="映射调用链" data-en="Mapped call path">Mapped call path</span>', path, badges='<span class="badge type">path</span>', cid="rca-2")}
+      {case_card('<span data-zh="根因" data-en="Root cause">Root cause</span>', root, badges='<span class="badge pri p1">cause</span>', pri="P1", cid="rca-3")}
     </div>
   </section>
-  <p class="footer">Native delivery is Markdown; this HTML is the README screenshot surface.</p>
+  <p class="footer"><span data-zh="技能交付物是 Markdown；本 HTML 仅作 README 截图页。" data-en="Native delivery is Markdown; this HTML is the README screenshot surface.">Native delivery is Markdown; this HTML is the README screenshot surface.</span></p>
 """
     (PREVIEWS / "rootcause.html").write_text(
         page("rca-report", "异常诊断", "Exception diagnosis", body, lang="en"),

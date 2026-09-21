@@ -195,8 +195,8 @@ h1 { margin:0 0 10px; font-size:24px; letter-spacing:-.02em; text-wrap:balance; 
 .alert { padding:12px 14px; border-radius:10px; font-size:13px; margin:0; border:1px solid var(--line); }
 .alert-warn { background:var(--p1-bg); color:var(--p1); border-color:transparent; }
 .alert-drop { background:var(--p0-bg); color:var(--p0); border-color:transparent; }
+html:not([data-lang="en"]) .unit-en { display:none; }
 html[data-lang="en"] .unit-zh { display:none; }
-html[data-lang="zh"] .unit-en { display:none; }
 .was { color:var(--p0); text-decoration:line-through; }
 .now { color:var(--acc); font-weight:600; }
 .figure-frame { background:var(--sheet); border:1px solid var(--line); border-radius:14px; padding:8px; }
@@ -210,20 +210,20 @@ html[data-lang="zh"] .unit-en { display:none; }
 <body>
 <div class="prefs" role="toolbar" aria-label="Language and theme">
   <div class="group" role="group" aria-label="Language">
-    <button type="button" data-set-lang="zh" aria-pressed="true">中文</button>
-    <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+    <button type="button" data-set-lang="zh" aria-pressed="false">中文</button>
+    <button type="button" data-set-lang="en" aria-pressed="true">EN</button>
   </div>
   <div class="group" role="group" aria-label="Theme">
-    <button type="button" data-set-theme="light" aria-pressed="true"><span data-zh="白天" data-en="Light">白天</span></button>
-    <button type="button" data-set-theme="dark" aria-pressed="false"><span data-zh="黑夜" data-en="Dark">黑夜</span></button>
+    <button type="button" data-set-theme="light" aria-pressed="true"><span data-zh="白天" data-en="Light">Light</span></button>
+    <button type="button" data-set-theme="dark" aria-pressed="false"><span data-zh="黑夜" data-en="Dark">Dark</span></button>
   </div>
 </div>
 <div class="wrap">
 
   <header class="hero">
     <p class="kicker">codexqa-rootcause-analyzer · RCA</p>
-    <h1>Exception diagnosis</h1>
-    <p class="sub">inventory-service · <code>NullPointerException</code> on refund · <span class="badge pri p1">Confidence: medium</span></p>
+    <h1><span data-zh="异常诊断" data-en="Exception diagnosis">Exception diagnosis</span></h1>
+    <p class="sub"><span class="unit-en">inventory-service · <code>NullPointerException</code> on refund</span><span class="unit-zh">inventory-service · <code>NullPointerException</code> 退款路径</span> · <span class="badge pri p1"><span data-zh="置信度：中等" data-en="Confidence: medium">Confidence: medium</span></span></p>
   </header>
   <div class="toolbar">
     <div class="tabs" role="tablist">
@@ -236,22 +236,22 @@ html[data-lang="zh"] .unit-en { display:none; }
   </div>
   <section class="panel">
     <div class="panel-head">
-      <h2>Diagnosis records</h2>
-      <p class="desc">Click a card to expand summary, call path, and root cause</p>
+      <h2><span data-zh="诊断记录" data-en="Diagnosis records">Diagnosis records</span></h2>
+      <p class="desc"><span data-zh="点击卡片展开摘要、调用链和根因" data-en="Click a card to expand summary, call path, and root cause">Click a card to expand summary, call path, and root cause</span></p>
     </div>
     <div class="case-list">
       <article class="case" id="rca-1">
       <div class="case-head" role="button" tabindex="0" aria-expanded="false">
         <span class="badge type">summary</span>
-        <h3>Executive summary</h3>
+        <h3><span data-zh="摘要" data-en="Executive summary">Executive summary</span></h3>
         <span class="chev" aria-hidden="true"></span>
       </div>
-      <div class="case-body"><div class="block"><p><code>NullPointerException</code> on <code>refund.js#resolveRefundAmount</code>. Root is <code>reservation.js#commitReservation</code> leaving status unset.</p></div></div>
+      <div class="case-body"><div class="block"><div class="unit-en"><p><code>NullPointerException</code> on <code>refund.js#resolveRefundAmount</code>. Root is <code>reservation.js#commitReservation</code> leaving status unset. Confidence: medium</p></div><div class="unit-zh"><p><code>refund.js#resolveRefundAmount</code> 触发 <code>NullPointerException</code>。根因是 <code>reservation.js#commitReservation</code> 成功返回却未写入 <code>COMMITTED</code>。Confidence: medium</p></div></div></div>
     </article>
       <article class="case" id="rca-2">
       <div class="case-head" role="button" tabindex="0" aria-expanded="false">
         <span class="badge type">path</span>
-        <h3>Mapped call path</h3>
+        <h3><span data-zh="映射调用链" data-en="Mapped call path">Mapped call path</span></h3>
         <span class="chev" aria-hidden="true"></span>
       </div>
       <div class="case-body"><div class="block"><p><code>POST /refunds → refund.js#refundOrder:44 → refund.js#resolveRefundAmount:18 → NPE</code></p></div></div>
@@ -259,14 +259,14 @@ html[data-lang="zh"] .unit-en { display:none; }
       <article class="case" id="rca-3" data-pri="P1">
       <div class="case-head" role="button" tabindex="0" aria-expanded="false">
         <span class="badge pri p1">cause</span>
-        <h3>Root cause</h3>
+        <h3><span data-zh="根因" data-en="Root cause">Root cause</span></h3>
         <span class="chev" aria-hidden="true"></span>
       </div>
-      <div class="case-body"><div class="block"><p>Throw is the trigger, not the root. <code>commitReservation</code> returns success without writing <code>COMMITTED</code>.</p></div></div>
+      <div class="case-body"><div class="block"><div class="unit-en"><p>Throw is the trigger, not the root. <code>commitReservation</code> returns success without writing <code>COMMITTED</code>.</p></div><div class="unit-zh"><p>抛错只是触发点，不是根因。<code>commitReservation</code> 返回成功但未把状态写成 <code>COMMITTED</code>。</p></div></div></div>
     </article>
     </div>
   </section>
-  <p class="footer">Native delivery is Markdown; this HTML is the README screenshot surface.</p>
+  <p class="footer"><span data-zh="技能交付物是 Markdown；本 HTML 仅作 README 截图页。" data-en="Native delivery is Markdown; this HTML is the README screenshot surface.">Native delivery is Markdown; this HTML is the README screenshot surface.</span></p>
 
 </div>
 <script>
@@ -281,12 +281,22 @@ html[data-lang="zh"] .unit-en { display:none; }
     document.querySelectorAll('[data-zh][data-en]').forEach(el => {
       const v = el.getAttribute(attr);
       if (v == null) return;
-      if (el.tagName === 'TITLE') document.title = v;
-      else if (el.tagName === 'OPTION') el.textContent = v;
-      else el.textContent = v;
+      if (el.tagName === 'TITLE') {
+        document.title = v;
+        return;
+      }
+      if (el.tagName === 'OPTION') {
+        el.textContent = v;
+        return;
+      }
+      if (el.children.length) return;
+      el.textContent = v;
     });
     document.querySelectorAll('[data-zh-placeholder][data-en-placeholder]').forEach(el => {
       el.setAttribute('placeholder', el.getAttribute(lang === 'en' ? 'data-en-placeholder' : 'data-zh-placeholder') || '');
+    });
+    document.querySelectorAll('[data-zh-alt][data-en-alt]').forEach(el => {
+      el.setAttribute('alt', el.getAttribute(lang === 'en' ? 'data-en-alt' : 'data-zh-alt') || '');
     });
   }
 

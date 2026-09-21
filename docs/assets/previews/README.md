@@ -8,7 +8,7 @@ Sample HTML used as screenshots in the repository README. They are **illustratio
 | `review-report.html` / `.png` | `codexqa-code-reviewer` | `scripts/render-review-html.sh` on `evals/fixtures/conclusion/with-llm-judgment.json` |
 | `code-wiki.html` / `.png` | `codexqa-code-wiki` | Same chrome as the case report; filled for `examples/inventory-service` |
 | `code-analyzer.html` / `.png` | `codexqa-code-analyzer` | Wrapper around published `checkout-change-impact.svg` |
-| `rootcause.html` / `.png` | `codexqa-rootcause-analyzer` | English `report.md` headings, inventory-service NPE (native delivery is Markdown) |
+| `rootcause.html` / `.png` | `codexqa-rootcause-analyzer` | Bilingual RCA sample (English `report.md` headings + Chinese twins); native delivery is Markdown + `report.html` |
 | `ra-register.html` / `.png` | `codexqa-requirement-analyzer` | Sample gap/conflict register |
 | `testcase-report.html` / `.png` | `codexqa-testcase-generator` | `generate_case_report.py --run-dir` (Web / Server / APP aggregate) |
 | `testdata-writeback.html` / `.png` | `codexqa-testdata-generator` | `{placeholder}` replaced with a backend-returned id |

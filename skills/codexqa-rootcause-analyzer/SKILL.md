@@ -56,7 +56,7 @@ Do **not** put exception-class fix wording in `scripts/draft_report.ts`. Mechani
 3. `run` writes `brief.json`, `facts.json`, and a heading-only `report.draft.md`. It does **not** author or persist `report.md`. `parse-exception` is already done; skip unless `parsed.json` is missing.
 4. If stdout has `facts` / `factsPath`, fill `report.draft.md` from `facts.json` in one pass (Report rules below). If `codexqa.ready=true` and `brief` exists but facts are missing, `draft-report --task-id` then fill. Do **not** read `analysis.json` when `brief`/`facts` exist. Do **not** open `~/.codexqa/`.
 5. `write-report --from-draft`. If stdout has `storyGaps`, edit the draft **once** from that output and retry. Do not retry to shrink length.
-6. Show **one English paragraph** from stdout `chat.en` (the first line of Executive summary) plus paths to `report.md` / `report.en.md`. If `chat.en` is empty, use that summary line. Do not paste the full document.
+6. Show **one English paragraph** from stdout `chat.en` (the first line of Executive summary) plus paths to `report.md` / `report.en.md` / `report.html`. If `chat.en` is empty, use that summary line. Do not paste the full document.
 7. Observe stdout/meta `timings` after every CLI step. If a step is abnormally slow, diagnose that delay and fix it before continuing RCA.
 8. Skill defects (mandatory): if a step is wrong, truncates, skips a rule, or is flaky, **first encode the rule in TypeScript** (`scripts/*.ts` + `tests/*.test.ts`) so later `run`s cannot regress. Keep an Agent-only note in this file only when the check cannot be decided without an LLM (for example: whether a causal sentence is *true* in this business domain). After the TS fix, re-`run` or `draft-report` before filling the report.
 
