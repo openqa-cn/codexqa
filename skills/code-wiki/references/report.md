@@ -39,7 +39,7 @@
      分类：`.take bad`（意外孤立 / 缺边 / 图被截断）、`.take good`（一条能走通的 入口→存储 路径）、`.take info`（中性事实）。`.fig` 用短数字（`8`、`3/12`、`p03`、`51%`）。主语包在 `<b>` 里。不要写「from this wiki inputs run」这种内部口吻。
    - `#overview` — 2～4 段人话：这个系统是什么、主链路怎么走、各层干什么。规则标题可以当模块名，但必须补一句职责。空的 `（无摘要）` 不是发现，不要贴进正文。
    - `#community-bars` / `#module-rows` — 每个收录页一行。分层列只用 **入口 / 应用 / 领域 / 存储**（图里的 subgraph 标题仍按 diagrams.md 用 Entry / Application / Domain / Storage）。没有依赖的页不要进这四层，列到 `#peripheral`。
-   - `#diagrams` — 至少一张 `.diagram`，内含 `<pre class="mermaid">`。`%%{init:...}%%` 和三行 `classDef` 从 [diagrams.md](diagrams.md) 原样复制。图下三行用中文：`依据`、`是否截断`、`图在说明`。节点标签里的 `<` 要转义。
+   - `#diagrams` — 至少一张 `.diagram`，内含 `<pre class="mermaid">`。`%%{init:...}%%` 和三行 `classDef` 从 [diagrams.md](diagrams.md) 原样复制。图下三行用中文：`依据`、`是否截断`、`图在说明`。节点标签里的 `<` 要转义。模板已给图加缩放（按钮 / ⌘或 Ctrl+滚轮 / 拖拽 / 全屏），不要改 `<script>`，也不要另起一张不能缩放的图。
    - `#guides` — 1～3 条路径，用 `.callout`。相邻步骤必须出现在 `deps` / `真实依赖` 里。每步写「读什么 + 为什么下一步是它」；枢纽步加 `.callout.risk`，并可加 `<span class="why">…</span>`。
    - `#notes` — 每个核心页一个 `<details>`（`amt` = `p01`，`desc` = 人话职责，body = 职责 / 对外接口 / 内部调用 / 跨模块往来）。不要把 `signatures` / `call_chain` 当小标题原文甩给读者。
    - `#peripheral` — 没有依赖的页，并写清「为什么可以后看」（独立工具 / 实验原型 / 演示）。没有则写「未列出」。

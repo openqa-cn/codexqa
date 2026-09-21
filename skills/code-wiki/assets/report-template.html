@@ -255,12 +255,49 @@
     background: #F0EEE6; color: #1a1918;
     border-radius: 6px; font-size: 13px;
   }
-  .diagram { background: var(--ivory); overflow-x: auto; }
+  .diagram { background: var(--ivory); overflow: hidden; position: relative; }
   .diagram .mermaid { margin: 0; }
+  .diagram .mermaid svg { max-width: none !important; height: auto; }
   .diagram-meta, .sources {
     margin-top: 10px; color: #87867F; font-size: 12px;
   }
   .diagram-meta div { padding: 1px 0; }
+
+  .zoom-toolbar {
+    display: flex; align-items: center; justify-content: flex-end; gap: 6px;
+    margin: 0 0 8px;
+  }
+  .zoom-toolbar button {
+    font-family: var(--mono); font-size: 13px; line-height: 1;
+    width: 28px; height: 28px; padding: 0;
+    color: #141413; background: #F0EEE6;
+    border: 1px solid #D1CFC5; border-radius: 4px; cursor: pointer;
+  }
+  .zoom-toolbar button.wide { width: auto; padding: 0 8px; font-size: 12px; }
+  .zoom-toolbar button:hover { border-color: var(--clay); color: var(--clay); }
+  .zoom-pct { font-family: var(--mono); font-size: 11px; color: #87867F; min-width: 4ch; text-align: center; }
+  .zoom-viewport {
+    overflow: hidden;
+    max-height: min(72vh, 640px);
+    border-radius: 4px;
+    cursor: grab;
+    touch-action: none;
+  }
+  .zoom-viewport.is-dragging { cursor: grabbing; }
+  .zoom-stage { transform-origin: 0 0; will-change: transform; width: max-content; }
+
+  .diagram-backdrop {
+    display: none; position: fixed; inset: 0; z-index: 55;
+    background: rgba(0, 0, 0, 0.55);
+  }
+  body.diagram-expanded { overflow: hidden; }
+  body.diagram-expanded .diagram-backdrop { display: block; }
+  .diagram.is-expanded {
+    position: fixed; inset: 56px 24px 24px; z-index: 60;
+    margin: 0; max-width: none;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  }
+  .diagram.is-expanded .zoom-viewport { max-height: calc(100vh - 160px); }
 
   .prose { color: var(--dim); }
   .prose p { margin: 0 0 10px; }
@@ -660,9 +697,11 @@
   </aside>
 </div>
 
+<div class="diagram-backdrop" id="diagram-backdrop"></div>
 <script type="module">
   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-  mermaid.initialize({ startOnLoad: true, theme: 'base' });
+  mermaid.initialize({ startOnLoad: false, theme: 'base' });
+  try { await mermaid.run({ querySelector: '.mermaid' }); } catch { /* keep zoom for images */ }
 
   const toc = document.getElementById('page-toc');
   if (toc) {
@@ -704,6 +743,158 @@
   openHashDetails(location.hash.slice(1));
   document.addEventListener('scroll', mark, { passive: true });
   mark();
+
+  const ZOOM_MIN = 0.4;
+  const ZOOM_MAX = 4;
+  const ZOOM_STEP = 0.25;
+
+  const initDiagramZoom = () => {
+    document.querySelectorAll('main img:not(.zoom-stage img)').forEach((img) => {
+      if (img.closest('.diagram')) return;
+      const wrap = document.createElement('div');
+      wrap.className = 'diagram';
+      img.replaceWith(wrap);
+      wrap.appendChild(img);
+    });
+
+    document.querySelectorAll('.diagram').forEach((box) => {
+      if (box.dataset.zoomReady) return;
+      const target = box.querySelector('.mermaid') || box.querySelector('img');
+      if (!target) return;
+      box.dataset.zoomReady = '1';
+
+      const svg = target.querySelector?.('svg');
+      if (svg) {
+        const raw = svg.getAttribute('width') || '';
+        const fromAttr = raw && !raw.includes('%') ? parseFloat(raw) : NaN;
+        const w = Number.isFinite(fromAttr) && fromAttr > 0
+          ? fromAttr
+          : svg.viewBox?.baseVal?.width;
+        if (w) svg.style.width = `${w}px`;
+      }
+
+      const viewport = document.createElement('div');
+      viewport.className = 'zoom-viewport';
+      viewport.tabIndex = 0;
+      const stage = document.createElement('div');
+      stage.className = 'zoom-stage';
+      target.parentNode.insertBefore(viewport, target);
+      stage.appendChild(target);
+      viewport.appendChild(stage);
+
+      const bar = document.createElement('div');
+      bar.className = 'zoom-toolbar';
+      bar.innerHTML = [
+        '<button type="button" data-zoom="out" aria-label="缩小">−</button>',
+        '<span class="zoom-pct">100%</span>',
+        '<button type="button" data-zoom="in" aria-label="放大">+</button>',
+        '<button type="button" class="wide" data-zoom="reset">重置</button>',
+        '<button type="button" class="wide" data-zoom="expand">全屏</button>',
+      ].join('');
+      viewport.parentNode.insertBefore(bar, viewport);
+
+      let scale = 1;
+      let x = 0;
+      let y = 0;
+      let dragging = false;
+      let lastX = 0;
+      let lastY = 0;
+      const pct = bar.querySelector('.zoom-pct');
+
+      const apply = () => {
+        stage.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+        pct.textContent = `${Math.round(scale * 100)}%`;
+      };
+
+      const setScale = (next, cx, cy) => {
+        const clamped = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, next));
+        if (cx != null && cy != null && scale > 0) {
+          const rect = viewport.getBoundingClientRect();
+          const px = cx - rect.left;
+          const py = cy - rect.top;
+          const ratio = clamped / scale;
+          x = px - ratio * (px - x);
+          y = py - ratio * (py - y);
+        }
+        scale = clamped;
+        if (Math.abs(scale - 1) < 0.001) {
+          scale = 1;
+          x = 0;
+          y = 0;
+        }
+        apply();
+      };
+
+      bar.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-zoom]');
+        if (!btn) return;
+        const action = btn.getAttribute('data-zoom');
+        if (action === 'in') setScale(scale + ZOOM_STEP);
+        else if (action === 'out') setScale(scale - ZOOM_STEP);
+        else if (action === 'reset') setScale(1);
+        else if (action === 'expand') {
+          const on = box.classList.toggle('is-expanded');
+          document.body.classList.toggle('diagram-expanded', on);
+          btn.textContent = on ? '退出' : '全屏';
+          const backdrop = document.getElementById('diagram-backdrop');
+          if (backdrop) backdrop.hidden = !on;
+        }
+      });
+
+      viewport.addEventListener('wheel', (event) => {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        const dir = event.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+        setScale(scale + dir, event.clientX, event.clientY);
+      }, { passive: false });
+
+      viewport.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        dragging = true;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        viewport.classList.add('is-dragging');
+        viewport.setPointerCapture(event.pointerId);
+      });
+      viewport.addEventListener('pointermove', (event) => {
+        if (!dragging) return;
+        x += event.clientX - lastX;
+        y += event.clientY - lastY;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        apply();
+      });
+      const endDrag = (event) => {
+        dragging = false;
+        viewport.classList.remove('is-dragging');
+        if (event.pointerId != null) {
+          try { viewport.releasePointerCapture(event.pointerId); } catch { /* already released */ }
+        }
+      };
+      viewport.addEventListener('pointerup', endDrag);
+      viewport.addEventListener('pointercancel', endDrag);
+      viewport.addEventListener('dblclick', (event) => {
+        setScale(scale > 1.05 ? 1 : 2, event.clientX, event.clientY);
+      });
+    });
+
+    const backdrop = document.getElementById('diagram-backdrop');
+    const closeExpanded = () => {
+      document.querySelectorAll('.diagram.is-expanded').forEach((box) => {
+        box.classList.remove('is-expanded');
+        const btn = box.querySelector('[data-zoom="expand"]');
+        if (btn) btn.textContent = '全屏';
+      });
+      document.body.classList.remove('diagram-expanded');
+      if (backdrop) backdrop.hidden = true;
+    };
+    backdrop?.addEventListener('click', closeExpanded);
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeExpanded();
+    });
+  };
+
+  initDiagramZoom();
 </script>
 </body>
 </html>
