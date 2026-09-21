@@ -12,5 +12,6 @@
 - [ ] No runtime data, private configuration, secrets, or unreviewed sample provenance
 - [ ] Network/model data handling and automatic tool installation disclosed
 - [ ] Changelog and version metadata agree with the selected release
+- [ ] GitHub Release body includes `https://openqa.cn/` (workflow `.github/workflows/release-notes.yml` + skeleton `.github/release-notes.md`; fill hosts/limits by hand)
 - [ ] Release notes distinguish CLI tests, agent validation, and benchmark claims
 - [ ] Report preview is labeled as fixture, illustrative, or actual agent output

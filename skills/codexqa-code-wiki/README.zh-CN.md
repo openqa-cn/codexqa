@@ -15,7 +15,7 @@ CodexQA 先建索引，再用 `wiki inputs` 把 Leiden 社区和 digest 导出�
 - **阅读导览** —— 相邻步骤必须有列出的依赖
 - **可选落库** —— `wiki --no-llm` 把规则页写入 Web UI
 
-`code-wiki` 回答的是**架构和上手路径**。它不审 PR、不圈回归、不打 P0 / P1 / P2。变更影响用 `code-analyzer`，代码风险扫描报告用 `defect-detection`，CodexQA 证据包 HTML 评审用 `ai-code-reviewer`。
+`codexqa-code-wiki` 回答的是**架构和上手路径**。它不审 PR、不圈回归、不打 P0 / P1 / P2。变更影响用 `codexqa-code-analyzer`，代码风险扫描报告用 `codexqa-defect-analyzer`，CodexQA 证据包 HTML 评审用 `codexqa-code-reviewer`。
 
 Skill 与 playbook 发布在本仓库；依赖的 `@openqa-cn/codexqa` 是单独分发的闭源本地引擎。建索引和 `wiki inputs` 在本机完成，不需要 LLM。边界见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。
 
@@ -32,7 +32,7 @@ npm install -g @openqa-cn/codexqa --registry https://registry.npmjs.org/
 需要 **Node.js >= 18**。
 
 ```bash
-npx skills add openqa-cn/codexqa --skill code-wiki
+npx skills add openqa-cn/codexqa --skill codexqa-code-wiki
 npm install -g @openqa-cn/codexqa --registry https://registry.npmjs.org/
 codexqa --help
 ```
@@ -73,7 +73,7 @@ codexqa wiki inputs /path/to/repo --kind page --id p01
 | **落库规则 Wiki** | 不调模型，给 Web UI 存页 | 是否持久化 |
 | **索引自检** | inputs 为空、找不到仓 | 仓库路径或 `repo_id` |
 
-审变更、查调用、测试缺口、追堆栈：用 `code-analyzer`。
+审变更、查调用、测试缺口、追堆栈：用 `codexqa-code-analyzer`。
 
 ---
 
@@ -118,7 +118,7 @@ index
 | 使用位置 | 安装位置或方法 | 能力 |
 | --- | --- | --- |
 | **CLI** | `npm install -g @openqa-cn/codexqa` | 建索引、`wiki inputs`、`wiki --no-llm` |
-| **Cursor** | 把 `code-wiki/` 放到 `~/.cursor/skills/` 或 `.cursor/skills/` | 知识图谱工作流 |
+| **Cursor** | 把 `codexqa-code-wiki/` 放到 `~/.cursor/skills/` 或 `.cursor/skills/` | 知识图谱工作流 |
 | **Claude Code** | `~/.claude/skills/` 或 `.claude/skills/` | 知识图谱工作流 |
 
 维护见 [`references/cli.md`](references/cli.md)。
@@ -128,7 +128,7 @@ index
 ## 包内容
 
 ```text
-code-wiki/
+codexqa-code-wiki/
 ├── README.md                 # English
 ├── README.zh-CN.md           # 本文件
 ├── SKILL.md                  # Agent 路由 + 报告合同

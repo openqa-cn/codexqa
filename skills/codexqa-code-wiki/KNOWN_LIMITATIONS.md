@@ -2,7 +2,7 @@
 
 [简体中文](KNOWN_LIMITATIONS.zh-CN.md)
 
-This file covers the limits of the `code-wiki` skill and its required local analysis engine.
+This file covers the limits of the `codexqa-code-wiki` skill and its required local analysis engine.
 
 ## Distribution boundary
 
@@ -13,7 +13,7 @@ Indexing, `wiki inputs`, and `wiki --no-llm` run locally and do not require an L
 ## Compatibility and verification
 
 - This repository does not currently install or execute the closed-source CLI in CI.
-- No public host-agent run or independent quality benchmark has been published for `code-wiki`.
+- No public host-agent run or independent quality benchmark has been published for `codexqa-code-wiki`.
 - Diagram templates show the report contract; they are not a recorded analysis of a public repository.
 - A formal skill-to-CLI version compatibility matrix has not been published yet. Check `codexqa --version` when reporting a problem.
 
@@ -35,4 +35,4 @@ Without a model, page titles are rule titles (often directory-like). That is exp
 
 ## Workflow boundary
 
-`code-wiki` maps communities, real dependencies, and onboarding paths. It does not call `codexqa wiki` without `--no-llm`, does not run `wiki embed` or `query wiki`, does not review a change, and does not assign P0 / P1 / P2 findings. Use `code-analyzer` for impact and test gaps, `defect-detection` for SAST+agent code-risk scan reports, and `ai-code-reviewer` for CodexQA evidence-pack HTML review.
+`codexqa-code-wiki` maps communities, real dependencies, and onboarding paths. It does not call `codexqa wiki` without `--no-llm`, does not run `wiki embed` or `query wiki`, does not review a change, and does not assign P0 / P1 / P2 findings. Use `codexqa-code-analyzer` for impact and test gaps, `codexqa-defect-analyzer` for SAST+agent code-risk scan reports, and `codexqa-code-reviewer` for CodexQA evidence-pack HTML review.

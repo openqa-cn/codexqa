@@ -2,7 +2,7 @@ cff-version: 1.2.0
 title: codexqa
 message: If codexqa contributes to your work, please cite this project.
 type: software
-url: https://github.com/openqa-cn/codexqa
+url: https://openqa.cn/
 repository-code: https://github.com/openqa-cn/codexqa
 license: Apache-2.0
 authors:

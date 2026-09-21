@@ -6,7 +6,7 @@ description: >
   codexqa-code-analyzer, code-analyzer, codexqa, 符号图, 代码知识图谱, 建索引, 查调用, 影响面,
   --diff-base, 变更审查, 回归范围, 测试缺口, or asks to install / run the
   codexqa CLI (index, query). Former skill name: code-analyzer. Not CodexQA evidence-pack HTML review (that is codexqa-code-reviewer), not SAST + Agent LLM Detection code-risk scan reports (that is codexqa-defect-analyzer),
-  and not architecture wiki reports (that is code-wiki), and not full exception RCA reports (that is codexqa-rootcause-analyzer).
+  and not architecture wiki reports (that is codexqa-code-wiki), and not full exception RCA reports (that is codexqa-rootcause-analyzer).
 license: Apache-2.0
 compatibility: >
   Requires Node.js >= 18 and the `codexqa` CLI

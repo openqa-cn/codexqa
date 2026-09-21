@@ -1,0 +1,38 @@
+name: Release notes
+
+on:
+  release:
+    types: [created, published]
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]*'
+
+permissions:
+  contents: write
+
+jobs:
+  ensure-docs-url:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compose notes and update GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 scripts/compose-release-notes.py --self-check
+          python3 scripts/compose-release-notes.py \
+            --github-event "$GITHUB_EVENT_PATH" \
+            --meta-out /tmp/release-meta.txt \
+            > /tmp/release-body.md
+          TAG="$(sed -n '1p' /tmp/release-meta.txt)"
+          RID="$(sed -n '2p' /tmp/release-meta.txt)"
+          if [ -n "${RID}" ]; then
+            gh release edit "$TAG" --notes-file /tmp/release-body.md
+          else
+            gh release create "$TAG" --draft --title "codexqa ${TAG}" --notes-file /tmp/release-body.md
+          fi

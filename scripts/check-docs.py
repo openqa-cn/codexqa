@@ -26,7 +26,7 @@ def file_links(path):
 
 
 # Agent reference syntax is not a documentation link contract; check reader-facing docs.
-paths = list(root.glob('*.md')) + list((root / 'docs').glob('*.md')) + list((root / 'examples').rglob('*.md')) + [
+paths = list(root.glob('*.md')) + list((root / 'docs').glob('*.md')) + list((root / 'examples').rglob('*.md')) + list((root / 'seo').glob('*.md')) + [
     root / 'skills/README.md',
     root / 'skills/README.zh-CN.md',
     root / 'skills/codexqa-defect-analyzer/README.md',
@@ -37,7 +37,7 @@ paths = list(root.glob('*.md')) + list((root / 'docs').glob('*.md')) + list((roo
     root / 'skills/codexqa-code-analyzer/README.md',
     root / 'skills/codexqa-rootcause-analyzer/README.md',
     root / 'skills/codexqa-skill-router/README.md',
-    root / 'skills/code-wiki/README.md',
+    root / 'skills/codexqa-code-wiki/README.md',
 ]
 for p in paths:
     for target in file_links(p):

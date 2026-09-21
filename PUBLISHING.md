@@ -25,7 +25,7 @@ npx skills add . --list
 
 Inspect hosted CI results. Confirm `npx skills add openqa-cn/codexqa --list` discovers the skill; validate installation in an isolated project before advertising it as verified. The remote command cannot install unpublished local changes.
 
-Create a reviewed GitHub release/tag and describe changes, requirements, evidence, and known limitations. Optional ZIP assets can be built with `bash skills/codexqa-defect-analyzer/pack-skill.sh /absolute/output/directory`. Keep version metadata consistent with the selected release; check the `version` fields in `skills/*/SKILL.md` before tagging.
+Create a reviewed GitHub release/tag (for example `git tag 0.3.0 && git push origin 0.3.0`). `.github/workflows/release-notes.yml` drafts or updates the GitHub Release from [`.github/release-notes.md`](.github/release-notes.md), always including `https://openqa.cn/`. Fill in “What you can do now” and hosts/limits before publishing a draft. Optional ZIP assets can be built with `bash skills/codexqa-defect-analyzer/pack-skill.sh /absolute/output/directory`. Keep version metadata consistent with the selected release; check the `version` fields in `skills/*/SKILL.md` before tagging.
 
 ## Distribution boundary
 

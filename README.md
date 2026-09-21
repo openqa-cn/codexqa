@@ -2,15 +2,17 @@
 
 # codexqa
 
-**Nine local-first Agent Skills: eight verification workflows plus `codexqa-skill-router` for auto-selection — covering requirements, test design, test data, architecture wiki, change impact, exception RCA, code-risk scan, and graph-evidence review.**
+**Local-first Agent Skills for AI verification** — eight workflows plus `codexqa-skill-router`: PRD review, test design, test data, architecture wiki, change-impact analysis, exception RCA, SAST/code-risk scan, and graph-evidence code review.
 
 [![CI](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml)
+[![Docs](https://img.shields.io/badge/docs-openqa.cn-111827)](https://openqa.cn/)
 [![Release](https://img.shields.io/github/v/tag/openqa-cn/codexqa?label=release&style=flat)](https://github.com/openqa-cn/codexqa/releases)
 [![GitHub stars](https://img.shields.io/github/stars/openqa-cn/codexqa?style=flat)](https://github.com/openqa-cn/codexqa/stargazers)
 [![License](https://img.shields.io/github/license/openqa-cn/codexqa)](LICENSE)
 
 **English | [简体中文](README.zh-CN.md)**
 
+<a href="https://openqa.cn/"><strong>Documentation</strong></a> ·
 <a href="#quick-start"><strong>Quick Start</strong></a> ·
 <a href="docs/assets/previews/defect-report.html"><strong>Sample report</strong></a> ·
 <a href="docs/HOW_IT_WORKS.md"><strong>How It Works</strong></a> ·
@@ -34,7 +36,7 @@
 
 AI can produce a green pull request quickly. Teams still have to check whether the implementation matches the requirement, identify affected callers and entries, review the evidence, and prepare runnable tests. codexqa splits that verification work into eight Agent Skills, plus [`codexqa-skill-router`](skills/codexqa-skill-router/README.md) when the request does not name which skill to run.
 
-`codexqa` is a public, local-first [Agent Skills](https://agentskills.io/specification) pack for [Cursor](https://cursor.com), [Claude Code](https://claude.com/claude-code), [Codex](https://openai.com/codex), and OpenClaw. Install only the workflow you need with `npx skills add`; there is no codexqa account, gateway, or platform migration.
+`codexqa` is a public, local-first [Agent Skills](https://agentskills.io/specification) pack for [Cursor](https://cursor.com), [Claude Code](https://claude.com/claude-code), [Codex](https://openai.com/codex), and OpenClaw. Install only the workflow you need with `npx skills add`; there is no codexqa account, gateway, or platform migration. Product and search landing: [openqa.cn](https://openqa.cn/). GitHub stays the source for skill files. Organic-search playbooks live in [`seo/`](seo/README.md).
 
 ## How the skills fit together
 
@@ -43,7 +45,7 @@ AI can produce a green pull request quickly. Teams still have to check whether t
 | Requirement review | [`codexqa-requirement-analyzer`](skills/codexqa-requirement-analyzer/README.md) | Is the PRD complete, consistent, and testable? | One gap/conflict register with P0 / P1 verification |
 | Test design | [`codexqa-testcase-generator`](skills/codexqa-testcase-generator/README.md) | What manual cases and test plan follow from the requirements? | Local Markdown plan + cases + aggregated HTML report; unknowns marked, not invented |
 | Test data | [`codexqa-testdata-generator`](skills/codexqa-testdata-generator/README.md) | What real IDs and preconditions make those cases runnable? | Backend-returned values written back into case preconditions |
-| Architecture wiki | [`code-wiki`](skills/code-wiki/README.md) | How is this repo organized, which module is the hub, and where should a newcomer start? | Community map, real deps, reading guides, and a Claude Code-style HTML report |
+| Architecture wiki | [`codexqa-code-wiki`](skills/codexqa-code-wiki/README.md) | How is this repo organized, which module is the hub, and where should a newcomer start? | Community map, real deps, reading guides, and a Claude Code-style HTML report |
 | Change impact | [`codexqa-code-analyzer`](skills/codexqa-code-analyzer/README.md) | What changed, who calls it, which entries are hit, and what is untested? | Symbol-graph evidence, regression scope, test gaps, and diagrams |
 | Exception RCA | [`codexqa-rootcause-analyzer`](skills/codexqa-rootcause-analyzer/README.md) | What is the in-repo root cause of this stack / log / crash? | Gated English root-cause report on top of CodexQA CLI facts |
 | Code-risk scan | [`codexqa-defect-analyzer`](skills/codexqa-defect-analyzer/README.md) | What SAST / secrets / logic risks are in this diff, repo, or paste? | `report_scan.json` / `.md` / `.html` findings ordered P0–P3 |
@@ -56,7 +58,7 @@ The skills use different inputs by design. The Agent can tell whether it should 
 
 - `codexqa-defect-analyzer` combines deterministic SAST/lint/secrets/SCA with **Agent LLM Detection** (host embedded model, Stage1/Stage2) then dedupe/merge into a P0–P3 `report_scan.*`.
 - `codexqa-code-analyzer` uses a local symbol graph to trace changed symbols to callers, entries, and graph-backed test relationships.
-- `code-wiki` exports the same graph as communities and real `deps`, then writes an architecture knowledge-graph report without calling a model.
+- `codexqa-code-wiki` exports the same graph as communities and real `deps`, then writes an architecture knowledge-graph report without calling a model.
 - `codexqa-rootcause-analyzer` turns exception evidence into a gated English RCA report on top of the same CodexQA CLI.
 - `codexqa-code-reviewer` collects a CodexQA evidence pack and evaluates heuristic dimensions, then runs an **Agent LLM judgment** pass with dedupe/merge before rendering bilingual `REVIEW-REPORT.html`.
 - The document and test skills keep requirement review, case design, and data construction separate instead of asking one prompt to do everything.
@@ -69,17 +71,17 @@ The five code-facing skills overlap on the same repository but answer different 
 
 | Skill | Primary question | Input | It does not replace |
 | --- | --- | --- | --- |
-| [`code-wiki`](skills/code-wiki/README.md) | How is the system organized, and where should a newcomer start? | Local repository (index + `wiki inputs`) | Change impact, exception RCA, or full review report |
+| [`codexqa-code-wiki`](skills/codexqa-code-wiki/README.md) | How is the system organized, and where should a newcomer start? | Local repository (index + `wiki inputs`) | Change impact, exception RCA, or full review report |
 | [`codexqa-code-analyzer`](skills/codexqa-code-analyzer/README.md) | What changed, what can it reach, and where are the test gaps? | Local repository + optional diff base | Requirement judgement, exception RCA, or full review report |
 | [`codexqa-rootcause-analyzer`](skills/codexqa-rootcause-analyzer/README.md) | What is the in-repo root cause of this exception? | Exception evidence + git / dir / file / open workspace | Structure/impact mapping or code-risk scan |
 | [`codexqa-defect-analyzer`](skills/codexqa-defect-analyzer/README.md) | What code-risk / security / logic findings belong in a scan report? | Diff / repo / upload / paste | Graph-evidence CR, structure/impact Q&A, or exception RCA |
 | [`codexqa-code-reviewer`](skills/codexqa-code-reviewer/README.md) | What does a CodexQA evidence pack imply for this change / repo? | Local checkout + collect scripts (`--diff-base` / full / adhoc) | SAST scan reports or structure/impact Q&A alone |
 
-Detailed workflow and boundary documents live with each skill: [codexqa-skill-router](skills/codexqa-skill-router/HOW_IT_WORKS.md), [code-wiki](skills/code-wiki/README.md) ([limitations](skills/code-wiki/KNOWN_LIMITATIONS.md)), [codexqa-code-analyzer](skills/codexqa-code-analyzer/README.md) ([limitations](skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.md)), [codexqa-rootcause-analyzer](skills/codexqa-rootcause-analyzer/HOW_IT_WORKS.md), [codexqa-defect-analyzer](skills/codexqa-defect-analyzer/HOW_IT_WORKS.md), [codexqa-code-reviewer](skills/codexqa-code-reviewer/HOW_IT_WORKS.md), [codexqa-requirement-analyzer](skills/codexqa-requirement-analyzer/HOW_IT_WORKS.md), [codexqa-testcase-generator](skills/codexqa-testcase-generator/HOW_IT_WORKS.md), and [codexqa-testdata-generator](skills/codexqa-testdata-generator/HOW_IT_WORKS.md). Host, language, and verification status are tracked in the [support matrix](docs/SUPPORT_MATRIX.md).
+Detailed workflow and boundary documents live with each skill: [codexqa-skill-router](skills/codexqa-skill-router/HOW_IT_WORKS.md), [codexqa-code-wiki](skills/codexqa-code-wiki/README.md) ([limitations](skills/codexqa-code-wiki/KNOWN_LIMITATIONS.md)), [codexqa-code-analyzer](skills/codexqa-code-analyzer/README.md) ([limitations](skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.md)), [codexqa-rootcause-analyzer](skills/codexqa-rootcause-analyzer/HOW_IT_WORKS.md), [codexqa-defect-analyzer](skills/codexqa-defect-analyzer/HOW_IT_WORKS.md), [codexqa-code-reviewer](skills/codexqa-code-reviewer/HOW_IT_WORKS.md), [codexqa-requirement-analyzer](skills/codexqa-requirement-analyzer/HOW_IT_WORKS.md), [codexqa-testcase-generator](skills/codexqa-testcase-generator/HOW_IT_WORKS.md), and [codexqa-testdata-generator](skills/codexqa-testdata-generator/HOW_IT_WORKS.md). Host, language, and verification status are tracked in the [support matrix](docs/SUPPORT_MATRIX.md).
 
 ## Install on Cursor, Claude Code, and Codex
 
-Check the basic tools first. `codexqa-code-analyzer` and `code-wiki` require Node.js 18+; `codexqa-defect-analyzer` requires Python 3.10+ (3.11 recommended) and optionally the CodexQA CLI; `codexqa-testcase-generator` requires Python 3.10+ (use that skill's `scripts/tcg-python`); `codexqa-skill-router` requires Python 3.10+ for discover/ensure (network for on-demand install).
+Check the basic tools first. `codexqa-code-analyzer` and `codexqa-code-wiki` require Node.js 18+; `codexqa-defect-analyzer` requires Python 3.10+ (3.11 recommended) and optionally the CodexQA CLI; `codexqa-testcase-generator` requires Python 3.10+ (use that skill's `scripts/tcg-python`); `codexqa-skill-router` requires Python 3.10+ for discover/ensure (network for on-demand install).
 
 ```bash
 node --version
@@ -93,7 +95,7 @@ Install only the skill needed for the current task:
 ```bash
 npx skills add openqa-cn/codexqa --skill codexqa-skill-router
 npx skills add openqa-cn/codexqa --skill codexqa-code-analyzer
-npx skills add openqa-cn/codexqa --skill code-wiki
+npx skills add openqa-cn/codexqa --skill codexqa-code-wiki
 npx skills add openqa-cn/codexqa --skill codexqa-rootcause-analyzer
 npx skills add openqa-cn/codexqa --skill codexqa-defect-analyzer
 npx skills add openqa-cn/codexqa --skill codexqa-code-reviewer
@@ -102,7 +104,7 @@ npx skills add openqa-cn/codexqa --skill codexqa-testcase-generator
 npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
 ```
 
-`codexqa-code-analyzer`, `code-wiki`, and `codexqa-rootcause-analyzer` also require Node.js 18+ / 22+ respectively and `npm install -g @openqa-cn/codexqa`. This package is the separately distributed, closed-source local code-analysis engine; index, query, and `wiki inputs` run on the user's machine without an LLM. [codexqa-code-analyzer limitations](skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.md) · [code-wiki limitations](skills/code-wiki/KNOWN_LIMITATIONS.md) · [codexqa-rootcause-analyzer limitations](skills/codexqa-rootcause-analyzer/KNOWN_LIMITATIONS.md).
+`codexqa-code-analyzer`, `codexqa-code-wiki`, and `codexqa-rootcause-analyzer` also require Node.js 18+ / 22+ respectively and `npm install -g @openqa-cn/codexqa`. This package is the separately distributed, closed-source local code-analysis engine; index, query, and `wiki inputs` run on the user's machine without an LLM. [codexqa-code-analyzer limitations](skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.md) · [codexqa-code-wiki limitations](skills/codexqa-code-wiki/KNOWN_LIMITATIONS.md) · [codexqa-rootcause-analyzer limitations](skills/codexqa-rootcause-analyzer/KNOWN_LIMITATIONS.md).
 
 Choose an Agent when prompted. For a user-level Codex installation add `--agent codex --global`. Each `--skill` copies one directory.
 
@@ -176,11 +178,11 @@ codexqa wiki inputs /path/to/repo --kind architecture --limit 8
 Then open the repository in the agent and ask:
 
 ```text
-Build a code knowledge graph for this repo with code-wiki. Use wiki inputs only — no LLM wiki.
+Build a code knowledge graph for this repo with codexqa-code-wiki. Use wiki inputs only — no LLM wiki.
 Start with the architecture map, then explain the core modules and a reading path.
 ```
 
-The filled report is a self-contained HTML file in Claude Code official style. This path uses the same local engine as `codexqa-code-analyzer`; see [known limitations](skills/code-wiki/KNOWN_LIMITATIONS.md).
+The filled report is a self-contained HTML file in Claude Code official style. This path uses the same local engine as `codexqa-code-analyzer`; see [known limitations](skills/codexqa-code-wiki/KNOWN_LIMITATIONS.md).
 
 <details>
 <summary><b>What to say to the other skills</b></summary>
@@ -241,7 +243,7 @@ The large image at the top is the `codexqa-defect-analyzer` HTML report. Other s
 
 | Skill | Sample |
 | --- | --- |
-| `code-wiki` | [HTML report template](skills/code-wiki/assets/report-template.html) |
+| `codexqa-code-wiki` | [HTML report template](skills/codexqa-code-wiki/assets/report-template.html) |
 | `codexqa-code-analyzer` | [Change-impact graph](skills/codexqa-code-analyzer/assets/checkout-change-impact.svg) |
 | `codexqa-requirement-analyzer` | [Gap/conflict register](docs/assets/previews/ra-register.html) |
 | `codexqa-testcase-generator` | [Structured manual case](docs/assets/previews/testcase-sample.html) (V56 server template; runtime also writes `testdesign/testcase_generation_report.html`) |
@@ -256,7 +258,7 @@ The workflows do not have the same public evidence maturity:
 | Skill | Public evidence today |
 | --- | --- |
 | `codexqa-skill-router` | `discover_skills.py --self-check` / `--with-catalog`; `ensure_skill.py --dry-run` / `--from-repo`; routing choice is model-judged; no published host-agent score |
-| `code-wiki` | Published Skill contract, playbook, report template, and limitations; `wiki inputs` needs the same closed-source engine, which this repository's CI does not run |
+| `codexqa-code-wiki` | Published Skill contract, playbook, report template, and limitations; `wiki inputs` needs the same closed-source engine, which this repository's CI does not run |
 | `codexqa-code-analyzer` | Published Skill contract, schemas, playbook, example diagram, and limitations; the separately distributed closed-source engine is not run by this repository's CI |
 | `codexqa-rootcause-analyzer` | Local CLI tests (parse, materialize, draft, smoke); uses `@openqa-cn/codexqa`; no published host-agent score; RCA narrative is model-judged |
 | `codexqa-defect-analyzer` | Local Python pipeline/policy-fixture tests; optional SAST + closed-source CodexQA CLI; no published host-agent score; Stage1/Stage2 are model-judged |
@@ -282,7 +284,7 @@ node examples/checkout-boundary/verify.mjs
 python3 skills/codexqa-skill-router/scripts/discover_skills.py --self-check
 ```
 
-These checks cover documentation links, translation section parity, `codexqa-defect-analyzer` Python pipeline/policy fixtures, packaging, the bundled boundary fixtures, `codexqa-testcase-generator` offline gate/report smoke, and `codexqa-skill-router` catalog self-check. They do not execute a full live agent Stage1/Stage2 scan or the separately distributed `codexqa-code-analyzer` / `code-wiki` / `codexqa-rootcause-analyzer` engine path, and they do not prove that every defect will be found.
+These checks cover documentation links, translation section parity, `codexqa-defect-analyzer` Python pipeline/policy fixtures, packaging, the bundled boundary fixtures, `codexqa-testcase-generator` offline gate/report smoke, and `codexqa-skill-router` catalog self-check. They do not execute a full live agent Stage1/Stage2 scan or the separately distributed `codexqa-code-analyzer` / `codexqa-code-wiki` / `codexqa-rootcause-analyzer` engine path, and they do not prove that every defect will be found.
 
 ## Documentation
 
@@ -290,7 +292,7 @@ These checks cover documentation links, translation section parity, `codexqa-def
 | --- | --- |
 | Run a review today | [Getting Started](docs/GETTING_STARTED.md) · [Quick start](#quick-start) |
 | Understand how it reaches a conclusion, and what stops autopilot output | [How the skills work](docs/HOW_IT_WORKS.md) · [codexqa-defect-analyzer method](skills/codexqa-defect-analyzer/HOW_IT_WORKS.md) |
-| Know what a skill misses and when not to trust it | [How the skills work](docs/HOW_IT_WORKS.md) · [code-wiki limitations](skills/code-wiki/KNOWN_LIMITATIONS.md) · [codexqa-code-analyzer limitations](skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.md) · [codexqa-defect-analyzer limitations](skills/codexqa-defect-analyzer/KNOWN_LIMITATIONS.md) · [Support Matrix](docs/SUPPORT_MATRIX.md) |
+| Know what a skill misses and when not to trust it | [How the skills work](docs/HOW_IT_WORKS.md) · [codexqa-code-wiki limitations](skills/codexqa-code-wiki/KNOWN_LIMITATIONS.md) · [codexqa-code-analyzer limitations](skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.md) · [codexqa-defect-analyzer limitations](skills/codexqa-defect-analyzer/KNOWN_LIMITATIONS.md) · [Support Matrix](docs/SUPPORT_MATRIX.md) |
 | Check whether code or data leaves my machine | [FAQ](docs/FAQ.md) · [Security Policy](SECURITY.md) |
 | Reproduce the 7/7 blind evaluation myself | [Examples](examples/README.md) · [inventory-service](examples/inventory-service/README.md) · [Methodology](benchmarks/README.md) |
 | See what is next and what is only planned | [Capability map and roadmap](docs/ROADMAP.md) · [Changelog](CHANGELOG.md) |

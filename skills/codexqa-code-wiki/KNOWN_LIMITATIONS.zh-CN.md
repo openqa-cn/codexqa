@@ -2,7 +2,7 @@
 
 [English](KNOWN_LIMITATIONS.md)
 
-本文说明 `code-wiki` skill 及其依赖的本地分析引擎目前有哪些边界。
+本文说明 `codexqa-code-wiki` skill 及其依赖的本地分析引擎目前有哪些边界。
 
 ## 分发边界
 
@@ -13,7 +13,7 @@
 ## 兼容性与验证状态
 
 - 本仓库 CI 当前不会安装或执行这个闭源 CLI。
-- `code-wiki` 目前没有公开的宿主 Agent 运行记录或独立质量 benchmark。
+- `codexqa-code-wiki` 目前没有公开的宿主 Agent 运行记录或独立质量 benchmark。
 - 示例图用于说明报告契约，不是对某个公开仓库的真实分析记录。
 - 目前还没有正式发布 Skill 与 CLI 的版本兼容矩阵。反馈问题时请附上 `codexqa --version`。
 
@@ -35,4 +35,4 @@
 
 ## 工作流边界
 
-`code-wiki` 画社区、真实依赖和上手路径。它不跑不带 `--no-llm` 的 `codexqa wiki`，不跑 `wiki embed` 或 `query wiki`，不审变更，不打 P0 / P1 / P2。影响面和测试缺口用 `code-analyzer`，代码风险扫描报告用 `defect-detection`，CodexQA 证据包 HTML 评审用 `ai-code-reviewer`。
+`codexqa-code-wiki` 画社区、真实依赖和上手路径。它不跑不带 `--no-llm` 的 `codexqa wiki`，不跑 `wiki embed` 或 `query wiki`，不审变更，不打 P0 / P1 / P2。影响面和测试缺口用 `codexqa-code-analyzer`，代码风险扫描报告用 `codexqa-defect-analyzer`，CodexQA 证据包 HTML 评审用 `codexqa-code-reviewer`。

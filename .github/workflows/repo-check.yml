@@ -26,6 +26,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y rsync zip unzip
       - name: Check documentation and skill registry
         run: python3 scripts/check-docs.py
+      - name: Check GitHub Release notes composer
+        run: python3 scripts/compose-release-notes.py --self-check
       - name: Verify known-good and seeded-defect example
         run: node examples/checkout-boundary/verify.mjs
       - name: Verify blind-evaluation fixture answer key

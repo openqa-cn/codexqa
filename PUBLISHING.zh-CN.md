@@ -27,7 +27,7 @@ npx skills add . --list
 
 检查远程 CI 结果，确认 `npx skills add openqa-cn/codexqa --list` 能发现 Skill，并在隔离项目中验证安装流程。远程安装命令无法读取尚未推送的本地修改。
 
-创建经过审核的 GitHub release/tag，说明变更、运行要求和已知限制。可通过以下命令生成可选 ZIP 包：
+创建经过审核的 GitHub release/tag（例如 `git tag 0.3.0 && git push origin 0.3.0`）。[`.github/workflows/release-notes.yml`](.github/workflows/release-notes.yml) 会用 [`.github/release-notes.md`](.github/release-notes.md) 起草或更新 Release 正文，并始终带上 `https://openqa.cn/`。发布草稿前补全「现在能做什么」和宿主/边界。可通过以下命令生成可选 ZIP 包：
 
 ```bash
 bash skills/codexqa-defect-analyzer/pack-skill.sh /absolute/output/directory

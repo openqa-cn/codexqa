@@ -15,9 +15,9 @@
 1. **先有证据。** 只用本次 `wiki inputs` 的 `inputs[].input`。
 2. **复制模板**（技能包自带）到工作目录：
    ```bash
-   cp <skill-dir>/assets/report-template.html ./code-wiki-$(date +%Y%m%d-%H%M).html
+   cp <skill-dir>/assets/report-template.html ./codexqa-code-wiki-$(date +%Y%m%d-%H%M).html
    ```
-   仓库名更清楚时写成 `code-wiki-<repo-slug>-YYYYMMDD-HHMM.html`。
+   仓库名更清楚时写成 `codexqa-code-wiki-<repo-slug>-YYYYMMDD-HHMM.html`。
 3. **用 Edit 改副本**（不要用 Write，不要改 CSS 和 mermaid 加载器）：
    - `<title>`、`#title-path`、`#cmd-repo`、`#cmd-flags`、`#meta-line`
    - `#hero-total` / `#hero-split`（英雄数字 = 本报告收录的模块数，单位写「个模块」）

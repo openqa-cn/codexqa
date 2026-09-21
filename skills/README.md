@@ -16,6 +16,6 @@ Install one skill with `npx skills add openqa-cn/codexqa --skill <name>` (for ex
 - [`codexqa-requirement-analyzer`](codexqa-requirement-analyzer/): quality-and-risk analysis of requirement documents; one gap/conflict register with P0/P1 verification. Not a case writer — that is `codexqa-testcase-generator`. [How it works](codexqa-requirement-analyzer/HOW_IT_WORKS.md).
 - [`codexqa-code-analyzer`](codexqa-code-analyzer/): local symbol-graph QA — index a repo, then review changes, bound regression, find test gaps, and trace errors with the `codexqa` CLI. [Skill README](codexqa-code-analyzer/README.md).
 - [`codexqa-rootcause-analyzer`](codexqa-rootcause-analyzer/): exception root-cause diagnosis from stacks/logs on top of the CodexQA CLI; English gated report. Not structure/impact (`codexqa-code-analyzer`) and not code-risk scan (`codexqa-defect-analyzer`). [How it works](codexqa-rootcause-analyzer/HOW_IT_WORKS.md).
-- [`code-wiki`](code-wiki/): local architecture knowledge graph — index a repo, export community digests with `wiki inputs` (no model), and write a Claude Code-style HTML wiki. [Skill README](code-wiki/README.md).
+- [`codexqa-code-wiki`](codexqa-code-wiki/): local architecture knowledge graph — index a repo, export community digests with `wiki inputs` (no model), and write a Claude Code-style HTML wiki. [Skill README](codexqa-code-wiki/README.md).
 
 Use [SKILL_TEMPLATE.md](SKILL_TEMPLATE.md) when proposing a new skill. A contribution should solve a distinct verification problem, include acceptance criteria, and provide reproducible evidence.

@@ -1,14 +1,15 @@
 ---
-name: code-wiki
+name: codexqa-code-wiki
 description: >
   Builds a local CodexQA architecture knowledge graph from community
   detection and `wiki inputs` (no model), then writes a Claude Code
-  official-style HTML report. Use when the user mentions code-wiki,
+  official-style HTML report. Use when the user mentions codexqa-code-wiki,
   wiki, 代码知识图谱, 架构 Wiki, 模块地图, 阅读导览, wiki inputs,
   --no-llm, 社区检测, HTML 报告, or asks to map modules / generate a
-  repo wiki without an LLM. Not change review (that is code-analyzer),
-  not CodexQA evidence-pack HTML review (that is ai-code-reviewer), and not
-  SAST+agent code-risk scan reports (that is defect-detection).
+  repo wiki without an LLM. Not change review (that is codexqa-code-analyzer),
+  not CodexQA evidence-pack HTML review (that is codexqa-code-reviewer), and not
+  SAST+agent code-risk scan reports (that is codexqa-defect-analyzer).
+  Former skill name: code-wiki.
 license: Apache-2.0
 compatibility: >
   Requires Node.js >= 18 and the `codexqa` CLI
@@ -65,7 +66,7 @@ Open [references/playbook.md](references/playbook.md) and jump to the named sect
 | Persist a rule-only wiki for the UI | **Persist rule-only wiki** |
 | Empty results / missing index / wiki failed | **Index health** / **Wiki blockers** |
 
-Change review, callers, test gaps, and stack traces belong to `code-analyzer`.
+Change review, callers, test gaps, and stack traces belong to `codexqa-code-analyzer`.
 
 ## Report contract
 

@@ -87,7 +87,7 @@ Page `input` fields that count as evidence:
 | `sibling_modules` | Split from the same oversized community — stress **differences** |
 | `valid_anchors` | Anchor ids the digest may cite; not file paths |
 
-Do not invent a responsibility that no signature, flow, or cross edge supports. After a hit, you may confirm a named symbol with `code-analyzer` (`symbols` → `source`) — that is optional, and only when the user wants source lines.
+Do not invent a responsibility that no signature, flow, or cross edge supports. After a hit, you may confirm a named symbol with `codexqa-code-analyzer` (`symbols` → `source`) — that is optional, and only when the user wants source lines.
 
 Visualization `input.candidates`:
 

@@ -15,7 +15,7 @@ CodexQA indexes the repo, then `wiki inputs` exports Leiden communities and dige
 - **Reading guides** — only steps backed by a listed dependency
 - **Optional persist** — `wiki --no-llm` writes rule-only pages for the Web UI
 
-`code-wiki` answers **architecture and onboarding** questions from wiki-pipeline facts. It does not review a PR, bound regression, or score P0 / P1 / P2 findings. Use `code-analyzer` for change impact, `defect-detection` for SAST+agent code-risk scan reports, and `ai-code-reviewer` for CodexQA evidence-pack HTML review.
+`codexqa-code-wiki` answers **architecture and onboarding** questions from wiki-pipeline facts. It does not review a PR, bound regression, or score P0 / P1 / P2 findings. Use `codexqa-code-analyzer` for change impact, `codexqa-defect-analyzer` for SAST+agent code-risk scan reports, and `codexqa-code-reviewer` for CodexQA evidence-pack HTML review.
 
 The Skill, playbook, and examples are published in this repository. The required `@openqa-cn/codexqa` package is a separately distributed, closed-source local analysis engine. Index and `wiki inputs` run on the user's machine without an LLM. See [known limitations](KNOWN_LIMITATIONS.md).
 
@@ -32,7 +32,7 @@ npm install -g @openqa-cn/codexqa --registry https://registry.npmjs.org/
 Requires **Node.js >= 18**.
 
 ```bash
-npx skills add openqa-cn/codexqa --skill code-wiki
+npx skills add openqa-cn/codexqa --skill codexqa-code-wiki
 npm install -g @openqa-cn/codexqa --registry https://registry.npmjs.org/
 codexqa --help
 ```
@@ -73,7 +73,7 @@ Keep going with: `only the storage communities`, `open p03`, `drop isolated modu
 | **Persist rule-only wiki** | Store pages for the Web UI without a model | Whether to persist |
 | **Index health** | Empty inputs, missing repo | Repo path or `repo_id` |
 
-Change review, callers, test gaps, and stack traces: use `code-analyzer`.
+Change review, callers, test gaps, and stack traces: use `codexqa-code-analyzer`.
 
 ---
 
@@ -118,7 +118,7 @@ Do not run `codexqa wiki` without `--no-llm`. Do not run `wiki embed` or `query 
 | Surface | Where / how | Capability |
 | --- | --- | --- |
 | **CLI** | `npm install -g @openqa-cn/codexqa` | Index, `wiki inputs`, `wiki --no-llm` |
-| **Cursor** | Put `code-wiki/` in `~/.cursor/skills/` or `.cursor/skills/` | Knowledge-graph workflow |
+| **Cursor** | Put `codexqa-code-wiki/` in `~/.cursor/skills/` or `.cursor/skills/` | Knowledge-graph workflow |
 | **Claude Code** | `~/.claude/skills/` or `.claude/skills/` | Knowledge-graph workflow |
 
 Maintenance: [`references/cli.md`](references/cli.md).
@@ -128,7 +128,7 @@ Maintenance: [`references/cli.md`](references/cli.md).
 ## Package contents
 
 ```text
-code-wiki/
+codexqa-code-wiki/
 ├── README.md                 # this file
 ├── README.zh-CN.md           # Chinese
 ├── SKILL.md                  # agent routing + report contract

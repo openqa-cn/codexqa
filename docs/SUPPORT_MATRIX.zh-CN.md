@@ -22,7 +22,7 @@
 | ZIP 打包 | 打包 / 解包冒烟测试 | 需要 Bash、rsync、zip、unzip |
 | 证据 schema | 仓库内提供 schema | 不宣称 skill 输出自动符合该 schema |
 | `codexqa-code-analyzer` 符号图工作流 | 已发布路由契约、查询 schema、分析 playbook、证据图示例和已知边界文档；本地建索引与查询需要 Node.js 18+ 和单独分发的闭源 `@openqa-cn/codexqa` 引擎 | 本仓库 CI 不安装或执行该引擎；没有公开宿主 Agent 运行；图完整性受 parser 覆盖、stub 和符号碰撞影响 |
-| `code-wiki` 架构 Wiki 工作流 | 已发布路由契约、playbook、Claude Code 风格 HTML 报告模板和已知边界文档；`wiki inputs` / `wiki --no-llm` 依赖同一套 Node.js 18+ 闭源引擎 | 本仓库 CI 不安装或执行该引擎；没有公开宿主 Agent 运行；社区是 Leiden 切分加页数上限，不是模块边界的证明 |
+| `codexqa-code-wiki` 架构 Wiki 工作流 | 已发布路由契约、playbook、Claude Code 风格 HTML 报告模板和已知边界文档；`wiki inputs` / `wiki --no-llm` 依赖同一套 Node.js 18+ 闭源引擎 | 本仓库 CI 不安装或执行该引擎；没有公开宿主 Agent 运行；社区是 Leiden 切分加页数上限，不是模块边界的证明 |
 | `codexqa-rootcause-analyzer` CLI / 脚本 | `skills/codexqa-rootcause-analyzer` 本地 `npm test`（解析、落地、草稿、冒烟）；用 `@openqa-cn/codexqa` CLI 做 index/query；Node.js 22+ + TypeScript stripping | 引擎不在本仓库 CI 中运行；RCA 叙事由模型判断；无公开宿主 agent 成绩；图缺口会削弱证据 |
 | `codexqa-defect-analyzer` 流水线 | `skills/codexqa-defect-analyzer` 本地 `npm test`（Python 流水线 + 策略夹具，优先 3.11）；可选 SAST/lint/secrets；实图用 CodexQA CLI | CI 不强制完整 Agent LLM Detection Stage1/Stage2 与全部 SAST 二进制；语义发现由模型判断；无公开宿主 agent 成绩 |
 | `codexqa-testcase-generator` 脚本 | `close_stage.py` / `check_run_gate.py` / `generate_case_report.py`（及 ingest / incremental 辅助）经 `scripts/tcg-python` 在 Python 3.10+ 上运行；离线 `--self-check` | 无公开 Plan→Exec fixture、无已记录 agent 运行；Windows 未测；仅可选知识库/PR 拉取需要 git |

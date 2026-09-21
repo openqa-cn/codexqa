@@ -16,6 +16,6 @@
 - [`codexqa-requirement-analyzer`](codexqa-requirement-analyzer/README.zh-CN.md)：对需求文档做质量与风险分析，产出一份带 P0/P1 验证项的缺口 / 冲突登记表。它不写用例——那是 `codexqa-testcase-generator`。[工作原理](codexqa-requirement-analyzer/HOW_IT_WORKS.zh-CN.md)。
 - [`codexqa-code-analyzer`](codexqa-code-analyzer/README.zh-CN.md)：本机符号图质量保障——先给仓库建索引，再审变更、圈回归、找测试缺口、追报错，走 `codexqa` CLI。[Skill 手册](codexqa-code-analyzer/README.zh-CN.md)。
 - [`codexqa-rootcause-analyzer`](codexqa-rootcause-analyzer/README.zh-CN.md)：在 CodexQA CLI 分析之上做异常根因诊断（堆栈/日志 → 带门禁的英文报告）。不是结构/影响面（`codexqa-code-analyzer`），也不是代码风险扫描（`codexqa-defect-analyzer`）。[工作原理](codexqa-rootcause-analyzer/HOW_IT_WORKS.zh-CN.md)。
-- [`code-wiki`](code-wiki/README.zh-CN.md)：本机架构知识图谱——先建索引，再用 `wiki inputs`（不调模型）导出社区 digest，写出 Claude Code 风格的 HTML Wiki。[Skill 手册](code-wiki/README.zh-CN.md)。
+- [`codexqa-code-wiki`](codexqa-code-wiki/README.zh-CN.md)：本机架构知识图谱——先建索引，再用 `wiki inputs`（不调模型）导出社区 digest，写出 Claude Code 风格的 HTML Wiki。[Skill 手册](codexqa-code-wiki/README.zh-CN.md)。
 
 提新 skill 时用 [SKILL_TEMPLATE.md](SKILL_TEMPLATE.md)。一个够格的贡献要解决一个独立的验证问题、带验收标准、并给出可复现的证据。

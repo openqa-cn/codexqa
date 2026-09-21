@@ -43,8 +43,8 @@
       "status": "available"
     },
     {
-      "name": "code-wiki",
-      "path": "skills/code-wiki",
+      "name": "codexqa-code-wiki",
+      "path": "skills/codexqa-code-wiki",
       "status": "available"
     }
   ]
