@@ -133,7 +133,7 @@ codexqa-code-wiki/
 ├── README.zh-CN.md           # Chinese
 ├── SKILL.md                  # agent routing + report contract
 ├── assets/
-│   └── report-template.html  # DeepWiki-style HTML chrome (中文/EN · 白天/黑夜)
+│   └── report-template.html  # DeepWiki layout + testcase-generator chrome (default 简体中文)
 └── references/
     ├── playbook.md           # scenario steps (load on demand)
     ├── report.md             # how to fill the HTML report

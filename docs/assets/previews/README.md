@@ -4,15 +4,21 @@ Sample HTML used as screenshots in the repository README. They are **illustratio
 
 | File | Skill | How it was produced |
 |---|---|---|
-| `defect-report.html` / `.png` | `codexqa-defect-analyzer` | Live skill pipeline: `run_scan.py adhoc --from-dir examples/inventory-service/head` → Stage1/Stage2 → `finalize` (`report_scan.html`) |
+| `defect-report.html` / `.png` | `codexqa-defect-analyzer` | `merge_report.render_html_report` (testcase-generator chrome; canned inventory-service findings) |
 | `review-report.html` / `.png` | `codexqa-code-reviewer` | `scripts/render-review-html.sh` on `evals/fixtures/conclusion/with-llm-judgment.json` |
-| `code-wiki.html` / `.png` | `codexqa-code-wiki` | Official `assets/report-template.html` filled for `examples/inventory-service` (no live `wiki inputs`; mermaid CDN stripped for offline shot) |
+| `code-wiki.html` / `.png` | `codexqa-code-wiki` | Same chrome as the case report; filled for `examples/inventory-service` |
 | `code-analyzer.html` / `.png` | `codexqa-code-analyzer` | Wrapper around published `checkout-change-impact.svg` |
-| `rootcause.html` / `.png` | `codexqa-rootcause-analyzer` | English `report.md` template headings, inventory-service NPE illustration (native delivery is Markdown) |
+| `rootcause.html` / `.png` | `codexqa-rootcause-analyzer` | English `report.md` headings, inventory-service NPE (native delivery is Markdown) |
 | `ra-register.html` / `.png` | `codexqa-requirement-analyzer` | Sample gap/conflict register |
 | `testcase-report.html` / `.png` | `codexqa-testcase-generator` | `generate_case_report.py --run-dir` (Web / Server / APP aggregate) |
 | `testdata-writeback.html` / `.png` | `codexqa-testdata-generator` | `{placeholder}` replaced with a backend-returned id |
 | `testcase-sample.html` / `.png` | `codexqa-testcase-generator` | Extra: one V56 server-end case table |
+
+Rebuild illustration HTML (except `review-report.html` and `testcase-report.html`):
+
+```bash
+python3 docs/assets/previews/rebuild_previews.py
+```
 
 GitHub blob and jsDelivr both serve these `.html` files as `text/plain` with `nosniff`, so the browser shows source. README screenshot links therefore open [htmlpreview.github.io](https://htmlpreview.github.io/) (`https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/<file>.html`), which renders `text/html`. Locally, open the `.html` file in this directory.
 

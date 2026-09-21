@@ -1,390 +1,274 @@
-<!doctype html>
-<html lang="zh-CN">
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" data-lang="zh" data-store="wiki-report">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>inventory-service — 架构知识图谱</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title data-zh="inventory-service — 架构知识图谱" data-en="inventory-service — architecture wiki">inventory-service — 架构知识图谱</title>
+<script>
+(function(){
+  try {
+    var prefix = document.documentElement.getAttribute('data-store') || 'codexqa-report';
+    var t = localStorage.getItem(prefix + '-theme');
+    var l = localStorage.getItem(prefix + '-lang');
+    if (t === 'day') t = 'light';
+    if (t === 'night') t = 'dark';
+    if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+    if (l === 'en' || l === 'zh') {
+      document.documentElement.setAttribute('data-lang', l);
+      document.documentElement.lang = l === 'en' ? 'en' : 'zh-CN';
+    }
+  } catch (e) {}
+})();
+</script>
 <style>
-  :root {
-    /* anthropic / claude-code palette — same tokens as official session-report */
-    --ivory: #FAF9F5;
-    --term-bg: #1a1918;
-    --term-fg: #d1cfc5;
-    --titlebar: #252321;
-    --outline: rgba(255,255,255,0.08);
-    --hover: rgba(255,255,255,0.035);
-    --clay: #D97757;
-    --dim: rgb(136,136,136);
-    --subtle: rgb(80,80,80);
-    --green: rgb(78,186,101);
-    --red: rgb(255,107,128);
-    --blue: rgb(177,185,249);
-    --yellow: rgb(255,193,7);
-    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-    --sans: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  }
+/* Shared CodexQA HTML report chrome — copied from codexqa-testcase-generator.
+   Keep in sync with skills/codexqa-testcase-generator/scripts/generate_case_report.py */
+:root, html[data-theme="light"] {
+  color-scheme: light;
+  --bg:#f0f3f6; --sheet:#ffffff; --ink:#1a2332; --muted:#5a6578;
+  --line:#d5dde8; --acc:#0f6b4c; --acc-soft:#e6f4ee; --acc-fg:#fff;
+  --web:#0b5cab; --web-bg:#e8f1fb; --web-line:#c5d9f0;
+  --server:#6b3fa0; --server-bg:#f3eafb; --server-line:#e0d0f2;
+  --app:#b45309; --app-bg:#fff4e6; --app-line:#f0d7b5;
+  --p0:#b42318; --p0-bg:#fde8e4;
+  --p1:#c2410c; --p1-bg:#ffedd5;
+  --p2:#9a6700; --p2-bg:#fef3c7;
+  --p3:#475569; --p3-bg:#e2e8f0;
+  --card:#f8fafc; --chip:#fff; --head:#fbfcfd; --code-bg:#eef2f6; --bar-track:#e8edf3;
+  --hero-a:#d9ebe3; --hero-b:#d6e4f5;
+  --ok:#17663a; --ok-bg:#dcfce7;
+  --toolbar-bg: color-mix(in srgb, var(--sheet) 92%, transparent);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Segoe UI", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#0f141b; --sheet:#1a222c; --ink:#e8edf2; --muted:#9aa7b5;
+  --line:#2f3b49; --acc:#3ecf8e; --acc-soft:#163526; --acc-fg:#0b1a12;
+  --web:#7eb6ff; --web-bg:#1a2a3d; --web-line:#2a4060;
+  --server:#c4a1ff; --server-bg:#2a1f3d; --server-line:#3d2f5c;
+  --app:#ffb074; --app-bg:#3a2718; --app-line:#5a3a22;
+  --p0:#ff8a80; --p0-bg:#3a1d1c;
+  --p1:#ffb074; --p1-bg:#3a2718;
+  --p2:#e6c35c; --p2-bg:#3a3218;
+  --p3:#cbd5e1; --p3-bg:#2a3441;
+  --card:#141b24; --chip:#1f2833; --head:#162029; --code-bg:#24303b; --bar-track:#24303b;
+  --hero-a:#1a2e28; --hero-b:#1a2433;
+  --ok:#7ddea4; --ok-bg:#163526;
+  --toolbar-bg: color-mix(in srgb, var(--sheet) 88%, transparent);
+}
+* { box-sizing: border-box; }
+body { margin:0; font:14px/1.55 var(--sans); color:var(--ink); background:
+  radial-gradient(1200px 500px at 10% -10%, var(--hero-a) 0%, transparent 55%),
+  radial-gradient(900px 400px at 100% 0%, var(--hero-b) 0%, transparent 50%),
+  var(--bg); }
+.prefs { position:sticky; top:0; z-index:20; display:flex; justify-content:flex-end; gap:8px;
+  padding:10px 18px; background:var(--toolbar-bg); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line); }
+.prefs .group { display:flex; gap:4px; align-items:center; padding:2px;
+  border:1px solid var(--line); border-radius:999px; background:var(--sheet); }
+.prefs button { appearance:none; border:0; background:transparent; color:var(--muted);
+  font:inherit; font-size:12px; font-weight:600; letter-spacing:.02em; padding:6px 12px;
+  border-radius:999px; cursor:pointer; }
+.prefs button[aria-pressed="true"] { background:var(--acc); color:var(--acc-fg); }
+.wrap { max-width:1180px; margin:0 auto; padding:22px 18px 64px; }
+.hero { background:var(--sheet); border:1px solid var(--line); border-radius:14px;
+  padding:22px 24px; margin-bottom:18px; box-shadow:0 1px 0 rgba(26,35,50,.04); }
+.kicker { margin:0 0 6px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+h1 { margin:0 0 8px; font-size:24px; letter-spacing:-.02em; }
+.sub { color:var(--muted); margin:0 0 14px; }
+.meta-row { display:flex; flex-wrap:wrap; gap:10px 18px; font-size:12.5px; color:var(--muted); }
+.meta-row code { font-family:var(--mono); font-size:11.5px; background:var(--code-bg); padding:1px 5px; border-radius:4px; color:var(--ink); }
+.stats { display:grid; grid-template-columns: 1.2fr 1fr; gap:14px; margin:18px 0 0; }
+@media (max-width:800px) { .stats { grid-template-columns:1fr; } }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+.card h2 { margin:0 0 10px; font-size:13px; color:var(--muted); font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
+.chip-row { display:flex; gap:10px; flex-wrap:wrap; }
+.stat-chip { min-width:88px; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--chip); }
+.stat-chip .n { display:block; font-size:22px; font-weight:700; line-height:1.1; }
+.stat-chip .l { font-size:11px; color:var(--muted); letter-spacing:.06em; }
+.stat-chip.p0 .n, .stat-chip.web .n { color:var(--p0); }
+.stat-chip.p0 { background:var(--p0-bg); border-color:var(--p0-bg); }
+.stat-chip.p1 .n { color:var(--p1); }
+.stat-chip.p1 { background:var(--p1-bg); border-color:var(--p1-bg); }
+.stat-chip.p2 .n { color:var(--p2); }
+.stat-chip.p2 { background:var(--p2-bg); border-color:var(--p2-bg); }
+.stat-chip.p3 .n { color:var(--p3); }
+.stat-chip.p3 { background:var(--p3-bg); border-color:var(--p3-bg); }
+.stat-chip.web { background:var(--web-bg); border-color:var(--web-line); }
+.stat-chip.web .n { color:var(--web); }
+.stat-chip.server { background:var(--server-bg); border-color:var(--server-line); }
+.stat-chip.server .n { color:var(--server); }
+.stat-chip.app { background:var(--app-bg); border-color:var(--app-line); }
+.stat-chip.app .n { color:var(--app); }
+.bar-row { display:grid; grid-template-columns:36px 1fr 36px; gap:8px; align-items:center; margin:6px 0; font-size:12px; }
+.bar { height:8px; background:var(--bar-track); border-radius:99px; overflow:hidden; }
+.bar i { display:block; height:100%; background:var(--acc); border-radius:99px; }
+.panel { background:var(--sheet); border:1px solid var(--line); border-radius:14px; padding:16px 18px 8px; margin-bottom:16px; }
+.panel-head h2 { margin:0; font-size:18px; }
+.panel-head .count { display:inline-block; margin-left:6px; font-size:12px; background:var(--acc-soft); color:var(--acc);
+  padding:2px 8px; border-radius:999px; vertical-align:middle; }
+.panel-head .desc { color:var(--muted); margin:6px 0 12px; font-size:13px; }
+.case { border:1px solid var(--line); border-radius:10px; margin-bottom:10px; overflow:hidden; background:var(--chip); }
+.case-head { display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:10px 12px; background:var(--head); }
+.case-head h3 { margin:0; font-size:14px; font-weight:600; flex:1 1 200px; }
+.meta-id { font-family:var(--mono); font-size:11px; color:var(--muted); }
+.case-body { padding:4px 14px 14px; border-top:1px solid var(--line); }
+.badge { display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.04em; padding:2px 7px; border-radius:999px; }
+.badge.pri.p0 { background:var(--p0-bg); color:var(--p0); }
+.badge.pri.p1 { background:var(--p1-bg); color:var(--p1); }
+.badge.pri.p2 { background:var(--p2-bg); color:var(--p2); }
+.badge.pri.p3 { background:var(--p3-bg); color:var(--p3); }
+.badge.type { background:var(--code-bg); color:var(--muted); font-weight:600; }
+.kv { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px 14px; margin:10px 0 12px; }
+.kv dt { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+.kv dd { margin:2px 0 0; }
+.case-body h4 { margin:14px 0 6px; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+.block { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
+.block p { margin:0 0 6px; }
+.block p:last-child { margin:0; }
+.block code, .steps code, code { font-family:var(--mono); font-size:11.5px; background:var(--code-bg); padding:1px 5px; border-radius:4px; color:var(--ink); }
+.block a, a { color:var(--acc); }
+.steps { width:100%; border-collapse:collapse; font-size:13px; }
+.steps th, .steps td { border:1px solid var(--line); padding:8px 9px; vertical-align:top; text-align:left; }
+.steps th { background:var(--code-bg); font-size:12px; }
+.empty { padding:28px; text-align:center; color:var(--muted); border:1px dashed var(--line); border-radius:10px; margin-bottom:12px; }
+.muted { color:var(--muted); }
+.footer { margin-top:18px; color:var(--muted); font-size:12px; text-align:center; }
+.total-pill { display:inline-block; background:var(--acc-soft); color:var(--acc); font-weight:700;
+  padding:3px 10px; border-radius:999px; margin-left:6px; font-size:13px; }
+.alert { padding:10px 12px; border-radius:10px; font-size:13px; margin-bottom:12px; border:1px solid var(--line); }
+.alert-warn { background:var(--p1-bg); color:var(--p1); border-color:transparent; }
+.alert-drop { background:var(--p0-bg); color:var(--p0); border-color:transparent; }
+html[data-lang="en"] .unit-zh { display:none; }
+html[data-lang="zh"] .unit-en { display:none; }
+.was { color:var(--p0); text-decoration:line-through; }
+.now { color:var(--acc); font-weight:600; }
+.figure-frame { background:var(--sheet); border:1px solid var(--line); border-radius:14px; padding:8px; }
+.figure-frame img { width:100%; height:auto; display:block; border-radius:10px; }
 
-  * { box-sizing: border-box; }
-  html { background: var(--ivory); }
-  body {
-    margin: 0; padding: 48px 24px 80px;
-    font: 14px/1.7 var(--sans);
-    font-variant-numeric: tabular-nums;
-    color: var(--term-fg);
-  }
-
-  /* ——— terminal window chrome ——— */
-  .term {
-    max-width: 1180px; margin: 0 auto;
-    background: var(--term-bg);
-    border-radius: 8px;
-    outline: 1px solid var(--outline);
-    box-shadow: 0 20px 60px rgba(20,20,19,0.22);
-  }
-  .titlebar {
-    background: var(--titlebar);
-    border-radius: 8px 8px 0 0;
-    border-bottom: 1px solid var(--outline);
-    padding: 11px 14px;
-    display: flex; align-items: center; gap: 7px;
-  }
-  .titlebar .dot { width: 11px; height: 11px; border-radius: 50%; background: #3a3836; }
-  .titlebar .path { margin-left: 14px; color: var(--dim); font-size: 11px; font-family: var(--mono); }
-  .term-body { padding: 22px 30px 30px; }
-
-  /* ——— command + hero ——— */
-  .cmd { color: var(--dim); margin-bottom: 6px; font-family: var(--mono); font-size: 12px; }
-  .cmd .prompt { color: var(--clay); }
-  .cmd .flag { color: var(--blue); }
-  #meta-line { color: var(--subtle); font-size: 12px; }
-
-  #hero { margin: 14px 0 6px; }
-  #hero-total { font-size: 52px; font-weight: 700; line-height: 1; font-family: var(--mono); }
-  #hero-total .unit { color: var(--clay); font-size: 22px; margin-left: 6px; }
-  #hero-total .label { font-size: 16px; font-weight: 400; color: var(--dim); margin-left: 8px; font-family: var(--sans); }
-  #hero-split { color: var(--dim); margin-top: 10px; }
-  #hero-split b { color: var(--term-fg); font-weight: 500; }
-  #hero-split .ok { color: var(--green); }
-  #hero-split .warn { color: var(--yellow); }
-
-  .howto {
-    margin: 14px 0 4px; padding: 10px 14px;
-    border-left: 2px solid var(--clay);
-    color: var(--dim); font-size: 13px;
-  }
-  .howto b { color: var(--term-fg); font-weight: 500; }
-
-  /* ——— sections ——— */
-  section { margin-top: 26px; }
-  .hr { color: var(--subtle); overflow: hidden; white-space: nowrap;
-        user-select: none; margin-bottom: 8px; font-family: var(--mono); }
-  .hr::after { content: '────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────'; }
-  h2 { all: unset; display: block; color: var(--clay); font-weight: 500; }
-  h2::before { content: '▸ '; font-family: var(--mono); }
-  h2 .hint { color: var(--subtle); font-size: 12px; font-weight: 400; margin-left: 10px; }
-  .section-body { margin-top: 10px; }
-
-  /* ——— overall stat grid ——— */
-  #overall-grid { display: grid; gap: 4px 28px;
-                  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
-  .stat { padding: 4px 0; }
-  .stat .label { font-size: 12px; color: var(--dim); }
-  .stat .val { font-size: 22px; font-weight: 500; font-family: var(--mono); }
-  .stat .detail { font-size: 12px; color: var(--subtle); }
-
-  /* ——— takeaways ——— */
-  .take { display: grid; grid-template-columns: 9ch 1fr; gap: 18px;
-          padding: 8px 0; align-items: baseline; }
-  .take .fig { text-align: right; font-weight: 700; font-size: 15px; font-family: var(--mono); }
-  .take .txt { color: var(--dim); }
-  .take .txt b { color: var(--term-fg); font-weight: 500; }
-  .take.bad  .fig { color: var(--red); }
-  .take.good .fig { color: var(--green); }
-  .take.info .fig { color: var(--blue); }
-
-  /* ——— callouts (reading-guide steps) ——— */
-  .callout { padding: 8px 0 8px 14px; border-left: 2px solid var(--subtle);
-             color: var(--dim); margin: 8px 0; }
-  .callout b, .callout code { color: var(--term-fg); }
-  .callout.risk { border-left-color: var(--clay); }
-  .callout .why { display: block; margin-top: 4px; font-size: 12px; color: var(--subtle); }
-
-  /* ——— block-char bars (community size) ——— */
-  .bar { display: grid; grid-template-columns: 28ch 1fr 8ch; gap: 14px;
-         padding: 2px 0; align-items: center; font-family: var(--mono); font-size: 12px; }
-  .bar .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .bar .blocks { color: var(--clay); white-space: pre; overflow: hidden; }
-  .bar .blocks .empty { color: var(--subtle); }
-  .bar .pct { text-align: right; color: var(--dim); }
-  .bar:hover .name { color: var(--clay); }
-
-  /* ——— drill-down lists (module notes) ——— */
-  .drill details { border-top: 1px solid var(--outline); }
-  .drill details:last-of-type { border-bottom: 1px solid var(--outline); }
-  .drill summary { list-style: none; cursor: pointer;
-    display: grid; grid-template-columns: 8ch 1fr; gap: 16px;
-    padding: 10px 4px; align-items: baseline; }
-  .drill summary::-webkit-details-marker { display: none; }
-  .drill summary:hover { background: var(--hover); }
-  .drill .amt { font-weight: 700; text-align: right; color: var(--clay); font-family: var(--mono); }
-  .drill .desc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .drill .meta { grid-column: 2; font-size: 12px; color: var(--subtle); }
-  .drill details[open] summary .desc { white-space: normal; }
-  .drill .body { padding: 4px 4px 16px calc(8ch + 20px); font-size: 13px; color: var(--dim); }
-  .drill .body p { margin: 0 0 8px; }
-  .drill .body p:last-child { margin-bottom: 0; }
-
-  /* ——— ivory insets: mermaid paper + quoted digest ——— */
-  .ctx, .diagram {
-    margin: 8px 0 12px; padding: 12px 14px;
-    background: #F0EEE6; color: #1a1918;
-    border-radius: 6px; font-size: 13px;
-  }
-  .diagram { background: #FAF9F5; overflow-x: auto; }
-  .diagram .mermaid { margin: 0; }
-  .diagram-meta { margin-top: 10px; color: #87867F; font-size: 12px; }
-  .diagram-meta div { padding: 1px 0; }
-
-  .prose { color: var(--dim); }
-  .prose p { margin: 0 0 10px; }
-  .prose p:last-child { margin-bottom: 0; }
-  .prose b, .prose strong { color: var(--term-fg); font-weight: 500; }
-  .tag {
-    display: inline-block; padding: 0 6px; margin-right: 6px;
-    border: 1px solid var(--subtle); border-radius: 3px;
-    font-size: 11px; color: var(--dim);
-  }
-  .tag.risk { border-color: var(--clay); color: var(--clay); }
-  .tag.change { border-color: var(--yellow); color: var(--yellow); }
-
-  /* ——— tables ——— */
-  .scroll { max-height: 440px; overflow: auto;
-            border-top: 1px solid var(--outline); border-bottom: 1px solid var(--outline); }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { text-align: left; padding: 7px 10px; }
-  td { border-top: 1px solid rgba(255,255,255,0.04); }
-  th { position: sticky; top: 0; background: var(--term-bg); z-index: 1;
-       font-weight: 500; font-size: 12px; color: var(--subtle);
-       user-select: none;
-       border-bottom: 1px solid var(--outline); }
-  td.num, th.num { text-align: right; font-family: var(--mono); }
-  td.mono { font-family: var(--mono); font-size: 12px; }
-  tbody tr:hover td { background: var(--hover); }
-
-  footer { margin-top: 28px; color: var(--subtle); font-size: 12px;
-           display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-
-  code { color: var(--blue); font-family: var(--mono); font-size: 12px; }
-  a { color: var(--clay); }
-  ::selection { background: var(--clay); color: var(--term-bg); }
-
-  @media (max-width: 760px) {
-    body { padding: 20px 12px 48px; }
-    .term-body { padding: 16px 16px 24px; }
-    #hero-total { font-size: 36px; }
-    .bar { grid-template-columns: 16ch 1fr 7ch; gap: 8px; }
-    .drill summary { grid-template-columns: 6ch 1fr; }
-    .drill .body { padding-left: 12px; }
-    .take { grid-template-columns: 7ch 1fr; gap: 12px; }
-  }
 </style>
 </head>
 <body>
-
-<div class="term">
-  <div class="titlebar">
-    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-    <span class="path" id="title-path">inventory-service — 架构知识图谱</span>
+<div class="prefs" role="toolbar" aria-label="Language and theme">
+  <div class="group" role="group" aria-label="Language">
+    <button type="button" data-set-lang="zh" aria-pressed="true">中文</button>
+    <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
   </div>
-  <div class="term-body">
-
-    <div class="cmd"><span class="prompt">&gt;</span> wiki inputs <span id="cmd-repo">examples/inventory-service</span> <span class="flag" id="cmd-flags">--kind architecture --limit 8</span></div>
-    <div id="meta-line">社区 6 · 本报告收录 6 · 独立模块 2 · 未调用模型 · 样例页（非现场 wiki inputs）</div>
-
-    <div id="hero">
-      <div id="hero-total">6 <span class="unit">个模块</span><span class="label">本报告收录</span></div>
-      <div id="hero-split">有依赖的模块走主阅读路径 · 枢纽是 <b>p03 库存占用</b> · 独立工具放文末</div>
-    </div>
-
-    <div class="howto" id="howto"><b>怎么读：</b>先看「关键发现」抓住枢纽和风险，再按「阅读路径」从入口往下读；地图和对图用来对照，不要从孤立的 verify 脚本读起。</div>
-
-    <div id="overall-grid">
-      <div class="stat"><div class="label">模块社区</div><div class="val">6</div><div class="detail">图上全部社区</div></div>
-      <div class="stat"><div class="label">本报告收录</div><div class="val">6</div><div class="detail">按规模选取</div></div>
-      <div class="stat"><div class="label">独立模块</div><div class="val">2</div><div class="detail">没有列出的依赖</div></div>
-      <div class="stat"><div class="label">依赖关系</div><div class="val">7</div><div class="detail">社区之间的有向边</div></div>
-    </div>
-
-    <!-- ====================================================================
-         关键发现 — 3～5 条。每条 = 事实 + 对读者意味着什么。
-         .bad = 枢纽 / 风险 / 意外孤立, .good = 一条能走通的路径, .info = 中性事实。
-         ==================================================================== -->
-    <section>
-      <div class="hr"></div>
-      <h2>关键发现 <span class="hint">先看这些，再下钻</span></h2>
-      <div class="section-body" id="takeaways">
-        <div class="take bad"><div class="fig">p03</div><div class="txt"><b>p03 库存占用</b>是枢纽：hold / expire / commit 都经过它。改这里影响面最宽，先读对外接口再碰退款。</div></div>
-        <div class="take good"><div class="fig">入口→存储</div><div class="txt"><b>一条能走通的路径</b>：HTTP 入口 → 预订编排 → 库存占用 → db/cache。相邻步都有真实依赖。</div></div>
-        <div class="take info"><div class="fig">p05</div><div class="txt"><b>p05 退款封顶</b>依赖 p03 的提交状态。提交没写 COMMITTED 时，退款会打到空订单。</div></div>
-        <div class="take info"><div class="fig">2</div><div class="txt"><b>独立模块</b> verify.mjs 与需求文档不在主链上，后看或不看。</div></div>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         系统怎么运转 — 这个仓库是什么、主链路怎么走。不要堆字段名。
-         ==================================================================== -->
-    <section>
-      <div class="hr"></div>
-      <h2>系统怎么运转 <span class="hint">一句话定位 + 主链路</span></h2>
-      <div class="section-body prose" id="overview">
-        <p><b>inventory-service</b> 是一个本地库存占用与退款示例：店面创建 hold，到期释放，提交后按实付金额退款。</p>
-        <p>请求从 HTTP 入口进来，应用层编排预订，领域层分别处理占用、计价、退款，存储层是 db 与可用性缓存。</p>
-        <p>主链路是 hold → expire/commit → refund。独立的 verify 脚本和需求文档用来对照缺陷，不是运行时路径。</p>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         模块地图 — 社区编号、人话职责、真实依赖。孤立页不要进分层。
-         ==================================================================== -->
-    <section>
-      <div class="hr"></div>
-      <h2>模块地图 <span class="hint">入口 → 应用 → 领域 → 存储</span></h2>
-      <div class="section-body" id="module-map">
-        <div id="community-bars">
-          <div class="bar"><span class="name">p03 库存占用</span><span class="blocks">████████████░░░░░░░░</span><span class="pct">28%</span></div>
-          <div class="bar"><span class="name">p02 预订编排</span><span class="blocks">██████████░░░░░░░░░░</span><span class="pct">22%</span></div>
-          <div class="bar"><span class="name">p05 退款封顶</span><span class="blocks">████████░░░░░░░░░░░░</span><span class="pct">18%</span></div>
-          <div class="bar"><span class="name">p04 计价折扣</span><span class="blocks">██████░░░░░░░░░░░░░░</span><span class="pct">14%</span></div>
-          <div class="bar"><span class="name">p06 存储</span><span class="blocks">████░░░░░░░░░░░░░░░░</span><span class="pct">10%</span></div>
-          <div class="bar"><span class="name">p01 HTTP 入口</span><span class="blocks">███░░░░░░░░░░░░░░░░░</span><span class="pct">8%</span></div>
-        </div>
-        <div class="scroll" style="margin-top:12px">
-          <table>
-            <thead>
-              <tr>
-                <th>编号</th>
-                <th>分层</th>
-                <th>模块</th>
-                <th class="num">规模</th>
-                <th>依赖谁</th>
-              </tr>
-            </thead>
-            <tbody id="module-rows">
-              <tr><td class="mono">p01</td><td>入口</td><td>HTTP 入口 · 下单/退款路由</td><td class="num">6</td><td>p02</td></tr>
-              <tr><td class="mono">p02</td><td>应用</td><td>预订编排 · hold 与提交</td><td class="num">18</td><td>p03，p04</td></tr>
-              <tr><td class="mono">p03</td><td>领域</td><td>库存占用 · 过期与提交</td><td class="num">24</td><td>p06</td></tr>
-              <tr><td class="mono">p04</td><td>领域</td><td>计价 · 体积折扣</td><td class="num">12</td><td>p06</td></tr>
-              <tr><td class="mono">p05</td><td>领域</td><td>退款封顶 · 不超过实付</td><td class="num">15</td><td>p03，p06</td></tr>
-              <tr><td class="mono">p06</td><td>存储</td><td>db / 可用性缓存</td><td class="num">9</td><td>—</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         架构图 — 至少一张。init + classDef 从 diagrams.md 原样复制。
-         图下三行：依据 / 是否截断 / 图在说明什么。
-         ==================================================================== -->
-    <section>
-      <div class="hr"></div>
-      <h2>架构图 <span class="hint">分层与真实依赖</span></h2>
-      <div class="section-body" id="diagrams">
-        <div class="diagram">
-          <pre class="arch" style="margin:0;font:13px/1.7 ui-monospace,Menlo,monospace;color:#141413;white-space:pre-wrap">Entry        p01 HTTP 入口
-                │ deps
-Application  p02 预订编排
-                │ deps
-Domain       p03 库存占用 (hub) ── deps ── p04 计价折扣
-                │                         │
-                │ deps                    │ deps
-             p05 退款封顶 ────────────────┘
-                │ deps
-Storage      p06 db / cache
-
-独立模块（不在分层）：verify.mjs · docs/requirements.md</pre>
-          <div class="diagram-meta">
-            <div>依据：wiki inputs --kind architecture --limit 8（样例填充，对照 inventory-service 模块）</div>
-            <div>是否截断：否 · 主链 6 个模块全部收录</div>
-            <div>图在说明：入口到存储的真实依赖，以及 p03 作为枢纽</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         阅读路径 — 相邻步骤必须出现在 deps / 真实依赖 里。
-         ==================================================================== -->
-    <section>
-      <div class="hr"></div>
-      <h2>阅读路径 <span class="hint">按这个顺序读源码</span></h2>
-      <div class="section-body" id="guides">
-        <div class="callout"><b>1. p01 HTTP 入口</b> — 先看请求从哪进来，下单和退款是两条入口。</div>
-        <div class="callout"><b>2. p02 预订编排</b> — 从 p01 列有依赖；编排 hold / commit，再决定碰库存还是计价。</div>
-        <div class="callout risk"><b>3. p03 库存占用</b> — 从 p02 列有依赖；这里是枢纽，先搞清对外接口再往下读。<span class="why">改这里会同时碰到过期、提交和退款。</span></div>
-        <div class="callout"><b>4. p06 存储</b> — 从 p03 列有依赖；缓存失效规则决定店面能不能立刻买到过期释放的库存。</div>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         模块笔记 — 职责 / 对外接口 / 内部调用 / 跨模块往来
-         ==================================================================== -->
-    <section>
-      <div class="hr"></div>
-      <h2>模块笔记 <span class="hint">点开看接口和谁在往来</span></h2>
-      <div class="section-body drill" id="notes">
-        <details open>
-          <summary>
-            <span class="amt">p03</span>
-            <span class="desc">库存占用 · hold / expire / commit</span>
-            <span class="meta">职责 · 对外接口 · 跨模块往来</span>
-          </summary>
-          <div class="body">
-            <p>对外：<code>holdStock</code>、<code>expireStaleReservations</code>、<code>commitReservation</code>。内部串行调整 reserved 计数并写缓存。</p>
-            <p>往来：被 p02 调用；p05 退款依赖提交后的订单行；存储走 p06。</p>
-          </div>
-        </details>
-        <details>
-          <summary>
-            <span class="amt">p05</span>
-            <span class="desc">退款封顶 · 不超过实付</span>
-            <span class="meta">职责 · 对外接口 · 跨模块往来</span>
-          </summary>
-          <div class="body">
-            <p>对外：<code>resolveRefundAmount</code>、<code>refundOrder</code>。必须读到已提交订单，否则空指针。</p>
-          </div>
-        </details>
-        <details>
-          <summary>
-            <span class="amt">p01</span>
-            <span class="desc">HTTP 入口 · 路由</span>
-            <span class="meta">职责 · 对外接口 · 跨模块往来</span>
-          </summary>
-          <div class="body">
-            <p>对外：<code>POST /orders</code>、<code>POST /refunds</code>。只转给 p02 / p05，不持有库存状态。</p>
-          </div>
-        </details>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         独立模块 — 没有列出的依赖。不要硬塞进分层。
-         ==================================================================== -->
-    <section>
-      <div class="hr"></div>
-      <h2>独立模块 <span class="hint">不在主链上，后看或不看</span></h2>
-      <div class="section-body" id="peripheral">
-        <div class="callout">verify.mjs — 缺陷答案键，运行时不在主链，后看。</div>
-        <div class="callout">docs/requirements.md — 规格对照，不是代码模块。</div>
-      </div>
-    </section>
-
-    <footer>
-      <span id="foot-gen">生成于 2026-09-21 · 样例填充</span>
-      <span id="foot-stats">codexqa-code-wiki · 只读本次导出 · 未调用模型</span>
-    </footer>
+  <div class="group" role="group" aria-label="Theme">
+    <button type="button" data-set-theme="light" aria-pressed="true"><span data-zh="白天" data-en="Light">白天</span></button>
+    <button type="button" data-set-theme="dark" aria-pressed="false"><span data-zh="黑夜" data-en="Dark">黑夜</span></button>
   </div>
 </div>
+<div class="wrap">
 
+  <header class="hero">
+    <p class="kicker">codexqa-code-wiki · architecture wiki</p>
+    <h1><span data-zh="架构知识图谱" data-en="Architecture wiki">架构知识图谱</span>
+      <span class="total-pill">6 <span class="unit-zh">个模块</span><span class="unit-en"> modules</span></span>
+    </h1>
+    <p class="sub">inventory-service</p>
+    <div class="meta-row">
+      <span>wiki inputs <code>examples/inventory-service --kind architecture --limit 8</code></span>
+    </div>
+    <div class="stats">
+      <div class="card">
+        <h2 data-zh="规模" data-en="Scale">规模</h2>
+        <div class="chip-row">
+          <div class="stat-chip"><span class="n">6</span><span class="l">communities</span></div>
+          <div class="stat-chip p1"><span class="n">2</span><span class="l">standalone</span></div>
+          <div class="stat-chip web"><span class="n">7</span><span class="l">dep edges</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2 data-zh="怎么读" data-en="How to read">怎么读</h2>
+        <p class="muted" style="margin:0">先看关键发现抓住枢纽，再按入口到存储往下读。</p>
+      </div>
+    </div>
+  </header>
+  <section class="panel">
+    <div class="panel-head">
+      <h2 data-zh="关键发现" data-en="Key findings">关键发现</h2>
+    </div>
+    <article class="case open">
+      <div class="case-head"><span class="badge pri p0">p03</span><h3>p03 库存占用是枢纽：hold / expire / commit 都经过它</h3></div>
+      <div class="case-body"><div class="block"><p>改这里影响面最宽，先读对外接口再碰退款。</p></div></div>
+    </article>
+    <article class="case open">
+      <div class="case-head"><span class="badge type">path</span><h3>HTTP 入口 → 预订编排 → 库存占用 → db/cache</h3></div>
+      <div class="case-body"><div class="block"><p>相邻步都有真实依赖。</p></div></div>
+    </article>
+    <article class="case open">
+      <div class="case-head"><span class="badge pri p1">p05</span><h3>p05 退款封顶依赖 p03 的提交状态</h3></div>
+      <div class="case-body"><div class="block"><p>提交没写 COMMITTED 时，退款会打到空订单。</p></div></div>
+    </article>
+  </section>
+  <p class="footer">codexqa-code-wiki · assets/report-template.html</p>
+
+</div>
+<script>
+(function(){
+  const root = document.documentElement;
+  const prefix = root.getAttribute('data-store') || 'codexqa-report';
+  const LANG_KEY = prefix + '-lang';
+  const THEME_KEY = prefix + '-theme';
+
+  function applyI18n(lang) {
+    const attr = lang === 'en' ? 'data-en' : 'data-zh';
+    document.querySelectorAll('[data-zh][data-en]').forEach(el => {
+      const v = el.getAttribute(attr);
+      if (v == null) return;
+      if (el.tagName === 'TITLE') document.title = v;
+      else if (el.tagName === 'OPTION') el.textContent = v;
+      else el.textContent = v;
+    });
+    document.querySelectorAll('[data-zh-placeholder][data-en-placeholder]').forEach(el => {
+      el.setAttribute('placeholder', el.getAttribute(lang === 'en' ? 'data-en-placeholder' : 'data-zh-placeholder') || '');
+    });
+  }
+
+  function setLang(lang) {
+    root.setAttribute('data-lang', lang);
+    root.lang = lang === 'en' ? 'en' : 'zh-CN';
+    document.querySelectorAll('[data-set-lang]').forEach(b => {
+      b.setAttribute('aria-pressed', b.getAttribute('data-set-lang') === lang ? 'true' : 'false');
+    });
+    applyI18n(lang);
+    try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
+  }
+
+  function normalizeTheme(t) {
+    if (t === 'day' || t === 'light') return 'light';
+    if (t === 'night' || t === 'dark') return 'dark';
+    return 'light';
+  }
+
+  function setTheme(theme) {
+    theme = normalizeTheme(theme);
+    root.setAttribute('data-theme', theme);
+    document.querySelectorAll('[data-set-theme]').forEach(b => {
+      b.setAttribute('aria-pressed', b.getAttribute('data-set-theme') === theme ? 'true' : 'false');
+    });
+    try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+  }
+
+  document.querySelectorAll('[data-set-lang]').forEach(b => {
+    b.addEventListener('click', () => setLang(b.getAttribute('data-set-lang')));
+  });
+  document.querySelectorAll('[data-set-theme]').forEach(b => {
+    b.addEventListener('click', () => setTheme(b.getAttribute('data-set-theme')));
+  });
+
+  let lang = root.getAttribute('data-lang') || 'zh';
+  let theme = root.getAttribute('data-theme') || 'light';
+  try {
+    lang = localStorage.getItem(LANG_KEY) || lang;
+    theme = localStorage.getItem(THEME_KEY) || theme;
+  } catch (e) {}
+  setLang(lang === 'en' ? 'en' : 'zh');
+  setTheme(normalizeTheme(theme));
+})();
+
+</script>
 </body>
 </html>

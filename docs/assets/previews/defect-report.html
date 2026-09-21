@@ -1,485 +1,409 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="night">
+<html lang="zh-CN" data-theme="light" data-lang="zh" data-store="aid-report">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Incremental Scan Report</title>
+<title data-zh="Incremental Scan Report" data-en="Incremental Scan Report">Incremental Scan Report</title>
 <script>
 (function(){
-  try{
-    var q=new URLSearchParams(location.search).get('theme');
-    var t=(q==='day'||q==='night')?q:localStorage.getItem('aid-report-theme');
-    if(t!=='day'&&t!=='night') t='night';
-    document.documentElement.setAttribute('data-theme',t);
-  }catch(e){}
+  try {
+    var prefix = document.documentElement.getAttribute('data-store') || 'codexqa-report';
+    var t = localStorage.getItem(prefix + '-theme');
+    var l = localStorage.getItem(prefix + '-lang');
+    if (t === 'day') t = 'light';
+    if (t === 'night') t = 'dark';
+    if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+    if (l === 'en' || l === 'zh') {
+      document.documentElement.setAttribute('data-lang', l);
+      document.documentElement.lang = l === 'en' ? 'en' : 'zh-CN';
+    }
+  } catch (e) {}
 })();
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Karla:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root,html[data-theme="night"] {
-    --bg:#0c0c0f; --bg2:#12121a; --surface:#18181f; --surface2:#1f1f28;
-    --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.12);
-    --text:#ece8df; --muted:#8b8780; --dim:#5c5954;
-    --p0:#ff4d4d; --p0-glow:rgba(255,77,77,.25);
-    --p1:#ff9f43; --p1-glow:rgba(255,159,67,.2);
-    --p2:#54a0ff; --p2-glow:rgba(84,160,255,.18);
-    --p3:#8395a7; --p3-glow:rgba(131,149,167,.15);
-    --accent:#c9a962; --accent-dim:rgba(201,169,98,.12);
-    --confirmed:#2ecc71; --sast:#54a0ff; --llm:#b388ff;
-    --wash-gold:rgba(201,169,98,.08); --wash-alert:rgba(255,77,77,.06);
-    --grid:rgba(255,255,255,.025); --finding-shadow:0 8px 32px rgba(0,0,0,.35);
-    --alert-drop-fg:#ff8080; --toggle-shadow:0 10px 32px rgba(0,0,0,.4);
-    --thumb:linear-gradient(180deg,#ead7a4,#c9a962);
-    --radius:14px; --font-display:"Fraunces",Georgia,serif;
-    --font-body:"Karla",system-ui,sans-serif; --font-mono:"IBM Plex Mono",monospace;
-  }
-  html[data-theme="day"] {
-    --bg:#e7dcc6; --bg2:#d9cdb4; --surface:#f6edd8; --surface2:#efe3c8;
-    --border:rgba(62,46,18,.14); --border2:rgba(62,46,18,.26);
-    --text:#1a150e; --muted:#6a5d45; --dim:#8d8068;
-    --p0:#b42318; --p0-glow:rgba(180,35,24,.14);
-    --p1:#a34b0a; --p1-glow:rgba(163,75,10,.14);
-    --p2:#1558b0; --p2-glow:rgba(21,88,176,.12);
-    --p3:#4d5a66; --p3-glow:rgba(77,90,102,.12);
-    --accent:#7a5810; --accent-dim:rgba(122,88,16,.16);
-    --confirmed:#176c3a; --sast:#1558b0; --llm:#5c32b0;
-    --wash-gold:rgba(201,169,98,.32); --wash-alert:rgba(180,35,24,.07);
-    --grid:rgba(62,46,18,.07); --finding-shadow:0 12px 28px rgba(72,48,12,.1);
-    --alert-drop-fg:#9b1c12; --toggle-shadow:0 10px 24px rgba(72,48,12,.14);
-    --thumb:linear-gradient(180deg,#f4d27a,#b8861c);
-  }
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth;color-scheme:dark}
-  html[data-theme="day"]{color-scheme:light}
-  body{font-family:var(--font-body);background:var(--bg);color:var(--text);
-       line-height:1.6;-webkit-font-smoothing:antialiased}
-  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
-    background:
-      radial-gradient(ellipse 80% 50% at 15% -10%,var(--wash-gold),transparent 55%),
-      radial-gradient(ellipse 60% 40% at 90% 5%,var(--wash-alert),transparent 50%),
-      linear-gradient(var(--grid) 1px,transparent 1px),
-      linear-gradient(90deg,var(--grid) 1px,transparent 1px);
-    background-size:auto,auto,48px 48px,48px 48px}
-  html.theme-ready body,html.theme-ready .stat-pill,html.theme-ready .meta-card,
-  html.theme-ready .finding,html.theme-ready .source-chip,html.theme-ready .loc,
-  html.theme-ready .watch-toggle,html.theme-ready .module-card,html.theme-ready .heat-row,
-  html.theme-ready .alert,html.theme-ready .hero-sub code{
-    transition:background-color .45s ease,color .45s ease,border-color .45s ease,box-shadow .45s ease}
-  .page{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:3rem 1.5rem 4rem}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
-  @keyframes shimmer{0%,100%{opacity:.4}50%{opacity:1}}
-  .hero{animation:fadeUp .7s ease both;margin-bottom:2.5rem;padding-right:9.5rem}
-  @media(max-width:640px){.hero{padding-right:3.5rem}}
-  .hero-eyebrow{font-size:.72rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;
-    color:var(--accent);margin-bottom:.75rem;display:flex;align-items:center;gap:.6rem}
-  .hero-eyebrow::before{content:"";width:28px;height:1px;background:var(--accent);animation:shimmer 2.5s ease infinite}
-  .hero h1{font-family:var(--font-display);font-size:clamp(2rem,5vw,3rem);font-weight:700;
-    letter-spacing:-.02em;line-height:1.1;margin-bottom:.5rem}
-  .hero-sub{color:var(--muted);font-size:.95rem}
-  .hero-sub code{font-family:var(--font-mono);font-size:.82rem;background:var(--surface2);
-    padding:.15em .5em;border-radius:6px;border:1px solid var(--border)}
-  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin:2rem 0;
-    animation:fadeUp .7s .1s ease both}
-  @media(max-width:640px){.stats-row{grid-template-columns:repeat(2,1fr)}}
-  .stat-pill{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:1rem .75rem;
-    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-    text-decoration:none;color:inherit;transition:transform .2s,border-color .2s,box-shadow .2s}
-  .stat-pill:hover{transform:translateY(-2px);border-color:var(--border2)}
-  .stat-pill.sev-p0:hover{box-shadow:0 0 24px var(--p0-glow);border-color:var(--p0)}
-  .stat-pill.sev-p1:hover{box-shadow:0 0 24px var(--p1-glow);border-color:var(--p1)}
-  .stat-pill.sev-p2:hover{box-shadow:0 0 24px var(--p2-glow);border-color:var(--p2)}
-  .stat-pill.sev-p3:hover{box-shadow:0 0 24px var(--p3-glow);border-color:var(--p3)}
-  .stat-label{font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-  .stat-num{font-family:var(--font-display);font-size:2rem;font-weight:700;line-height:1}
-  .stat-pill.sev-p0 .stat-num{color:var(--p0)}
-  .stat-pill.sev-p1 .stat-num{color:var(--p1)}
-  .stat-pill.sev-p2 .stat-num{color:var(--p2)}
-  .stat-pill.sev-p3 .stat-num{color:var(--p3)}
-  .meta-panel{display:grid;grid-template-columns:1.2fr 1fr;gap:1rem;margin-bottom:2.5rem;
-    animation:fadeUp .7s .18s ease both}
-  @media(max-width:768px){.meta-panel{grid-template-columns:1fr}}
-  .meta-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.4rem}
-  .meta-card h3{font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
-    color:var(--accent);margin-bottom:1rem}
-  .meta-kv{display:grid;gap:.55rem;font-size:.88rem}
-  .meta-kv dt{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em}
-  .meta-kv dd{color:var(--text);margin-bottom:.35rem}
-  .meta-kv dd code{font-family:var(--font-mono);font-size:.78rem;color:var(--accent)}
-  .coverage-bar{display:flex;height:6px;border-radius:99px;overflow:hidden;background:var(--surface2);margin:.6rem 0}
-  .coverage-bar span{height:100%}
-  .coverage-bar .det{background:var(--confirmed)}
-  .coverage-bar .llm{background:var(--llm)}
-  .source-chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem}
-  .source-chip{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-    padding:.35rem .65rem;font-size:.78rem;display:flex;gap:.4rem;align-items:center}
-  .source-n{font-weight:600;color:var(--text)}
-  .source-l{color:var(--muted);text-transform:capitalize}
-  .rule-row{display:grid;grid-template-columns:72px 1fr 28px;gap:.5rem;align-items:center;
-    font-size:.82rem;margin-bottom:.4rem}
-  .rule-id{font-family:var(--font-mono);font-size:.72rem;color:var(--muted)}
-  .rule-bar-wrap{height:4px;background:var(--surface2);border-radius:99px;overflow:hidden}
-  .rule-bar{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--p1));border-radius:99px}
-  .rule-n{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
-  .severity-block{margin-bottom:2.5rem;animation:fadeUp .6s calc(.25s + var(--i,0)*.05s) ease both}
-  .severity-head{display:flex;align-items:center;gap:.85rem;margin-bottom:1.25rem;padding-bottom:.75rem;
-    border-bottom:1px solid var(--border)}
-  .severity-badge{font-family:var(--font-mono);font-size:.72rem;font-weight:500;padding:.3em .75em;
-    border-radius:6px;letter-spacing:.06em}
-  .sev-p0 .severity-badge{background:var(--p0-glow);color:var(--p0);border:1px solid rgba(255,77,77,.35)}
-  .sev-p1 .severity-badge{background:var(--p1-glow);color:var(--p1);border:1px solid rgba(255,159,67,.35)}
-  .sev-p2 .severity-badge{background:var(--p2-glow);color:var(--p2);border:1px solid rgba(84,160,255,.35)}
-  .sev-p3 .severity-badge{background:var(--p3-glow);color:var(--p3);border:1px solid rgba(131,149,167,.35)}
-  .severity-title{font-family:var(--font-display);font-size:1.35rem;font-weight:500;flex:1}
-  .severity-count{font-family:var(--font-display);font-size:1.5rem;color:var(--muted);font-weight:500}
-  .findings-grid{display:flex;flex-direction:column;gap:1rem}
-  .finding{position:relative;background:var(--surface);border:1px solid var(--border);
-    border-radius:var(--radius);overflow:hidden;
-    animation:fadeUp .5s calc(.08s * var(--i,0)) ease both;
-    transition:border-color .25s,box-shadow .25s}
-  .finding:hover{border-color:var(--border2);box-shadow:var(--finding-shadow)}
-  .finding-accent{position:absolute;left:0;top:0;bottom:0;width:3px}
-  .sev-p0 .finding-accent{background:linear-gradient(180deg,var(--p0),transparent)}
-  .sev-p1 .finding-accent{background:linear-gradient(180deg,var(--p1),transparent)}
-  .sev-p2 .finding-accent{background:linear-gradient(180deg,var(--p2),transparent)}
-  .sev-p3 .finding-accent{background:linear-gradient(180deg,var(--p3),transparent)}
-  .finding-head{padding:1.1rem 1.25rem 1rem 1.4rem}
-  .finding-top{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-bottom:.65rem}
-  .loc{font-family:var(--font-mono);font-size:.78rem;background:var(--surface2);padding:.2em .55em;
-    border-radius:6px;border:1px solid var(--border);color:var(--accent)}
-  .tag{font-size:.68rem;font-weight:600;padding:.22em .55em;border-radius:5px;
-    letter-spacing:.04em;text-transform:uppercase}
-  .tag-confirmed{background:rgba(46,204,113,.12);color:var(--confirmed);border:1px solid rgba(46,204,113,.3)}
-  .tag-sast{background:rgba(84,160,255,.12);color:var(--sast);border:1px solid rgba(84,160,255,.3)}
-  .tag-llm{background:rgba(179,136,255,.12);color:var(--llm);border:1px solid rgba(179,136,255,.3)}
-  .tag-rule,.tag-conf,.tag-id{background:var(--surface2);color:var(--muted);border:1px solid var(--border);
-    font-family:var(--font-mono);font-size:.65rem;text-transform:none;letter-spacing:0}
-  .finding-title{font-family:var(--font-display);font-size:1.08rem;font-weight:500;line-height:1.35;
-    margin-bottom:.35rem}
-  .finding-cat{font-size:.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
-  .finding-body{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--border)}
-  @media(max-width:720px){.finding-body{grid-template-columns:1fr}}
-  .field{padding:1rem 1.25rem 1.1rem 1.4rem}
-  .field-evidence{border-right:1px solid var(--border)}
-  @media(max-width:720px){.field-evidence{border-right:none;border-bottom:1px solid var(--border)}}
-  .field-label{display:block;font-size:.65rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
-    color:var(--muted);margin-bottom:.45rem}
-  .field-evidence .field-label{color:var(--p1)}
-  .field-fix .field-label{color:var(--confirmed)}
-  .field p{font-size:.86rem;color:var(--text);line-height:1.55;word-break:break-word}
-  .alert{padding:.85rem 1.1rem;border-radius:10px;font-size:.86rem;margin-bottom:1.25rem;
-    animation:fadeUp .5s ease both}
-  .alert-warn{background:rgba(255,159,67,.1);border:1px solid rgba(255,159,67,.3);color:var(--p1)}
-  .alert-drop{background:rgba(255,77,77,.08);border:1px solid rgba(255,77,77,.25);color:var(--alert-drop-fg)}
-  .extra-block{margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
-  .extra-block h2{font-family:var(--font-display);font-size:1.2rem;margin-bottom:1rem;color:var(--accent)}
-  .module-card,.heat-row{background:var(--surface);border:1px solid var(--border);border-radius:10px;
-    padding:.85rem 1rem;margin-bottom:.5rem;font-size:.86rem}
-  .heat-row{display:flex;justify-content:space-between;align-items:center}
-  .heat-score{font-family:var(--font-mono);color:var(--p1)}
-  .footer{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border);
-    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem;
-    font-size:.78rem;color:var(--dim)}
-  .footer-brand{font-family:var(--font-mono);letter-spacing:.06em}
-  .footer-meta{color:var(--muted)}
-  .muted{color:var(--muted);font-size:.85rem}
-  .total-badge{display:inline-flex;align-items:center;gap:.4rem;margin-left:.5rem;
-    font-size:.82rem;color:var(--muted);font-weight:400}
-  .total-badge strong{color:var(--text);font-weight:600}
-  .watch-toggle{position:fixed;top:1.15rem;right:1.15rem;z-index:30;display:inline-flex;
-    align-items:center;gap:.65rem;padding:.32rem .75rem .32rem .32rem;border-radius:999px;
-    border:1px solid var(--accent);background:var(--surface);
-    color:var(--text);cursor:pointer;font-family:var(--font-mono);box-shadow:var(--toggle-shadow);
-    appearance:none;-webkit-appearance:none}
-  .watch-toggle:hover{border-color:var(--accent)}
-  .watch-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-  .watch-rail{position:relative;display:flex;align-items:center;justify-content:space-between;
-    width:64px;height:28px;padding:0 7px;border-radius:99px;background:var(--bg2);
-    border:1px solid var(--border);box-shadow:inset 0 0 0 1px var(--accent-dim)}
-  .watch-icon-sun,.watch-icon-moon{position:relative;z-index:1;width:10px;height:10px;border-radius:50%}
-  .watch-icon-sun{background:#e8b84a;box-shadow:0 0 0 1.5px #e8b84a,0 0 8px rgba(232,184,74,.55)}
-  .watch-icon-moon{background:#d8d4cc;box-shadow:inset -3px -1px 0 0 #6b675f}
-  .watch-thumb{position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;
-    background:var(--thumb);box-shadow:0 2px 6px rgba(0,0,0,.35);z-index:2;
-    transform:translateX(34px);transition:transform .4s cubic-bezier(.4,.15,.2,1)}
-  html[data-theme="day"] .watch-thumb{transform:translateX(0)}
-  .watch-meta{display:flex;flex-direction:column;align-items:flex-start;line-height:1.1;min-width:3.2rem}
-  .watch-mode{font-size:.68rem;font-weight:500;letter-spacing:.14em;color:var(--accent)}
-  .watch-hint{font-size:.58rem;letter-spacing:.16em;color:var(--dim);margin-top:.15rem}
-  @media(max-width:640px){.watch-hint{display:none}.watch-toggle{padding:.3rem .55rem .3rem .3rem}}
-  @media(prefers-reduced-motion:reduce){
-    html{scroll-behavior:auto}
-    .watch-thumb,html.theme-ready body,html.theme-ready .stat-pill,html.theme-ready .meta-card,
-    html.theme-ready .finding,html.theme-ready .source-chip,html.theme-ready .loc,
-    html.theme-ready .watch-toggle,html.theme-ready .module-card,html.theme-ready .heat-row,
-    html.theme-ready .alert,html.theme-ready .hero-sub code{transition:none}
-  }
+/* Shared CodexQA HTML report chrome — copied from codexqa-testcase-generator.
+   Keep in sync with skills/codexqa-testcase-generator/scripts/generate_case_report.py */
+:root, html[data-theme="light"] {
+  color-scheme: light;
+  --bg:#f0f3f6; --sheet:#ffffff; --ink:#1a2332; --muted:#5a6578;
+  --line:#d5dde8; --acc:#0f6b4c; --acc-soft:#e6f4ee; --acc-fg:#fff;
+  --web:#0b5cab; --web-bg:#e8f1fb; --web-line:#c5d9f0;
+  --server:#6b3fa0; --server-bg:#f3eafb; --server-line:#e0d0f2;
+  --app:#b45309; --app-bg:#fff4e6; --app-line:#f0d7b5;
+  --p0:#b42318; --p0-bg:#fde8e4;
+  --p1:#c2410c; --p1-bg:#ffedd5;
+  --p2:#9a6700; --p2-bg:#fef3c7;
+  --p3:#475569; --p3-bg:#e2e8f0;
+  --card:#f8fafc; --chip:#fff; --head:#fbfcfd; --code-bg:#eef2f6; --bar-track:#e8edf3;
+  --hero-a:#d9ebe3; --hero-b:#d6e4f5;
+  --ok:#17663a; --ok-bg:#dcfce7;
+  --toolbar-bg: color-mix(in srgb, var(--sheet) 92%, transparent);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Segoe UI", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#0f141b; --sheet:#1a222c; --ink:#e8edf2; --muted:#9aa7b5;
+  --line:#2f3b49; --acc:#3ecf8e; --acc-soft:#163526; --acc-fg:#0b1a12;
+  --web:#7eb6ff; --web-bg:#1a2a3d; --web-line:#2a4060;
+  --server:#c4a1ff; --server-bg:#2a1f3d; --server-line:#3d2f5c;
+  --app:#ffb074; --app-bg:#3a2718; --app-line:#5a3a22;
+  --p0:#ff8a80; --p0-bg:#3a1d1c;
+  --p1:#ffb074; --p1-bg:#3a2718;
+  --p2:#e6c35c; --p2-bg:#3a3218;
+  --p3:#cbd5e1; --p3-bg:#2a3441;
+  --card:#141b24; --chip:#1f2833; --head:#162029; --code-bg:#24303b; --bar-track:#24303b;
+  --hero-a:#1a2e28; --hero-b:#1a2433;
+  --ok:#7ddea4; --ok-bg:#163526;
+  --toolbar-bg: color-mix(in srgb, var(--sheet) 88%, transparent);
+}
+* { box-sizing: border-box; }
+body { margin:0; font:14px/1.55 var(--sans); color:var(--ink); background:
+  radial-gradient(1200px 500px at 10% -10%, var(--hero-a) 0%, transparent 55%),
+  radial-gradient(900px 400px at 100% 0%, var(--hero-b) 0%, transparent 50%),
+  var(--bg); }
+.prefs { position:sticky; top:0; z-index:20; display:flex; justify-content:flex-end; gap:8px;
+  padding:10px 18px; background:var(--toolbar-bg); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line); }
+.prefs .group { display:flex; gap:4px; align-items:center; padding:2px;
+  border:1px solid var(--line); border-radius:999px; background:var(--sheet); }
+.prefs button { appearance:none; border:0; background:transparent; color:var(--muted);
+  font:inherit; font-size:12px; font-weight:600; letter-spacing:.02em; padding:6px 12px;
+  border-radius:999px; cursor:pointer; }
+.prefs button[aria-pressed="true"] { background:var(--acc); color:var(--acc-fg); }
+.wrap { max-width:1180px; margin:0 auto; padding:22px 18px 64px; }
+.hero { background:var(--sheet); border:1px solid var(--line); border-radius:14px;
+  padding:22px 24px; margin-bottom:18px; box-shadow:0 1px 0 rgba(26,35,50,.04); }
+.kicker { margin:0 0 6px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+h1 { margin:0 0 8px; font-size:24px; letter-spacing:-.02em; }
+.sub { color:var(--muted); margin:0 0 14px; }
+.meta-row { display:flex; flex-wrap:wrap; gap:10px 18px; font-size:12.5px; color:var(--muted); }
+.meta-row code { font-family:var(--mono); font-size:11.5px; background:var(--code-bg); padding:1px 5px; border-radius:4px; color:var(--ink); }
+.stats { display:grid; grid-template-columns: 1.2fr 1fr; gap:14px; margin:18px 0 0; }
+@media (max-width:800px) { .stats { grid-template-columns:1fr; } }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+.card h2 { margin:0 0 10px; font-size:13px; color:var(--muted); font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
+.chip-row { display:flex; gap:10px; flex-wrap:wrap; }
+.stat-chip { min-width:88px; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--chip); }
+.stat-chip .n { display:block; font-size:22px; font-weight:700; line-height:1.1; }
+.stat-chip .l { font-size:11px; color:var(--muted); letter-spacing:.06em; }
+.stat-chip.p0 .n, .stat-chip.web .n { color:var(--p0); }
+.stat-chip.p0 { background:var(--p0-bg); border-color:var(--p0-bg); }
+.stat-chip.p1 .n { color:var(--p1); }
+.stat-chip.p1 { background:var(--p1-bg); border-color:var(--p1-bg); }
+.stat-chip.p2 .n { color:var(--p2); }
+.stat-chip.p2 { background:var(--p2-bg); border-color:var(--p2-bg); }
+.stat-chip.p3 .n { color:var(--p3); }
+.stat-chip.p3 { background:var(--p3-bg); border-color:var(--p3-bg); }
+.stat-chip.web { background:var(--web-bg); border-color:var(--web-line); }
+.stat-chip.web .n { color:var(--web); }
+.stat-chip.server { background:var(--server-bg); border-color:var(--server-line); }
+.stat-chip.server .n { color:var(--server); }
+.stat-chip.app { background:var(--app-bg); border-color:var(--app-line); }
+.stat-chip.app .n { color:var(--app); }
+.bar-row { display:grid; grid-template-columns:36px 1fr 36px; gap:8px; align-items:center; margin:6px 0; font-size:12px; }
+.bar { height:8px; background:var(--bar-track); border-radius:99px; overflow:hidden; }
+.bar i { display:block; height:100%; background:var(--acc); border-radius:99px; }
+.panel { background:var(--sheet); border:1px solid var(--line); border-radius:14px; padding:16px 18px 8px; margin-bottom:16px; }
+.panel-head h2 { margin:0; font-size:18px; }
+.panel-head .count { display:inline-block; margin-left:6px; font-size:12px; background:var(--acc-soft); color:var(--acc);
+  padding:2px 8px; border-radius:999px; vertical-align:middle; }
+.panel-head .desc { color:var(--muted); margin:6px 0 12px; font-size:13px; }
+.case { border:1px solid var(--line); border-radius:10px; margin-bottom:10px; overflow:hidden; background:var(--chip); }
+.case-head { display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:10px 12px; background:var(--head); }
+.case-head h3 { margin:0; font-size:14px; font-weight:600; flex:1 1 200px; }
+.meta-id { font-family:var(--mono); font-size:11px; color:var(--muted); }
+.case-body { padding:4px 14px 14px; border-top:1px solid var(--line); }
+.badge { display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.04em; padding:2px 7px; border-radius:999px; }
+.badge.pri.p0 { background:var(--p0-bg); color:var(--p0); }
+.badge.pri.p1 { background:var(--p1-bg); color:var(--p1); }
+.badge.pri.p2 { background:var(--p2-bg); color:var(--p2); }
+.badge.pri.p3 { background:var(--p3-bg); color:var(--p3); }
+.badge.type { background:var(--code-bg); color:var(--muted); font-weight:600; }
+.kv { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px 14px; margin:10px 0 12px; }
+.kv dt { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+.kv dd { margin:2px 0 0; }
+.case-body h4 { margin:14px 0 6px; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+.block { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
+.block p { margin:0 0 6px; }
+.block p:last-child { margin:0; }
+.block code, .steps code, code { font-family:var(--mono); font-size:11.5px; background:var(--code-bg); padding:1px 5px; border-radius:4px; color:var(--ink); }
+.block a, a { color:var(--acc); }
+.steps { width:100%; border-collapse:collapse; font-size:13px; }
+.steps th, .steps td { border:1px solid var(--line); padding:8px 9px; vertical-align:top; text-align:left; }
+.steps th { background:var(--code-bg); font-size:12px; }
+.empty { padding:28px; text-align:center; color:var(--muted); border:1px dashed var(--line); border-radius:10px; margin-bottom:12px; }
+.muted { color:var(--muted); }
+.footer { margin-top:18px; color:var(--muted); font-size:12px; text-align:center; }
+.total-pill { display:inline-block; background:var(--acc-soft); color:var(--acc); font-weight:700;
+  padding:3px 10px; border-radius:999px; margin-left:6px; font-size:13px; }
+.alert { padding:10px 12px; border-radius:10px; font-size:13px; margin-bottom:12px; border:1px solid var(--line); }
+.alert-warn { background:var(--p1-bg); color:var(--p1); border-color:transparent; }
+.alert-drop { background:var(--p0-bg); color:var(--p0); border-color:transparent; }
+html[data-lang="en"] .unit-zh { display:none; }
+html[data-lang="zh"] .unit-en { display:none; }
+.was { color:var(--p0); text-decoration:line-through; }
+.now { color:var(--acc); font-weight:600; }
+.figure-frame { background:var(--sheet); border:1px solid var(--line); border-radius:14px; padding:8px; }
+.figure-frame img { width:100%; height:auto; display:block; border-radius:10px; }
+
 </style>
 </head>
 <body>
-<div class="page">
-  <button type="button" class="watch-toggle" id="aidThemeToggle" aria-pressed="false" aria-label="切换为白天视图">
-    <span class="watch-rail" aria-hidden="true">
-      <span class="watch-icon-sun"></span>
-      <span class="watch-thumb"></span>
-      <span class="watch-icon-moon"></span>
-    </span>
-    <span class="watch-meta">
-      <span class="watch-mode" id="aidThemeLabel">NIGHT</span>
-      <span class="watch-hint">VIEW</span>
-    </span>
-  </button>
+<div class="prefs" role="toolbar" aria-label="Language and theme">
+  <div class="group" role="group" aria-label="Language">
+    <button type="button" data-set-lang="zh" aria-pressed="true">中文</button>
+    <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+  </div>
+  <div class="group" role="group" aria-label="Theme">
+    <button type="button" data-set-theme="light" aria-pressed="true"><span data-zh="白天" data-en="Light">白天</span></button>
+    <button type="button" data-set-theme="dark" aria-pressed="false"><span data-zh="黑夜" data-en="Dark">黑夜</span></button>
+  </div>
+</div>
+<div class="wrap">
   <header class="hero">
-    <p class="hero-eyebrow">AI Defect Detection</p>
-    <h1>Incremental Report<span class="total-badge"><strong>7</strong> findings</span></h1>
-    <p class="hero-sub">Target <code>inventory-service@reservation-v2</code> · Generated 2026-09-21T14:34:12.651036</p>
-  </header>
-
-  <nav class="stats-row" aria-label="Severity summary"><a class="stat-pill sev-p0" href="#sev-p0"><span class="stat-label">P0</span><span class="stat-num">4</span></a><a class="stat-pill sev-p1" href="#sev-p1"><span class="stat-label">P1</span><span class="stat-num">3</span></a><a class="stat-pill sev-p2" href="#sev-p2"><span class="stat-label">P2</span><span class="stat-num">0</span></a><a class="stat-pill sev-p3" href="#sev-p3"><span class="stat-label">P3</span><span class="stat-num">0</span></a></nav>
-
-  <div class="meta-panel">
-    <div class="meta-card">
-      <h3>Scan Coverage</h3>
-      <dl class="meta-kv">
-        <dt>Files Scanned</dt><dd>6</dd>
-        <dt>Deterministic Share</dt><dd>0.0% <span class="muted">(target ≥70%)</span></dd>
-        <dt>LLM Share</dt><dd>100.0%</dd>
-      </dl>
-      <div class="coverage-bar" title="Deterministic vs LLM">
-        <span class="det" style="width:0.0%"></span><span class="llm" style="width:100.0%"></span>
+    <p class="kicker">codexqa-defect-analyzer · Incremental</p>
+    <h1><span data-zh="缺陷扫描报告" data-en="Incremental Scan Report">缺陷扫描报告</span>
+      <span class="total-pill">7 <span class="unit-zh">条</span><span class="unit-en"> findings</span></span>
+    </h1>
+    <p class="sub"><span data-zh="目标" data-en="Target">目标</span> <code>inventory-service@reservation-v2</code></p>
+    <div class="meta-row">
+      <span data-zh="生成时间" data-en="Generated">生成时间</span>: <code>2026-09-21T14:34:12.651036</code>
+      <span data-zh="扫描文件" data-en="Files scanned">扫描文件</span>: 6
+      <span>Policy: <code>codexqa-defect-analyzer-default</code> v1.1.0</span>
+      <span>Tooling: Ready: semgrep, gitleaks, bandit, ruff, eslint, osv-api</span>
+    </div>
+    <div class="stats">
+      <div class="card">
+        <h2 data-zh="按严重级别" data-en="By severity">按严重级别</h2>
+        <div class="chip-row"><a class='stat-chip p0' href='#sev-p0'><span class='n'>4</span><span class='l'>P0</span></a><a class='stat-chip p1' href='#sev-p1'><span class='n'>3</span><span class='l'>P1</span></a><a class='stat-chip p2' href='#sev-p2'><span class='n'>0</span><span class='l'>P2</span></a><a class='stat-chip p3' href='#sev-p3'><span class='n'>0</span><span class='l'>P3</span></a></div>
       </div>
-      <div class="source-chips"><div class="source-chip"><span class="source-n">0</span><span class="source-l">sast confirmed</span></div><div class="source-chip"><span class="source-n">0</span><span class="source-l">sast only</span></div><div class="source-chip"><span class="source-n">7</span><span class="source-l">llm judged</span></div></div>
+      <div class="card">
+        <h2 data-zh="扫描覆盖" data-en="Scan coverage">扫描覆盖</h2>
+        <div class="bar-row"><span>DET</span><div class="bar"><i style="width:0.0%"></i></div><b>0%</b></div>
+        <div class="bar-row"><span>LLM</span><div class="bar"><i style="width:100.0%"></i></div><b>100%</b></div>
+        <div class="chip-row" style="margin-top:10px"><div class='stat-chip'><span class='n'>0</span><span class='l'>sast confirmed</span></div><div class='stat-chip'><span class='n'>0</span><span class='l'>sast only</span></div><div class='stat-chip'><span class='n'>7</span><span class='l'>llm judged</span></div></div>
+      </div>
     </div>
-    <div class="meta-card">
-      <h3>Policy &amp; Rules</h3>
-      <dl class="meta-kv">
-        <dt>Policy Pack</dt><dd><code>codexqa-defect-analyzer-default</code> v1.1.0</dd>
-        <dt>Active Rules</dt><dd>27</dd>
-        <dt>Tooling</dt><dd>Ready: semgrep, gitleaks, bandit, ruff, eslint, osv-api</dd>
-      </dl>
-      <div style="margin-top:1rem"><div class="rule-row"><span class="rule-id">CONC-001</span><span class="rule-bar-wrap"><span class="rule-bar" style="width:100%"></span></span><span class="rule-n">1</span></div><div class="rule-row"><span class="rule-id">LOGIC-002</span><span class="rule-bar-wrap"><span class="rule-bar" style="width:100%"></span></span><span class="rule-n">1</span></div><div class="rule-row"><span class="rule-id">LOGIC-003</span><span class="rule-bar-wrap"><span class="rule-bar" style="width:100%"></span></span><span class="rule-n">1</span></div><div class="rule-row"><span class="rule-id">LOGIC-001</span><span class="rule-bar-wrap"><span class="rule-bar" style="width:100%"></span></span><span class="rule-n">1</span></div><div class="rule-row"><span class="rule-id">RES-001</span><span class="rule-bar-wrap"><span class="rule-bar" style="width:100%"></span></span><span class="rule-n">1</span></div><div class="rule-row"><span class="rule-id">LOGIC-004</span><span class="rule-bar-wrap"><span class="rule-bar" style="width:100%"></span></span><span class="rule-n">1</span></div><div class="rule-row"><span class="rule-id">LOGIC-005</span><span class="rule-bar-wrap"><span class="rule-bar" style="width:100%"></span></span><span class="rule-n">1</span></div></div>
-    </div>
-  </div>
-
+  </header>
   
-
-  <section class="severity-block sev-p0" id="sev-p0">
-  <div class="severity-head">
-    <span class="severity-badge">P0</span>
-    <h2 class="severity-title">P0 Findings</h2>
-    <span class="severity-count">4</span>
+  <section class="panel">
+    <div class="panel-head">
+      <h2 data-zh="规则命中" data-en="Rule hits">规则命中</h2>
+      <p class="desc">Active rules: 27</p>
+    </div>
+    <div class='bar-row'><span>CONC-001</span><div class='bar'><i style='width:100%'></i></div><b>1</b></div><div class='bar-row'><span>LOGIC-002</span><div class='bar'><i style='width:100%'></i></div><b>1</b></div><div class='bar-row'><span>LOGIC-003</span><div class='bar'><i style='width:100%'></i></div><b>1</b></div><div class='bar-row'><span>LOGIC-001</span><div class='bar'><i style='width:100%'></i></div><b>1</b></div><div class='bar-row'><span>RES-001</span><div class='bar'><i style='width:100%'></i></div><b>1</b></div><div class='bar-row'><span>LOGIC-004</span><div class='bar'><i style='width:100%'></i></div><b>1</b></div><div class='bar-row'><span>LOGIC-005</span><div class='bar'><i style='width:100%'></i></div><b>1</b></div>
+  </section>
+  <section class="panel" id="sev-p0">
+  <div class="panel-head">
+    <h2><span class="badge pri p0">P0</span> <span data-zh="发现项" data-en="Findings">发现项</span> <span class="count">4</span></h2>
+    <p class="desc" data-zh="本级别的典型检测结果" data-en="Typical findings at this severity">本级别的典型检测结果</p>
   </div>
-  <div class="findings-grid"><article class="finding sev-p0" style="--i:0">
-  <div class="finding-accent"></div>
-  <header class="finding-head">
-    <div class="finding-top">
-      <code class="loc">src/inventory.js:49</code>
-      <span class="tag tag-llm">LLM</span>
-      <span class="tag tag-rule">CONC-001</span>
-      <span class="tag tag-conf">87%</span>
-      <span class="tag tag-id">fr-20260921-002</span>
-    </div>
-    <h3 class="finding-title">holdStock is check-then-act; two last-unit holds can both succeed</h3>
-    <span class="finding-cat">concurrency</span>
-  </header>
-  <div class="finding-body">
-    <div class="field field-evidence">
-      <span class="field-label">Evidence</span>
-      <p>readStock → available = onHand - reserved → await appendAudit → reserved += qty → putStock with no lock. Two concurrent quantity=1 holds when available=1 both pass the check. Intent: no double holding.</p>
-    </div>
-    <div class="field field-fix">
-      <span class="field-label">Remediation</span>
-      <p>Make the availability check and reserved increment one atomic update under withLock, or compare-and-swap the row.</p>
-    </div>
+  <article class="case open" id="finding-0">
+  <div class="case-head">
+    <span class="badge pri p0">P0</span>
+    <span class="badge type">LLM</span>
+    <span class="badge type">CONC-001</span>
+    <h3>holdStock is check-then-act; two last-unit holds can both succeed</h3>
+    <span class="meta-id">src/inventory.js:49 · 87% · fr-20260921-002</span>
   </div>
-</article>
-<article class="finding sev-p0" style="--i:1">
-  <div class="finding-accent"></div>
-  <header class="finding-head">
-    <div class="finding-top">
-      <code class="loc">src/refund.js:27</code>
-      <span class="tag tag-llm">LLM</span>
-      <span class="tag tag-rule">LOGIC-002</span>
-      <span class="tag tag-conf">93%</span>
-      <span class="tag tag-id">fr-20260921-004</span>
-    </div>
-    <h3 class="finding-title">resolveRefundAmount ignores remaining balance and can over-refund</h3>
-    <span class="finding-cat">logic</span>
-  </header>
-  <div class="finding-body">
-    <div class="field field-evidence">
-      <span class="field-label">Evidence</span>
-      <p>remaining is computed then unused. When requested is set, the function returns roundMoney(requested) with no min(requested, remaining). Second partial refund can make refundedTotal exceed paidAmount.</p>
-    </div>
-    <div class="field field-fix">
-      <span class="field-label">Remediation</span>
-      <p>return min(amount, remaining) after the &lt;=0 guard; never exceed remaining.</p>
-    </div>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt data-zh="分类" data-en="Category">分类</dt><dd>concurrency</dd></div>
+      <div><dt>ID</dt><dd><code>fr-20260921-002</code></dd></div>
+    </dl>
+    <h4 data-zh="证据" data-en="Evidence">证据</h4>
+    <div class="block"><p>readStock to available then putStock with no lock. Two concurrent quantity=1 holds when available=1 both pass the check.</p></div>
+    <h4 data-zh="修复建议" data-en="Remediation">修复建议</h4>
+    <div class="block"><p>Make the availability check and reserved increment one atomic update under withLock.</p></div>
   </div>
 </article>
-<article class="finding sev-p0" style="--i:2">
-  <div class="finding-accent"></div>
-  <header class="finding-head">
-    <div class="finding-top">
-      <code class="loc">src/refund.js:72</code>
-      <span class="tag tag-llm">LLM</span>
-      <span class="tag tag-rule">LOGIC-003</span>
-      <span class="tag tag-conf">91%</span>
-      <span class="tag tag-id">fr-20260921-005</span>
-    </div>
-    <h3 class="finding-title">Gateway refund failure fabricates a local receipt and still settles</h3>
-    <span class="finding-cat">logic</span>
-  </header>
-  <div class="finding-body">
-    <div class="field field-evidence">
-      <span class="field-label">Evidence</span>
-      <p>catch of gateway.refund writes a localOnly receipt and continues. Callers see a settled refund while the payment provider did not capture it. Intent: gateway is the source of truth.</p>
-    </div>
-    <div class="field field-fix">
-      <span class="field-label">Remediation</span>
-      <p>Return { ok: false } on gateway failure; do not invent a receipt or increment refundedTotal.</p>
-    </div>
+<article class="case open" id="finding-1">
+  <div class="case-head">
+    <span class="badge pri p0">P0</span>
+    <span class="badge type">LLM</span>
+    <span class="badge type">LOGIC-002</span>
+    <h3>resolveRefundAmount ignores remaining balance and can over-refund</h3>
+    <span class="meta-id">src/refund.js:27 · 93% · fr-20260921-004</span>
+  </div>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt data-zh="分类" data-en="Category">分类</dt><dd>logic</dd></div>
+      <div><dt>ID</dt><dd><code>fr-20260921-004</code></dd></div>
+    </dl>
+    <h4 data-zh="证据" data-en="Evidence">证据</h4>
+    <div class="block"><p>remaining is computed then unused. When requested is set, the function returns roundMoney(requested) with no min(requested, remaining).</p></div>
+    <h4 data-zh="修复建议" data-en="Remediation">修复建议</h4>
+    <div class="block"><p>return min(amount, remaining) after the &lt;=0 guard; never exceed remaining.</p></div>
   </div>
 </article>
-<article class="finding sev-p0" style="--i:3">
-  <div class="finding-accent"></div>
-  <header class="finding-head">
-    <div class="finding-top">
-      <code class="loc">src/reservation.js:166</code>
-      <span class="tag tag-llm">LLM</span>
-      <span class="tag tag-rule">LOGIC-001</span>
-      <span class="tag tag-conf">89%</span>
-      <span class="tag tag-id">fr-20260921-007</span>
-    </div>
-    <h3 class="finding-title">Expiry sweep frees reserved units without invalidating availability cache</h3>
-    <span class="finding-cat">logic</span>
-  </header>
-  <div class="finding-body">
-    <div class="field field-evidence">
-      <span class="field-label">Evidence</span>
-      <p>expireStaleReservations calls db.adjustReserved(hold.sku, -hold.qty) then saves EXPIRED, but never availabilityCache.invalidate. checkAvailability keeps serving the held (lower) count until TTL. Intent: hold expiry must be visible immediately.</p>
-    </div>
-    <div class="field field-fix">
-      <span class="field-label">Remediation</span>
-      <p>Invalidate the same cache key holdStock / releaseStock already invalidate after adjustReserved.</p>
-    </div>
+<article class="case open" id="finding-2">
+  <div class="case-head">
+    <span class="badge pri p0">P0</span>
+    <span class="badge type">LLM</span>
+    <span class="badge type">LOGIC-003</span>
+    <h3>Gateway refund failure fabricates a local receipt and still settles</h3>
+    <span class="meta-id">src/refund.js:72 · 91% · fr-20260921-005</span>
   </div>
-</article></div>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt data-zh="分类" data-en="Category">分类</dt><dd>logic</dd></div>
+      <div><dt>ID</dt><dd><code>fr-20260921-005</code></dd></div>
+    </dl>
+    <h4 data-zh="证据" data-en="Evidence">证据</h4>
+    <div class="block"><p>catch of gateway.refund writes a localOnly receipt and continues. Callers see a settled refund while the provider did not capture it.</p></div>
+    <h4 data-zh="修复建议" data-en="Remediation">修复建议</h4>
+    <div class="block"><p>Return { ok: false } on gateway failure; do not invent a receipt or increment refundedTotal.</p></div>
+  </div>
+</article>
+<article class="case open" id="finding-3">
+  <div class="case-head">
+    <span class="badge pri p0">P0</span>
+    <span class="badge type">LLM</span>
+    <span class="badge type">LOGIC-001</span>
+    <h3>Expiry sweep frees reserved units without invalidating availability cache</h3>
+    <span class="meta-id">src/reservation.js:166 · 89% · fr-20260921-007</span>
+  </div>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt data-zh="分类" data-en="Category">分类</dt><dd>logic</dd></div>
+      <div><dt>ID</dt><dd><code>fr-20260921-007</code></dd></div>
+    </dl>
+    <h4 data-zh="证据" data-en="Evidence">证据</h4>
+    <div class="block"><p>expireStaleReservations adjusts reserved then saves EXPIRED, but never availabilityCache.invalidate.</p></div>
+    <h4 data-zh="修复建议" data-en="Remediation">修复建议</h4>
+    <div class="block"><p>Invalidate the same cache key holdStock / releaseStock already invalidate after adjustReserved.</p></div>
+  </div>
+</article>
+</section><section class="panel" id="sev-p1">
+  <div class="panel-head">
+    <h2><span class="badge pri p1">P1</span> <span data-zh="发现项" data-en="Findings">发现项</span> <span class="count">3</span></h2>
+    <p class="desc" data-zh="本级别的典型检测结果" data-en="Typical findings at this severity">本级别的典型检测结果</p>
+  </div>
+  <article class="case open" id="finding-4">
+  <div class="case-head">
+    <span class="badge pri p1">P1</span>
+    <span class="badge type">LLM</span>
+    <span class="badge type">RES-001</span>
+    <h3>withLock releases the lock after await fn() with no finally</h3>
+    <span class="meta-id">src/db.js:191 · 88% · fr-20260921-001</span>
+  </div>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt data-zh="分类" data-en="Category">分类</dt><dd>resource_leak</dd></div>
+      <div><dt>ID</dt><dd><code>fr-20260921-001</code></dd></div>
+    </dl>
+    <h4 data-zh="证据" data-en="Evidence">证据</h4>
+    <div class="block"><p>If fn() throws, releaseLock never runs and the key stays held.</p></div>
+    <h4 data-zh="修复建议" data-en="Remediation">修复建议</h4>
+    <div class="block"><p>Wrap fn() in try/finally and always releaseLock(key).</p></div>
+  </div>
+</article>
+<article class="case open" id="finding-5">
+  <div class="case-head">
+    <span class="badge pri p1">P1</span>
+    <span class="badge type">LLM</span>
+    <span class="badge type">LOGIC-004</span>
+    <h3>Volume tiers use exclusive &gt; so exactly 10 units miss the 5% discount</h3>
+    <span class="meta-id">src/pricing.js:33 · 95% · fr-20260921-003</span>
+  </div>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt data-zh="分类" data-en="Category">分类</dt><dd>logic</dd></div>
+      <div><dt>ID</dt><dd><code>fr-20260921-003</code></dd></div>
+    </dl>
+    <h4 data-zh="证据" data-en="Evidence">证据</h4>
+    <div class="block"><p>volumeDiscountRate uses units &gt; 50 and units &gt; 10. Spec is inclusive lower bounds.</p></div>
+    <h4 data-zh="修复建议" data-en="Remediation">修复建议</h4>
+    <div class="block"><p>Use units &gt;= VOLUME_TIER_LARGE and units &gt;= VOLUME_TIER_SMALL.</p></div>
+  </div>
+</article>
+<article class="case open" id="finding-6">
+  <div class="case-head">
+    <span class="badge pri p1">P1</span>
+    <span class="badge type">LLM</span>
+    <span class="badge type">LOGIC-005</span>
+    <h3>commitReservation never sets status COMMITTED so the hold stays replayable</h3>
+    <span class="meta-id">src/reservation.js:95 · 83% · fr-20260921-006</span>
+  </div>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt data-zh="分类" data-en="Category">分类</dt><dd>logic</dd></div>
+      <div><dt>ID</dt><dd><code>fr-20260921-006</code></dd></div>
+    </dl>
+    <h4 data-zh="证据" data-en="Evidence">证据</h4>
+    <div class="block"><p>committedAt is written but status stays HELD. A second commit can pass the NOT_HELD guard.</p></div>
+    <h4 data-zh="修复建议" data-en="Remediation">修复建议</h4>
+    <div class="block"><p>Set reservation.status = COMMITTED before saveReservation returns.</p></div>
+  </div>
+</article>
 </section>
-<section class="severity-block sev-p1" id="sev-p1">
-  <div class="severity-head">
-    <span class="severity-badge">P1</span>
-    <h2 class="severity-title">P1 Findings</h2>
-    <span class="severity-count">3</span>
-  </div>
-  <div class="findings-grid"><article class="finding sev-p1" style="--i:4">
-  <div class="finding-accent"></div>
-  <header class="finding-head">
-    <div class="finding-top">
-      <code class="loc">src/db.js:191</code>
-      <span class="tag tag-llm">LLM</span>
-      <span class="tag tag-rule">RES-001</span>
-      <span class="tag tag-conf">88%</span>
-      <span class="tag tag-id">fr-20260921-001</span>
-    </div>
-    <h3 class="finding-title">withLock releases the lock after await fn() with no finally</h3>
-    <span class="finding-cat">resource_leak</span>
-  </header>
-  <div class="finding-body">
-    <div class="field field-evidence">
-      <span class="field-label">Evidence</span>
-      <p>acquireLock, then await fn(), then releaseLock. If fn() throws, releaseLock never runs and the key stays held. Intent: locks release even on failure.</p>
-    </div>
-    <div class="field field-fix">
-      <span class="field-label">Remediation</span>
-      <p>Wrap fn() in try/finally and always releaseLock(key).</p>
-    </div>
-  </div>
-</article>
-<article class="finding sev-p1" style="--i:5">
-  <div class="finding-accent"></div>
-  <header class="finding-head">
-    <div class="finding-top">
-      <code class="loc">src/pricing.js:33</code>
-      <span class="tag tag-llm">LLM</span>
-      <span class="tag tag-rule">LOGIC-004</span>
-      <span class="tag tag-conf">95%</span>
-      <span class="tag tag-id">fr-20260921-003</span>
-    </div>
-    <h3 class="finding-title">Volume tiers use exclusive &gt; so exactly 10 units miss the 5% discount</h3>
-    <span class="finding-cat">logic</span>
-  </header>
-  <div class="finding-body">
-    <div class="field field-evidence">
-      <span class="field-label">Evidence</span>
-      <p>volumeDiscountRate uses units &gt; 50 and units &gt; 10. Spec/intent is inclusive lower bounds (10 and 50). volumeDiscountRate(10) returns 0.</p>
-    </div>
-    <div class="field field-fix">
-      <span class="field-label">Remediation</span>
-      <p>Use units &gt;= VOLUME_TIER_LARGE and units &gt;= VOLUME_TIER_SMALL.</p>
-    </div>
-  </div>
-</article>
-<article class="finding sev-p1" style="--i:6">
-  <div class="finding-accent"></div>
-  <header class="finding-head">
-    <div class="finding-top">
-      <code class="loc">src/reservation.js:95</code>
-      <span class="tag tag-llm">LLM</span>
-      <span class="tag tag-rule">LOGIC-005</span>
-      <span class="tag tag-conf">83%</span>
-      <span class="tag tag-id">fr-20260921-006</span>
-    </div>
-    <h3 class="finding-title">commitReservation never sets status COMMITTED so the hold stays replayable</h3>
-    <span class="finding-cat">logic</span>
-  </header>
-  <div class="finding-body">
-    <div class="field field-evidence">
-      <span class="field-label">Evidence</span>
-      <p>committedAt is written but status stays HELD. A second commitReservation can pass the NOT_HELD guard and consume stock again. Intent: commit semantics.</p>
-    </div>
-    <div class="field field-fix">
-      <span class="field-label">Remediation</span>
-      <p>Set reservation.status = &#x27;COMMITTED&#x27; before saveReservation returns.</p>
-    </div>
-  </div>
-</article></div>
-</section>
-
-  <footer class="footer">
-    <span class="footer-brand">codexqa-defect-analyzer</span>
-    <span class="footer-meta">report_scan.html · 2026-09-21T14:34:12.651036</span>
-  </footer>
+  
+  <p class="footer">codexqa-defect-analyzer · report_scan.html · 2026-09-21T14:34:12.651036</p>
 </div>
 <script>
 (function(){
-  var KEY='aid-report-theme';
-  var root=document.documentElement;
-  var btn=document.getElementById('aidThemeToggle');
-  var label=document.getElementById('aidThemeLabel');
-  function apply(theme,persist){
-    root.setAttribute('data-theme',theme);
-    var isDay=theme==='day';
-    if(btn){
-      btn.setAttribute('aria-pressed',isDay?'true':'false');
-      btn.setAttribute('aria-label',isDay?'切换为黑夜视图':'切换为白天视图');
-    }
-    if(label) label.textContent=isDay?'DAY':'NIGHT';
-    if(persist){try{localStorage.setItem(KEY,theme)}catch(e){}}
+  const root = document.documentElement;
+  const prefix = root.getAttribute('data-store') || 'codexqa-report';
+  const LANG_KEY = prefix + '-lang';
+  const THEME_KEY = prefix + '-theme';
+
+  function applyI18n(lang) {
+    const attr = lang === 'en' ? 'data-en' : 'data-zh';
+    document.querySelectorAll('[data-zh][data-en]').forEach(el => {
+      const v = el.getAttribute(attr);
+      if (v == null) return;
+      if (el.tagName === 'TITLE') document.title = v;
+      else if (el.tagName === 'OPTION') el.textContent = v;
+      else el.textContent = v;
+    });
+    document.querySelectorAll('[data-zh-placeholder][data-en-placeholder]').forEach(el => {
+      el.setAttribute('placeholder', el.getAttribute(lang === 'en' ? 'data-en-placeholder' : 'data-zh-placeholder') || '');
+    });
   }
-  var saved=null;
-  try{
-    var q=new URLSearchParams(location.search).get('theme');
-    if(q==='day'||q==='night') saved=q;
-    else saved=localStorage.getItem(KEY);
-  }catch(e){}
-  apply((saved==='day'||saved==='night')?saved:'night',false);
-  requestAnimationFrame(function(){root.classList.add('theme-ready')});
-  if(btn) btn.addEventListener('click',function(){
-    apply(root.getAttribute('data-theme')==='day'?'night':'day',true);
+
+  function setLang(lang) {
+    root.setAttribute('data-lang', lang);
+    root.lang = lang === 'en' ? 'en' : 'zh-CN';
+    document.querySelectorAll('[data-set-lang]').forEach(b => {
+      b.setAttribute('aria-pressed', b.getAttribute('data-set-lang') === lang ? 'true' : 'false');
+    });
+    applyI18n(lang);
+    try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
+  }
+
+  function normalizeTheme(t) {
+    if (t === 'day' || t === 'light') return 'light';
+    if (t === 'night' || t === 'dark') return 'dark';
+    return 'light';
+  }
+
+  function setTheme(theme) {
+    theme = normalizeTheme(theme);
+    root.setAttribute('data-theme', theme);
+    document.querySelectorAll('[data-set-theme]').forEach(b => {
+      b.setAttribute('aria-pressed', b.getAttribute('data-set-theme') === theme ? 'true' : 'false');
+    });
+    try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+  }
+
+  document.querySelectorAll('[data-set-lang]').forEach(b => {
+    b.addEventListener('click', () => setLang(b.getAttribute('data-set-lang')));
   });
+  document.querySelectorAll('[data-set-theme]').forEach(b => {
+    b.addEventListener('click', () => setTheme(b.getAttribute('data-set-theme')));
+  });
+
+  let lang = root.getAttribute('data-lang') || 'zh';
+  let theme = root.getAttribute('data-theme') || 'light';
+  try {
+    lang = localStorage.getItem(LANG_KEY) || lang;
+    theme = localStorage.getItem(THEME_KEY) || theme;
+  } catch (e) {}
+  setLang(lang === 'en' ? 'en' : 'zh');
+  setTheme(normalizeTheme(theme));
 })();
+
 </script>
 </body>
 </html>

@@ -1,55 +1,256 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light" data-lang="en" data-store="tdg-report">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sample testdata write-back</title>
-  <style>
-    :root { color-scheme: light; --bg:#f4f6f8; --card:#fff; --ink:#1c2333; --muted:#5c6778; --line:#d8dee6; --acc:#1b4f8a; }
-    * { box-sizing: border-box; }
-    body { margin:0; font:15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); }
-    .wrap { max-width:880px; margin:0 auto; padding:28px 20px 48px; }
-    .kicker { margin:0 0 6px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
-    h1 { margin:0 0 8px; font-size:24px; }
-    .meta { color:var(--muted); margin-bottom:18px; }
-    .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:14px; }
-    h2 { margin:0 0 10px; font-size:16px; }
-    table { width:100%; border-collapse:collapse; font-size:14px; }
-    th, td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
-    th { background:#eef2f6; font-weight:600; }
-    code { font-family: ui-monospace, Menlo, monospace; font-size:13px; background:#eef2f6; padding:1px 5px; border-radius:4px; }
-    .was { color:#9b1c1c; text-decoration:line-through; }
-    .now { color:#0f6b3a; font-weight:600; }
-    .tag { display:inline-block; background:#e8f0fa; color:var(--acc); font-size:12px; padding:2px 8px; border-radius:999px; }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title data-zh="测试数据回写" data-en="Sample testdata write-back">Sample testdata write-back</title>
+<script>
+(function(){
+  try {
+    var prefix = document.documentElement.getAttribute('data-store') || 'codexqa-report';
+    var t = localStorage.getItem(prefix + '-theme');
+    var l = localStorage.getItem(prefix + '-lang');
+    if (t === 'day') t = 'light';
+    if (t === 'night') t = 'dark';
+    if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+    if (l === 'en' || l === 'zh') {
+      document.documentElement.setAttribute('data-lang', l);
+      document.documentElement.lang = l === 'en' ? 'en' : 'zh-CN';
+    }
+  } catch (e) {}
+})();
+</script>
+<style>
+/* Shared CodexQA HTML report chrome — copied from codexqa-testcase-generator.
+   Keep in sync with skills/codexqa-testcase-generator/scripts/generate_case_report.py */
+:root, html[data-theme="light"] {
+  color-scheme: light;
+  --bg:#f0f3f6; --sheet:#ffffff; --ink:#1a2332; --muted:#5a6578;
+  --line:#d5dde8; --acc:#0f6b4c; --acc-soft:#e6f4ee; --acc-fg:#fff;
+  --web:#0b5cab; --web-bg:#e8f1fb; --web-line:#c5d9f0;
+  --server:#6b3fa0; --server-bg:#f3eafb; --server-line:#e0d0f2;
+  --app:#b45309; --app-bg:#fff4e6; --app-line:#f0d7b5;
+  --p0:#b42318; --p0-bg:#fde8e4;
+  --p1:#c2410c; --p1-bg:#ffedd5;
+  --p2:#9a6700; --p2-bg:#fef3c7;
+  --p3:#475569; --p3-bg:#e2e8f0;
+  --card:#f8fafc; --chip:#fff; --head:#fbfcfd; --code-bg:#eef2f6; --bar-track:#e8edf3;
+  --hero-a:#d9ebe3; --hero-b:#d6e4f5;
+  --ok:#17663a; --ok-bg:#dcfce7;
+  --toolbar-bg: color-mix(in srgb, var(--sheet) 92%, transparent);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Segoe UI", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#0f141b; --sheet:#1a222c; --ink:#e8edf2; --muted:#9aa7b5;
+  --line:#2f3b49; --acc:#3ecf8e; --acc-soft:#163526; --acc-fg:#0b1a12;
+  --web:#7eb6ff; --web-bg:#1a2a3d; --web-line:#2a4060;
+  --server:#c4a1ff; --server-bg:#2a1f3d; --server-line:#3d2f5c;
+  --app:#ffb074; --app-bg:#3a2718; --app-line:#5a3a22;
+  --p0:#ff8a80; --p0-bg:#3a1d1c;
+  --p1:#ffb074; --p1-bg:#3a2718;
+  --p2:#e6c35c; --p2-bg:#3a3218;
+  --p3:#cbd5e1; --p3-bg:#2a3441;
+  --card:#141b24; --chip:#1f2833; --head:#162029; --code-bg:#24303b; --bar-track:#24303b;
+  --hero-a:#1a2e28; --hero-b:#1a2433;
+  --ok:#7ddea4; --ok-bg:#163526;
+  --toolbar-bg: color-mix(in srgb, var(--sheet) 88%, transparent);
+}
+* { box-sizing: border-box; }
+body { margin:0; font:14px/1.55 var(--sans); color:var(--ink); background:
+  radial-gradient(1200px 500px at 10% -10%, var(--hero-a) 0%, transparent 55%),
+  radial-gradient(900px 400px at 100% 0%, var(--hero-b) 0%, transparent 50%),
+  var(--bg); }
+.prefs { position:sticky; top:0; z-index:20; display:flex; justify-content:flex-end; gap:8px;
+  padding:10px 18px; background:var(--toolbar-bg); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line); }
+.prefs .group { display:flex; gap:4px; align-items:center; padding:2px;
+  border:1px solid var(--line); border-radius:999px; background:var(--sheet); }
+.prefs button { appearance:none; border:0; background:transparent; color:var(--muted);
+  font:inherit; font-size:12px; font-weight:600; letter-spacing:.02em; padding:6px 12px;
+  border-radius:999px; cursor:pointer; }
+.prefs button[aria-pressed="true"] { background:var(--acc); color:var(--acc-fg); }
+.wrap { max-width:1180px; margin:0 auto; padding:22px 18px 64px; }
+.hero { background:var(--sheet); border:1px solid var(--line); border-radius:14px;
+  padding:22px 24px; margin-bottom:18px; box-shadow:0 1px 0 rgba(26,35,50,.04); }
+.kicker { margin:0 0 6px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+h1 { margin:0 0 8px; font-size:24px; letter-spacing:-.02em; }
+.sub { color:var(--muted); margin:0 0 14px; }
+.meta-row { display:flex; flex-wrap:wrap; gap:10px 18px; font-size:12.5px; color:var(--muted); }
+.meta-row code { font-family:var(--mono); font-size:11.5px; background:var(--code-bg); padding:1px 5px; border-radius:4px; color:var(--ink); }
+.stats { display:grid; grid-template-columns: 1.2fr 1fr; gap:14px; margin:18px 0 0; }
+@media (max-width:800px) { .stats { grid-template-columns:1fr; } }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+.card h2 { margin:0 0 10px; font-size:13px; color:var(--muted); font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
+.chip-row { display:flex; gap:10px; flex-wrap:wrap; }
+.stat-chip { min-width:88px; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--chip); }
+.stat-chip .n { display:block; font-size:22px; font-weight:700; line-height:1.1; }
+.stat-chip .l { font-size:11px; color:var(--muted); letter-spacing:.06em; }
+.stat-chip.p0 .n, .stat-chip.web .n { color:var(--p0); }
+.stat-chip.p0 { background:var(--p0-bg); border-color:var(--p0-bg); }
+.stat-chip.p1 .n { color:var(--p1); }
+.stat-chip.p1 { background:var(--p1-bg); border-color:var(--p1-bg); }
+.stat-chip.p2 .n { color:var(--p2); }
+.stat-chip.p2 { background:var(--p2-bg); border-color:var(--p2-bg); }
+.stat-chip.p3 .n { color:var(--p3); }
+.stat-chip.p3 { background:var(--p3-bg); border-color:var(--p3-bg); }
+.stat-chip.web { background:var(--web-bg); border-color:var(--web-line); }
+.stat-chip.web .n { color:var(--web); }
+.stat-chip.server { background:var(--server-bg); border-color:var(--server-line); }
+.stat-chip.server .n { color:var(--server); }
+.stat-chip.app { background:var(--app-bg); border-color:var(--app-line); }
+.stat-chip.app .n { color:var(--app); }
+.bar-row { display:grid; grid-template-columns:36px 1fr 36px; gap:8px; align-items:center; margin:6px 0; font-size:12px; }
+.bar { height:8px; background:var(--bar-track); border-radius:99px; overflow:hidden; }
+.bar i { display:block; height:100%; background:var(--acc); border-radius:99px; }
+.panel { background:var(--sheet); border:1px solid var(--line); border-radius:14px; padding:16px 18px 8px; margin-bottom:16px; }
+.panel-head h2 { margin:0; font-size:18px; }
+.panel-head .count { display:inline-block; margin-left:6px; font-size:12px; background:var(--acc-soft); color:var(--acc);
+  padding:2px 8px; border-radius:999px; vertical-align:middle; }
+.panel-head .desc { color:var(--muted); margin:6px 0 12px; font-size:13px; }
+.case { border:1px solid var(--line); border-radius:10px; margin-bottom:10px; overflow:hidden; background:var(--chip); }
+.case-head { display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:10px 12px; background:var(--head); }
+.case-head h3 { margin:0; font-size:14px; font-weight:600; flex:1 1 200px; }
+.meta-id { font-family:var(--mono); font-size:11px; color:var(--muted); }
+.case-body { padding:4px 14px 14px; border-top:1px solid var(--line); }
+.badge { display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.04em; padding:2px 7px; border-radius:999px; }
+.badge.pri.p0 { background:var(--p0-bg); color:var(--p0); }
+.badge.pri.p1 { background:var(--p1-bg); color:var(--p1); }
+.badge.pri.p2 { background:var(--p2-bg); color:var(--p2); }
+.badge.pri.p3 { background:var(--p3-bg); color:var(--p3); }
+.badge.type { background:var(--code-bg); color:var(--muted); font-weight:600; }
+.kv { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px 14px; margin:10px 0 12px; }
+.kv dt { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+.kv dd { margin:2px 0 0; }
+.case-body h4 { margin:14px 0 6px; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+.block { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
+.block p { margin:0 0 6px; }
+.block p:last-child { margin:0; }
+.block code, .steps code, code { font-family:var(--mono); font-size:11.5px; background:var(--code-bg); padding:1px 5px; border-radius:4px; color:var(--ink); }
+.block a, a { color:var(--acc); }
+.steps { width:100%; border-collapse:collapse; font-size:13px; }
+.steps th, .steps td { border:1px solid var(--line); padding:8px 9px; vertical-align:top; text-align:left; }
+.steps th { background:var(--code-bg); font-size:12px; }
+.empty { padding:28px; text-align:center; color:var(--muted); border:1px dashed var(--line); border-radius:10px; margin-bottom:12px; }
+.muted { color:var(--muted); }
+.footer { margin-top:18px; color:var(--muted); font-size:12px; text-align:center; }
+.total-pill { display:inline-block; background:var(--acc-soft); color:var(--acc); font-weight:700;
+  padding:3px 10px; border-radius:999px; margin-left:6px; font-size:13px; }
+.alert { padding:10px 12px; border-radius:10px; font-size:13px; margin-bottom:12px; border:1px solid var(--line); }
+.alert-warn { background:var(--p1-bg); color:var(--p1); border-color:transparent; }
+.alert-drop { background:var(--p0-bg); color:var(--p0); border-color:transparent; }
+html[data-lang="en"] .unit-zh { display:none; }
+html[data-lang="zh"] .unit-en { display:none; }
+.was { color:var(--p0); text-decoration:line-through; }
+.now { color:var(--acc); font-weight:600; }
+.figure-frame { background:var(--sheet); border:1px solid var(--line); border-radius:14px; padding:8px; }
+.figure-frame img { width:100%; height:auto; display:block; border-radius:10px; }
+
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <p class="kicker">codexqa-testdata-generator · sample write-back</p>
-    <h1>Placeholders filled with IDs the backend returned</h1>
-    <p class="meta"><span class="tag">case-executable.md</span> · mock catalog · no <code>node</code> commands in the case</p>
-    <section class="card">
-      <h2>Before (from codexqa-testcase-generator)</h2>
-      <table>
-        <tr><th>Entity</th><th>Content</th><th>Construction</th></tr>
-        <tr><td>Catalog product</td><td><code>productId</code>: {placeholder}<br><code>kind</code>: standard</td><td><em>(empty)</em></td></tr>
-      </table>
-    </section>
-    <section class="card">
-      <h2>After (backend created the row)</h2>
-      <table>
-        <tr><th>Entity</th><th>Content</th><th>Construction</th></tr>
-        <tr>
-          <td>Catalog product</td>
-          <td><code>productId</code>: <span class="was">{placeholder}</span> <span class="now">prd_8f21</span><br><code>kind</code>: standard</td>
-          <td>Created via <code>POST /v1/catalog/products</code>; id from response <code>data.id</code></td>
-        </tr>
-      </table>
-    </section>
-    <section class="card">
-      <h2>Success means this — not a number in chat</h2>
-      <p>Manifest records <code>prd_8f21</code> as returned by the mock. Re-run tomorrow and you get a new id, same field mapping.</p>
-    </section>
+<div class="prefs" role="toolbar" aria-label="Language and theme">
+  <div class="group" role="group" aria-label="Language">
+    <button type="button" data-set-lang="zh" aria-pressed="true">中文</button>
+    <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
   </div>
+  <div class="group" role="group" aria-label="Theme">
+    <button type="button" data-set-theme="light" aria-pressed="true"><span data-zh="白天" data-en="Light">白天</span></button>
+    <button type="button" data-set-theme="dark" aria-pressed="false"><span data-zh="黑夜" data-en="Dark">黑夜</span></button>
+  </div>
+</div>
+<div class="wrap">
+
+  <header class="hero">
+    <p class="kicker">codexqa-testdata-generator · write-back</p>
+    <h1>Placeholders filled with IDs the backend returned</h1>
+    <p class="sub"><span class="badge type">case-executable.md</span> · mock catalog</p>
+  </header>
+  <section class="panel">
+    <div class="panel-head"><h2>Before (from codexqa-testcase-generator)</h2></div>
+    <table class="steps">
+      <thead><tr><th>Entity</th><th>Content</th><th>Construction</th></tr></thead>
+      <tbody><tr><td>Catalog product</td><td><code>productId</code>: {placeholder}</td><td><em>(empty)</em></td></tr></tbody>
+    </table>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><h2>After (backend created the row)</h2></div>
+    <table class="steps">
+      <thead><tr><th>Entity</th><th>Content</th><th>Construction</th></tr></thead>
+      <tbody><tr>
+        <td>Catalog product</td>
+        <td><code>productId</code>: <span class="was">{placeholder}</span> <span class="now">prd_8f21</span></td>
+        <td>Created via <code>POST /v1/catalog/products</code>; id from <code>data.id</code></td>
+      </tr></tbody>
+    </table>
+  </section>
+  <p class="footer">codexqa-testdata-generator · sample write-back</p>
+
+</div>
+<script>
+(function(){
+  const root = document.documentElement;
+  const prefix = root.getAttribute('data-store') || 'codexqa-report';
+  const LANG_KEY = prefix + '-lang';
+  const THEME_KEY = prefix + '-theme';
+
+  function applyI18n(lang) {
+    const attr = lang === 'en' ? 'data-en' : 'data-zh';
+    document.querySelectorAll('[data-zh][data-en]').forEach(el => {
+      const v = el.getAttribute(attr);
+      if (v == null) return;
+      if (el.tagName === 'TITLE') document.title = v;
+      else if (el.tagName === 'OPTION') el.textContent = v;
+      else el.textContent = v;
+    });
+    document.querySelectorAll('[data-zh-placeholder][data-en-placeholder]').forEach(el => {
+      el.setAttribute('placeholder', el.getAttribute(lang === 'en' ? 'data-en-placeholder' : 'data-zh-placeholder') || '');
+    });
+  }
+
+  function setLang(lang) {
+    root.setAttribute('data-lang', lang);
+    root.lang = lang === 'en' ? 'en' : 'zh-CN';
+    document.querySelectorAll('[data-set-lang]').forEach(b => {
+      b.setAttribute('aria-pressed', b.getAttribute('data-set-lang') === lang ? 'true' : 'false');
+    });
+    applyI18n(lang);
+    try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
+  }
+
+  function normalizeTheme(t) {
+    if (t === 'day' || t === 'light') return 'light';
+    if (t === 'night' || t === 'dark') return 'dark';
+    return 'light';
+  }
+
+  function setTheme(theme) {
+    theme = normalizeTheme(theme);
+    root.setAttribute('data-theme', theme);
+    document.querySelectorAll('[data-set-theme]').forEach(b => {
+      b.setAttribute('aria-pressed', b.getAttribute('data-set-theme') === theme ? 'true' : 'false');
+    });
+    try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+  }
+
+  document.querySelectorAll('[data-set-lang]').forEach(b => {
+    b.addEventListener('click', () => setLang(b.getAttribute('data-set-lang')));
+  });
+  document.querySelectorAll('[data-set-theme]').forEach(b => {
+    b.addEventListener('click', () => setTheme(b.getAttribute('data-set-theme')));
+  });
+
+  let lang = root.getAttribute('data-lang') || 'zh';
+  let theme = root.getAttribute('data-theme') || 'light';
+  try {
+    lang = localStorage.getItem(LANG_KEY) || lang;
+    theme = localStorage.getItem(THEME_KEY) || theme;
+  } catch (e) {}
+  setLang(lang === 'en' ? 'en' : 'zh');
+  setTheme(normalizeTheme(theme));
+})();
+
+</script>
 </body>
 </html>
