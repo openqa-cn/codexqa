@@ -39,7 +39,7 @@ Three different readers, and the largest body of text is not written for humans 
 
 | Audience | Where to read | Notes |
 | --- | --- | --- |
-| **Evaluating or using a skill** | The skill's own human-facing documentation (`README.md`, plus `HOW_IT_WORKS.md` / `KNOWN_LIMITATIONS.md` where present); [Getting Started](GETTING_STARTED.md), [Support matrix](SUPPORT_MATRIX.md), [FAQ](FAQ.md), [examples](../examples/README.md) | Start here. Enough to decide whether to trust the tool and how far. [Index of per-skill method docs](HOW_IT_WORKS.md). Sample HTML/screenshots: [README · What the output looks like](../README.md#what-the-output-looks-like). |
+| **Evaluating or using a skill** | The skill's own human-facing documentation (`README.md`, plus `HOW_IT_WORKS.md` / `KNOWN_LIMITATIONS.md` where present); [Getting Started](GETTING_STARTED.md), [Support matrix](SUPPORT_MATRIX.md), [FAQ](FAQ.md), [examples](../examples/README.md) | Start here. Enough to decide whether to trust the tool and how far. [Index of per-skill method docs](HOW_IT_WORKS.md). Sample HTML/screenshots: [README · Overview of all test-and-verify skills](../README.md#overview-of-all-test-and-verify-skills). |
 | **The agent, at runtime** | `skills/*/SKILL.md` and `skills/*/references/**` | Loaded progressively when a task triggers the skill, not read front to back. This is by far the bulk of the text and it is written as instructions to a model, not as a manual. |
 | **Operating, extending, contributing** | [Contributing](../CONTRIBUTING.md), this document, [benchmarks](../benchmarks/README.md), `skills/codexqa-defect-analyzer/README.md` / `HOW_IT_WORKS.md` | Human-facing skill docs; `SKILL.md` is agent-facing and marks README/HOW_IT_WORKS as not needed at runtime. |
 

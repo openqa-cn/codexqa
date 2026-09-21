@@ -6,7 +6,7 @@ HTML documentation for search engines: [openqa.cn](https://openqa.cn/). This pag
 
 Install one skill at a time on Cursor, Claude Code, Codex, or OpenClaw. This page walks [`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.md) because it has a CLI you can smoke-test. The same command also takes `--skill codexqa-skill-router`, `--skill codexqa-code-analyzer`, `--skill codexqa-code-wiki`, `--skill codexqa-rootcause-analyzer`, `--skill codexqa-code-reviewer`, `--skill codexqa-requirement-analyzer`, `--skill codexqa-testcase-generator`, and `--skill codexqa-testdata-generator`. Prefer [`codexqa-skill-router`](../skills/codexqa-skill-router/README.md) when you are unsure which worker to install — it can match and fetch workers on demand. `codexqa-code-analyzer`, `codexqa-code-wiki`, `codexqa-rootcause-analyzer`, and `codexqa-code-reviewer` use the separate `codexqa` symbol-graph CLI; `codexqa-defect-analyzer` is Python-orchestrated and also uses that CLI for live graphs; `codexqa-skill-router` needs Python 3.10+ for discover/ensure.
 
-What you give each skill is different ([FAQ](FAQ.md#what-do-i-have-to-give-each-skill)). What a finished report looks like: [README · What the output looks like](../README.md#what-the-output-looks-like).
+What you give each skill is different ([FAQ](FAQ.md#what-do-i-have-to-give-each-skill)). What a finished report looks like: [README · Overview of all test-and-verify skills](../README.md#overview-of-all-test-and-verify-skills).
 
 ## Requirements
 

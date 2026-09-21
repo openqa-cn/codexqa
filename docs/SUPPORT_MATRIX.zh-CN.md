@@ -2,7 +2,7 @@
 
 [English](SUPPORT_MATRIX.md)
 
-安装兼容不等于分析质量。扩大任何一条支持结论之前，先记录 Agent / 模型、运行时、操作系统、commit 和实际结果。除非另行点名，下表行属于 `codexqa-defect-analyzer`。产物样例：[README 预览](../README.zh-CN.md#产物长什么样)。
+安装兼容不等于分析质量。扩大任何一条支持结论之前，先记录 Agent / 模型、运行时、操作系统、commit 和实际结果。除非另行点名，下表行属于 `codexqa-defect-analyzer`。产物样例：[README 预览](../README.zh-CN.md#测试验证所有技能概览)。
 
 | 组件 | 当前证据 | 限制 |
 | --- | --- | --- |

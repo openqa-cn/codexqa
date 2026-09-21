@@ -24,7 +24,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 
 `npx skills add … --skill <name>` 一次只复制一个目录。按任务安装，彼此不互相替代。不确定时装 `codexqa-skill-router`——只装路由也可按需拉取干活 skill。`codexqa-defect-analyzer` 的检出效果尚未独立 benchmark。`codexqa-code-analyzer`、`codexqa-code-wiki`、`codexqa-rootcause-analyzer`、`codexqa-defect-analyzer`、`codexqa-testcase-generator`、`codexqa-code-reviewer`、`codexqa-requirement-analyzer` 和 `codexqa-skill-router` 没有公开的宿主 agent 成绩。
 
-报告、用例长什么样：[样例页和截图](../README.zh-CN.md#产物长什么样)。
+报告、用例长什么样：[样例页和截图](../README.zh-CN.md#测试验证所有技能概览)。
 
 ## skill 名字改过吗？
 
@@ -108,7 +108,7 @@ Skill 指令面向 Codex、Claude Code、Cursor 和 OpenClaw。注意「装得�
 
 ## 产物长什么样？
 
-样例页（同一套渲染，发现项是写好的示例）：[README · 产物长什么样](../README.zh-CN.md#产物长什么样)。HTML 和截图在 `docs/assets/previews/`。
+样例页（同一套渲染，发现项是写好的示例）：[README · 测试验证所有技能概览](../README.zh-CN.md#测试验证所有技能概览)。HTML 和截图在 `docs/assets/previews/`。
 
 ## codexqa-testcase-generator 会填测试数据吗？
 

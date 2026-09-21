@@ -22,6 +22,6 @@ Index only. `npx skills add … --skill <name>` copies `skills/<name>/`, so meth
 | `codexqa-testdata-generator` | [How it works](../skills/codexqa-testdata-generator/HOW_IT_WORKS.md) · [Known limitations](../skills/codexqa-testdata-generator/KNOWN_LIMITATIONS.md) | [`SKILL.md`](../skills/codexqa-testdata-generator/SKILL.md) |
 | `codexqa-testcase-generator` | [How it works](../skills/codexqa-testcase-generator/HOW_IT_WORKS.md) · [Known limitations](../skills/codexqa-testcase-generator/KNOWN_LIMITATIONS.md) | [`SKILL.md`](../skills/codexqa-testcase-generator/SKILL.md) |
 
-What to bring to each skill (repo vs PRD vs cases/API): [FAQ](FAQ.md#what-do-i-have-to-give-each-skill). What the artifacts look like: [README previews](../README.md#what-the-output-looks-like).
+What to bring to each skill (repo vs PRD vs cases/API): [FAQ](FAQ.md#what-do-i-have-to-give-each-skill). What the artifacts look like: [README previews](../README.md#overview-of-all-test-and-verify-skills).
 
 Install, contributing, security, layout, and the [support matrix](SUPPORT_MATRIX.md) stay here. [Documentation audiences](ARCHITECTURE.md#documentation-audiences).

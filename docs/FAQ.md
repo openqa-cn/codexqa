@@ -24,7 +24,7 @@ The eight worker skills cover different parts of the delivery lifecycle, plus [`
 
 `npx skills add … --skill <name>` copies one directory. Install the skill you need; they do not replace each other. Prefer `codexqa-skill-router` when unsure — a solo router install can fetch workers on demand. Detection accuracy for `codexqa-defect-analyzer` has not been independently benchmarked. `codexqa-code-analyzer`, `codexqa-code-wiki`, `codexqa-rootcause-analyzer`, `codexqa-defect-analyzer`, `codexqa-testcase-generator`, `codexqa-code-reviewer`, `codexqa-requirement-analyzer`, and `codexqa-skill-router` have no published host-agent score.
 
-What a finished report or case looks like: [sample pages and screenshots](../README.md#what-the-output-looks-like).
+What a finished report or case looks like: [sample pages and screenshots](../README.md#overview-of-all-test-and-verify-skills).
 
 ## Were the skill names renamed?
 
@@ -108,7 +108,7 @@ Not yet on a published agent benchmark. The regression suite validates CLI and w
 
 ## What does the output look like?
 
-Sample pages (same renderers, canned findings): [README · What the output looks like](../README.md#what-the-output-looks-like). HTML and PNGs live in `docs/assets/previews/`.
+Sample pages (same renderers, canned findings): [README · Overview of all test-and-verify skills](../README.md#overview-of-all-test-and-verify-skills). HTML and PNGs live in `docs/assets/previews/`.
 
 ## Does codexqa-testcase-generator fill test data?
 

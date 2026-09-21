@@ -32,13 +32,15 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 
 <a href="https://openqa.cn/?utm_source=github&utm_medium=readme&utm_campaign=oss-seo&utm_content=nav-docs-zh"><strong>产品站点</strong></a> ·
 <a href="#快速开始"><strong>快速开始</strong></a> ·
-<a href="#产物长什么样"><strong>报告样例</strong></a> ·
+<a href="#测试验证所有技能概览"><strong>技能概览</strong></a> ·
 <a href="docs/GETTING_STARTED.zh-CN.md"><strong>安装说明</strong></a> ·
 <a href="CHANGELOG.md"><strong>更新日志</strong></a>
 
 </div>
 
-## 产物长什么样
+<a id="产物长什么样"></a>
+
+## 测试验证所有技能概览
 
 下面每个 skill 先说它要帮你**验证什么**、**能做什么**，再配一份可打开的 HTML 报告。页面用的是仓库里的渲染器和预置样例数据，只说明产物形态，不是已记录的 Agent 成绩。
 
@@ -48,13 +50,13 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 <p><strong><a href="skills/codexqa-defect-analyzer/README.zh-CN.md">codexqa-defect-analyzer</a></strong></p>
 <p><strong>验证什么</strong> — 刚写完或刚合进来的代码，有没有 bug、有没有把密钥和危险写法带进来。人眼扫一遍不够。</p>
 <p><strong>核心能力</strong> — 规则扫描（SAST / lint / 密钥）和 Agent 语义检测合并去重，按 P0–P3 出 HTML：位置、证据、建议一次看完。</p>
-<p align="center"><a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/defect-report.html"><img src="docs/assets/previews/defect-report.png" alt="codexqa-defect-analyzer HTML 扫描报告"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/defect-report.html"><img src="docs/assets/previews/defect-report.png" alt="codexqa-defect-analyzer HTML 扫描报告"></a></p>
 </td>
 <td width="50%" valign="top">
 <p><strong><a href="skills/codexqa-code-reviewer/README.zh-CN.md">codexqa-code-reviewer</a></strong></p>
 <p><strong>验证什么</strong> — 这次改动能不能过评审、会不会误伤老功能。只看 git diff 往往看不到调用链和测试缺口。</p>
 <p><strong>核心能力</strong> — 先用符号图收齐影响面和测试边，再按证据包做双语评审，落成可发给评审人的 <code>REVIEW-REPORT.html</code>。</p>
-<p align="center"><a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/review-report.html"><img src="docs/assets/previews/review-report.png" alt="codexqa-code-reviewer 双语 REVIEW-REPORT.html"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/review-report.html"><img src="docs/assets/previews/review-report.png" alt="codexqa-code-reviewer 双语 REVIEW-REPORT.html"></a></p>
 </td>
 </tr>
 <tr>
@@ -62,13 +64,13 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 <p><strong><a href="skills/codexqa-code-wiki/README.zh-CN.md">codexqa-code-wiki</a></strong></p>
 <p><strong>验证什么</strong> — 仓库怎么分层、枢纽在哪、新人 / Agent 该从哪读起。没有地图时，「架构有没有被改坏」只能靠猜。</p>
 <p><strong>核心能力</strong> — 本地建架构知识图谱：模块社区、真实依赖、阅读路径，写成可打开的 HTML，不是聊天里一段口头介绍。</p>
-<p align="center"><a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/code-wiki.html"><img src="docs/assets/previews/code-wiki.png" alt="codexqa-code-wiki 架构 Wiki HTML 报告"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/code-wiki.html"><img src="docs/assets/previews/code-wiki.png" alt="codexqa-code-wiki 架构 Wiki HTML 报告"></a></p>
 </td>
 <td width="50%" valign="top">
 <p><strong><a href="skills/codexqa-code-analyzer/README.zh-CN.md">codexqa-code-analyzer</a></strong></p>
 <p><strong>验证什么</strong> — 改了这几行，会打到哪些接口、方法、调用链；回归该测哪、哪些路径还没测试。</p>
 <p><strong>核心能力</strong> — 对着本地符号图回答变更影响面：调用方、入口、未覆盖边。不是全文搜索猜一猜。</p>
-<p align="center"><a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/code-analyzer.html"><img src="docs/assets/previews/code-analyzer.png" alt="codexqa-code-analyzer 变更影响图"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/code-analyzer.html"><img src="docs/assets/previews/code-analyzer.png" alt="codexqa-code-analyzer 变更影响图"></a></p>
 </td>
 </tr>
 <tr>
@@ -76,13 +78,13 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 <p><strong><a href="skills/codexqa-rootcause-analyzer/README.zh-CN.md">codexqa-rootcause-analyzer</a></strong></p>
 <p><strong>验证什么</strong> — 堆栈和日志对上仓库之后，异常到底卡在哪一层。抛错的那一行，经常不是根因。</p>
 <p><strong>核心能力</strong> — 对照调用链产出带门禁的英文 RCA：触发点、根因、置信度分开写，并给出可验证的修复方向。</p>
-<p align="center"><a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/rootcause.html"><img src="docs/assets/previews/rootcause.png" alt="codexqa-rootcause-analyzer 英文 RCA 报告"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/rootcause.html"><img src="docs/assets/previews/rootcause.png" alt="codexqa-rootcause-analyzer 英文 RCA 报告"></a></p>
 </td>
 <td width="50%" valign="top">
 <p><strong><a href="skills/codexqa-requirement-analyzer/README.zh-CN.md">codexqa-requirement-analyzer</a></strong></p>
 <p><strong>验证什么</strong> — 需求本身写清楚了没有、能不能测、有没有缺口和互相打架的地方。代码还没写，坑可能已经在 PRD 里。</p>
 <p><strong>核心能力</strong> — 从 PRD（或一包材料）整理出一份带 P0/P1 的缺口 / 冲突登记表；高优先级条目带可执行验证步骤。</p>
-<p align="center"><a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/ra-register.html"><img src="docs/assets/previews/ra-register.png" alt="codexqa-requirement-analyzer 缺口登记表"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/ra-register.html"><img src="docs/assets/previews/ra-register.png" alt="codexqa-requirement-analyzer 缺口登记表"></a></p>
 </td>
 </tr>
 <tr>
@@ -90,13 +92,13 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 <p><strong><a href="skills/codexqa-testcase-generator/README.zh-CN.md">codexqa-testcase-generator</a></strong></p>
 <p><strong>验证什么</strong> — 完整测试该覆盖哪些场景；Web / 服务端 / APP 的用例从哪来。需求没写清时，会不会被模型编出来。</p>
 <p><strong>核心能力</strong> — 按需求在本地写出测试方案和用例，未知标 TBD；再聚合成可打开的 HTML。不连用例平台。</p>
-<p align="center"><a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/testcase-report.html"><img src="docs/assets/previews/testcase-report.png" alt="codexqa-testcase-generator 聚合 HTML 用例报告"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testcase-report.html"><img src="docs/assets/previews/testcase-report.png" alt="codexqa-testcase-generator 聚合 HTML 用例报告"></a></p>
 </td>
 <td width="50%" valign="top">
 <p><strong><a href="skills/codexqa-testdata-generator/README.zh-CN.md">codexqa-testdata-generator</a></strong></p>
 <p><strong>验证什么</strong> — 用例写好了，前置数据是不是真能在后端造出来。复制一个假 ID，过不了真实接口。</p>
 <p><strong>核心能力</strong> — 对着真实后端构造数据，把返回的业务 ID 回写进用例前置条件。成功以后端给了 ID 为准。</p>
-<p align="center"><a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/testdata-writeback.html"><img src="docs/assets/previews/testdata-writeback.png" alt="codexqa-testdata-generator 后端 ID 回写"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testdata-writeback.html"><img src="docs/assets/previews/testdata-writeback.png" alt="codexqa-testdata-generator 后端 ID 回写"></a></p>
 </td>
 </tr>
 </table>

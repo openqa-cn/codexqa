@@ -7,7 +7,7 @@ Quality-and-risk analysis of **requirement documents**. It audits sources, finds
 What the register looks like:
 
 <p align="center">
-  <a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/ra-register.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/ra-register.png" alt="Sample codexqa-requirement-analyzer gap register" width="880"></a>
+  <a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/ra-register.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/ra-register.png" alt="Sample codexqa-requirement-analyzer gap register" width="880"></a>
 </p>
 
 It is **not** [`codexqa-testcase-generator`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-testcase-generator/README.md). That skill writes test plans and manual cases from local requirements (files, paste, or HTTPS docs). This skill reviews whether the requirements themselves are complete, consistent, and testable.

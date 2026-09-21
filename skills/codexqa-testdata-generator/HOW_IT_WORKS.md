@@ -6,7 +6,7 @@
 
 **Inputs are not application source.** You bring a construct request, written cases, and/or an API source (OpenAPI / `planId` / `serviceId`). The skill does not read `code/` to invent table names or IDs. See [README — What you give it](README.md#what-you-give-it).
 
-Agents read [`SKILL.md`](SKILL.md), not this page. Command-level detail is in the [operator appendix](#operator-appendix) below. Gaps: [Known limitations](KNOWN_LIMITATIONS.md). Sample write-back: [preview](https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/testdata-writeback.html).
+Agents read [`SKILL.md`](SKILL.md), not this page. Command-level detail is in the [operator appendix](#operator-appendix) below. Gaps: [Known limitations](KNOWN_LIMITATIONS.md). Sample write-back: [preview](https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testdata-writeback.html).
 
 ## Problem
 

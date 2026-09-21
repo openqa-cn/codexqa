@@ -6,7 +6,7 @@
 
 在 Cursor、Claude Code、Codex 或 OpenClaw 上一次只装一个 skill。本页以 [`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.zh-CN.md) 为例，因为它有可冒烟的 CLI。同一条命令也可以加 `--skill codexqa-skill-router`、`--skill codexqa-code-analyzer`、`--skill codexqa-code-wiki`、`--skill codexqa-rootcause-analyzer`、`--skill codexqa-code-reviewer`、`--skill codexqa-requirement-analyzer`、`--skill codexqa-testcase-generator`、`--skill codexqa-testdata-generator`。不确定装哪个时优先 [`codexqa-skill-router`](../skills/codexqa-skill-router/README.zh-CN.md)——它能匹配并按需拉取干活 skill。`codexqa-code-analyzer`、`codexqa-code-wiki`、`codexqa-rootcause-analyzer` 与 `codexqa-code-reviewer` 使用单独的 `codexqa` 符号图 CLI；`codexqa-defect-analyzer` 由 Python 编排，实图同样使用该 CLI；`codexqa-skill-router` 的发现/按需安装需要 Python 3.10+。
 
-每个 skill 要交的材料不一样（[FAQ](FAQ.zh-CN.md#每个-skill-要我交什么)）。跑完长什么样见 [README · 产物长什么样](../README.zh-CN.md#产物长什么样)。
+每个 skill 要交的材料不一样（[FAQ](FAQ.zh-CN.md#每个-skill-要我交什么)）。跑完长什么样见 [README · 测试验证所有技能概览](../README.zh-CN.md#测试验证所有技能概览)。
 
 ## 环境要求
 

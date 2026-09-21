@@ -7,7 +7,7 @@
 回写长什么样：
 
 <p align="center">
-  <a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/testdata-writeback.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/testdata-writeback.png" alt="测试数据回填占位符样例" width="880"></a>
+  <a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testdata-writeback.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/testdata-writeback.png" alt="测试数据回填占位符样例" width="880"></a>
 </p>
 
 **不编造业务 ID。**「构造成功」指后端返回了 ID，不是对话里出现了一个号。也**不**根据 PRD 写测试用例——那是兄弟 skill [`codexqa-testcase-generator`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-testcase-generator/README.zh-CN.md)。

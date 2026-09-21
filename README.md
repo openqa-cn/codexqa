@@ -32,15 +32,16 @@ GitHub is the skill source; product site: [openqa.cn](https://openqa.cn/?utm_sou
 
 <a href="https://openqa.cn/?utm_source=github&utm_medium=readme&utm_campaign=oss-seo&utm_content=nav-docs"><strong>Documentation</strong></a> ·
 <a href="#quick-start"><strong>Quick Start</strong></a> ·
-<a href="#what-the-output-looks-like"><strong>Reports</strong></a> ·
+<a href="#overview-of-all-test-and-verify-skills"><strong>Skills overview</strong></a> ·
 <a href="docs/GETTING_STARTED.md"><strong>Install notes</strong></a> ·
 <a href="CHANGELOG.md"><strong>Changelog</strong></a>
 
 </div>
 
 <a id="what-the-output-looks-like"></a>
+<a id="overview-of-all-test-and-verify-skills"></a>
 
-## What the output looks like
+## Overview of all test-and-verify skills
 
 Each skill below states **what it verifies**, **what it can do**, then shows an openable HTML report. Pages use the project renderers and prepared sample data. They are illustrations, not recorded Agent scores.
 
@@ -50,13 +51,13 @@ Each skill below states **what it verifies**, **what it can do**, then shows an 
 <p><strong><a href="skills/codexqa-defect-analyzer/README.md">codexqa-defect-analyzer</a></strong></p>
 <p><strong>Verifies</strong> — whether the code you just wrote or merged hides bugs or security issues a quick glance would miss.</p>
 <p><strong>Does</strong> — merges SAST / lint / secrets with one Agent semantic pass into a P0–P3 HTML report: location, evidence, suggestion.</p>
-<p align="center"><a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/defect-report.html"><img src="docs/assets/previews/defect-report.png" alt="codexqa-defect-analyzer HTML scan report"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/defect-report.html"><img src="docs/assets/previews/defect-report.png" alt="codexqa-defect-analyzer HTML scan report"></a></p>
 </td>
 <td width="50%" valign="top">
 <p><strong><a href="skills/codexqa-code-reviewer/README.md">codexqa-code-reviewer</a></strong></p>
 <p><strong>Verifies</strong> — whether this change is merge-ready, and whether it silently hits old behavior. A git diff alone rarely shows call chains or test gaps.</p>
 <p><strong>Does</strong> — collects a CodexQA evidence pack (callers, blast radius, test edges), then writes a bilingual <code>REVIEW-REPORT.html</code> you can send to a reviewer.</p>
-<p align="center"><a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/review-report.html"><img src="docs/assets/previews/review-report.png" alt="codexqa-code-reviewer bilingual REVIEW-REPORT.html"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/review-report.html"><img src="docs/assets/previews/review-report.png" alt="codexqa-code-reviewer bilingual REVIEW-REPORT.html"></a></p>
 </td>
 </tr>
 <tr>
@@ -64,13 +65,13 @@ Each skill below states **what it verifies**, **what it can do**, then shows an 
 <p><strong><a href="skills/codexqa-code-wiki/README.md">codexqa-code-wiki</a></strong></p>
 <p><strong>Verifies</strong> — how the repo is actually layered, which module is the hub, and where a newcomer (or an Agent) should start reading. Without a map, “did we break the architecture?” is a guess.</p>
 <p><strong>Does</strong> — builds a local architecture knowledge graph — communities, real dependencies, reading paths — as openable HTML, not a chat summary.</p>
-<p align="center"><a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/code-wiki.html"><img src="docs/assets/previews/code-wiki.png" alt="codexqa-code-wiki architecture wiki HTML report"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/code-wiki.html"><img src="docs/assets/previews/code-wiki.png" alt="codexqa-code-wiki architecture wiki HTML report"></a></p>
 </td>
 <td width="50%" valign="top">
 <p><strong><a href="skills/codexqa-code-analyzer/README.md">codexqa-code-analyzer</a></strong></p>
 <p><strong>Verifies</strong> — which APIs, methods, and call chains this change actually hits; what to regression-test; which paths still have no tests.</p>
 <p><strong>Does</strong> — queries a local symbol graph for callers, entries, and untested edges. Not a full-text search guess.</p>
-<p align="center"><a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/code-analyzer.html"><img src="docs/assets/previews/code-analyzer.png" alt="codexqa-code-analyzer change-impact graph"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/code-analyzer.html"><img src="docs/assets/previews/code-analyzer.png" alt="codexqa-code-analyzer change-impact graph"></a></p>
 </td>
 </tr>
 <tr>
@@ -78,13 +79,13 @@ Each skill below states **what it verifies**, **what it can do**, then shows an 
 <p><strong><a href="skills/codexqa-rootcause-analyzer/README.md">codexqa-rootcause-analyzer</a></strong></p>
 <p><strong>Verifies</strong> — after mapping a stack or log back onto the repo, where the failure really starts. The throw site is often not the root cause.</p>
 <p><strong>Does</strong> — writes a gated English RCA: trigger vs root cause vs confidence, plus one fix-and-verify suggestion.</p>
-<p align="center"><a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/rootcause.html"><img src="docs/assets/previews/rootcause.png" alt="codexqa-rootcause-analyzer English RCA report"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/rootcause.html"><img src="docs/assets/previews/rootcause.png" alt="codexqa-rootcause-analyzer English RCA report"></a></p>
 </td>
 <td width="50%" valign="top">
 <p><strong><a href="skills/codexqa-requirement-analyzer/README.md">codexqa-requirement-analyzer</a></strong></p>
 <p><strong>Verifies</strong> — whether the requirement is testable, complete, and internally consistent — before anyone writes code. Gaps and conflicts often live in the PRD.</p>
 <p><strong>Does</strong> — one P0/P1 gap-and-conflict register from a PRD (or a multi-source pack). High-priority items come with executable verification steps.</p>
-<p align="center"><a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/ra-register.html"><img src="docs/assets/previews/ra-register.png" alt="codexqa-requirement-analyzer gap register"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/ra-register.html"><img src="docs/assets/previews/ra-register.png" alt="codexqa-requirement-analyzer gap register"></a></p>
 </td>
 </tr>
 <tr>
@@ -92,13 +93,13 @@ Each skill below states **what it verifies**, **what it can do**, then shows an 
 <p><strong><a href="skills/codexqa-testcase-generator/README.md">codexqa-testcase-generator</a></strong></p>
 <p><strong>Verifies</strong> — what a complete test pass should cover for Web / server / APP, without inventing business facts when the PRD is silent.</p>
 <p><strong>Does</strong> — local Markdown plan + cases (unknowns stay TBD) plus an aggregated HTML you can open. No test-management platform.</p>
-<p align="center"><a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/testcase-report.html"><img src="docs/assets/previews/testcase-report.png" alt="codexqa-testcase-generator aggregated HTML case report"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testcase-report.html"><img src="docs/assets/previews/testcase-report.png" alt="codexqa-testcase-generator aggregated HTML case report"></a></p>
 </td>
 <td width="50%" valign="top">
 <p><strong><a href="skills/codexqa-testdata-generator/README.md">codexqa-testdata-generator</a></strong></p>
 <p><strong>Verifies</strong> — whether the preconditions in a case can actually be built on a real backend. A copied fake ID will not pass a real API.</p>
 <p><strong>Does</strong> — constructs data against the backend and writes the returned business IDs back into case preconditions. Success means the backend issued an ID.</p>
-<p align="center"><a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/testdata-writeback.html"><img src="docs/assets/previews/testdata-writeback.png" alt="codexqa-testdata-generator write-back of backend IDs"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testdata-writeback.html"><img src="docs/assets/previews/testdata-writeback.png" alt="codexqa-testdata-generator write-back of backend IDs"></a></p>
 </td>
 </tr>
 </table>

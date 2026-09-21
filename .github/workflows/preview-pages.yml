@@ -1,0 +1,32 @@
+name: Sync HTML previews to gh-pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/assets/previews/**'
+      - '.github/workflows/preview-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish HTML reports
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tmp=$(mktemp -d)
+          cp docs/assets/previews/*.html docs/assets/previews/*.svg "$tmp/"
+          touch "$tmp/.nojekyll"
+          git -C "$tmp" init
+          git -C "$tmp" add -A
+          git -C "$tmp" -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -m "Sync README HTML report previews."
+          git -C "$tmp" push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:gh-pages
