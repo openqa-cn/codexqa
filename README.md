@@ -2,11 +2,11 @@
 
 <a id="readme-en"></a>
 
-# codexqa
+# CodexQA
 
-**Shipping fast is table stakes. CodeXQA runs fully local, installs ready to use, and tells you if the code is good.**
+**Shipping fast is table stakes. CodexQA runs fully local, installs ready to use, and tells you if the code is good.**
 
-After AI coding, the hard part is **verifying quality before you merge**: bugs in what just landed, blast radius on old features, complete test cases, the change knowledge graph (which APIs, methods, and call chains moved), whether architecture broke, security risk, requirement fit, and test data you can actually run. **codexqa** is built for that **test-and-verify stage** — 8 Agent Skills (+ a router), 360° coverage, so you not only write fast, you **see fast whether it is good**, and the development loop actually closes.
+After AI coding, the hard part is **verifying quality before you merge**: bugs in what just landed, blast radius on old features, complete test cases, the change knowledge graph (which APIs, methods, and call chains moved), whether architecture broke, security risk, requirement fit, and test data you can actually run. **CodexQA** is built for that **test-and-verify stage** — 8 Agent Skills (+ a router), 360° coverage, so you not only write fast, you **see fast whether it is good**, and the development loop actually closes.
 
 Cursor · Claude Code · Codex · OpenClaw. Fully local. Install and use — no account, no gateway, no QA-platform move.
 
@@ -212,11 +212,11 @@ Full history: [CHANGELOG.md](CHANGELOG.md) · [Releases](https://github.com/open
 
 <div align="center">
 
-<h1 id="codexqa-zh">codexqa</h1>
+<h1 id="codexqa-zh">CodexQA</h1>
 
-**写得快已经不够。CodeXQA 完全本地执行、开箱安装即用，立刻知道写得好不好。**
+**写得快已经不够。CodexQA 完全本地执行、开箱安装即用，立刻知道写得好不好。**
 
-AI Coding 之后，最大的痛点是**快速验证代码质量**：刚写的代码有没有 bug、会不会打到老功能、完整测试用例怎么建、变更知识图谱打了哪些接口 / 方法 / 调用链、架构有没有被破坏、有没有安全风险、是否满足业务需求、对应测试数据怎么尽快造出来。**codexqa 聚焦代码测试验证阶段**，用多维度 Skill 做 360° 覆盖，让你不但写得快，更能快速感知写得好不好，把开发闭环从「写完」走到「验完」。
+AI Coding 之后，最大的痛点是**快速验证代码质量**：刚写的代码有没有 bug、会不会打到老功能、完整测试用例怎么建、变更知识图谱打了哪些接口 / 方法 / 调用链、架构有没有被破坏、有没有安全风险、是否满足业务需求、对应测试数据怎么尽快造出来。**CodexQA 聚焦代码测试验证阶段**，用多维度 Skill 做 360° 覆盖，让你不但写得快，更能快速感知写得好不好，把开发闭环从「写完」走到「验完」。
 
 Cursor · Claude Code · Codex · OpenClaw。完全本地执行，开箱安装即用；不用账号、不用网关、不用迁 QA 平台。
 

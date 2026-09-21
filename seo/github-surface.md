@@ -20,7 +20,7 @@ Upload `docs/assets/previews/defect-report.png` (or a 1280×640 crop) in Setting
 
 ## README contract
 
-- H1 stays `codexqa`.
+- H1 stays `CodexQA`.
 - The line under H1 is the post-AI-coding verification bottleneck (write fast vs know it is good), **fully local execution**, and **install-and-use**; then the 360° test-and-verify dimensions, then quantified proof before the screenshot.
 - First visual is a skill HTML report screenshot; all eight workers have a preview in `docs/assets/previews/`.
 - Link **Documentation** to [openqa.cn](https://openqa.cn/) (optional `utm_source=github&utm_medium=readme&utm_campaign=oss-seo`) and keep GitHub as source.
