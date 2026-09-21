@@ -8,12 +8,13 @@
 
 codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优先 [Agent Skills](https://agentskills.io/specification) 包。AI 让产出代码更快；codexqa 聚焦那些不会自动变便宜的验证工作：澄清需求、理解变更影响、拿证据审实现、设计用例、准备测试数据。
 
-七个干活的 skill 分别覆盖交付生命周期中的不同工作，另有 [`skill-router`](../skills/skill-router/README.zh-CN.md) 在请求未点名 skill 时做自动选择。每个干活的 skill 都有独立输入契约，Agent 能明确知道这次该读文档、索引本地 checkout、克隆分支、做代码风险扫描、写用例、调用造数后端、诊断异常，还是收集 CodexQA 评审证据包：
+八个干活的 skill 分别覆盖交付生命周期中的不同工作，另有 [`skill-router`](../skills/skill-router/README.zh-CN.md) 在请求未点名 skill 时做自动选择。每个干活的 skill 都有独立输入契约，Agent 能明确知道这次该读文档、索引本地 checkout、做代码风险扫描、写用例、调用造数后端、诊断异常、收集 CodexQA 评审证据包，还是导出架构 Wiki：
 
 | Skill | 用途 |
 | --- | --- |
 | [`skill-router`](../skills/skill-router/README.zh-CN.md) | 发现现场兄弟 + 内置目录；按需安装；交接给匹配 skill |
 | [`code-analyzer`](../skills/code-analyzer/README.zh-CN.md) | 给本地仓库建符号图，再分析变更影响、回归范围、测试缺口、入口和报错 |
+| [`code-wiki`](../skills/code-wiki/README.zh-CN.md) | 给本地仓库建索引，用 `wiki inputs`（不调模型）导出社区 digest，写出架构知识图谱 HTML 报告 |
 | [`root-cause-diagnosis`](../skills/root-cause-diagnosis/README.zh-CN.md) | 在 CodexQA CLI 之上做异常根因诊断；带门禁的英文 RCA 报告 |
 | [`defect-detection`](../skills/defect-detection/README.zh-CN.md) | SAST/lint/secrets/SCA + agent 内联语义扫描 → `report_scan.*`（P0–P3） |
 | [`ai-code-reviewer`](../skills/ai-code-reviewer/README.zh-CN.md) | CodexQA 证据包 → 双语 `REVIEW-REPORT.html` |
@@ -21,7 +22,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 | [`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) | 从本地需求生成测试方案与手工用例（Plan / Exec / Incremental）；双写 Markdown 并生成聚合 HTML 报告 |
 | [`testdata-generation`](../skills/testdata-generation/README.zh-CN.md) | 构造可复用测试数据，回填用例里的 `{placeholder}` |
 
-`npx skills add … --skill <name>` 一次只复制一个目录。按任务安装，彼此不互相替代。不确定时装 `skill-router`——只装路由也可按需拉取干活 skill。`defect-detection` 的检出效果尚未独立 benchmark。`code-analyzer`、`root-cause-diagnosis`、`defect-detection`、`testcase-generation`、`ai-code-reviewer`、`requirements-analyzer` 和 `skill-router` 没有公开的宿主 agent 成绩。
+`npx skills add … --skill <name>` 一次只复制一个目录。按任务安装，彼此不互相替代。不确定时装 `skill-router`——只装路由也可按需拉取干活 skill。`defect-detection` 的检出效果尚未独立 benchmark。`code-analyzer`、`code-wiki`、`root-cause-diagnosis`、`defect-detection`、`testcase-generation`、`ai-code-reviewer`、`requirements-analyzer` 和 `skill-router` 没有公开的宿主 agent 成绩。
 
 报告、用例长什么样：[样例页和截图](../README.zh-CN.md#产物长什么样)。
 
@@ -36,13 +37,14 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 - 不确定用哪个 / 自动路由含糊的 QA 请求 → `skill-router`
 - 对 diff / 仓库 / 粘贴做 SAST 与语义代码风险扫描 → `defect-detection`
 - 在本地仓库追变更符号、调用方、回归范围、测试缺口和可达入口 → `code-analyzer`
+- 画模块地图、真实依赖和阅读路径，不调模型 → `code-wiki`
 - 从堆栈 / 日志 / dump 做异常根因诊断 → `root-cause-diagnosis`
 - CodexQA 图证据包与双语 HTML 评审报告 → `ai-code-reviewer`
 - 审 PRD 本身是否完整、一致 → `requirements-analyzer`
 - 写或更新手工用例库（并可生成聚合 HTML 报告） → `testcase-generation`
 - 构造数据、填用例 `{placeholder}` → `testdata-generation`
 
-只说「审这个 PR」不够选：`code-analyzer` 负责画出变更符号、调用方、入口和测试缺口；`defect-detection` 跑 SAST + agent 语义扫描并产出 `report_scan.*`；`ai-code-reviewer` 收集 CodexQA 证据包并渲染 `REVIEW-REPORT.html`；`root-cause-diagnosis` 需要异常证据做 RCA。一个请求可以串联多个 skill：先用 `code-analyzer` 收敛影响面，再用 `ai-code-reviewer` 做图证据 HTML 评审。先生成用例；占位符只能在 `.md` 落盘后再回填。
+只说「审这个 PR」不够选：`code-wiki` 负责画社区和阅读顺序；`code-analyzer` 负责画出变更符号、调用方、入口和测试缺口；`defect-detection` 跑 SAST + agent 语义扫描并产出 `report_scan.*`；`ai-code-reviewer` 收集 CodexQA 证据包并渲染 `REVIEW-REPORT.html`；`root-cause-diagnosis` 需要异常证据做 RCA。一个请求可以串联多个 skill：先用 `code-wiki` 看地图，再用 `code-analyzer` 收敛影响面，再用 `ai-code-reviewer` 做图证据 HTML 评审。先生成用例；占位符只能在 `.md` 落盘后再回填。
 
 ## 每个 skill 要我交什么？
 
@@ -52,6 +54,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 |---|---|---|
 | `skill-router` | 待路由的请求（可选：同意按需安装）；Python 3.10+ | 干活本身——它只选型，必要时拉取，再跟随其它 skill |
 | `code-analyzer` | 本地仓库；审变更时再给基线 ref | 需求文档或克隆任务。它给磁盘上的现有 checkout 建索引并查询符号图 |
+| `code-wiki` | 已建索引的本地仓库 | 变更集、需求文档或克隆任务。它导出 `wiki inputs` 并写架构报告 |
 | `root-cause-diagnosis` | 异常证据（堆栈 / 日志 / dump），外加 git 地址、本地目录、文件或已打开工作区 | PRD 或 P0/P1/P2 审查请求。它诊断异常，不做需求缺口或图证据 HTML 评审 |
 | `defect-detection` | Diff / 仓库 / 上传 / 粘贴，用于代码风险扫描 | 以异常堆栈为主（用 `root-cause-diagnosis`）或以图证据 HTML 评审为主（用 `ai-code-reviewer`） |
 | `ai-code-reviewer` | 本地 checkout + `codexqa`/`jq`；PR 模式需要 `--diff-base` | 只要结构/影响面问答用 `code-analyzer`；只要 SAST 扫描报告用 `defect-detection` |
@@ -63,13 +66,13 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 
 ## 需要 npm 或 codexqa 账号吗？
 
-不需要。`npx skills add` 只是从 GitHub 获取 skill 文件的社区安装器，本地 provider 也不需要 codexqa 账号。`code-analyzer`、`root-cause-diagnosis` 与 `defect-detection` 还要安装单独分发的 npm 包 `@openqa-cn/codexqa`，但不需要 npm 账号。你的 Agent 和远程 provider 可能各有自己的账号要求。
+不需要。`npx skills add` 只是从 GitHub 获取 skill 文件的社区安装器，本地 provider 也不需要 codexqa 账号。`code-analyzer`、`code-wiki`、`root-cause-diagnosis` 与 `defect-detection` 还要安装单独分发的 npm 包 `@openqa-cn/codexqa`，但不需要 npm 账号。你的 Agent 和远程 provider 可能各有自己的账号要求。
 
-## code-analyzer Skill 和 codexqa CLI 是什么关系？
+## code-analyzer / code-wiki Skill 和 codexqa CLI 是什么关系？
 
-`code-analyzer` 的 Skill、playbook、查询 schema 和示例发布在本仓库中。npm 包 `@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎。Skill 负责告诉 Agent 何时调用引擎、查询哪些图证据，以及如何组织报告。
+`code-analyzer` 和 `code-wiki` 的 Skill、playbook 和示例发布在本仓库中。npm 包 `@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎。Skill 负责告诉 Agent 何时调用引擎、查询哪些图证据，以及如何组织报告。
 
-建索引和图查询在用户机器上完成，不需要 LLM；索引和会话写在 `~/.codexqa/`。本仓库 CI 不安装或执行该引擎，当前验证状态见 [`code-analyzer` 已知边界](../skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)和[支持矩阵](SUPPORT_MATRIX.zh-CN.md)。
+建索引、图查询和 `wiki inputs` 在用户机器上完成，不需要 LLM；索引和会话写在 `~/.codexqa/`。本仓库 CI 不安装或执行该引擎，当前验证状态见 [`code-analyzer` 已知边界](../skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)、[`code-wiki` 已知边界](../skills/code-wiki/KNOWN_LIMITATIONS.zh-CN.md)和[支持矩阵](SUPPORT_MATRIX.zh-CN.md)。
 
 ## 安装后会自动跑工作流吗？
 
@@ -85,7 +88,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 
 `defect-detection` 把报告写到 `-o` 目录（默认 `/tmp/aid_report/`），可选反馈写在 skill 的 `data/` 下。见其 [README](../skills/defect-detection/README.zh-CN.md)。运行数据和私有配置不要进版本库，升级前先备份。
 
-`testcase-generation` 写到 `run_dir`（默认 `$HOME/testdata-generation/runs/{runid}`，或你指定的路径）：`testcase/testdocs/`、`testdesign/`（含 `test_design.md` 与 `testcase_generation_report.html`）、`testcase/initialcase/`、`testcase/cases/`。`testdata-generation` 写到工作区 `testdata/`（见该 skill 的 [README](../skills/testdata-generation/README.zh-CN.md)）。`code-analyzer` 的本地索引写到 `~/.codexqa/`；建索引和图查询不需要 LLM。`root-cause-diagnosis` 的任务数据写在 skill 的 `data/` 目录，并同样使用 CodexQA CLI 索引。`ai-code-reviewer` 把证据包写到工作目录（如 `.codexqa-review/`）并渲染 `REVIEW-REPORT.html`。
+`testcase-generation` 写到 `run_dir`（默认 `$HOME/testdata-generation/runs/{runid}`，或你指定的路径）：`testcase/testdocs/`、`testdesign/`（含 `test_design.md` 与 `testcase_generation_report.html`）、`testcase/initialcase/`、`testcase/cases/`。`testdata-generation` 写到工作区 `testdata/`（见该 skill 的 [README](../skills/testdata-generation/README.zh-CN.md)）。`code-analyzer` 和 `code-wiki` 的本地索引写到 `~/.codexqa/`；建索引、图查询和 `wiki inputs` 不需要 LLM。`code-wiki` 还会在工作目录写一份自包含 HTML 报告。`root-cause-diagnosis` 的任务数据写在 skill 的 `data/` 目录，并同样使用 CodexQA CLI 索引。`ai-code-reviewer` 把证据包写到工作目录（如 `.codexqa-review/`）并渲染 `REVIEW-REPORT.html`。
 
 ## defect-detection 能替代测试或静态分析吗？
 

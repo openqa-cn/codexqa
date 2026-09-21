@@ -41,6 +41,11 @@
       "name": "skill-router",
       "path": "skills/skill-router",
       "status": "available"
+    },
+    {
+      "name": "code-wiki",
+      "path": "skills/code-wiki",
+      "status": "available"
     }
   ]
 }

@@ -3,10 +3,11 @@ name: code-analyzer
 description: >
   Queries a local CodexQA symbol graph for change review, regression scope,
   test gaps, error location, and entry risk. Use when the user mentions
-  code-analyzer, codexqa, 符号图, 代码知识图谱, 建索引, 查调用, 影响面,
+  code-analyzer, codexqa, 符号图, 建索引, 查调用, 影响面,
   --diff-base, 变更审查, 回归范围, 测试缺口, or asks to install / run the
   codexqa CLI (index, query). Not CodexQA evidence-pack HTML review (that is ai-code-reviewer), not SAST+agent code-risk scan reports (that is defect-detection),
-  and not full exception RCA reports (that is root-cause-diagnosis).
+  not full exception RCA reports (that is root-cause-diagnosis),
+  and not an architecture wiki / module map / reading guide (that is code-wiki).
 license: Apache-2.0
 compatibility: >
   Requires Node.js >= 18 and the `codexqa` CLI
