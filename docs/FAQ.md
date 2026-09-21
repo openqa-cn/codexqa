@@ -12,7 +12,7 @@ The seven worker skills cover different parts of the delivery lifecycle, plus [`
 
 | Skill | Role |
 | --- | --- |
-| [`skill-router`](../skills/skill-router/README.md) | Discover live sibling skills and hand off to the best match (new skills auto-routable via `SKILL.md`) |
+| [`skill-router`](../skills/skill-router/README.md) | Discover live siblings + bundled catalog; on-demand install; hand off to the matched skill |
 | [`code-analyzer`](../skills/code-analyzer/README.md) | Index a local repository, then trace change impact, regression scope, test gaps, entries, and errors through its symbol graph |
 | [`root-cause-diagnosis`](../skills/root-cause-diagnosis/README.md) | Exception RCA from stacks/logs on top of the CodexQA CLI; gated English root-cause report |
 | [`defect-detection`](../skills/defect-detection/README.md) | SAST/lint/secrets/SCA + agent-inline semantic scan → `report_scan.*` (P0–P3) |
@@ -21,7 +21,7 @@ The seven worker skills cover different parts of the delivery lifecycle, plus [`
 | [`testcase-generation`](../skills/testcase-generation/README.md) | Generate test plans and manual cases (Plan / Exec / Incremental) from local requirements; dual-write Markdown plus aggregated HTML report |
 | [`testdata-generation`](../skills/testdata-generation/README.md) | Construct reusable test data and backfill `{placeholder}`s in those cases |
 
-`npx skills add … --skill <name>` copies one directory. Install the skill you need; they do not replace each other. Detection accuracy for `defect-detection` has not been independently benchmarked. `code-analyzer`, `root-cause-diagnosis`, `defect-detection`, `testcase-generation`, `ai-code-reviewer`, and `requirements-analyzer` have no published host-agent score.
+`npx skills add … --skill <name>` copies one directory. Install the skill you need; they do not replace each other. Prefer `skill-router` when unsure — a solo router install can fetch workers on demand. Detection accuracy for `defect-detection` has not been independently benchmarked. `code-analyzer`, `root-cause-diagnosis`, `defect-detection`, `testcase-generation`, `ai-code-reviewer`, `requirements-analyzer`, and `skill-router` have no published host-agent score.
 
 What a finished report or case looks like: [sample pages and screenshots](../README.md#what-the-output-looks-like).
 
@@ -50,6 +50,7 @@ They do not share one input. Two skills take Git, but not the same way:
 
 | Skill | You bring | Not used as input |
 |---|---|---|
+| `skill-router` | A request to route (optionally consent to on-demand install); Python 3.10+ | Doing the worker task itself — it only selects, may fetch, then follows another skill |
 | `code-analyzer` | A local repository; for change review, the baseline ref | Requirements or a clone task. It indexes the checkout already on disk and queries its symbol graph |
 | `root-cause-diagnosis` | Exception evidence (stack / log / dump) plus git URL, local dir, file, or open workspace | A PRD or P0/P1/P2 review request. It diagnoses exceptions, not requirement gaps or graph-evidence HTML review |
 | `defect-detection` | Diff / repo / upload / paste for a code-risk scan | Exception stacks as the primary goal (use `root-cause-diagnosis`) or graph-evidence HTML review (use `ai-code-reviewer`) |
@@ -72,7 +73,7 @@ Indexing and graph queries run on the user's machine and do not require an LLM. 
 
 ## Does installing a skill run the workflow?
 
-No. Installation makes the files available to the agent. You still start a session and give it a clone URL, a local checkout, a PRD, or a data-construction request. Scripts store and validate artifacts; they do not supply a model.
+No. Installation makes the files available to the agent. You still start a session and give it a clone URL, a local checkout, a PRD, or a data-construction request. Scripts store and validate artifacts; they do not supply a model. Exception: [`skill-router`](../skills/skill-router/README.md) may **fetch** another skill's files on demand (after consent) and then follow that skill — it still does not run a worker workflow by itself.
 
 ## Does code stay on my machine?
 

@@ -8,7 +8,7 @@
 
 ## 已发布的 skill
 
-- [`skill-router`](skill-router/README.zh-CN.md)：从现场 `SKILL.md` 目录发现兄弟 skill 并交接给最匹配者（新 skill 也可自动路由）。本身不干活——只选择并跟随其它 skill。[工作原理](skill-router/HOW_IT_WORKS.zh-CN.md)。
+- [`skill-router`](skill-router/README.zh-CN.md)：对照现场兄弟与内置 catalog 匹配，必要时按需安装到路由旁边并交接。本身不干活——只选择、可拉取、再跟随其它 skill。[工作原理](skill-router/HOW_IT_WORKS.zh-CN.md)。
 - [`defect-detection`](defect-detection/README.zh-CN.md)：SAST/lint/secrets/SCA + agent 内联语义扫描 → `report_scan.*`（P0–P3）。不是图证据审查（`ai-code-reviewer`），不是结构/影响面（`code-analyzer`），也不是异常 RCA（`root-cause-diagnosis`）。[工作原理](defect-detection/HOW_IT_WORKS.zh-CN.md)。
 - [`testcase-generation`](testcase-generation/README.zh-CN.md)：对话驱动的测试方案与手工用例（Plan 0–5、Exec 6、Incremental），输入本地需求 / HTTPS 文档，产物为本地 Markdown，并生成聚合 HTML 报告（`testcase_generation_report.html`）。真实后端造数交给 `testdata-generation`。[工作原理](testcase-generation/HOW_IT_WORKS.zh-CN.md)。
 - [`testdata-generation`](testdata-generation/README.zh-CN.md)：用 domain slot、工具、API 和生成脚本构造可复用测试数据，并把值回写成用例前置条件。[工作原理](testdata-generation/HOW_IT_WORKS.zh-CN.md)。

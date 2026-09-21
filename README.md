@@ -2,7 +2,7 @@
 
 # codexqa
 
-**Seven local-first Agent Skills for requirements, test design, test data, change impact, exception RCA, code-risk scan, and graph-evidence review.**
+**Eight local-first Agent Skills: seven verification workflows plus `skill-router` for auto-selection — covering requirements, test design, test data, change impact, exception RCA, code-risk scan, and graph-evidence review.**
 
 [![CI](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml)
 [![Release](https://img.shields.io/github/v/tag/openqa-cn/codexqa?label=release&style=flat)](https://github.com/openqa-cn/codexqa/releases)
@@ -27,16 +27,16 @@
 </p>
 
 <p align="center">
-  <sub><em>Coding agents write the change. codexqa makes the intent, impact, review evidence, cases, and test data checkable.<br>(Above: one of seven outputs, a defect-detection sample page with canned findings.)</em></sub>
+  <sub><em>Coding agents write the change. codexqa makes the intent, impact, review evidence, cases, and test data checkable.<br>(Above: one sample among the verification outputs — a defect-detection page with canned findings.)</em></sub>
 </p>
 
 ---
 
-AI can produce a green pull request quickly. Teams still have to check whether the implementation matches the requirement, identify affected callers and entries, review the evidence, and prepare runnable tests. codexqa splits that verification work into seven Agent Skills.
+AI can produce a green pull request quickly. Teams still have to check whether the implementation matches the requirement, identify affected callers and entries, review the evidence, and prepare runnable tests. codexqa splits that verification work into seven Agent Skills, plus [`skill-router`](skills/skill-router/README.md) when the request does not name which skill to run.
 
 `codexqa` is a public, local-first [Agent Skills](https://agentskills.io/specification) pack for [Cursor](https://cursor.com), [Claude Code](https://claude.com/claude-code), [Codex](https://openai.com/codex), and OpenClaw. Install only the workflow you need with `npx skills add`; there is no codexqa account, gateway, or platform migration.
 
-## How the seven skills fit together
+## How the skills fit together
 
 | Stage | Skill | Question it answers | Checkable output |
 | --- | --- | --- | --- |
@@ -47,9 +47,9 @@ AI can produce a green pull request quickly. Teams still have to check whether t
 | Exception RCA | [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.md) | What is the in-repo root cause of this stack / log / crash? | Gated English root-cause report on top of CodexQA CLI facts |
 | Code-risk scan | [`defect-detection`](skills/defect-detection/README.md) | What SAST / secrets / logic risks are in this diff, repo, or paste? | `report_scan.json` / `.md` / `.html` findings ordered P0–P3 |
 | Graph-evidence review | [`ai-code-reviewer`](skills/ai-code-reviewer/README.md) | What does the CodexQA pack say about impact, gaps, and dimension risks? | Evidence pack + bilingual `REVIEW-REPORT.html` |
-| Skill selection (meta) | [`skill-router`](skills/skill-router/README.md) | Which published skill should handle this request? | Live catalog match → hand-off to that skill's `SKILL.md` |
+| Skill selection (meta) | [`skill-router`](skills/skill-router/README.md) | Which published skill should handle this request? | Bundled/live catalog match → on-demand install if needed → hand-off to that skill's `SKILL.md` |
 
-The skills use different inputs by design. The Agent can tell whether it should read documents, index a local checkout, clone a branch, write cases, or call a data backend. When the request does not name a skill, start with [`skill-router`](skills/skill-router/README.md) — it discovers every sibling with `SKILL.md` (including newly added ones) and hands off.
+The skills use different inputs by design. The Agent can tell whether it should read documents, index a local checkout, clone a branch, write cases, or call a data backend. When the request does not name a skill, start with [`skill-router`](skills/skill-router/README.md) — it matches against live siblings plus a bundled catalog, can fetch the winner beside the router, and hands off.
 
 ## Why codexqa?
 
@@ -58,6 +58,7 @@ The skills use different inputs by design. The Agent can tell whether it should 
 - `root-cause-diagnosis` turns exception evidence into a gated English RCA report on top of the same CodexQA CLI.
 - `ai-code-reviewer` collects a CodexQA evidence pack and renders bilingual `REVIEW-REPORT.html` from pack artifacts only.
 - The document and test skills keep requirement review, case design, and data construction separate instead of asking one prompt to do everything.
+- [`skill-router`](skills/skill-router/README.md) auto-selects a worker from a bundled/live catalog and can install it on demand when only the router is present.
 - Each skill has a narrow input contract, evidence format, and stop conditions. The skills install into the Agent you already use; findings remain candidates for human review.
 
 ## Choose the right code workflow
@@ -71,21 +72,23 @@ The four code-facing skills overlap on the same repository but answer different 
 | [`defect-detection`](skills/defect-detection/README.md) | What code-risk / security / logic findings belong in a scan report? | Diff / repo / upload / paste | Graph-evidence CR, structure/impact Q&A, or exception RCA |
 | [`ai-code-reviewer`](skills/ai-code-reviewer/README.md) | What does a CodexQA evidence pack imply for this change / repo? | Local checkout + collect scripts (`--diff-base` / full / adhoc) | SAST scan reports or structure/impact Q&A alone |
 
-Detailed workflow and boundary documents live with each skill: [code-analyzer](skills/code-analyzer/README.md) ([limitations](skills/code-analyzer/KNOWN_LIMITATIONS.md)), [root-cause-diagnosis](skills/root-cause-diagnosis/HOW_IT_WORKS.md), [defect-detection](skills/defect-detection/HOW_IT_WORKS.md), [ai-code-reviewer](skills/ai-code-reviewer/HOW_IT_WORKS.md), [requirements-analyzer](skills/requirements-analyzer/HOW_IT_WORKS.md), [testcase-generation](skills/testcase-generation/HOW_IT_WORKS.md), and [testdata-generation](skills/testdata-generation/HOW_IT_WORKS.md). Host, language, and verification status are tracked in the [support matrix](docs/SUPPORT_MATRIX.md).
+Detailed workflow and boundary documents live with each skill: [skill-router](skills/skill-router/HOW_IT_WORKS.md), [code-analyzer](skills/code-analyzer/README.md) ([limitations](skills/code-analyzer/KNOWN_LIMITATIONS.md)), [root-cause-diagnosis](skills/root-cause-diagnosis/HOW_IT_WORKS.md), [defect-detection](skills/defect-detection/HOW_IT_WORKS.md), [ai-code-reviewer](skills/ai-code-reviewer/HOW_IT_WORKS.md), [requirements-analyzer](skills/requirements-analyzer/HOW_IT_WORKS.md), [testcase-generation](skills/testcase-generation/HOW_IT_WORKS.md), and [testdata-generation](skills/testdata-generation/HOW_IT_WORKS.md). Host, language, and verification status are tracked in the [support matrix](docs/SUPPORT_MATRIX.md).
 
 ## Install on Cursor, Claude Code, and Codex
 
-Check the basic tools first. `code-analyzer` requires Node.js 18+; `defect-detection` requires Python 3.10+ (3.11 recommended) and optionally the CodexQA CLI; `testcase-generation` requires Python 3.10+ (use that skill's `scripts/tcg-python`).
+Check the basic tools first. `code-analyzer` requires Node.js 18+; `defect-detection` requires Python 3.10+ (3.11 recommended) and optionally the CodexQA CLI; `testcase-generation` requires Python 3.10+ (use that skill's `scripts/tcg-python`); `skill-router` requires Python 3.10+ for discover/ensure (network for on-demand install).
 
 ```bash
 node --version
 npx --version
 git --version
+python3 --version   # 3.10+ for skill-router / defect-detection / testcase-generation
 ```
 
 Install only the skill needed for the current task:
 
 ```bash
+npx skills add openqa-cn/codexqa --skill skill-router
 npx skills add openqa-cn/codexqa --skill code-analyzer
 npx skills add openqa-cn/codexqa --skill root-cause-diagnosis
 npx skills add openqa-cn/codexqa --skill defect-detection
@@ -161,6 +164,12 @@ Provide the exception text or file plus a git URL, local directory, single file,
 <details>
 <summary><b>What to say to the other skills</b></summary>
 
+**Auto-route (`skill-router`)** — when you do not know which skill to use; can install only the router and fetch workers on demand.
+
+```text
+I am not sure which skill to use. Route this: review the repo against origin/main and produce an openable bilingual HTML review report, not a vuln scan list.
+```
+
 **Graph-evidence review (`ai-code-reviewer`)** — open the repository in the agent; requires `codexqa` + `jq` on PATH.
 
 ```text
@@ -224,6 +233,7 @@ The workflows do not have the same public evidence maturity:
 
 | Skill | Public evidence today |
 | --- | --- |
+| `skill-router` | `discover_skills.py --self-check` / `--with-catalog`; `ensure_skill.py --dry-run` / `--from-repo`; routing choice is model-judged; no published host-agent score |
 | `code-analyzer` | Published Skill contract, schemas, playbook, example diagram, and limitations; the separately distributed closed-source engine is not run by this repository's CI |
 | `root-cause-diagnosis` | Local CLI tests (parse, materialize, draft, smoke); uses `@openqa-cn/codexqa`; no published host-agent score; RCA narrative is model-judged |
 | `defect-detection` | Local Python pipeline/policy-fixture tests; optional SAST + closed-source CodexQA CLI; no published host-agent score; Stage1/Stage2 are model-judged |
@@ -246,9 +256,10 @@ export NODE_OPTIONS=--experimental-strip-types
 (cd skills/defect-detection && npm test)
 node examples/checkout-boundary/verify.mjs
 (cd skills/testcase-generation && ./scripts/tcg-python scripts/close_stage.py --self-check && ./scripts/tcg-python scripts/check_run_gate.py --self-check && ./scripts/tcg-python scripts/generate_case_report.py --self-check)
+python3 skills/skill-router/scripts/discover_skills.py --self-check
 ```
 
-These checks cover documentation links, translation section parity, `defect-detection` Python pipeline/policy fixtures, packaging, the bundled boundary fixtures, and `testcase-generation` offline gate/report smoke. They do not execute a full live agent Stage1/Stage2 scan or the separately distributed `code-analyzer` / `root-cause-diagnosis` engine path, and they do not prove that every defect will be found.
+These checks cover documentation links, translation section parity, `defect-detection` Python pipeline/policy fixtures, packaging, the bundled boundary fixtures, `testcase-generation` offline gate/report smoke, and `skill-router` catalog self-check. They do not execute a full live agent Stage1/Stage2 scan or the separately distributed `code-analyzer` / `root-cause-diagnosis` engine path, and they do not prove that every defect will be found.
 
 ## Documentation
 

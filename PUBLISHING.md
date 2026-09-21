@@ -5,19 +5,21 @@ Skills are distributed from this GitHub repository through `npx skills add`. Pub
 ## Before pushing
 
 1. Match each skill directory to its `SKILL.md` name and `skills.json` entry.
-2. Include user documentation, requirements, examples, and limitations.
-3. Run from the repository root:
+2. If you added or changed a worker skill's frontmatter `description`, run `python3 skills/skill-router/scripts/refresh_catalog.py` and commit `skills/skill-router/references/catalog.json`.
+3. Include user documentation, requirements, examples, and limitations.
+4. Run from the repository root:
 
 ```bash
 python3 scripts/check-docs.py
 export NODE_OPTIONS=--experimental-strip-types
 (cd skills/defect-detection && npm test)
 node examples/checkout-boundary/verify.mjs
+python3 skills/skill-router/scripts/discover_skills.py --self-check
 npx skills add . --list
 ```
 
-4. Review the actual proposed file list for runtime data, private configuration, credentials, and inappropriate metadata. Ignore rules do not remove already tracked files.
-5. Update the changelog, support evidence, and release checklist. Obtain human maintainer review as required by this repository.
+5. Review the actual proposed file list for runtime data, private configuration, credentials, and inappropriate metadata. Ignore rules do not remove already tracked files.
+6. Update the changelog, support evidence, and release checklist. Obtain human maintainer review as required by this repository.
 
 ## After pushing
 

@@ -12,7 +12,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 
 | Skill | 用途 |
 | --- | --- |
-| [`skill-router`](../skills/skill-router/README.zh-CN.md) | 发现现场兄弟 skill 并交接给最匹配者（新 skill 凭 `SKILL.md` 即可自动路由） |
+| [`skill-router`](../skills/skill-router/README.zh-CN.md) | 发现现场兄弟 + 内置目录；按需安装；交接给匹配 skill |
 | [`code-analyzer`](../skills/code-analyzer/README.zh-CN.md) | 给本地仓库建符号图，再分析变更影响、回归范围、测试缺口、入口和报错 |
 | [`root-cause-diagnosis`](../skills/root-cause-diagnosis/README.zh-CN.md) | 在 CodexQA CLI 之上做异常根因诊断；带门禁的英文 RCA 报告 |
 | [`defect-detection`](../skills/defect-detection/README.zh-CN.md) | SAST/lint/secrets/SCA + agent 内联语义扫描 → `report_scan.*`（P0–P3） |
@@ -21,7 +21,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 | [`testcase-generation`](../skills/testcase-generation/README.zh-CN.md) | 从本地需求生成测试方案与手工用例（Plan / Exec / Incremental）；双写 Markdown 并生成聚合 HTML 报告 |
 | [`testdata-generation`](../skills/testdata-generation/README.zh-CN.md) | 构造可复用测试数据，回填用例里的 `{placeholder}` |
 
-`npx skills add … --skill <name>` 一次只复制一个目录。按任务安装，彼此不互相替代。`defect-detection` 的检出效果尚未独立 benchmark。`code-analyzer`、`root-cause-diagnosis`、`defect-detection`、`testcase-generation`、`ai-code-reviewer` 和 `requirements-analyzer` 没有公开的宿主 agent 成绩。
+`npx skills add … --skill <name>` 一次只复制一个目录。按任务安装，彼此不互相替代。不确定时装 `skill-router`——只装路由也可按需拉取干活 skill。`defect-detection` 的检出效果尚未独立 benchmark。`code-analyzer`、`root-cause-diagnosis`、`defect-detection`、`testcase-generation`、`ai-code-reviewer`、`requirements-analyzer` 和 `skill-router` 没有公开的宿主 agent 成绩。
 
 报告、用例长什么样：[样例页和截图](../README.zh-CN.md#产物长什么样)。
 
@@ -50,6 +50,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 
 | Skill | 你要带上的 | 不会当输入用的 |
 |---|---|---|
+| `skill-router` | 待路由的请求（可选：同意按需安装）；Python 3.10+ | 干活本身——它只选型，必要时拉取，再跟随其它 skill |
 | `code-analyzer` | 本地仓库；审变更时再给基线 ref | 需求文档或克隆任务。它给磁盘上的现有 checkout 建索引并查询符号图 |
 | `root-cause-diagnosis` | 异常证据（堆栈 / 日志 / dump），外加 git 地址、本地目录、文件或已打开工作区 | PRD 或 P0/P1/P2 审查请求。它诊断异常，不做需求缺口或图证据 HTML 评审 |
 | `defect-detection` | Diff / 仓库 / 上传 / 粘贴，用于代码风险扫描 | 以异常堆栈为主（用 `root-cause-diagnosis`）或以图证据 HTML 评审为主（用 `ai-code-reviewer`） |
@@ -72,7 +73,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 
 ## 安装后会自动跑工作流吗？
 
-不会。安装只让 Agent 能读到文件。还需要新建会话，并给出克隆地址、本地工作副本、PRD 或数据构造请求。脚本负责落盘和校验，不提供模型。
+不会。安装只让 Agent 能读到文件。还需要新建会话，并给出克隆地址、本地工作副本、PRD 或数据构造请求。脚本负责落盘和校验，不提供模型。例外：[`skill-router`](../skills/skill-router/README.zh-CN.md) 可在征得同意后**按需拉取**其它 skill 的文件并跟随执行——它本身仍不替代干活 skill。
 
 ## 代码会离开本机吗？
 

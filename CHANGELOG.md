@@ -3,6 +3,7 @@
 Each release has two sections. **Highlights** is what changes for someone using the skills. **Internal** is the full engineering record — refactors, test changes, and fixes with no user-visible effect. If you are upgrading, Highlights is enough.
 
 ## Unreleased
+- Docs: listed `skill-router` across root README, FAQ, Getting Started, HOW_IT_WORKS index, ROADMAP, ARCHITECTURE, CONTRIBUTING, and PUBLISHING (EN/zh), including install commands, evidence rows, and catalog-refresh release steps.
 - Added `skill-router` v1.1: bundled `references/catalog.json` + `ensure_skill.py` so a solo router install can match workers and fetch them on demand before hand-off; `discover_skills.py --with-catalog` merges live siblings with the catalog.
 - Added `skill-router`: live discovery of sibling skills via `scripts/discover_skills.py`, semantic hand-off to the matched skill; new skills with `SKILL.md` are auto-routable without editing the router.
 - Replaced `testcase-generation` with the V56 Plan/Exec/Incremental skill from `resource/ai-testcase-generation` (Python stage gates, local Markdown only; removed the prior Node integrations / `generation/` playbook).

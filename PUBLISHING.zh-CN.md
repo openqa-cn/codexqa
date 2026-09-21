@@ -7,19 +7,21 @@ Skill 从本 GitHub 仓库通过 `npx skills add` 分发，无需发布 codexqa 
 ## 推送前
 
 1. 确认每个 Skill 目录名与 `SKILL.md` 中的 `name` 和 `skills.json` 注册项一致。
-2. 提供面向用户的说明、运行要求、示例和局限性。
-3. 在仓库根目录运行：
+2. 若新增或修改了干活 skill 的 frontmatter `description`，运行 `python3 skills/skill-router/scripts/refresh_catalog.py` 并提交 `skills/skill-router/references/catalog.json`。
+3. 提供面向用户的说明、运行要求、示例和局限性。
+4. 在仓库根目录运行：
 
 ```bash
 python3 scripts/check-docs.py
 export NODE_OPTIONS=--experimental-strip-types
 (cd skills/defect-detection && npm test)
 node examples/checkout-boundary/verify.mjs
+python3 skills/skill-router/scripts/discover_skills.py --self-check
 npx skills add . --list
 ```
 
-4. 检查实际待提交文件，排除运行数据、私有配置、凭据和不应发布的元数据。忽略规则不会自动移除已被 Git 跟踪的文件。
-5. 更新 CHANGELOG、支持状态和发布检查清单，并按仓库要求完成人工审核。
+5. 检查实际待提交文件，排除运行数据、私有配置、凭据和不应发布的元数据。忽略规则不会自动移除已被 Git 跟踪的文件。
+6. 更新 CHANGELOG、支持状态和发布检查清单，并按仓库要求完成人工审核。
 
 ## 推送后
 

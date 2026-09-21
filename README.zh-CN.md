@@ -2,7 +2,7 @@
 
 # codexqa
 
-**七个本地优先的 Agent Skills，覆盖需求、测试设计、测试数据、变更影响、异常根因、代码风险扫描和图证据审查。**
+**八个本地优先的 Agent Skills：七个验证工作流，外加用于自动选型的 `skill-router`——覆盖需求、测试设计、测试数据、变更影响、异常根因、代码风险扫描和图证据审查。**
 
 [![CI](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml/badge.svg)](https://github.com/openqa-cn/codexqa/actions/workflows/repo-check.yml)
 [![Release](https://img.shields.io/github/v/tag/openqa-cn/codexqa?label=release&style=flat)](https://github.com/openqa-cn/codexqa/releases)
@@ -27,16 +27,16 @@
 </p>
 
 <p align="center">
-  <sub><em>Coding Agent 负责写出变更；codexqa 让意图、影响面、审查证据、用例和测试数据都能核查。<br>（上图是七类产物之一：使用同一渲染器和预置发现项的 defect-detection 样例页。）</em></sub>
+  <sub><em>Coding Agent 负责写出变更；codexqa 让意图、影响面、审查证据、用例和测试数据都能核查。<br>（上图是验证类产物样例之一：使用同一渲染器和预置发现项的 defect-detection 样例页。）</em></sub>
 </p>
 
 ---
 
-AI 能很快产出一个绿 PR，但需求是否对齐、影响了谁、审查证据是否够、测试能否运行，仍然需要逐项确认。codexqa 把这些验证工作拆成七个 Agent Skills。
+AI 能很快产出一个绿 PR，但需求是否对齐、影响了谁、审查证据是否够、测试能否运行，仍然需要逐项确认。codexqa 把这些验证工作拆成七个 Agent Skills；请求未点名 skill 时再用 [`skill-router`](skills/skill-router/README.zh-CN.md)。
 
 `codexqa` 是面向 [Cursor](https://cursor.com)、[Claude Code](https://claude.com/claude-code)、[Codex](https://openai.com/codex) 和 OpenClaw 的公开、本地优先 [Agent Skills](https://agentskills.io/specification) 包。用 `npx skills add` 只安装当前任务需要的工作流；不用 codexqa 账号、网关，也不用迁移现有平台。
 
-## 七个 skill 如何配合
+## 各 skill 如何配合
 
 | 阶段 | Skill | 它回答什么问题 | 可核查产物 |
 | --- | --- | --- | --- |
@@ -47,9 +47,9 @@ AI 能很快产出一个绿 PR，但需求是否对齐、影响了谁、审查�
 | 异常根因 | [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.zh-CN.md) | 这条堆栈 / 日志 / 崩溃的仓内根因是什么？ | 基于 CodexQA CLI facts 的带门禁英文 RCA 报告 |
 | 代码风险扫描 | [`defect-detection`](skills/defect-detection/README.zh-CN.md) | 这个 diff / 仓库 / 粘贴里有哪些 SAST / 密钥 / 逻辑风险？ | 按 P0–P3 排序的 `report_scan.json` / `.md` / `.html` |
 | 图证据审查 | [`ai-code-reviewer`](skills/ai-code-reviewer/README.zh-CN.md) | CodexQA 证据包对影响面、缺口和维度风险怎么说？ | 证据包 + 双语 `REVIEW-REPORT.html` |
-| Skill 选择（元） | [`skill-router`](skills/skill-router/README.zh-CN.md) | 这次请求该交给哪个已发布 skill？ | 现场目录匹配 → 交接给该 skill 的 `SKILL.md` |
+| Skill 选择（元） | [`skill-router`](skills/skill-router/README.zh-CN.md) | 这次请求该交给哪个已发布 skill？ | 内置/现场目录匹配 → 按需安装（如需要）→ 交接给该 skill 的 `SKILL.md` |
 
-这些 Skill 的输入不同，这是设计选择。Agent 能明确判断这次该读文档、索引本地 checkout、克隆分支、写用例，还是调用造数后端。请求未点名 skill 时，先走 [`skill-router`](skills/skill-router/README.zh-CN.md)——它会发现每个带 `SKILL.md` 的兄弟目录（含后续新增），并完成交接。
+这些 Skill 的输入不同，这是设计选择。Agent 能明确判断这次该读文档、索引本地 checkout、克隆分支、写用例，还是调用造数后端。请求未点名 skill 时，先走 [`skill-router`](skills/skill-router/README.zh-CN.md)——它对照现场兄弟与内置 catalog 匹配，必要时把胜出 skill 拉到路由旁边再交接。
 
 ## 为什么用 codexqa？
 
@@ -58,6 +58,7 @@ AI 能很快产出一个绿 PR，但需求是否对齐、影响了谁、审查�
 - `root-cause-diagnosis` 在同一套 CodexQA CLI 之上，把异常证据变成带门禁的英文 RCA 报告。
 - `ai-code-reviewer` 收集 CodexQA 证据包，并只依据包产物渲染双语 `REVIEW-REPORT.html`。
 - 文档与测试类 Skill 把需求评审、用例设计和测试数据构造分开，不让一次 prompt 包办所有事情。
+- [`skill-router`](skills/skill-router/README.zh-CN.md) 用内置/现场目录自动选型，只装路由时也可按需安装干活 skill。
 - 每个 Skill 都有明确的输入契约、证据格式和停点。它们装进你已经在用的 Agent，发现项仍然交给人确认。
 
 ## 选对代码工作流
@@ -71,21 +72,23 @@ AI 能很快产出一个绿 PR，但需求是否对齐、影响了谁、审查�
 | [`defect-detection`](skills/defect-detection/README.zh-CN.md) | 哪些代码风险 / 安全 / 逻辑发现该进扫描报告？ | Diff / 仓库 / 上传 / 粘贴 | 图证据 CR、结构/影响面问答或异常 RCA |
 | [`ai-code-reviewer`](skills/ai-code-reviewer/README.zh-CN.md) | CodexQA 证据包对这次变更 / 仓库意味着什么？ | 本地 checkout + 收集脚本（`--diff-base` / 全仓 / adhoc） | SAST 扫描报告或单独的结构/影响面问答 |
 
-各 Skill 的详细工作流和边界放在各自目录中：[代码分析](skills/code-analyzer/README.zh-CN.md)（[已知边界](skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)）、[异常根因](skills/root-cause-diagnosis/HOW_IT_WORKS.zh-CN.md)、[代码风险扫描](skills/defect-detection/HOW_IT_WORKS.zh-CN.md)、[图证据审查](skills/ai-code-reviewer/HOW_IT_WORKS.zh-CN.md)、[需求分析](skills/requirements-analyzer/HOW_IT_WORKS.zh-CN.md)、[用例生成](skills/testcase-generation/HOW_IT_WORKS.zh-CN.md)和[数据构造](skills/testdata-generation/HOW_IT_WORKS.zh-CN.md)。宿主、语言和验证状态统一见[支持矩阵](docs/SUPPORT_MATRIX.zh-CN.md)。
+各 Skill 的详细工作流和边界放在各自目录中：[skill-router](skills/skill-router/HOW_IT_WORKS.zh-CN.md)、[代码分析](skills/code-analyzer/README.zh-CN.md)（[已知边界](skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)）、[异常根因](skills/root-cause-diagnosis/HOW_IT_WORKS.zh-CN.md)、[代码风险扫描](skills/defect-detection/HOW_IT_WORKS.zh-CN.md)、[图证据审查](skills/ai-code-reviewer/HOW_IT_WORKS.zh-CN.md)、[需求分析](skills/requirements-analyzer/HOW_IT_WORKS.zh-CN.md)、[用例生成](skills/testcase-generation/HOW_IT_WORKS.zh-CN.md)和[数据构造](skills/testdata-generation/HOW_IT_WORKS.zh-CN.md)。宿主、语言和验证状态统一见[支持矩阵](docs/SUPPORT_MATRIX.zh-CN.md)。
 
 ## 在 Cursor、Claude Code、Codex 上安装
 
-先检查基础工具。`code-analyzer` 要求 Node.js 18+；`defect-detection` 要求 Python 3.10+（推荐 3.11），实图可选 CodexQA CLI；`testcase-generation` 要求 Python 3.10+（用该 skill 的 `scripts/tcg-python`）。
+先检查基础工具。`code-analyzer` 要求 Node.js 18+；`defect-detection` 要求 Python 3.10+（推荐 3.11），实图可选 CodexQA CLI；`testcase-generation` 要求 Python 3.10+（用该 skill 的 `scripts/tcg-python`）；`skill-router` 的发现/按需安装需要 Python 3.10+（按需安装需网络）。
 
 ```bash
 node --version
 npx --version
 git --version
+python3 --version   # 3.10+：skill-router / defect-detection / testcase-generation
 ```
 
 只安装当前任务需要的那个 skill：
 
 ```bash
+npx skills add openqa-cn/codexqa --skill skill-router
 npx skills add openqa-cn/codexqa --skill code-analyzer
 npx skills add openqa-cn/codexqa --skill root-cause-diagnosis
 npx skills add openqa-cn/codexqa --skill defect-detection
@@ -161,7 +164,13 @@ codexqa stats /path/to/repo
 提供异常文本或文件，外加 git 地址、本地目录、单个文件，或已打开的工作区。这条路径同样依赖 `@openqa-cn/codexqa`；见 [root-cause-diagnosis 已知边界](skills/root-cause-diagnosis/KNOWN_LIMITATIONS.zh-CN.md)。
 
 <details>
-<summary><b>另外四个 skill 分别怎么开口</b></summary>
+<summary><b>另外几个 skill 分别怎么开口</b></summary>
+
+**自动路由（`skill-router`）** — 不确定用哪个 skill 时；可只装路由并按需拉取干活 skill。
+
+```text
+我不确定用哪个 skill。请自动路由：对照 origin/main 审仓库，产出能打开的双语 HTML 审查报告，不要漏洞扫描清单。
+```
 
 **图证据审查（`ai-code-reviewer`）** — 在 Agent 里打开该仓库；需要 `PATH` 上的 `codexqa` + `jq`。
 
@@ -224,10 +233,11 @@ codexqa stats /path/to/repo
 
 ## 证据与边界
 
-七个工作流的公开证据成熟度并不相同：
+各工作流的公开证据成熟度并不相同：
 
 | Skill | 当前公开证据 |
 | --- | --- |
+| `skill-router` | `discover_skills.py --self-check` / `--with-catalog`；`ensure_skill.py --dry-run` / `--from-repo`；路由选择由模型判断；无公开宿主 agent 成绩 |
 | `code-analyzer` | 已公开 Skill 契约、schema、playbook、示例图和已知边界；单独分发的闭源引擎不在本仓库 CI 中运行 |
 | `root-cause-diagnosis` | 本地 CLI 测试（解析、落地、草稿、冒烟）；依赖 `@openqa-cn/codexqa`；无公开宿主 agent 成绩；RCA 叙事由模型判断 |
 | `defect-detection` | 本地 Python 流水线/策略夹具测试；可选 SAST 与闭源 CodexQA CLI；无公开宿主 agent 成绩；Stage1/Stage2 由模型判断 |
@@ -250,9 +260,10 @@ export NODE_OPTIONS=--experimental-strip-types
 (cd skills/defect-detection && npm test)
 node examples/checkout-boundary/verify.mjs
 (cd skills/testcase-generation && ./scripts/tcg-python scripts/close_stage.py --self-check && ./scripts/tcg-python scripts/check_run_gate.py --self-check && ./scripts/tcg-python scripts/generate_case_report.py --self-check)
+python3 skills/skill-router/scripts/discover_skills.py --self-check
 ```
 
-这些检查覆盖文档链接、中英章节对齐、`defect-detection` Python 流水线/策略夹具、打包、边界 fixture，以及 `testcase-generation` 离线门禁/报告冒烟。它们不执行完整实 agent Stage1/Stage2 扫描，也不执行单独分发的 `code-analyzer` / `root-cause-diagnosis` 引擎路径，也不能证明所有缺陷都会被发现。
+这些检查覆盖文档链接、中英章节对齐、`defect-detection` Python 流水线/策略夹具、打包、边界 fixture、`testcase-generation` 离线门禁/报告冒烟，以及 `skill-router` 目录自检。它们不执行完整实 agent Stage1/Stage2 扫描，也不执行单独分发的 `code-analyzer` / `root-cause-diagnosis` 引擎路径，也不能证明所有缺陷都会被发现。
 
 ## 文档
 

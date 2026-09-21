@@ -2,7 +2,7 @@
 
 [简体中文](GETTING_STARTED.zh-CN.md)
 
-Install one skill at a time on Cursor, Claude Code, Codex, or OpenClaw. This page walks [`defect-detection`](../skills/defect-detection/README.md) because it has a CLI you can smoke-test. The same command also takes `--skill code-analyzer`, `--skill root-cause-diagnosis`, `--skill ai-code-reviewer`, `--skill requirements-analyzer`, `--skill testcase-generation`, and `--skill testdata-generation`. `code-analyzer`, `root-cause-diagnosis`, and `ai-code-reviewer` use the separate `codexqa` symbol-graph CLI; `defect-detection` is Python-orchestrated and also uses that CLI for live graphs.
+Install one skill at a time on Cursor, Claude Code, Codex, or OpenClaw. This page walks [`defect-detection`](../skills/defect-detection/README.md) because it has a CLI you can smoke-test. The same command also takes `--skill skill-router`, `--skill code-analyzer`, `--skill root-cause-diagnosis`, `--skill ai-code-reviewer`, `--skill requirements-analyzer`, `--skill testcase-generation`, and `--skill testdata-generation`. Prefer [`skill-router`](../skills/skill-router/README.md) when you are unsure which worker to install — it can match and fetch workers on demand. `code-analyzer`, `root-cause-diagnosis`, and `ai-code-reviewer` use the separate `codexqa` symbol-graph CLI; `defect-detection` is Python-orchestrated and also uses that CLI for live graphs; `skill-router` needs Python 3.10+ for discover/ensure.
 
 What you give each skill is different ([FAQ](FAQ.md#what-do-i-have-to-give-each-skill)). What a finished report looks like: [README · What the output looks like](../README.md#what-the-output-looks-like).
 
@@ -83,6 +83,7 @@ For global installations add `--global` where supported. Back up configuration a
 npx skills add openqa-cn/codexqa --skill code-analyzer
 npm install -g @openqa-cn/codexqa
 
+npx skills add openqa-cn/codexqa --skill skill-router
 npx skills add openqa-cn/codexqa --skill root-cause-diagnosis
 npx skills add openqa-cn/codexqa --skill ai-code-reviewer
 npx skills add openqa-cn/codexqa --skill requirements-analyzer
@@ -90,7 +91,7 @@ npx skills add openqa-cn/codexqa --skill testcase-generation
 npx skills add openqa-cn/codexqa --skill testdata-generation
 ```
 
-The `code-analyzer`, `root-cause-diagnosis`, and `defect-detection` Skills are published in this repository. `@openqa-cn/codexqa` is the separately distributed, closed-source local code-analysis engine; indexes and sessions live under `~/.codexqa/`. See [`code-analyzer` known limitations](../skills/code-analyzer/KNOWN_LIMITATIONS.md), [`root-cause-diagnosis` known limitations](../skills/root-cause-diagnosis/KNOWN_LIMITATIONS.md), and [`defect-detection` known limitations](../skills/defect-detection/KNOWN_LIMITATIONS.md).
+The `code-analyzer`, `root-cause-diagnosis`, `defect-detection`, and `skill-router` Skills are published in this repository. `@openqa-cn/codexqa` is the separately distributed, closed-source local code-analysis engine; indexes and sessions live under `~/.codexqa/`. See [`code-analyzer` known limitations](../skills/code-analyzer/KNOWN_LIMITATIONS.md), [`root-cause-diagnosis` known limitations](../skills/root-cause-diagnosis/KNOWN_LIMITATIONS.md), [`defect-detection` known limitations](../skills/defect-detection/KNOWN_LIMITATIONS.md), and [`skill-router` known limitations](../skills/skill-router/KNOWN_LIMITATIONS.md).
 
 For a model-free `code-analyzer` smoke check, index a local checkout and inspect its summary:
 
@@ -104,6 +105,7 @@ codexqa stats /path/to/repo
 
 After install, start a new agent session and point it at the skill. Inputs differ:
 
+- `skill-router` needs a user request to route (and Python 3.10+). It matches the bundled/live catalog and can run `ensure_skill.py` to fetch a worker beside the router. See its [README](../skills/skill-router/README.md).
 - `code-analyzer` needs a local repository. For change review, index it with a baseline such as `origin/main`; indexes live under `~/.codexqa/`. See its [README](../skills/code-analyzer/README.md).
 - `root-cause-diagnosis` needs exception evidence (stack / log / dump) plus a git URL, local dir, file, or already-open workspace. See its [README](../skills/root-cause-diagnosis/README.md).
 - `defect-detection` needs a diff, repo, upload, or paste for a code-risk scan. See its [README](../skills/defect-detection/README.md).

@@ -2,7 +2,7 @@
 
 [English](GETTING_STARTED.md)
 
-在 Cursor、Claude Code、Codex 或 OpenClaw 上一次只装一个 skill。本页以 [`defect-detection`](../skills/defect-detection/README.zh-CN.md) 为例，因为它有可冒烟的 CLI。同一条命令也可以加 `--skill code-analyzer`、`--skill root-cause-diagnosis`、`--skill ai-code-reviewer`、`--skill requirements-analyzer`、`--skill testcase-generation`、`--skill testdata-generation`。`code-analyzer`、`root-cause-diagnosis` 与 `ai-code-reviewer` 使用单独的 `codexqa` 符号图 CLI；`defect-detection` 由 Python 编排，实图同样使用该 CLI。
+在 Cursor、Claude Code、Codex 或 OpenClaw 上一次只装一个 skill。本页以 [`defect-detection`](../skills/defect-detection/README.zh-CN.md) 为例，因为它有可冒烟的 CLI。同一条命令也可以加 `--skill skill-router`、`--skill code-analyzer`、`--skill root-cause-diagnosis`、`--skill ai-code-reviewer`、`--skill requirements-analyzer`、`--skill testcase-generation`、`--skill testdata-generation`。不确定装哪个时优先 [`skill-router`](../skills/skill-router/README.zh-CN.md)——它能匹配并按需拉取干活 skill。`code-analyzer`、`root-cause-diagnosis` 与 `ai-code-reviewer` 使用单独的 `codexqa` 符号图 CLI；`defect-detection` 由 Python 编排，实图同样使用该 CLI；`skill-router` 的发现/按需安装需要 Python 3.10+。
 
 每个 skill 要交的材料不一样（[FAQ](FAQ.zh-CN.md#每个-skill-要我交什么)）。跑完长什么样见 [README · 产物长什么样](../README.zh-CN.md#产物长什么样)。
 
@@ -86,6 +86,7 @@ npx skills remove defect-detection --agent codex
 npx skills add openqa-cn/codexqa --skill code-analyzer
 npm install -g @openqa-cn/codexqa
 
+npx skills add openqa-cn/codexqa --skill skill-router
 npx skills add openqa-cn/codexqa --skill root-cause-diagnosis
 npx skills add openqa-cn/codexqa --skill ai-code-reviewer
 npx skills add openqa-cn/codexqa --skill requirements-analyzer
@@ -93,7 +94,7 @@ npx skills add openqa-cn/codexqa --skill testcase-generation
 npx skills add openqa-cn/codexqa --skill testdata-generation
 ```
 
-`code-analyzer`、`root-cause-diagnosis`、`ai-code-reviewer` 与 `defect-detection` Skill 发布在本仓库中；`@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎，索引和会话写在 `~/.codexqa/`。详见 [`code-analyzer` 已知边界](../skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)、[`root-cause-diagnosis` 已知边界](../skills/root-cause-diagnosis/KNOWN_LIMITATIONS.zh-CN.md)、[`ai-code-reviewer` 已知边界](../skills/ai-code-reviewer/KNOWN_LIMITATIONS.zh-CN.md) 和 [`defect-detection` 已知边界](../skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md)。
+`code-analyzer`、`root-cause-diagnosis`、`ai-code-reviewer`、`defect-detection` 与 `skill-router` Skill 发布在本仓库中；`@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎，索引和会话写在 `~/.codexqa/`。详见 [`code-analyzer` 已知边界](../skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)、[`root-cause-diagnosis` 已知边界](../skills/root-cause-diagnosis/KNOWN_LIMITATIONS.zh-CN.md)、[`ai-code-reviewer` 已知边界](../skills/ai-code-reviewer/KNOWN_LIMITATIONS.zh-CN.md)、[`defect-detection` 已知边界](../skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md) 和 [`skill-router` 已知边界](../skills/skill-router/KNOWN_LIMITATIONS.zh-CN.md)。
 
 只做 `code-analyzer` 冒烟时不需要模型：给本地 checkout 建索引，再查看摘要。
 
@@ -107,6 +108,7 @@ codexqa stats /path/to/repo
 
 安装后新建 Agent 会话并指向该 skill。输入各不相同：
 
+- `skill-router` 需要待路由的用户请求（以及 Python 3.10+）。它对照内置/现场目录匹配，并可运行 `ensure_skill.py` 把干活 skill 拉到路由旁边。见其 [README](../skills/skill-router/README.zh-CN.md)。
 - `code-analyzer` 需要本地仓库。审变更时用 `origin/main` 等基线建索引；索引写在 `~/.codexqa/`。见其 [README](../skills/code-analyzer/README.zh-CN.md)。
 - `root-cause-diagnosis` 需要异常证据（堆栈 / 日志 / dump），外加 git 地址、本地目录、文件，或已打开的工作区。见其 [README](../skills/root-cause-diagnosis/README.zh-CN.md)。
 - `defect-detection` 需要对 diff / 仓库 / 上传 / 粘贴做代码风险扫描。见其 [README](../skills/defect-detection/README.zh-CN.md)。

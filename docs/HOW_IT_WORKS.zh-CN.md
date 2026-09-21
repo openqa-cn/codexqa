@@ -12,6 +12,7 @@
 
 | Skill | 人读 | Agent |
 | --- | --- | --- |
+| `skill-router` | [工作原理](../skills/skill-router/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/skill-router/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/skill-router/SKILL.md) |
 | `code-analyzer` | [工作流](../skills/code-analyzer/README.zh-CN.md) · [已知边界](../skills/code-analyzer/KNOWN_LIMITATIONS.zh-CN.md) · [分析 playbook](../skills/code-analyzer/references/playbook.md) | [`SKILL.md`](../skills/code-analyzer/SKILL.md) |
 | `root-cause-diagnosis` | [工作原理](../skills/root-cause-diagnosis/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/root-cause-diagnosis/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/root-cause-diagnosis/SKILL.md) |
 | `defect-detection` | [工作原理](../skills/defect-detection/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/defect-detection/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/defect-detection/SKILL.md) |

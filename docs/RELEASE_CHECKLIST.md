@@ -1,5 +1,7 @@
 # Release checklist
 
+- [ ] If worker skill descriptions changed, `skills/skill-router/references/catalog.json` refreshed via `refresh_catalog.py`
+- [ ] `python3 skills/skill-router/scripts/discover_skills.py --self-check` passes
 - [ ] Human maintainer reviewed the actual diff and proposed file list
 - [ ] English and Chinese README agree on shipped capabilities
 - [ ] Documentation links and skill registry checks pass

@@ -12,6 +12,7 @@ Index only. `npx skills add … --skill <name>` copies `skills/<name>/`, so meth
 
 | Skill | Human | Agent |
 | --- | --- | --- |
+| `skill-router` | [How it works](../skills/skill-router/HOW_IT_WORKS.md) · [Known limitations](../skills/skill-router/KNOWN_LIMITATIONS.md) | [`SKILL.md`](../skills/skill-router/SKILL.md) |
 | `code-analyzer` | [Workflow](../skills/code-analyzer/README.md) · [Known limitations](../skills/code-analyzer/KNOWN_LIMITATIONS.md) · [Playbook](../skills/code-analyzer/references/playbook.md) | [`SKILL.md`](../skills/code-analyzer/SKILL.md) |
 | `root-cause-diagnosis` | [How it works](../skills/root-cause-diagnosis/HOW_IT_WORKS.md) · [Known limitations](../skills/root-cause-diagnosis/KNOWN_LIMITATIONS.md) | [`SKILL.md`](../skills/root-cause-diagnosis/SKILL.md) |
 | `defect-detection` | [How it works](../skills/defect-detection/HOW_IT_WORKS.md) · [Known limitations](../skills/defect-detection/KNOWN_LIMITATIONS.md) | [`SKILL.md`](../skills/defect-detection/SKILL.md) |
