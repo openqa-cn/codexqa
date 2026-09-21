@@ -48,13 +48,13 @@ GitHub is the skill source; product site: [openqa.cn](https://openqa.cn/?utm_sou
 <table>
 <tr>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-defect-analyzer/README.md">codexqa-defect-analyzer</a></strong></p>
+<p><strong><a href="skills/codexqa-defect-analyzer/README.md"><img src="docs/assets/skill-links/codexqa-defect-analyzer-light.svg#gh-light-mode-only" height="18" alt="codexqa-defect-analyzer"><img src="docs/assets/skill-links/codexqa-defect-analyzer-dark.svg#gh-dark-mode-only" height="18" alt=""></a></strong></p>
 <p><strong>Verifies</strong> — whether the code you just wrote or merged hides bugs or security issues a quick glance would miss.</p>
 <p><strong>Does</strong> — merges SAST / lint / secrets with one Agent semantic pass into a P0–P3 HTML report: location, evidence, suggestion.</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/defect-report.html"><img src="docs/assets/previews/defect-report.png" alt="codexqa-defect-analyzer HTML scan report"></a></p>
 </td>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-code-reviewer/README.md">codexqa-code-reviewer</a></strong></p>
+<p><strong><a href="skills/codexqa-code-reviewer/README.md"><img src="docs/assets/skill-links/codexqa-code-reviewer-light.svg#gh-light-mode-only" height="18" alt="codexqa-code-reviewer"><img src="docs/assets/skill-links/codexqa-code-reviewer-dark.svg#gh-dark-mode-only" height="18" alt=""></a></strong></p>
 <p><strong>Verifies</strong> — whether this change is merge-ready, and whether it silently hits old behavior. A git diff alone rarely shows call chains or test gaps.</p>
 <p><strong>Does</strong> — collects a CodexQA evidence pack (callers, blast radius, test edges), then writes a bilingual <code>REVIEW-REPORT.html</code> you can send to a reviewer.</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/review-report.html"><img src="docs/assets/previews/review-report.png" alt="codexqa-code-reviewer bilingual REVIEW-REPORT.html"></a></p>
@@ -62,13 +62,13 @@ GitHub is the skill source; product site: [openqa.cn](https://openqa.cn/?utm_sou
 </tr>
 <tr>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-code-wiki/README.md">codexqa-code-wiki</a></strong></p>
+<p><strong><a href="skills/codexqa-code-wiki/README.md"><img src="docs/assets/skill-links/codexqa-code-wiki-light.svg#gh-light-mode-only" height="18" alt="codexqa-code-wiki"><img src="docs/assets/skill-links/codexqa-code-wiki-dark.svg#gh-dark-mode-only" height="18" alt=""></a></strong></p>
 <p><strong>Verifies</strong> — how the repo is actually layered, which module is the hub, and where a newcomer (or an Agent) should start reading. Without a map, “did we break the architecture?” is a guess.</p>
 <p><strong>Does</strong> — builds a local architecture knowledge graph — communities, real dependencies, reading paths — as openable HTML, not a chat summary.</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/code-wiki.html"><img src="docs/assets/previews/code-wiki.png" alt="codexqa-code-wiki architecture wiki HTML report"></a></p>
 </td>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-code-analyzer/README.md">codexqa-code-analyzer</a></strong></p>
+<p><strong><a href="skills/codexqa-code-analyzer/README.md"><img src="docs/assets/skill-links/codexqa-code-analyzer-light.svg#gh-light-mode-only" height="18" alt="codexqa-code-analyzer"><img src="docs/assets/skill-links/codexqa-code-analyzer-dark.svg#gh-dark-mode-only" height="18" alt=""></a></strong></p>
 <p><strong>Verifies</strong> — which APIs, methods, and call chains this change actually hits; what to regression-test; which paths still have no tests.</p>
 <p><strong>Does</strong> — queries a local symbol graph for callers, entries, and untested edges. Not a full-text search guess.</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/code-analyzer.html"><img src="docs/assets/previews/code-analyzer.png" alt="codexqa-code-analyzer change-impact graph"></a></p>
@@ -76,13 +76,13 @@ GitHub is the skill source; product site: [openqa.cn](https://openqa.cn/?utm_sou
 </tr>
 <tr>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-rootcause-analyzer/README.md">codexqa-rootcause-analyzer</a></strong></p>
+<p><strong><a href="skills/codexqa-rootcause-analyzer/README.md"><img src="docs/assets/skill-links/codexqa-rootcause-analyzer-light.svg#gh-light-mode-only" height="18" alt="codexqa-rootcause-analyzer"><img src="docs/assets/skill-links/codexqa-rootcause-analyzer-dark.svg#gh-dark-mode-only" height="18" alt=""></a></strong></p>
 <p><strong>Verifies</strong> — after mapping a stack or log back onto the repo, where the failure really starts. The throw site is often not the root cause.</p>
 <p><strong>Does</strong> — writes a gated English RCA: trigger vs root cause vs confidence, plus one fix-and-verify suggestion.</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/rootcause.html"><img src="docs/assets/previews/rootcause.png" alt="codexqa-rootcause-analyzer English RCA report"></a></p>
 </td>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-requirement-analyzer/README.md">codexqa-requirement-analyzer</a></strong></p>
+<p><strong><a href="skills/codexqa-requirement-analyzer/README.md"><img src="docs/assets/skill-links/codexqa-requirement-analyzer-light.svg#gh-light-mode-only" height="18" alt="codexqa-requirement-analyzer"><img src="docs/assets/skill-links/codexqa-requirement-analyzer-dark.svg#gh-dark-mode-only" height="18" alt=""></a></strong></p>
 <p><strong>Verifies</strong> — whether the requirement is testable, complete, and internally consistent — before anyone writes code. Gaps and conflicts often live in the PRD.</p>
 <p><strong>Does</strong> — one P0/P1 gap-and-conflict register from a PRD (or a multi-source pack). High-priority items come with executable verification steps.</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/ra-register.html"><img src="docs/assets/previews/ra-register.png" alt="codexqa-requirement-analyzer gap register"></a></p>
@@ -90,13 +90,13 @@ GitHub is the skill source; product site: [openqa.cn](https://openqa.cn/?utm_sou
 </tr>
 <tr>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-testcase-generator/README.md">codexqa-testcase-generator</a></strong></p>
+<p><strong><a href="skills/codexqa-testcase-generator/README.md"><img src="docs/assets/skill-links/codexqa-testcase-generator-light.svg#gh-light-mode-only" height="18" alt="codexqa-testcase-generator"><img src="docs/assets/skill-links/codexqa-testcase-generator-dark.svg#gh-dark-mode-only" height="18" alt=""></a></strong></p>
 <p><strong>Verifies</strong> — what a complete test pass should cover for Web / server / APP, without inventing business facts when the PRD is silent.</p>
 <p><strong>Does</strong> — local Markdown plan + cases (unknowns stay TBD) plus an aggregated HTML you can open. No test-management platform.</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testcase-report.html"><img src="docs/assets/previews/testcase-report.png" alt="codexqa-testcase-generator aggregated HTML case report"></a></p>
 </td>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-testdata-generator/README.md">codexqa-testdata-generator</a></strong></p>
+<p><strong><a href="skills/codexqa-testdata-generator/README.md"><img src="docs/assets/skill-links/codexqa-testdata-generator-light.svg#gh-light-mode-only" height="18" alt="codexqa-testdata-generator"><img src="docs/assets/skill-links/codexqa-testdata-generator-dark.svg#gh-dark-mode-only" height="18" alt=""></a></strong></p>
 <p><strong>Verifies</strong> — whether the preconditions in a case can actually be built on a real backend. A copied fake ID will not pass a real API.</p>
 <p><strong>Does</strong> — constructs data against the backend and writes the returned business IDs back into case preconditions. Success means the backend issued an ID.</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testdata-writeback.html"><img src="docs/assets/previews/testdata-writeback.png" alt="codexqa-testdata-generator write-back of backend IDs"></a></p>
@@ -148,15 +148,15 @@ Each skill is one step in the test-and-verify loop. The table says **when to use
 
 | | Skill | When to use it, and what verification result you get |
 | --- | --- | --- |
-| 🧭 | [codexqa-skill-router](skills/codexqa-skill-router/README.md) | **When** you are not sure whether you need a defect scan, impact map, cases, or test data — or the worker is not installed yet.<br>**You get** the matching skill, installed on demand if missing, then a handoff. Verification starts by picking the right tool; you do not memorize eight entry points. |
-| 📋 | [codexqa-requirement-analyzer](skills/codexqa-requirement-analyzer/README.md) | **When** a PRD, story pack, or mixed materials land, before anyone writes code: is it testable, complete, internally consistent?<br>**You get** one assignable P0/P1 gap-and-conflict register. High-priority rows include preconditions, stimulus, expected result, and evidence — the requirement-layer blockers that would make later testing fail. |
-| 🧪 | [codexqa-testcase-generator](skills/codexqa-testcase-generator/README.md) | **When** you need a test plan and executable cases for Web / server / APP before submit, or extra regression after a change.<br>**You get** local Markdown plan + cases + aggregated HTML: which scenarios, which priority. Unknowns stay TBD; silent PRD gaps are not invented as fake cases. |
-| 🗃️ | [codexqa-testdata-generator](skills/codexqa-testdata-generator/README.md) | **When** cases exist but will not run: missing accounts, catalog rows, orders. A copied fake ID will not pass a real API.<br>**You get** data constructed against the backend, with returned business IDs written into case preconditions. Success means the backend issued an ID, not that a number appeared in chat. |
-| 🗺️ | [codexqa-code-wiki](skills/codexqa-code-wiki/README.md) | **When** a newcomer or an Agent enters the repo, or you are reviewing whether a change broke the architecture.<br>**You get** an architecture knowledge-graph HTML: module communities, real dependencies, the hub, a reading path. You are checking layering and where to start — not another README. |
-| 📈 | [codexqa-code-analyzer](skills/codexqa-code-analyzer/README.md) | **When** you review a PR, set regression scope, or ask “who does this change hit?” A git diff will not show call chains.<br>**You get** blast radius from a local symbol graph: which APIs / methods / call chains moved, which entries fire, which edges have no tests. That list is what you regression-test. |
-| 🧯 | [codexqa-rootcause-analyzer](skills/codexqa-rootcause-analyzer/README.md) | **When** a production or local exception, stack, or log still does not tell you which layer actually failed.<br>**You get** a gated English RCA: trigger vs root cause vs confidence, plus one fix-and-verify suggestion. The throw site is not treated as the root cause. |
-| 🛡️ | [codexqa-defect-analyzer](skills/codexqa-defect-analyzer/README.md) | **When** you scan a branch before merge, or paste newly written code and ask about bugs, secrets, or dangerous patterns.<br>**You get** a P0–P3 HTML scan: SAST / lint / secrets merged and de-duplicated with Agent semantic findings — location, evidence, suggestion. This is defect and security risk, not a CR opinion. |
-| ⚖️ | [codexqa-code-reviewer](skills/codexqa-code-reviewer/README.md) | **When** you need something a reviewer can open, not a raw git diff, before a merge gate.<br>**You get** a bilingual `REVIEW-REPORT.html` from a CodexQA evidence pack (call chains, blast radius, test edges): merge risk, gaps, and what still needs tests. Use it as the CR attachment. |
+| 🧭 | <a href="skills/codexqa-skill-router/README.md"><img src="docs/assets/skill-links/codexqa-skill-router-light.svg#gh-light-mode-only" height="18" alt="codexqa-skill-router"><img src="docs/assets/skill-links/codexqa-skill-router-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **When** you are not sure whether you need a defect scan, impact map, cases, or test data — or the worker is not installed yet.<br>**You get** the matching skill, installed on demand if missing, then a handoff. Verification starts by picking the right tool; you do not memorize eight entry points. |
+| 📋 | <a href="skills/codexqa-requirement-analyzer/README.md"><img src="docs/assets/skill-links/codexqa-requirement-analyzer-light.svg#gh-light-mode-only" height="18" alt="codexqa-requirement-analyzer"><img src="docs/assets/skill-links/codexqa-requirement-analyzer-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **When** a PRD, story pack, or mixed materials land, before anyone writes code: is it testable, complete, internally consistent?<br>**You get** one assignable P0/P1 gap-and-conflict register. High-priority rows include preconditions, stimulus, expected result, and evidence — the requirement-layer blockers that would make later testing fail. |
+| 🧪 | <a href="skills/codexqa-testcase-generator/README.md"><img src="docs/assets/skill-links/codexqa-testcase-generator-light.svg#gh-light-mode-only" height="18" alt="codexqa-testcase-generator"><img src="docs/assets/skill-links/codexqa-testcase-generator-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **When** you need a test plan and executable cases for Web / server / APP before submit, or extra regression after a change.<br>**You get** local Markdown plan + cases + aggregated HTML: which scenarios, which priority. Unknowns stay TBD; silent PRD gaps are not invented as fake cases. |
+| 🗃️ | <a href="skills/codexqa-testdata-generator/README.md"><img src="docs/assets/skill-links/codexqa-testdata-generator-light.svg#gh-light-mode-only" height="18" alt="codexqa-testdata-generator"><img src="docs/assets/skill-links/codexqa-testdata-generator-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **When** cases exist but will not run: missing accounts, catalog rows, orders. A copied fake ID will not pass a real API.<br>**You get** data constructed against the backend, with returned business IDs written into case preconditions. Success means the backend issued an ID, not that a number appeared in chat. |
+| 🗺️ | <a href="skills/codexqa-code-wiki/README.md"><img src="docs/assets/skill-links/codexqa-code-wiki-light.svg#gh-light-mode-only" height="18" alt="codexqa-code-wiki"><img src="docs/assets/skill-links/codexqa-code-wiki-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **When** a newcomer or an Agent enters the repo, or you are reviewing whether a change broke the architecture.<br>**You get** an architecture knowledge-graph HTML: module communities, real dependencies, the hub, a reading path. You are checking layering and where to start — not another README. |
+| 📈 | <a href="skills/codexqa-code-analyzer/README.md"><img src="docs/assets/skill-links/codexqa-code-analyzer-light.svg#gh-light-mode-only" height="18" alt="codexqa-code-analyzer"><img src="docs/assets/skill-links/codexqa-code-analyzer-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **When** you review a PR, set regression scope, or ask “who does this change hit?” A git diff will not show call chains.<br>**You get** blast radius from a local symbol graph: which APIs / methods / call chains moved, which entries fire, which edges have no tests. That list is what you regression-test. |
+| 🧯 | <a href="skills/codexqa-rootcause-analyzer/README.md"><img src="docs/assets/skill-links/codexqa-rootcause-analyzer-light.svg#gh-light-mode-only" height="18" alt="codexqa-rootcause-analyzer"><img src="docs/assets/skill-links/codexqa-rootcause-analyzer-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **When** a production or local exception, stack, or log still does not tell you which layer actually failed.<br>**You get** a gated English RCA: trigger vs root cause vs confidence, plus one fix-and-verify suggestion. The throw site is not treated as the root cause. |
+| 🛡️ | <a href="skills/codexqa-defect-analyzer/README.md"><img src="docs/assets/skill-links/codexqa-defect-analyzer-light.svg#gh-light-mode-only" height="18" alt="codexqa-defect-analyzer"><img src="docs/assets/skill-links/codexqa-defect-analyzer-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **When** you scan a branch before merge, or paste newly written code and ask about bugs, secrets, or dangerous patterns.<br>**You get** a P0–P3 HTML scan: SAST / lint / secrets merged and de-duplicated with Agent semantic findings — location, evidence, suggestion. This is defect and security risk, not a CR opinion. |
+| ⚖️ | <a href="skills/codexqa-code-reviewer/README.md"><img src="docs/assets/skill-links/codexqa-code-reviewer-light.svg#gh-light-mode-only" height="18" alt="codexqa-code-reviewer"><img src="docs/assets/skill-links/codexqa-code-reviewer-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **When** you need something a reviewer can open, not a raw git diff, before a merge gate.<br>**You get** a bilingual `REVIEW-REPORT.html` from a CodexQA evidence pack (call chains, blast radius, test edges): merge risk, gaps, and what still needs tests. Use it as the CR attachment. |
 
 Narrow contracts, stop conditions, local files. The Agent you already use is the runtime.
 
@@ -173,7 +173,7 @@ Not a hosted test cloud. Not a replacement for your test suite, SAST license, or
 
 ## Star this repo
 
-If a local skill pack like this is what you wanted instead of another QA platform, [⭐ Star](https://github.com/openqa-cn/codexqa) this repo (then click **Star** in the top-right). See [who starred](https://github.com/openqa-cn/codexqa/stargazers). Issues and reproductions help more than stars when something is wrong.
+If a local skill pack like this is what you wanted instead of another QA platform, [⭐ Star](https://github.com/openqa-cn/codexqa#repository-container-header) jumps to the repo header — then click **Star** in the top-right. See [who starred](https://github.com/openqa-cn/codexqa/stargazers). Issues and reproductions help more than stars when something is wrong.
 
 ## Changelog
 
@@ -253,13 +253,13 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 <table>
 <tr>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-defect-analyzer/README.zh-CN.md">codexqa-defect-analyzer</a></strong></p>
+<p><strong><a href="skills/codexqa-defect-analyzer/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-defect-analyzer-light.svg#gh-light-mode-only" height="18" alt="codexqa-defect-analyzer"><img src="docs/assets/skill-links/codexqa-defect-analyzer-dark.svg#gh-dark-mode-only" height="18" alt=""></a></strong></p>
 <p><strong>验证什么</strong> — 刚写完或刚合进来的代码，有没有 bug、有没有把密钥和危险写法带进来。人眼扫一遍不够。</p>
 <p><strong>核心能力</strong> — 规则扫描（SAST / lint / 密钥）和 Agent 语义检测合并去重，按 P0–P3 出 HTML：位置、证据、建议一次看完。</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/defect-report.html"><img src="docs/assets/previews/defect-report.png" alt="codexqa-defect-analyzer HTML 扫描报告"></a></p>
 </td>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-code-reviewer/README.zh-CN.md">codexqa-code-reviewer</a></strong></p>
+<p><strong><a href="skills/codexqa-code-reviewer/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-code-reviewer-light.svg#gh-light-mode-only" height="18" alt="codexqa-code-reviewer"><img src="docs/assets/skill-links/codexqa-code-reviewer-dark.svg#gh-dark-mode-only" height="18" alt=""></a></strong></p>
 <p><strong>验证什么</strong> — 这次改动能不能过评审、会不会误伤老功能。只看 git diff 往往看不到调用链和测试缺口。</p>
 <p><strong>核心能力</strong> — 先用符号图收齐影响面和测试边，再按证据包做双语评审，落成可发给评审人的 <code>REVIEW-REPORT.html</code>。</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/review-report.html"><img src="docs/assets/previews/review-report.png" alt="codexqa-code-reviewer 双语 REVIEW-REPORT.html"></a></p>
@@ -267,13 +267,13 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 </tr>
 <tr>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-code-wiki/README.zh-CN.md">codexqa-code-wiki</a></strong></p>
+<p><strong><a href="skills/codexqa-code-wiki/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-code-wiki-light.svg#gh-light-mode-only" height="18" alt="codexqa-code-wiki"><img src="docs/assets/skill-links/codexqa-code-wiki-dark.svg#gh-dark-mode-only" height="18" alt=""></a></strong></p>
 <p><strong>验证什么</strong> — 仓库怎么分层、枢纽在哪、新人 / Agent 该从哪读起。没有地图时，「架构有没有被改坏」只能靠猜。</p>
 <p><strong>核心能力</strong> — 本地建架构知识图谱：模块社区、真实依赖、阅读路径，写成可打开的 HTML，不是聊天里一段口头介绍。</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/code-wiki.html"><img src="docs/assets/previews/code-wiki.png" alt="codexqa-code-wiki 架构 Wiki HTML 报告"></a></p>
 </td>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-code-analyzer/README.zh-CN.md">codexqa-code-analyzer</a></strong></p>
+<p><strong><a href="skills/codexqa-code-analyzer/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-code-analyzer-light.svg#gh-light-mode-only" height="18" alt="codexqa-code-analyzer"><img src="docs/assets/skill-links/codexqa-code-analyzer-dark.svg#gh-dark-mode-only" height="18" alt=""></a></strong></p>
 <p><strong>验证什么</strong> — 改了这几行，会打到哪些接口、方法、调用链；回归该测哪、哪些路径还没测试。</p>
 <p><strong>核心能力</strong> — 对着本地符号图回答变更影响面：调用方、入口、未覆盖边。不是全文搜索猜一猜。</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/code-analyzer.html"><img src="docs/assets/previews/code-analyzer.png" alt="codexqa-code-analyzer 变更影响图"></a></p>
@@ -281,13 +281,13 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 </tr>
 <tr>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-rootcause-analyzer/README.zh-CN.md">codexqa-rootcause-analyzer</a></strong></p>
+<p><strong><a href="skills/codexqa-rootcause-analyzer/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-rootcause-analyzer-light.svg#gh-light-mode-only" height="18" alt="codexqa-rootcause-analyzer"><img src="docs/assets/skill-links/codexqa-rootcause-analyzer-dark.svg#gh-dark-mode-only" height="18" alt=""></a></strong></p>
 <p><strong>验证什么</strong> — 堆栈和日志对上仓库之后，异常到底卡在哪一层。抛错的那一行，经常不是根因。</p>
 <p><strong>核心能力</strong> — 对照调用链产出带门禁的英文 RCA：触发点、根因、置信度分开写，并给出可验证的修复方向。</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/rootcause.html"><img src="docs/assets/previews/rootcause.png" alt="codexqa-rootcause-analyzer 英文 RCA 报告"></a></p>
 </td>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-requirement-analyzer/README.zh-CN.md">codexqa-requirement-analyzer</a></strong></p>
+<p><strong><a href="skills/codexqa-requirement-analyzer/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-requirement-analyzer-light.svg#gh-light-mode-only" height="18" alt="codexqa-requirement-analyzer"><img src="docs/assets/skill-links/codexqa-requirement-analyzer-dark.svg#gh-dark-mode-only" height="18" alt=""></a></strong></p>
 <p><strong>验证什么</strong> — 需求本身写清楚了没有、能不能测、有没有缺口和互相打架的地方。代码还没写，坑可能已经在 PRD 里。</p>
 <p><strong>核心能力</strong> — 从 PRD（或一包材料）整理出一份带 P0/P1 的缺口 / 冲突登记表；高优先级条目带可执行验证步骤。</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/ra-register.html"><img src="docs/assets/previews/ra-register.png" alt="codexqa-requirement-analyzer 缺口登记表"></a></p>
@@ -295,13 +295,13 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 </tr>
 <tr>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-testcase-generator/README.zh-CN.md">codexqa-testcase-generator</a></strong></p>
+<p><strong><a href="skills/codexqa-testcase-generator/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-testcase-generator-light.svg#gh-light-mode-only" height="18" alt="codexqa-testcase-generator"><img src="docs/assets/skill-links/codexqa-testcase-generator-dark.svg#gh-dark-mode-only" height="18" alt=""></a></strong></p>
 <p><strong>验证什么</strong> — 完整测试该覆盖哪些场景；Web / 服务端 / APP 的用例从哪来。需求没写清时，会不会被模型编出来。</p>
 <p><strong>核心能力</strong> — 按需求在本地写出测试方案和用例，未知标 TBD；再聚合成可打开的 HTML。不连用例平台。</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testcase-report.html"><img src="docs/assets/previews/testcase-report.png" alt="codexqa-testcase-generator 聚合 HTML 用例报告"></a></p>
 </td>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-testdata-generator/README.zh-CN.md">codexqa-testdata-generator</a></strong></p>
+<p><strong><a href="skills/codexqa-testdata-generator/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-testdata-generator-light.svg#gh-light-mode-only" height="18" alt="codexqa-testdata-generator"><img src="docs/assets/skill-links/codexqa-testdata-generator-dark.svg#gh-dark-mode-only" height="18" alt=""></a></strong></p>
 <p><strong>验证什么</strong> — 用例写好了，前置数据是不是真能在后端造出来。复制一个假 ID，过不了真实接口。</p>
 <p><strong>核心能力</strong> — 对着真实后端构造数据，把返回的业务 ID 回写进用例前置条件。成功以后端给了 ID 为准。</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testdata-writeback.html"><img src="docs/assets/previews/testdata-writeback.png" alt="codexqa-testdata-generator 后端 ID 回写"></a></p>
@@ -354,15 +354,15 @@ npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
 
 | | Skill | 什么时候用，以及验证环节你拿到什么 |
 | --- | --- | --- |
-| 🧭 | [codexqa-skill-router](skills/codexqa-skill-router/README.zh-CN.md) | **什么时候用** 不确定该走缺陷扫描、影响面、用例还是造数；或者干活 skill 还没装。<br>**验证结果** 按你的话匹配到对应 skill，没有就按需装上再交接。你不用自己记八套入口，验证工作从「选对工具」开始。 |
-| 📋 | [codexqa-requirement-analyzer](skills/codexqa-requirement-analyzer/README.zh-CN.md) | **什么时候用** 需求评审、提测前对 PRD / 故事 / 一包材料做完整性检查。代码还没写，先看需求能不能测、有没有打架。<br>**验证结果** 一份可指派的缺口与冲突登记表（P0/P1）。高优先级条目带前置、操作、期望和证据，标出需求层哪些地方会让后续测试做不下去。 |
-| 🧪 | [codexqa-testcase-generator](skills/codexqa-testcase-generator/README.zh-CN.md) | **什么时候用** 提测、补回归，或要把 Web / 服务端 / APP 从需求落到可执行用例。<br>**验证结果** 本地测试方案 + 用例 + 聚合 HTML：覆盖哪些场景、优先级怎么排。需求没写清的标 TBD，不会把空缺编成假用例。 |
-| 🗃️ | [codexqa-testdata-generator](skills/codexqa-testdata-generator/README.zh-CN.md) | **什么时候用** 用例写好了但跑不起来，缺账号、商品、订单等前置数据；复制一个假 ID 过不了真实接口。<br>**验证结果** 对着后端造数，把返回的业务 ID 回写进用例前置条件。你拿到的是能真正打接口的物料，成功以后端给了 ID 为准。 |
-| 🗺️ | [codexqa-code-wiki](skills/codexqa-code-wiki/README.zh-CN.md) | **什么时候用** 新人上手、Agent 进仓、架构评审，或怀疑这次改动把分层改乱了。<br>**验证结果** 架构知识图谱 HTML：模块社区、真实依赖、枢纽、阅读路径。核对的是系统怎么分层、该从哪读、架构有没有被拆散，不是又一份 README。 |
-| 📈 | [codexqa-code-analyzer](skills/codexqa-code-analyzer/README.zh-CN.md) | **什么时候用** 评 PR、定回归范围、问「改这几行会打到谁」。只看 git diff 看不到调用链。<br>**验证结果** 变更影响面：命中哪些接口 / 方法 / 调用链、请求从哪进、哪些边还没测试。用来圈回归名单，而不是全文搜索猜。 |
-| 🧯 | [codexqa-rootcause-analyzer](skills/codexqa-rootcause-analyzer/README.zh-CN.md) | **什么时候用** 线上或本地异常，堆栈和日志对回仓库后，仍说不清到底卡在哪一层。<br>**验证结果** 带门禁的英文 RCA：触发点、根因、置信度分开写，并给一条可验证的修复方向。避免把抛错的那一行当成根因。 |
-| 🛡️ | [codexqa-defect-analyzer](skills/codexqa-defect-analyzer/README.zh-CN.md) | **什么时候用** 合码前扫分支，或贴一段刚写的代码，问有没有 bug、密钥、危险写法。<br>**验证结果** P0–P3 HTML 扫描报告。规则扫描（SAST / lint / 密钥）和 Agent 语义检测合并去重：位置、证据、建议。关注缺陷和安全风险，不是评审意见书。 |
-| ⚖️ | [codexqa-code-reviewer](skills/codexqa-code-reviewer/README.zh-CN.md) | **什么时候用** 要发给评审人、过合并门禁，不能只丢一份 git diff。<br>**验证结果** 双语 `REVIEW-REPORT.html`。基于符号图证据包（调用链、影响面、测试边）给出能否合、风险点和测试缺口，适合当 CR 附件。 |
+| 🧭 | <a href="skills/codexqa-skill-router/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-skill-router-light.svg#gh-light-mode-only" height="18" alt="codexqa-skill-router"><img src="docs/assets/skill-links/codexqa-skill-router-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **什么时候用** 不确定该走缺陷扫描、影响面、用例还是造数；或者干活 skill 还没装。<br>**验证结果** 按你的话匹配到对应 skill，没有就按需装上再交接。你不用自己记八套入口，验证工作从「选对工具」开始。 |
+| 📋 | <a href="skills/codexqa-requirement-analyzer/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-requirement-analyzer-light.svg#gh-light-mode-only" height="18" alt="codexqa-requirement-analyzer"><img src="docs/assets/skill-links/codexqa-requirement-analyzer-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **什么时候用** 需求评审、提测前对 PRD / 故事 / 一包材料做完整性检查。代码还没写，先看需求能不能测、有没有打架。<br>**验证结果** 一份可指派的缺口与冲突登记表（P0/P1）。高优先级条目带前置、操作、期望和证据，标出需求层哪些地方会让后续测试做不下去。 |
+| 🧪 | <a href="skills/codexqa-testcase-generator/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-testcase-generator-light.svg#gh-light-mode-only" height="18" alt="codexqa-testcase-generator"><img src="docs/assets/skill-links/codexqa-testcase-generator-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **什么时候用** 提测、补回归，或要把 Web / 服务端 / APP 从需求落到可执行用例。<br>**验证结果** 本地测试方案 + 用例 + 聚合 HTML：覆盖哪些场景、优先级怎么排。需求没写清的标 TBD，不会把空缺编成假用例。 |
+| 🗃️ | <a href="skills/codexqa-testdata-generator/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-testdata-generator-light.svg#gh-light-mode-only" height="18" alt="codexqa-testdata-generator"><img src="docs/assets/skill-links/codexqa-testdata-generator-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **什么时候用** 用例写好了但跑不起来，缺账号、商品、订单等前置数据；复制一个假 ID 过不了真实接口。<br>**验证结果** 对着后端造数，把返回的业务 ID 回写进用例前置条件。你拿到的是能真正打接口的物料，成功以后端给了 ID 为准。 |
+| 🗺️ | <a href="skills/codexqa-code-wiki/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-code-wiki-light.svg#gh-light-mode-only" height="18" alt="codexqa-code-wiki"><img src="docs/assets/skill-links/codexqa-code-wiki-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **什么时候用** 新人上手、Agent 进仓、架构评审，或怀疑这次改动把分层改乱了。<br>**验证结果** 架构知识图谱 HTML：模块社区、真实依赖、枢纽、阅读路径。核对的是系统怎么分层、该从哪读、架构有没有被拆散，不是又一份 README。 |
+| 📈 | <a href="skills/codexqa-code-analyzer/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-code-analyzer-light.svg#gh-light-mode-only" height="18" alt="codexqa-code-analyzer"><img src="docs/assets/skill-links/codexqa-code-analyzer-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **什么时候用** 评 PR、定回归范围、问「改这几行会打到谁」。只看 git diff 看不到调用链。<br>**验证结果** 变更影响面：命中哪些接口 / 方法 / 调用链、请求从哪进、哪些边还没测试。用来圈回归名单，而不是全文搜索猜。 |
+| 🧯 | <a href="skills/codexqa-rootcause-analyzer/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-rootcause-analyzer-light.svg#gh-light-mode-only" height="18" alt="codexqa-rootcause-analyzer"><img src="docs/assets/skill-links/codexqa-rootcause-analyzer-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **什么时候用** 线上或本地异常，堆栈和日志对回仓库后，仍说不清到底卡在哪一层。<br>**验证结果** 带门禁的英文 RCA：触发点、根因、置信度分开写，并给一条可验证的修复方向。避免把抛错的那一行当成根因。 |
+| 🛡️ | <a href="skills/codexqa-defect-analyzer/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-defect-analyzer-light.svg#gh-light-mode-only" height="18" alt="codexqa-defect-analyzer"><img src="docs/assets/skill-links/codexqa-defect-analyzer-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **什么时候用** 合码前扫分支，或贴一段刚写的代码，问有没有 bug、密钥、危险写法。<br>**验证结果** P0–P3 HTML 扫描报告。规则扫描（SAST / lint / 密钥）和 Agent 语义检测合并去重：位置、证据、建议。关注缺陷和安全风险，不是评审意见书。 |
+| ⚖️ | <a href="skills/codexqa-code-reviewer/README.zh-CN.md"><img src="docs/assets/skill-links/codexqa-code-reviewer-light.svg#gh-light-mode-only" height="18" alt="codexqa-code-reviewer"><img src="docs/assets/skill-links/codexqa-code-reviewer-dark.svg#gh-dark-mode-only" height="18" alt=""></a> | **什么时候用** 要发给评审人、过合并门禁，不能只丢一份 git diff。<br>**验证结果** 双语 `REVIEW-REPORT.html`。基于符号图证据包（调用链、影响面、测试边）给出能否合、风险点和测试缺口，适合当 CR 附件。 |
 
 输入契约窄、有停点、产物落本地。运行时就是你已经在用的 Agent。
 
@@ -379,7 +379,7 @@ npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
 
 <h2 id="Star 这个仓库">Star 这个仓库</h2>
 
-如果你要的就是这种本地 skill 包、而不是再上一套 QA 平台，点 [⭐ Star](https://github.com/openqa-cn/codexqa) 打开仓库后，再点右上角 **Star**，能让后来的人更容易搜到。查看谁加过星：[openqa-cn/codexqa](https://github.com/openqa-cn/codexqa/stargazers)。出了问题，Issue 和最小复现比星更有用。
+如果你要的就是这种本地 skill 包、而不是再上一套 QA 平台，点 [⭐ Star](https://github.com/openqa-cn/codexqa#repository-container-header) 会跳到仓库页头，再点右上角 **Star**，能让后来的人更容易搜到。查看谁加过星：[openqa-cn/codexqa](https://github.com/openqa-cn/codexqa/stargazers)。出了问题，Issue 和最小复现比星更有用。
 
 <h2 id="更新日志">更新日志</h2>
 
