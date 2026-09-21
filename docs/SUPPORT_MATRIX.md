@@ -2,7 +2,7 @@
 
 [简体中文](SUPPORT_MATRIX.zh-CN.md)
 
-Installation compatibility does not establish analysis quality. Record agent/model, runtime, OS, commit, and actual outcome before expanding a support claim. Rows below describe repository verification status. The published `codexqa-defect-analyzer` skill is the Python SAST+agent scan pipeline; older TypeScript method-level rows below remain as historical fixture notes for examples, not the current skill CLI. Sample artifacts: [README previews](../README.md#overview-of-all-test-and-verify-skills).
+Installation compatibility does not establish analysis quality. Record agent/model, runtime, OS, commit, and actual outcome before expanding a support claim. Rows below describe repository verification status. The published `codexqa-defect-analyzer` skill is the Python SAST+agent scan pipeline; older TypeScript method-level rows below remain as historical fixture notes for examples, not the current skill CLI. Sample artifacts: [README previews](../README.md#overview-of-all-skills).
 
 | Component | Current evidence | Limitations |
 | --- | --- | --- |

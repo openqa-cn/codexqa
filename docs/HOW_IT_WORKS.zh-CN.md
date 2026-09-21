@@ -22,6 +22,6 @@
 | `codexqa-testdata-generator` | [工作原理](../skills/codexqa-testdata-generator/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/codexqa-testdata-generator/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/codexqa-testdata-generator/SKILL.md) |
 | `codexqa-testcase-generator` | [工作原理](../skills/codexqa-testcase-generator/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/codexqa-testcase-generator/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/codexqa-testcase-generator/SKILL.md) |
 
-各 skill 要交什么（仓库 / PRD / 用例与 API）：[FAQ](FAQ.zh-CN.md#每个-skill-要我交什么)。产物长什么样：[README 预览](../README.zh-CN.md#测试验证所有技能概览)。
+各 skill 要交什么（仓库 / PRD / 用例与 API）：[FAQ](FAQ.zh-CN.md#每个-skill-要我交什么)。产物长什么样：[README 预览](../README.zh-CN.md#所有技能SKILL概览)。
 
 安装、贡献、安全策略、目录和[支持矩阵](SUPPORT_MATRIX.zh-CN.md)在本目录。[文档读者划分](ARCHITECTURE.md#documentation-audiences)。

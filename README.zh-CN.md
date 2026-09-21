@@ -32,17 +32,17 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 
 <a href="https://openqa.cn/?utm_source=github&utm_medium=readme&utm_campaign=oss-seo&utm_content=nav-docs-zh"><strong>产品站点</strong></a> ·
 <a href="#快速开始"><strong>快速开始</strong></a> ·
-<a href="#测试验证所有技能概览"><strong>技能概览</strong></a> ·
+<a href="#所有技能SKILL概览"><strong>技能概览</strong></a> ·
 <a href="docs/GETTING_STARTED.zh-CN.md"><strong>安装说明</strong></a> ·
 <a href="CHANGELOG.md"><strong>更新日志</strong></a>
 
 </div>
 
 <a id="产物长什么样"></a>
+<a id="测试验证所有技能概览"></a>
+<a id="所有技能SKILL概览"></a>
 
-## 测试验证所有技能概览
-
-下面每个 skill 先说它要帮你**验证什么**、**能做什么**，再配一份可打开的 HTML 报告。页面用的是仓库里的渲染器和预置样例数据，只说明产物形态，不是已记录的 Agent 成绩。
+## 所有技能SKILL概览
 
 <table>
 <tr>
@@ -103,7 +103,8 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 </tr>
 </table>
 
-点截图会在浏览器里打开 HTML 报告，而不是 GitHub 源码页。重新出图见 [`docs/assets/previews/README.md`](docs/assets/previews/README.md)。<a id="证据与边界"></a><a id="evidence-and-limitations"></a>发现项仍需人工确认；本仓库 CI 不跑现场 `@openqa-cn/codexqa` 建索引。
+<a id="证据与边界"></a>
+<a id="evidence-and-limitations"></a>
 
 <a id="快速开始"></a>
 
@@ -117,6 +118,12 @@ npx skills add openqa-cn/codexqa --skill codexqa-skill-router
 
 按提示选 Cursor、Claude Code、Codex 或 OpenClaw。不用登录 npm。
 
+不需要模型的安装验收：
+
+```bash
+node examples/checkout-boundary/verify.mjs
+```
+
 **2. 运行** — 新建 Agent 会话，粘贴：
 
 ```text
@@ -127,12 +134,6 @@ npx skills add openqa-cn/codexqa --skill codexqa-skill-router
 也可以点名：`用 codexqa-defect-analyzer 审这个分支。需求：退款不得超过剩余可退余额。`
 
 **3. 看报告** — Agent 把 HTML/Markdown 写到磁盘。对照上面的截图。
-
-不需要模型的安装验收：
-
-```bash
-node examples/checkout-boundary/verify.mjs
-```
 
 **按需安装某一个 skill · 代码图 CLI**
 
