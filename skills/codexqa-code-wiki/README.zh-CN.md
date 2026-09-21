@@ -133,7 +133,7 @@ codexqa-code-wiki/
 ├── README.zh-CN.md           # 本文件
 ├── SKILL.md                  # Agent 路由 + 报告合同
 ├── assets/
-│   └── report-template.html  # DeepWiki 风格 HTML 外壳（默认中文）
+│   └── report-template.html  # DeepWiki 风格 HTML 外壳（中文/EN · 白天/黑夜）
 └── references/
     ├── playbook.md           # 场景步骤（按需加载）
     ├── report.md             # HTML 报告填写说明

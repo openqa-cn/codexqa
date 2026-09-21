@@ -4,9 +4,9 @@
 
 交付物是**一份自包含 HTML**。对话里的 Markdown 只负责指向这个文件，不是报告本身。
 
-外观沿用 DeepWiki 三栏 Wiki + 原来的深色 Claude chrome：象牙页衬底、终端底 `#1a1918`、陶土色 `#D97757`、JetBrains Mono。左侧是可展开的完整 Wiki 树（总览 / 快速上手 / 系统架构 / 入口 / 应用 / 领域 / 存储 / 核心模块 / 独立模块 / 参考），右侧「本页目录」。不要改成浅色 SaaS、卡片看板或 Archify 画布。Mermaid 仍用 [diagrams.md](diagrams.md) 的象牙纸色 `init`。
+外观沿用 DeepWiki 三栏 Wiki + 原来的深色 Claude chrome：象牙页衬底、终端底 `#1a1918`、陶土色 `#D97757`、JetBrains Mono。左侧是可展开的完整 Wiki 树（总览 / 快速上手 / 系统架构 / 入口 / 应用 / 领域 / 存储 / 核心模块 / 独立模块 / 参考），右侧「本页目录」。顶栏右侧保留模板自带的胶囊开关：**中文 / EN**、**白天 / 黑夜**。不要改成浅色 SaaS、卡片看板或 Archify 画布；白天皮肤只通过 `data-theme="light"` 切换，不要另起一套色板。Mermaid 仍用 [diagrams.md](diagrams.md) 的象牙纸色 `init`。
 
-**默认语言是简体中文。** 标题、指标、发现、概览、表格、导览、笔记、图注都用中文。编号 `p01` 和符号名原样保留。用户没要求英文时，不要把栏目标成 findings / overview / pages selected。
+**默认语言是简体中文，默认主题是黑夜。** `html` 保持 `data-lang="zh"` `data-theme="dark"`。栏目标题已有 `data-zh` / `data-en`，不要改成英文-only。正文槽位必须中英双写（`.i18n-zh` / `.i18n-en`），这样读者点 EN 时不是空页。编号 `p01` 和符号名原样保留。
 
 读者是「刚打开这个仓库的人」。每段都要回答：这是什么、先读谁、改哪里风险大、哪些可以后看。不要把 `deps` / `cross_community` / `wiki inputs` / `node_count` 当作读者词汇——内部字段只用来取证，写成「依赖」「跨模块关系」「本次导出」「规模」。
 
@@ -18,7 +18,7 @@
    cp <skill-dir>/assets/report-template.html ./codexqa-code-wiki-$(date +%Y%m%d-%H%M).html
    ```
    仓库名更清楚时写成 `codexqa-code-wiki-<repo-slug>-YYYYMMDD-HHMM.html`。
-3. **用 Edit 改副本**（不要用 Write，不要改 CSS 和 mermaid 加载器）：
+3. **用 Edit 改副本**（不要用 Write，不要改 CSS、`.prefs` 开关、i18n 脚本和 mermaid 加载器）：
    - `<title>`、`h1`、`#title-path`、`#cmd-repo`、`#cmd-flags`、`#meta-line`
    - `#source-files` — 本页相关路径。远程已知时写成可点链接（新标签打开，分支用本次索引的 `@branch`，不要猜 `main`）：
      `<a class="file" href="https://github.com/org/repo/blob/<branch>/app/foo.py#L12-L18" target="_blank" rel="noopener"><span class="file-path">app/foo.py</span><span class="file-loc">12-18</span></a>`
@@ -29,22 +29,24 @@
      - `#nav-peripheral` — 没有依赖的页；没有则保留「未列出」
      - `#layer-entry-list` 等四个列表与侧栏四层一致
    - `#data-flow` — 主链路怎么穿过各层，只写有依赖的边
-   - `#hero-total` / `#hero-split`（数字写在 `.num` 里，紧贴 `.unit`，不要在数字后加空格；单位写「个模块」）
-   - `#howto` 可按本仓改一句，但必须告诉读者先看发现、再按路径读
+   - `#hero-total` / `#hero-split`（数字写在 `.num` 里，紧贴 `.unit`，不要在数字后加空格；单位用模板里的 `data-zh="个模块"` / `data-en="modules"`）
+   - `#howto` 可按本仓改一句（`.i18n-zh` / `.i18n-en` 成对改），但必须告诉读者先看发现、再按路径读
    - `#overall-grid`（模块社区 / 本报告收录 / 独立模块 / 依赖关系）
-   - `#takeaways` — **3～5** 条，每条 = 事实 + 对读者意味着什么。精确 markup：
+   - `#takeaways` — **3～5** 条，每条 = 事实 + 对读者意味着什么。分类：`.take bad`（意外孤立 / 缺边 / 图被截断）、`.take good`（一条能走通的 入口→存储 路径）、`.take info`（中性事实）。`.fig` 用短数字（`8`、`3/12`、`p03`、`51%`）。主语包在 `<b>` 里。中英各写一段，不要写「from this wiki inputs run」这种内部口吻：
      ```html
-     <div class="take info"><div class="fig">8</div><div class="txt"><b>p03 计价</b>是枢纽：列出 6 条依赖、规模最大。改这里影响面最宽，先读它的对外接口。</div></div>
+     <div class="take info"><div class="fig">8</div><div class="txt">
+       <span class="i18n-zh"><b>p03 计价</b>是枢纽：列出 6 条依赖、规模最大。改这里影响面最宽，先读它的对外接口。</span>
+       <span class="i18n-en"><b>p03 Pricing</b> is the hub: 6 listed deps and the largest page. Changes here fan out widest — read its public API first.</span>
+     </div></div>
      ```
-     分类：`.take bad`（意外孤立 / 缺边 / 图被截断）、`.take good`（一条能走通的 入口→存储 路径）、`.take info`（中性事实）。`.fig` 用短数字（`8`、`3/12`、`p03`、`51%`）。主语包在 `<b>` 里。不要写「from this wiki inputs run」这种内部口吻。
    - `#overview` — 2～4 段人话：这个系统是什么、主链路怎么走、各层干什么。规则标题可以当模块名，但必须补一句职责。空的 `（无摘要）` 不是发现，不要贴进正文。
    - `#community-bars` / `#module-rows` — 每个收录页一行。分层列只用 **入口 / 应用 / 领域 / 存储**（图里的 subgraph 标题仍按 diagrams.md 用 Entry / Application / Domain / Storage）。没有依赖的页不要进这四层，列到 `#peripheral`。
-   - `#diagrams` — 至少一张 `.diagram`，内含 `<pre class="mermaid">`。`%%{init:...}%%` 和三行 `classDef` 从 [diagrams.md](diagrams.md) 原样复制。图下三行用中文：`依据`、`是否截断`、`图在说明`。节点标签里的 `<` 要转义。模板已给图加缩放（按钮 / ⌘或 Ctrl+滚轮 / 拖拽 / 全屏），不要改 `<script>`，也不要另起一张不能缩放的图。
+   - `#diagrams` — 至少一张 `.diagram`，内含 `<pre class="mermaid">`。`%%{init:...}%%` 和三行 `classDef` 从 [diagrams.md](diagrams.md) 原样复制。图下三行用 `.i18n-zh` / `.i18n-en` 双写：`依据` / `Source`、`是否截断` / `Truncated`、`图在说明` / `This diagram shows`。节点标签里的 `<` 要转义。模板已给图加缩放（按钮 / ⌘或 Ctrl+滚轮 / 拖拽 / 全屏），不要改 `<script>`，也不要另起一张不能缩放的图。
    - `#guides` — 1～3 条路径，用 `.callout`。相邻步骤必须出现在 `deps` / `真实依赖` 里。每步写「读什么 + 为什么下一步是它」；枢纽步加 `.callout.risk`，并可加 `<span class="why">…</span>`。
    - `#notes` — 每个核心页一个 `<details>`（`amt` = `p01`，`desc` = 人话职责，body = 职责 / 对外接口 / 内部调用 / 跨模块往来）。不要把 `signatures` / `call_chain` 当小标题原文甩给读者。
    - `#peripheral` — 没有依赖的页，并写清「为什么可以后看」（独立工具 / 实验原型 / 演示）。没有则写「未列出」。
    - `#foot-gen` / `#foot-stats` — 生成时间和用过的 `wiki inputs` 命令（顶栏与文末）。
-4. **不要改现有分区结构，也不要重做皮肤。** 本场景确实没有的内容可以留空提示，不要删标题。
+4. **不要改现有分区结构，也不要重做皮肤，也不要删掉顶栏开关。** 本场景确实没有的内容可以留空提示（中英都留），不要删标题。短标签改 `data-zh` / `data-en` 以及可见文本；成段正文用 `.i18n-zh` / `.i18n-en` 各写一份。`#title-path`、`#foot-gen`、`#howto` 里已有这两套 span，替换时成对改。
 5. **把文件路径告诉用户。** 不要在对话里打开文件或粘贴整份 HTML。
 
 ## 各栏怎么写才有用
@@ -114,12 +116,14 @@
 
 ## 出现这些情况就整份重写
 
-- 改了皮肤色板（象牙衬底 / term-bg / 陶土色 / JetBrains Mono 缺失，或改成浅色 SaaS）
+- 改了皮肤色板（象牙衬底 / term-bg / 陶土色 / JetBrains Mono 缺失，或改成浅色 SaaS；白天皮肤只能走顶栏「白天」开关）
+- 删掉了 `.prefs`（中文 / EN · 白天 / 黑夜），或把 `data-lang` / `data-theme` / i18n 脚本拿掉
+- 正文只填了一种语言，另一种开关下是空槽或中文残留标题混英文栏
 - 侧栏仍是扁平 8 条，没有按 DeepWiki 树填满分层和核心模块
 - 没复制模板，自己另起了一套版式
 - Mermaid 缺 `init` / `classDef` / 该标 `class ... risk` 的核心模块没标
 - 把没有依赖的页放进了入口 / 应用 / 领域 / 存储
 - 证据不是本次 `wiki inputs`
 - 生成了 Archify / 分组泳道架构画布
-- 用户没要求英文，但栏目标题或正文仍是 findings / overview / pages selected
+- 默认可见语言不是中文（`html` 被改成 `data-lang="en"`，或栏目标题被改成英文-only）
 - 发现或概览把 `deps` / `cross_community` / `wiki inputs` 当读者用语，没有写出职责和阅读顺序

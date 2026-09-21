@@ -18,7 +18,7 @@ compatibility: >
   `wiki inputs` need no LLM. Data lives in ~/.codexqa/.
 metadata:
   author: open-source
-  version: "1.2.0"
+  version: "1.3.0"
   open-standard: agentskills
 ---
 
@@ -75,9 +75,13 @@ Deliver a **self-contained HTML knowledge-graph report** in DeepWiki
 wiki layout with the original dark Claude chrome (`#1a1918`, clay
 `#D97757`, JetBrains Mono, left sidebar tree, article, on-this-page TOC).
 Copy [assets/report-template.html](assets/report-template.html)
-into the working directory, then fill slots with Edit (do not rewrite CSS).
-**Default the filled report to Simplified Chinese** (headings, stats, findings,
-overview, guides, notes). Keep `p01` aliases and symbol names. Write for a
+into the working directory, then fill slots with Edit (do not rewrite CSS,
+and do not remove the `.prefs` 中文/EN · 白天/黑夜 toggles).
+**Default the filled report to Simplified Chinese** (`html` stays
+`data-lang="zh"` `data-theme="dark"`). Chrome already switches via the
+toggles; **fill every reader-facing slot in both languages**
+(`.i18n-zh` / `.i18n-en`, or `data-zh` / `data-en` on short labels).
+Keep `p01` aliases and symbol names. Write for a
 newcomer: what the system is, where to start, which module is the hub,
 which pages are standalone. Not a product brochure, and not an Archify /
 architecture canvas.
@@ -110,5 +114,6 @@ Reject the whole report and rewrite if any of these hold:
 - HTML is missing the bundled wiki chrome (sidebar + article + TOC), or was written from scratch instead of copying the template
 - Report was delivered as Markdown-only / chat-only with no HTML file
 - Archify / grouped-swimlane architecture canvas was generated (this skill does not ask for that)
-- Chrome or body left in English when the user did not ask for English (findings / overview / pages selected)
+- Prefs toolbar (中文 / EN · 白天 / 黑夜) removed, or chrome rewritten into a static English page / light-only SaaS skin
+- Body slots filled in one language only, so the other toggle shows empty chrome or leftover placeholders
 - Findings or overview dump field names (`deps`, `cross_community`, `wiki inputs`) instead of responsibility / dependency / reading order
