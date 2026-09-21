@@ -43,7 +43,7 @@ AI can produce a green pull request quickly. Teams still have to check whether t
 | Requirement review | [`requirements-analyzer`](skills/requirements-analyzer/README.md) | Is the PRD complete, consistent, and testable? | One gap/conflict register with P0 / P1 verification |
 | Test design | [`testcase-generation`](skills/testcase-generation/README.md) | What manual cases and test plan follow from the requirements? | Local Markdown plan + cases + aggregated HTML report; unknowns marked, not invented |
 | Test data | [`testdata-generation`](skills/testdata-generation/README.md) | What real IDs and preconditions make those cases runnable? | Backend-returned values written back into case preconditions |
-| Architecture wiki | [`code-wiki`](skills/code-wiki/README.md) | How is this repo organized, which module is the hub, and where should a newcomer start? | Community map, real deps, reading guides, and a Claude Code-style HTML report |
+| Architecture wiki | [`code-wiki`](skills/code-wiki/README.md) | How is this repo organized, which module is the hub, and where should a newcomer start? | Community map, real deps, reading guides, and a DeepWiki-style HTML report |
 | Change impact | [`code-analyzer`](skills/code-analyzer/README.md) | What changed, who calls it, which entries are hit, and what is untested? | Symbol-graph evidence, regression scope, test gaps, and diagrams |
 | Exception RCA | [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.md) | What is the in-repo root cause of this stack / log / crash? | Gated English root-cause report on top of CodexQA CLI facts |
 | Code-risk scan | [`defect-detection`](skills/defect-detection/README.md) | What SAST / secrets / logic risks are in this diff, repo, or paste? | `report_scan.json` / `.md` / `.html` findings ordered P0–P3 |
@@ -180,7 +180,7 @@ Build a code knowledge graph for this repo with code-wiki. Use wiki inputs only 
 Start with the architecture map, then explain the core modules and a reading path.
 ```
 
-The filled report is a self-contained HTML file in Claude Code official style. This path uses the same local engine as `code-analyzer`; see [known limitations](skills/code-wiki/KNOWN_LIMITATIONS.md).
+The filled report is a self-contained HTML file in DeepWiki wiki layout (sidebar + article + on-this-page TOC) with the original dark Claude chrome. This path uses the same local engine as `code-analyzer`; see [known limitations](skills/code-wiki/KNOWN_LIMITATIONS.md).
 
 <details>
 <summary><b>What to say to the other skills</b></summary>

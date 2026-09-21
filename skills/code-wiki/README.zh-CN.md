@@ -93,7 +93,7 @@ index
   → wiki inputs --kind architecture / overview / page / visualization
   → 按 Entry → Application → Domain → Storage 分组
   → 沿真实 deps 写阅读导览
-  → Claude Code 官方风格 HTML 报告（内嵌 Mermaid）
+  → DeepWiki 风格 HTML Wiki 报告（侧栏 + 正文 + 本页目录，内嵌 Mermaid）
 ```
 
 可选：`wiki --no-llm` 落规则页。Agent 报告仍然以 `wiki inputs` 为准。
@@ -133,7 +133,7 @@ code-wiki/
 ├── README.zh-CN.md           # 本文件
 ├── SKILL.md                  # Agent 路由 + 报告合同
 ├── assets/
-│   └── report-template.html  # Claude Code 官方风格 HTML 外壳（默认中文）
+│   └── report-template.html  # DeepWiki 风格 HTML 外壳（默认中文）
 └── references/
     ├── playbook.md           # 场景步骤（按需加载）
     ├── report.md             # HTML 报告填写说明

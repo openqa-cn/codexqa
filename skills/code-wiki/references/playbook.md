@@ -143,4 +143,4 @@ codexqa wiki /path/to/repo --no-llm --no-persist
 
 ## Write the HTML report
 
-After you have `wiki inputs` evidence, open [report.md](report.md). Copy the bundled Claude Code template, fill slots in **简体中文** (unless the user asked for English), and give the user the file path. Write for a newcomer: hub, reading order, standalone tools. Do not dump field names. Do not stop at a Markdown-only reply.
+After you have `wiki inputs` evidence, open [report.md](report.md). Copy the bundled DeepWiki-style template, fill slots in **简体中文** (unless the user asked for English), and give the user the file path. Write for a newcomer: hub, reading order, standalone tools. Do not dump field names. Do not stop at a Markdown-only reply.

@@ -10,7 +10,7 @@ codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。�
 | --- | --- | --- |
 | 缺陷检测 | **已提供** | 面向代码变更、测试计划和交付任务的 Agent 静态与业务逻辑审查 |
 | 代码分析 | **已提供** | `code-analyzer` 为支持的语言建立本地符号图，`defect-detection` 另有 AST 规则和变更方法分析；parser 与框架覆盖仍有差异 |
-| 架构知识图谱 | **已提供** | `code-wiki` 用 `wiki inputs`（不调模型）导出 Leiden 社区和真实 `deps`，再写 Claude Code 风格 HTML Wiki；无模型时标题保持规则标题 |
+| 架构知识图谱 | **已提供** | `code-wiki` 用 `wiki inputs`（不调模型）导出 Leiden 社区和真实 `deps`，再写 DeepWiki 风格 HTML Wiki（侧栏 + 正文 + 本页目录）；无模型时标题保持规则标题 |
 | 需求评审 | **已提供** | 对需求文档做缺口/冲突分析（`requirements-analyzer`）；实现是否符合需求仍是计划中 |
 | 规格评审 | **计划中** | 检查技术规格的完整性、一致性和可测试性 |
 | AI Code Review | **已提供** | CodexQA 证据包 → 双语 `REVIEW-REPORT.html`（`ai-code-reviewer`）；本地有 fixture validate+render 冒烟 |

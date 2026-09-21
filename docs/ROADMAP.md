@@ -10,7 +10,7 @@ codexqa's product direction covers the full AI software engineering quality life
 | --- | --- | --- |
 | Defect detection | **Available** | Agent-led static and business-logic review for code changes, test plans, and delivery tasks |
 | Code analysis | **Available** | Local symbol graph for supported languages (`code-analyzer`); `defect-detection` adds SAST/lint/secrets/SCA plus agent-inline semantic scan reports; parser and framework coverage still varies |
-| Architecture knowledge graph | **Available** | `code-wiki` exports Leiden communities and real `deps` with `wiki inputs` (no model) and writes a Claude Code-style HTML wiki; titles without a model stay rule titles |
+| Architecture knowledge graph | **Available** | `code-wiki` exports Leiden communities and real `deps` with `wiki inputs` (no model) and writes a DeepWiki-style HTML wiki (sidebar + article + TOC); titles without a model stay rule titles |
 | Requirement review | **Available** | Gap/conflict analysis of requirement documents (`requirements-analyzer`); implementation-vs-requirement check is still planned |
 | Specification review | **Planned** | Review technical specifications for completeness, consistency, and testability |
 | AI Code Review | **Available** | CodexQA evidence-pack → bilingual `REVIEW-REPORT.html` (`ai-code-reviewer`); fixture validate+render smoke locally |

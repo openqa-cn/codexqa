@@ -43,7 +43,7 @@ AI 能很快产出一个绿 PR，但需求是否对齐、影响了谁、审查�
 | 需求评审 | [`requirements-analyzer`](skills/requirements-analyzer/README.zh-CN.md) | PRD 是否完整、一致、可测试？ | 一份带 P0 / P1 验证项的缺口/冲突登记表 |
 | 测试设计 | [`testcase-generation`](skills/testcase-generation/README.zh-CN.md) | 根据需求应该写什么测试方案和手工用例？ | 本地 Markdown 方案 + 用例 + 聚合 HTML 报告；未知信息标出，不编造 |
 | 测试数据 | [`testdata-generation`](skills/testdata-generation/README.zh-CN.md) | 哪些真实 ID 和前置条件能让用例跑起来？ | 后端实际返回值回写到用例前置条件 |
-| 架构 Wiki | [`code-wiki`](skills/code-wiki/README.zh-CN.md) | 仓库怎么分层、枢纽模块是谁、新人从哪读起？ | 社区地图、真实依赖、阅读导览和 Claude Code 风格 HTML 报告 |
+| 架构 Wiki | [`code-wiki`](skills/code-wiki/README.zh-CN.md) | 仓库怎么分层、枢纽模块是谁、新人从哪读起？ | 社区地图、真实依赖、阅读导览和 DeepWiki 风格 HTML 报告 |
 | 变更影响 | [`code-analyzer`](skills/code-analyzer/README.zh-CN.md) | 改了什么、谁在调用、影响哪些入口、哪里没测试？ | 符号图证据、回归范围、测试缺口和关系图 |
 | 异常根因 | [`root-cause-diagnosis`](skills/root-cause-diagnosis/README.zh-CN.md) | 这条堆栈 / 日志 / 崩溃的仓内根因是什么？ | 基于 CodexQA CLI facts 的带门禁英文 RCA 报告 |
 | 代码风险扫描 | [`defect-detection`](skills/defect-detection/README.zh-CN.md) | 这个 diff / 仓库 / 粘贴里有哪些 SAST / 密钥 / 逻辑风险？ | 按 P0–P3 排序的 `report_scan.json` / `.md` / `.html` |
@@ -182,7 +182,7 @@ codexqa wiki inputs /path/to/repo --kind architecture --limit 8
 先出架构地图，再解释核心模块和一条阅读路径。
 ```
 
-填好的报告是一份 Claude Code 官方风格的自包含 HTML。这条路径和 `code-analyzer` 共用同一套本地引擎，详见[已知边界](skills/code-wiki/KNOWN_LIMITATIONS.zh-CN.md)。
+填好的报告是一份 DeepWiki 三栏 Wiki 布局（侧栏 + 正文 + 本页目录）的自包含 HTML，皮肤仍用原来的深色 Claude chrome。这条路径和 `code-analyzer` 共用同一套本地引擎，详见[已知边界](skills/code-wiki/KNOWN_LIMITATIONS.zh-CN.md)。
 
 <details>
 <summary><b>另外几个 skill 分别怎么开口</b></summary>
