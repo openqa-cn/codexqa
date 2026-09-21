@@ -340,15 +340,20 @@ jq -c '
       end;
   def finding_cards($sev; $items; $mode):
     if ($items | length) == 0 then
-      "<article class=\"finding empty\"><div class=\"finding-head\"><span class=\"sev \($sev)\">\($sev | ascii_upcase)</span><h3 data-zh=\"无\" data-en=\"None\">无</h3></div><p class=\"muted pad\" data-zh=\"无此项。\" data-en=\"None.\">无此项。</p></article>"
+      "<article class=\"finding case empty is-empty open\" data-pri=\"" + ($sev|ascii_upcase) + "\">"
+      + "<header class=\"finding-head case-head\"><span class=\"sev \($sev)\">\($sev | ascii_upcase)</span>"
+      + "<h3 data-zh=\"无\" data-en=\"None\">无</h3></header>"
+      + "<div class=\"finding-body case-body\"><p class=\"muted pad\" data-zh=\"无此项。\" data-en=\"None.\">无此项。</p></div></article>"
     else
       ($items | map(
         ((.title // "Finding") | tostring) as $tz
         | ((.title_en // .title // "Finding") | tostring) as $te
-        | "<article class=\"finding \($sev)\">" +
-        "<div class=\"finding-head\"><span class=\"sev \($sev)\">\($sev | ascii_upcase)</span>"
-        + "<h3 data-zh=\"" + ($tz|esc) + "\" data-en=\"" + ($te|esc) + "\">" + ($tz|esc) + "</h3></div>" +
-        "<div class=\"finding-body\">" +
+        | "<article class=\"finding case \($sev)\" data-pri=\"" + ($sev|ascii_upcase) + "\">"
+        + "<header class=\"finding-head case-head\" role=\"button\" tabindex=\"0\" aria-expanded=\"false\">"
+        + "<span class=\"sev \($sev)\">\($sev | ascii_upcase)</span>"
+        + "<h3 data-zh=\"" + ($tz|esc) + "\" data-en=\"" + ($te|esc) + "\">" + ($tz|esc) + "</h3>"
+        + "<span class=\"chev\" aria-hidden=\"true\"></span></header>"
+        + "<div class=\"finding-body case-body\">" +
         field_bi("位置"; "is-path"; .location; .location_en) +
         ("<div class=\"field\">" + field_k("变更") + "<div class=\"field-v is-cat\">" + change_label(.change_status; $mode) + "</div></div>") +
         ("<div class=\"field\">" + field_k("分类") + "<div class=\"field-v is-cat\">" + category_bi(.category) + "</div></div>") +
@@ -687,7 +692,23 @@ jq -n -r --slurpfile p "$FRAG" --arg css "$CSS" --arg js "$JS" '
   + ($p.rollout_html // "")
   + ($p.performance_html // "")
   + ($p.llm_judgment_html // "")
-  + "<section>" + h2bi("发现项"; "Findings") + "<div class=\"findings-stack\">\n" + $p.p0_html + "\n" + $p.p1_html + "\n" + $p.p2_html + "\n</div></section>\n"
+  + "<section id=\"findings\">" + h2bi("发现项"; "Findings")
+  + "<p class=\"muted findings-hint\" data-zh=\"每条记录默认收起，点击卡片展开依据与修复建议。\" data-en=\"Records are collapsed by default. Click a card to expand evidence and the suggested fix.\">每条记录默认收起，点击卡片展开依据与修复建议。</p>\n"
+  + "<div class=\"toolbar\">\n"
+  + "<div class=\"tabs\" role=\"tablist\" aria-label=\"Severity\">\n"
+  + "<button type=\"button\" class=\"tab\" data-sev=\"all\" aria-selected=\"true\"><span data-zh=\"全部\" data-en=\"All\">全部</span> (" + (($p.p0_count + $p.p1_count + $p.p2_count)|tostring) + ")</button>\n"
+  + "<button type=\"button\" class=\"tab\" data-sev=\"p0\" aria-selected=\"false\">P0 (" + ($p.p0_count|tostring) + ")</button>\n"
+  + "<button type=\"button\" class=\"tab\" data-sev=\"p1\" aria-selected=\"false\">P1 (" + ($p.p1_count|tostring) + ")</button>\n"
+  + "<button type=\"button\" class=\"tab\" data-sev=\"p2\" aria-selected=\"false\">P2 (" + ($p.p2_count|tostring) + ")</button>\n"
+  + "</div>\n"
+  + "<div class=\"filters\">\n"
+  + "<button class=\"tab\" type=\"button\" id=\"expandAll\"><span data-zh=\"展开全部\" data-en=\"Expand all\">展开全部</span></button>\n"
+  + "<button class=\"tab\" type=\"button\" id=\"collapseAll\"><span data-zh=\"收起全部\" data-en=\"Collapse all\">收起全部</span></button>\n"
+  + "</div></div>\n"
+  + "<div class=\"findings-stack\" data-sev-panel=\"p0\">" + $p.p0_html + "</div>\n"
+  + "<div class=\"findings-stack\" data-sev-panel=\"p1\">" + $p.p1_html + "</div>\n"
+  + "<div class=\"findings-stack\" data-sev-panel=\"p2\">" + $p.p2_html + "</div>\n"
+  + "</section>\n"
   + "<section>" + h2bi("回归必测清单"; "Regression must-test")
   + "<p class=\"muted\" data-zh=\"目标列写清可执行场景（入口/条件/期望）；证据列用通俗依据，勿只填符号 UUID 或证据包路径。\" data-en=\"Write executable scenarios (entry/conditions/expected result). Evidence should be plain language — not only UUIDs or pack paths.\">目标列写清可执行场景（入口/条件/期望）；证据列用通俗依据，勿只填符号 UUID 或证据包路径。</p>\n"
   + "<div class=\"table-wrap\"><table><thead><tr>"

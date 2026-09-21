@@ -44,6 +44,8 @@ const shots = [
         b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
       });
       document.querySelectorAll('article.finding.empty').forEach(function(el){ el.style.display='none'; });
+      var first=document.querySelector('article.finding.case:not(.empty)');
+      if(first) first.classList.add('open');
       document.querySelectorAll('section').forEach(function(sec){
         var h=sec.querySelector('h2');
         var t=h?h.textContent:'';
@@ -58,22 +60,54 @@ const shots = [
   {
     html: "code-wiki.html",
     png: "code-wiki.png",
-    prepare: LIGHT,
+    prepare: `
+      document.documentElement.setAttribute('data-theme','light');
+      document.querySelectorAll('[data-set-theme]').forEach(function(b){
+        b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
+      });
+      var first=document.querySelector('.case');
+      if(first) first.classList.add('open');
+      window.scrollTo(0,0);
+    `,
   },
   {
     html: "code-analyzer.html",
     png: "code-analyzer.png",
-    prepare: LIGHT,
+    prepare: `
+      document.documentElement.setAttribute('data-theme','light');
+      document.querySelectorAll('[data-set-theme]').forEach(function(b){
+        b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
+      });
+      var first=document.querySelector('.case');
+      if(first) first.classList.add('open');
+      window.scrollTo(0,0);
+    `,
   },
   {
     html: "rootcause.html",
     png: "rootcause.png",
-    prepare: LIGHT,
+    prepare: `
+      document.documentElement.setAttribute('data-theme','light');
+      document.querySelectorAll('[data-set-theme]').forEach(function(b){
+        b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
+      });
+      var first=document.querySelector('.case');
+      if(first) first.classList.add('open');
+      window.scrollTo(0,0);
+    `,
   },
   {
     html: "ra-register.html",
     png: "ra-register.png",
-    prepare: LIGHT,
+    prepare: `
+      document.documentElement.setAttribute('data-theme','light');
+      document.querySelectorAll('[data-set-theme]').forEach(function(b){
+        b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
+      });
+      var first=document.querySelector('.case');
+      if(first) first.classList.add('open');
+      window.scrollTo(0,0);
+    `,
   },
   {
     html: "testcase-report.html",
@@ -91,7 +125,15 @@ const shots = [
   {
     html: "testdata-writeback.html",
     png: "testdata-writeback.png",
-    prepare: LIGHT,
+    prepare: `
+      document.documentElement.setAttribute('data-theme','light');
+      document.querySelectorAll('[data-set-theme]').forEach(function(b){
+        b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
+      });
+      var first=document.querySelector('.case');
+      if(first) first.classList.add('open');
+      window.scrollTo(0,0);
+    `,
   },
   {
     html: "testcase-sample.html",

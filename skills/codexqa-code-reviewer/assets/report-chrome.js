@@ -58,4 +58,75 @@
   } catch (e) {}
   setLang(lang === 'en' ? 'en' : 'zh');
   setTheme(normalizeTheme(theme));
+
+  function setCaseOpen(card, open) {
+    if (!card) return;
+    card.classList.toggle('open', open);
+    const head = card.querySelector('.case-head');
+    if (head) head.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  document.querySelectorAll('.case-head').forEach(head => {
+    const card = head.closest('.case');
+    if (head.tagName !== 'BUTTON') {
+      if (!head.hasAttribute('role')) head.setAttribute('role', 'button');
+      if (!head.hasAttribute('tabindex')) head.setAttribute('tabindex', '0');
+    }
+    if (!head.hasAttribute('aria-expanded')) {
+      head.setAttribute('aria-expanded', card && card.classList.contains('open') ? 'true' : 'false');
+    }
+    head.addEventListener('click', () => {
+      if (!card || card.classList.contains('empty') || card.classList.contains('is-empty')) return;
+      setCaseOpen(card, !card.classList.contains('open'));
+    });
+    head.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        head.click();
+      }
+    });
+  });
+
+  const expandAll = document.getElementById('expandAll');
+  const collapseAll = document.getElementById('collapseAll');
+  function toggleableCases(expand) {
+    const scoped = document.querySelectorAll(
+      '.panel:not([hidden]) .case:not([hidden]), [data-sev-panel]:not([hidden]) .case:not([hidden])'
+    );
+    const cards = scoped.length ? scoped : document.querySelectorAll('.case:not([hidden])');
+    cards.forEach(c => {
+      if (c.classList.contains('empty') || c.classList.contains('is-empty')) return;
+      setCaseOpen(c, expand);
+    });
+  }
+  if (expandAll) expandAll.addEventListener('click', () => toggleableCases(true));
+  if (collapseAll) collapseAll.addEventListener('click', () => toggleableCases(false));
+
+  const sevTabs = document.querySelectorAll('.tab[data-sev]');
+  const sevPanels = document.querySelectorAll('[data-sev-panel]');
+  function showSev(name) {
+    if (!sevTabs.length) return;
+    sevTabs.forEach(t => t.setAttribute('aria-selected', t.getAttribute('data-sev') === name ? 'true' : 'false'));
+    sevPanels.forEach(p => {
+      p.hidden = name !== 'all' && p.getAttribute('data-sev-panel') !== name;
+    });
+    const matched = name === 'all' || Array.prototype.some.call(
+      sevPanels, p => p.getAttribute('data-sev-panel') === name);
+    const emptyEl = document.getElementById('sev-empty');
+    if (emptyEl) emptyEl.hidden = matched;
+  }
+  sevTabs.forEach(t => t.addEventListener('click', () => showSev(t.getAttribute('data-sev'))));
+
+  function openHash() {
+    if (!location.hash) return;
+    let el;
+    try { el = document.querySelector(location.hash); } catch (e) { return; }
+    if (!el) return;
+    const panel = el.closest('[data-sev-panel]') || (el.hasAttribute('data-sev-panel') ? el : null);
+    if (panel && panel.getAttribute('data-sev-panel')) showSev('all');
+    const card = el.classList && el.classList.contains('case') ? el : el.closest('.case');
+    if (card) setCaseOpen(card, true);
+  }
+  openHash();
+  window.addEventListener('hashchange', openHash);
 })();

@@ -6,7 +6,7 @@
 
 外观沿用 DeepWiki 三栏 Wiki，皮肤与 `codexqa-testcase-generator` 的 HTML 报告一致：白天默认、右上角中文/EN 与白天/黑夜开关、绿色强调 `#0f6b4c`。左侧是可展开的完整 Wiki 树（总览 / 快速上手 / 系统架构 / 入口 / 应用 / 领域 / 存储 / 核心模块 / 独立模块 / 参考），右侧「本页目录」。不要改成 Archify 画布。Mermaid 仍用 [diagrams.md](diagrams.md) 的纸色 `init`。
 
-**默认语言是简体中文。** 标题、指标、发现、概览、表格、导览、笔记、图注都用中文。编号 `p01` 和符号名原样保留。用户没要求英文时，不要把栏目标成 findings / overview / pages selected。
+**默认语言是简体中文。** 填写正文（发现、概览、笔记、图注）用中文。编号 `p01` 和符号名原样保留。用户没要求英文时，不要把栏目标成 findings / overview / pages selected。模板壳层（导航、分区标题、表头、图例、术语、展开/收起）已带 `data-zh` / `data-en`，读者点右上角 EN 会切到英语；**不要删这些属性**。用户填写的模块名、发现正文不会自动翻译。
 
 读者是「刚打开这个仓库的人」。每段都要回答：这是什么、先读谁、改哪里风险大、哪些可以后看。不要把 `deps` / `cross_community` / `wiki inputs` / `node_count` 当作读者词汇——内部字段只用来取证，写成「依赖」「跨模块关系」「本次导出」「规模」。
 
@@ -36,7 +36,7 @@
      ```html
      <div class="take info"><div class="fig">8</div><div class="txt"><b>p03 计价</b>是枢纽：列出 6 条依赖、规模最大。改这里影响面最宽，先读它的对外接口。</div></div>
      ```
-     分类：`.take bad`（意外孤立 / 缺边 / 图被截断）、`.take good`（一条能走通的 入口→存储 路径）、`.take info`（中性事实）。`.fig` 用短数字（`8`、`3/12`、`p03`、`51%`）。主语包在 `<b>` 里。不要写「from this wiki inputs run」这种内部口吻。
+     分类：`.take bad`（意外孤立 / 缺边 / 图被截断）、`.take good`（一条能走通的 入口→存储 路径）、`.take info`（中性事实）。`.fig` 用短数字（`8`、`3/12`、`p03`、`51%`）。主语包在 `<b>` 里。不要写「from this wiki inputs run」这种内部口吻。页面加载后脚本会把 `.take` 收成可点开的卡片（默认收起）；填写时仍用上面的 `div.take` markup，不要改成别的结构。
    - `#overview` — 2～4 段人话：这个系统是什么、主链路怎么走、各层干什么。规则标题可以当模块名，但必须补一句职责。空的 `（无摘要）` 不是发现，不要贴进正文。
    - `#community-bars` / `#module-rows` — 每个收录页一行。分层列只用 **入口 / 应用 / 领域 / 存储**（图里的 subgraph 标题仍按 diagrams.md 用 Entry / Application / Domain / Storage）。没有依赖的页不要进这四层，列到 `#peripheral`。
    - `#diagrams` — 至少一张 `.diagram`，内含 `<pre class="mermaid">`。`%%{init:...}%%` 和三行 `classDef` 从 [diagrams.md](diagrams.md) 原样复制。图下三行用中文：`依据`、`是否截断`、`图在说明`。节点标签里的 `<` 要转义。模板已给图加缩放（按钮 / ⌘或 Ctrl+滚轮 / 拖拽 / 全屏），不要改 `<script>`，也不要另起一张不能缩放的图。

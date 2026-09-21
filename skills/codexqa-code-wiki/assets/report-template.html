@@ -155,7 +155,7 @@
   .toc a:hover, .toc a.active { color: var(--term-fg); }
 
   /* ——— article ——— */
-  .article { max-width: 780px; padding: 28px 36px 80px; }
+  .article { max-width: 780px; padding: 32px 40px 80px; }
 
   h1 {
     margin: 0 0 12px;
@@ -163,15 +163,28 @@
   }
   h2 {
     all: unset; display: block;
-    margin: 32px 0 10px;
+    margin: 28px 0 12px;
     color: var(--clay); font-weight: 500; font-size: 16px;
   }
   h2::before { content: "▸ "; font-family: var(--mono); }
   h2 .hint { color: var(--subtle); font-size: 12px; font-weight: 400; margin-left: 8px; }
   h3 { margin: 22px 0 8px; font-size: 14px; font-weight: 500; color: var(--term-fg); }
-  section { scroll-margin-top: calc(var(--topbar-h) + 16px); margin-top: 8px; }
+  section { scroll-margin-top: calc(var(--topbar-h) + 16px); margin-top: 20px; }
   .hr { display: none; }
-  .section-body { margin-top: 8px; }
+  .section-body { margin-top: 12px; }
+  .wiki-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+  .wiki-toolbar button {
+    appearance: none; min-height: 36px; padding: 8px 14px;
+    border: 1px solid var(--outline); border-radius: 999px;
+    background: var(--chip); color: var(--term-fg);
+    font: inherit; font-size: 13px; cursor: pointer;
+  }
+  .wiki-toolbar button:hover { border-color: var(--clay); color: var(--clay); }
+  .wiki-toolbar button:focus-visible,
+  .take > summary:focus-visible,
+  .drill summary:focus-visible {
+    outline: 2px solid var(--acc); outline-offset: 2px;
+  }
 
   .cmd {
     margin: 0 8px 12px;
@@ -215,7 +228,7 @@
   .file-loc { background: var(--chip-loc); padding: 5px 8px; color: var(--dim); }
 
   .howto {
-    margin: 0 0 16px; padding: 10px 14px;
+    margin: 0 0 20px; padding: 12px 16px;
     border-left: 2px solid var(--clay);
     color: var(--dim); font-size: 13px;
   }
@@ -232,9 +245,9 @@
   #hero-split .warn { color: var(--yellow); }
 
   #overall-grid {
-    display: grid; gap: 4px 28px;
+    display: grid; gap: 12px 28px;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    margin: 8px 0 4px; padding: 10px 0;
+    margin: 16px 0; padding: 16px 0;
     border-top: 1px solid var(--outline);
     border-bottom: 1px solid var(--outline);
   }
@@ -244,19 +257,43 @@
   .stat .detail { font-size: 12px; color: var(--subtle); }
 
   /* ——— takeaways ——— */
+  #takeaways { display: flex; flex-direction: column; gap: 12px; }
   .take {
-    display: grid; grid-template-columns: 8ch 1fr; gap: 16px;
-    padding: 8px 0; align-items: baseline;
+    margin: 0; padding: 0;
+    border: 1px solid var(--outline); border-radius: 10px;
+    background: var(--titlebar);
   }
+  div.take {
+    display: grid; grid-template-columns: 8ch 1fr; gap: 12px;
+    padding: 12px 14px; align-items: baseline; min-height: 44px;
+  }
+  .take > summary {
+    list-style: none; cursor: pointer;
+    display: grid; grid-template-columns: 8ch minmax(0, 1fr) auto; gap: 12px;
+    align-items: center; min-height: 44px; padding: 12px 14px;
+  }
+  .take > summary::-webkit-details-marker { display: none; }
+  .take > summary:hover { background: var(--hover); }
   .take .fig { text-align: right; font-weight: 700; font-size: 15px; font-family: var(--mono); }
-  .take .txt { color: var(--dim); }
+  .take .txt { color: var(--dim); min-width: 0; }
   .take .txt b { color: var(--term-fg); font-weight: 500; }
+  .take .take-body {
+    padding: 0 14px 14px; border-top: 1px solid var(--outline);
+    color: var(--dim); line-height: 1.65;
+  }
+  .take .take-body b { color: var(--term-fg); font-weight: 500; }
+  .take > summary .chev {
+    width: 8px; height: 8px; justify-self: end;
+    border-right: 2px solid var(--subtle); border-bottom: 2px solid var(--subtle);
+    transform: rotate(45deg); transition: transform .15s ease;
+  }
+  .take[open] > summary .chev { transform: rotate(225deg); }
   .take.bad  .fig { color: var(--red); }
   .take.good .fig { color: var(--green); }
   .take.info .fig { color: var(--blue); }
 
   /* ——— callouts (reading-guide steps) ——— */
-  .callout { padding: 8px 0 8px 14px; border-left: 2px solid var(--subtle); color: var(--dim); margin: 8px 0; }
+  .callout { padding: 12px 14px; border-left: 2px solid var(--subtle); color: var(--dim); margin: 0 0 12px; border-radius: 0 10px 10px 0; background: var(--titlebar); }
   .callout b, .callout code { color: var(--term-fg); }
   .callout.risk { border-left-color: var(--clay); }
   .callout .why { display: block; margin-top: 4px; font-size: 12px; color: var(--subtle); }
@@ -273,12 +310,12 @@
   .bar:hover .name { color: var(--clay); }
 
   /* ——— drill-down lists (module notes) ——— */
-  .drill details { border-top: 1px solid var(--outline); scroll-margin-top: calc(var(--topbar-h) + 16px); }
-  .drill details:last-of-type { border-bottom: 1px solid var(--outline); }
+  .drill details { border: 1px solid var(--outline); border-radius: 10px; margin: 0 0 10px; background: var(--titlebar); scroll-margin-top: calc(var(--topbar-h) + 16px); }
+  .drill details:last-of-type { margin-bottom: 0; }
   .drill summary {
     list-style: none; cursor: pointer;
     display: grid; grid-template-columns: 6ch 1fr; gap: 14px;
-    padding: 10px 4px; align-items: baseline;
+    padding: 12px 14px; min-height: 44px; align-items: center;
   }
   .drill summary::-webkit-details-marker { display: none; }
   .drill summary:hover { background: var(--hover); }
@@ -286,7 +323,7 @@
   .drill .desc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .drill .meta { grid-column: 2; font-size: 12px; color: var(--subtle); }
   .drill details[open] summary .desc { white-space: normal; }
-  .drill .body { padding: 4px 4px 16px calc(6ch + 18px); font-size: 13px; color: var(--dim); }
+  .drill .body { padding: 8px 14px 16px calc(6ch + 28px); font-size: 13px; color: var(--dim); }
   .drill .body p { margin: 0 0 8px; }
   .drill .body p:last-child { margin-bottom: 0; }
 
@@ -373,12 +410,12 @@
   tbody tr:hover td { background: var(--hover); }
 
   .layer-grid {
-    display: grid; gap: 12px;
+    display: grid; gap: 16px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin-top: 8px;
+    margin-top: 12px;
   }
   .layer-card {
-    border: 1px solid var(--outline); border-radius: 6px; padding: 10px 12px;
+    border: 1px solid var(--outline); border-radius: 10px; padding: 14px 16px;
   }
   .layer-card h3 { margin: 0 0 6px; color: var(--clay); font-size: 13px; }
   .layer-card ul { margin: 0; padding-left: 1.1em; color: var(--dim); }
@@ -408,6 +445,10 @@
     .drill summary { grid-template-columns: 5ch 1fr; }
     .drill .body { padding-left: 8px; }
     .take { grid-template-columns: 6ch 1fr; gap: 10px; }
+    div.take, .take > summary { grid-template-columns: 6ch minmax(0, 1fr) auto; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .take > summary .chev { transition: none; }
   }
 </style>
 </head>
@@ -437,58 +478,58 @@
       <span id="cmd-flags">--kind architecture --limit 8</span>
     </div>
     <nav class="nav" id="wiki-nav">
-      <a href="#page-top" class="active">总览</a>
+      <a href="#page-top" class="active" data-zh="总览" data-en="Overview">总览</a>
 
       <details class="nav-group" open>
-        <summary>快速上手</summary>
+        <summary data-zh="快速上手" data-en="Get started">快速上手</summary>
         <div class="children">
-          <a href="#howto">怎么读</a>
-          <a href="#sec-findings">关键发现</a>
-          <a href="#sec-guides">阅读路径</a>
+          <a href="#howto" data-zh="怎么读" data-en="How to read">怎么读</a>
+          <a href="#sec-findings" data-zh="关键发现" data-en="Key findings">关键发现</a>
+          <a href="#sec-guides" data-zh="阅读路径" data-en="Reading path">阅读路径</a>
         </div>
       </details>
 
       <details class="nav-group" open>
-        <summary>系统架构</summary>
+        <summary data-zh="系统架构" data-en="Architecture">系统架构</summary>
         <div class="children">
-          <a href="#sec-overview">核心架构</a>
-          <a href="#sec-map">模块地图</a>
-          <a href="#sec-diagrams">架构图</a>
-          <a href="#sec-layers">分层</a>
-          <a href="#sec-flow">数据流与存储</a>
+          <a href="#sec-overview" data-zh="核心架构" data-en="Core architecture">核心架构</a>
+          <a href="#sec-map" data-zh="模块地图" data-en="Module map">模块地图</a>
+          <a href="#sec-diagrams" data-zh="架构图" data-en="Architecture diagram">架构图</a>
+          <a href="#sec-layers" data-zh="分层" data-en="Layers">分层</a>
+          <a href="#sec-flow" data-zh="数据流与存储" data-en="Data flow &amp; storage">数据流与存储</a>
         </div>
       </details>
 
       <details class="nav-group" open>
-        <summary>入口</summary>
+        <summary data-zh="入口" data-en="Entry">入口</summary>
         <div class="children" id="nav-entry">
-          <a class="nav-empty" href="#sec-layers">按层填写模块</a>
+          <a class="nav-empty" href="#sec-layers" data-zh="按层填写模块" data-en="Fill modules by layer">按层填写模块</a>
         </div>
       </details>
 
       <details class="nav-group" open>
-        <summary>应用</summary>
+        <summary data-zh="应用" data-en="Application">应用</summary>
         <div class="children" id="nav-app">
-          <a class="nav-empty" href="#sec-layers">按层填写模块</a>
+          <a class="nav-empty" href="#sec-layers" data-zh="按层填写模块" data-en="Fill modules by layer">按层填写模块</a>
         </div>
       </details>
 
       <details class="nav-group" open>
-        <summary>领域</summary>
+        <summary data-zh="领域" data-en="Domain">领域</summary>
         <div class="children" id="nav-domain">
-          <a class="nav-empty" href="#sec-layers">按层填写模块</a>
+          <a class="nav-empty" href="#sec-layers" data-zh="按层填写模块" data-en="Fill modules by layer">按层填写模块</a>
         </div>
       </details>
 
       <details class="nav-group" open>
-        <summary>存储</summary>
+        <summary data-zh="存储" data-en="Storage">存储</summary>
         <div class="children" id="nav-storage">
-          <a class="nav-empty" href="#sec-layers">按层填写模块</a>
+          <a class="nav-empty" href="#sec-layers" data-zh="按层填写模块" data-en="Fill modules by layer">按层填写模块</a>
         </div>
       </details>
 
       <details class="nav-group" open>
-        <summary>核心模块</summary>
+        <summary data-zh="核心模块" data-en="Core modules">核心模块</summary>
         <div class="children" id="nav-modules">
           <a href="#p01">p01 待填</a>
           <a href="#p02">p02 待填</a>
@@ -502,18 +543,18 @@
       </details>
 
       <details class="nav-group" open>
-        <summary>独立模块</summary>
+        <summary data-zh="独立模块" data-en="Standalone">独立模块</summary>
         <div class="children" id="nav-peripheral">
-          <a class="nav-empty" href="#sec-peripheral">未列出</a>
+          <a class="nav-empty" href="#sec-peripheral" data-zh="未列出" data-en="None listed">未列出</a>
         </div>
       </details>
 
       <details class="nav-group" open>
-        <summary>参考</summary>
+        <summary data-zh="参考" data-en="Reference">参考</summary>
         <div class="children">
-          <a href="#sec-sources">相关源文件</a>
-          <a href="#sec-legend">图例</a>
-          <a href="#sec-glossary">术语</a>
+          <a href="#sec-sources" data-zh="相关源文件" data-en="Related sources">相关源文件</a>
+          <a href="#sec-legend" data-zh="图例" data-en="Legend">图例</a>
+          <a href="#sec-glossary" data-zh="术语" data-en="Glossary">术语</a>
         </div>
       </details>
     </nav>
@@ -523,26 +564,26 @@
     <h1>核心架构</h1>
 
     <details class="sources-box" id="sec-sources">
-      <summary>相关源文件</summary>
+      <summary data-zh="相关源文件" data-en="Related sources">相关源文件</summary>
       <div class="files" id="source-files">
         <span class="file-static"><span class="file-path">用本次导出里的真实路径替换</span></span>
       </div>
     </details>
 
     <div class="howto" id="howto">
-      <b>怎么读：</b>先看「关键发现」抓住枢纽和风险，再按「阅读路径」从入口往下读；地图和对图用来对照，不要从孤立工具读起。
+      <b data-zh="怎么读：" data-en="How to read: ">怎么读：</b><span data-zh="先看「关键发现」抓住枢纽和风险，再按「阅读路径」从入口往下读；地图和对图用来对照，不要从孤立工具读起。" data-en="Start with Key findings for hubs and risks, then follow Reading path from entry downward. Use the map and diagrams to cross-check; do not start from standalone tools.">先看「关键发现」抓住枢纽和风险，再按「阅读路径」从入口往下读；地图和对图用来对照，不要从孤立工具读起。</span>
     </div>
 
     <div id="hero">
-      <div id="hero-total"><span class="num">—</span><span class="unit">个模块</span><span class="label">本报告收录</span></div>
+      <div id="hero-total"><span class="num">—</span><span class="unit" data-zh="个模块" data-en=" modules">个模块</span><span class="label" data-zh="本报告收录" data-en="in this report">本报告收录</span></div>
       <div id="hero-split">有依赖的模块走主阅读路径 · 无依赖的放在文末「独立模块」</div>
     </div>
 
     <div id="overall-grid">
-      <div class="stat"><div class="label">模块社区</div><div class="val">—</div><div class="detail">图上全部社区</div></div>
-      <div class="stat"><div class="label">本报告收录</div><div class="val">—</div><div class="detail">按规模选取</div></div>
-      <div class="stat"><div class="label">独立模块</div><div class="val">—</div><div class="detail">没有列出的依赖</div></div>
-      <div class="stat"><div class="label">依赖关系</div><div class="val">—</div><div class="detail">社区之间的有向边</div></div>
+      <div class="stat"><div class="label" data-zh="模块社区" data-en="Communities">模块社区</div><div class="val">—</div><div class="detail" data-zh="图上全部社区" data-en="All communities on the graph">图上全部社区</div></div>
+      <div class="stat"><div class="label" data-zh="本报告收录" data-en="In this report">本报告收录</div><div class="val">—</div><div class="detail" data-zh="按规模选取" data-en="Selected by size">按规模选取</div></div>
+      <div class="stat"><div class="label" data-zh="独立模块" data-en="Standalone">独立模块</div><div class="val">—</div><div class="detail" data-zh="没有列出的依赖" data-en="No listed dependencies">没有列出的依赖</div></div>
+      <div class="stat"><div class="label" data-zh="依赖关系" data-en="Dependencies">依赖关系</div><div class="val">—</div><div class="detail" data-zh="社区之间的有向边" data-en="Directed edges between communities">社区之间的有向边</div></div>
     </div>
 
     <!-- ====================================================================
@@ -551,9 +592,16 @@
          ==================================================================== -->
     <section id="sec-findings">
       <div class="hr"></div>
-      <h2>关键发现 <span class="hint">先看这些，再下钻</span></h2>
+      <h2><span data-zh="关键发现" data-en="Key findings">关键发现</span> <span class="hint" data-zh="先看这些，再下钻" data-en="Read these first, then drill down">先看这些，再下钻</span></h2>
       <div class="section-body" id="takeaways">
-        <div class="take"><div class="fig">—</div><div class="txt">还没有发现。跑完 wiki inputs 后，用「谁是枢纽 / 从哪读 / 哪些别先碰」填写。</div></div>
+        <details class="take info">
+          <summary>
+            <div class="fig">—</div>
+            <div class="txt"><b data-zh="还没有发现" data-en="No findings yet">还没有发现</b></div>
+            <span class="chev" aria-hidden="true"></span>
+          </summary>
+          <div class="take-body" data-zh="跑完 wiki inputs 后，用「谁是枢纽 / 从哪读 / 哪些别先碰」填写。" data-en="After wiki inputs, fill who the hub is, where to start, and what not to touch first.">跑完 wiki inputs 后，用「谁是枢纽 / 从哪读 / 哪些别先碰」填写。</div>
+        </details>
       </div>
     </section>
 
@@ -562,9 +610,9 @@
          ==================================================================== -->
     <section id="sec-overview">
       <div class="hr"></div>
-      <h2>系统怎么运转 <span class="hint">一句话定位 + 主链路</span></h2>
+      <h2><span data-zh="系统怎么运转" data-en="How the system runs">系统怎么运转</span> <span class="hint" data-zh="一句话定位 + 主链路" data-en="One-line positioning + main path">一句话定位 + 主链路</span></h2>
       <div class="section-body prose" id="overview">
-        <p>还没有概览。用 2～4 段说明：这个系统是什么、请求从哪进来、核心模块各自干什么、独立工具放哪。</p>
+        <p data-zh="还没有概览。用 2～4 段说明：这个系统是什么、请求从哪进来、核心模块各自干什么、独立工具放哪。" data-en="No overview yet. In 2–4 paragraphs: what this system is, where requests enter, what core modules do, and where standalone tools sit.">还没有概览。用 2～4 段说明：这个系统是什么、请求从哪进来、核心模块各自干什么、独立工具放哪。</p>
       </div>
     </section>
 
@@ -573,22 +621,22 @@
          ==================================================================== -->
     <section id="sec-map">
       <div class="hr"></div>
-      <h2>模块地图 <span class="hint">入口 → 应用 → 领域 → 存储</span></h2>
+      <h2><span data-zh="模块地图" data-en="Module map">模块地图</span> <span class="hint" data-zh="入口 → 应用 → 领域 → 存储" data-en="Entry → Application → Domain → Storage">入口 → 应用 → 领域 → 存储</span></h2>
       <div class="section-body" id="module-map">
         <div id="community-bars"></div>
         <div class="scroll" style="margin-top:12px">
           <table>
             <thead>
               <tr>
-                <th>编号</th>
-                <th>分层</th>
-                <th>模块</th>
-                <th class="num">规模</th>
-                <th>依赖谁</th>
+                <th data-zh="编号" data-en="ID">编号</th>
+                <th data-zh="分层" data-en="Layer">分层</th>
+                <th data-zh="模块" data-en="Module">模块</th>
+                <th class="num" data-zh="规模" data-en="Size">规模</th>
+                <th data-zh="依赖谁" data-en="Depends on">依赖谁</th>
               </tr>
             </thead>
             <tbody id="module-rows">
-              <tr><td colspan="5">还没有模块。分层只用「入口 / 应用 / 领域 / 存储」；没有依赖的放到文末。</td></tr>
+              <tr><td colspan="5" data-zh="还没有模块。分层只用「入口 / 应用 / 领域 / 存储」；没有依赖的放到文末。" data-en="No modules yet. Layers are only Entry / Application / Domain / Storage; modules without deps go at the end.">还没有模块。分层只用「入口 / 应用 / 领域 / 存储」；没有依赖的放到文末。</td></tr>
             </tbody>
           </table>
         </div>
@@ -600,24 +648,24 @@
          ==================================================================== -->
     <section id="sec-layers">
       <div class="hr"></div>
-      <h2>分层 <span class="hint">入口 → 应用 → 领域 → 存储</span></h2>
+      <h2><span data-zh="分层" data-en="Layers">分层</span> <span class="hint" data-zh="入口 → 应用 → 领域 → 存储" data-en="Entry → Application → Domain → Storage">入口 → 应用 → 领域 → 存储</span></h2>
       <div class="section-body">
         <div class="layer-grid">
           <div class="layer-card" id="layer-entry">
-            <h3>入口</h3>
-            <ul id="layer-entry-list"><li>还没有。把请求进来的模块写在这里。</li></ul>
+            <h3 data-zh="入口" data-en="Entry">入口</h3>
+            <ul id="layer-entry-list"><li data-zh="还没有。把请求进来的模块写在这里。" data-en="None yet. Put request-entry modules here.">还没有。把请求进来的模块写在这里。</li></ul>
           </div>
           <div class="layer-card" id="layer-app">
-            <h3>应用</h3>
-            <ul id="layer-app-list"><li>还没有。编排 / 用例写在这里。</li></ul>
+            <h3 data-zh="应用" data-en="Application">应用</h3>
+            <ul id="layer-app-list"><li data-zh="还没有。编排 / 用例写在这里。" data-en="None yet. Orchestration / use-cases go here.">还没有。编排 / 用例写在这里。</li></ul>
           </div>
           <div class="layer-card" id="layer-domain">
-            <h3>领域</h3>
-            <ul id="layer-domain-list"><li>还没有。规则与核心计算写在这里。</li></ul>
+            <h3 data-zh="领域" data-en="Domain">领域</h3>
+            <ul id="layer-domain-list"><li data-zh="还没有。规则与核心计算写在这里。" data-en="None yet. Rules and core computation go here.">还没有。规则与核心计算写在这里。</li></ul>
           </div>
           <div class="layer-card" id="layer-storage">
-            <h3>存储</h3>
-            <ul id="layer-storage-list"><li>还没有。持久化与外部状态写在这里。</li></ul>
+            <h3 data-zh="存储" data-en="Storage">存储</h3>
+            <ul id="layer-storage-list"><li data-zh="还没有。持久化与外部状态写在这里。" data-en="None yet. Persistence and external state go here.">还没有。持久化与外部状态写在这里。</li></ul>
           </div>
         </div>
       </div>
@@ -629,16 +677,16 @@
          ==================================================================== -->
     <section id="sec-diagrams">
       <div class="hr"></div>
-      <h2>架构图 <span class="hint">分层与真实依赖</span></h2>
+      <h2><span data-zh="架构图" data-en="Architecture diagram">架构图</span> <span class="hint" data-zh="分层与真实依赖" data-en="Layers and real dependencies">分层与真实依赖</span></h2>
       <div class="section-body" id="diagrams">
         <div class="diagram">
           <pre class="mermaid">flowchart LR
   A["用本次 wiki inputs 里的真实模块替换"]
           </pre>
           <div class="diagram-meta">
-            <div>依据：wiki inputs --kind …</div>
-            <div>是否截断：—</div>
-            <div>图在说明：—</div>
+            <div data-zh="依据：wiki inputs --kind …" data-en="Source: wiki inputs --kind …">依据：wiki inputs --kind …</div>
+            <div data-zh="是否截断：—" data-en="Truncated: —">是否截断：—</div>
+            <div data-zh="图在说明：—" data-en="The diagram shows: —">图在说明：—</div>
           </div>
         </div>
       </div>
@@ -649,9 +697,9 @@
          ==================================================================== -->
     <section id="sec-flow">
       <div class="hr"></div>
-      <h2>数据流与存储 <span class="hint">主链路怎么穿过各层</span></h2>
+      <h2><span data-zh="数据流与存储" data-en="Data flow &amp; storage">数据流与存储</span> <span class="hint" data-zh="主链路怎么穿过各层" data-en="How the main path crosses layers">主链路怎么穿过各层</span></h2>
       <div class="section-body prose" id="data-flow">
-        <p>还没有数据流。按真实依赖写：请求从哪进、在哪一层变成领域规则、最后落到哪一处存储。独立模块不要写进来。</p>
+        <p data-zh="还没有数据流。按真实依赖写：请求从哪进、在哪一层变成领域规则、最后落到哪一处存储。独立模块不要写进来。" data-en="No data flow yet. Follow real dependencies: where the request enters, where it becomes domain rules, and which store it lands in. Do not include standalone modules.">还没有数据流。按真实依赖写：请求从哪进、在哪一层变成领域规则、最后落到哪一处存储。独立模块不要写进来。</p>
       </div>
     </section>
 
@@ -660,9 +708,9 @@
          ==================================================================== -->
     <section id="sec-guides">
       <div class="hr"></div>
-      <h2>阅读路径 <span class="hint">按这个顺序读源码</span></h2>
+      <h2><span data-zh="阅读路径" data-en="Reading path">阅读路径</span> <span class="hint" data-zh="按这个顺序读源码" data-en="Read source in this order">按这个顺序读源码</span></h2>
       <div class="section-body" id="guides">
-        <div class="callout">还没有导览。写 1～3 条路径，每步说明「读什么、为什么下一步是它」。</div>
+        <div class="callout" data-zh="还没有导览。写 1～3 条路径，每步说明「读什么、为什么下一步是它」。" data-en="No guide yet. Write 1–3 paths; each step says what to read and why the next step follows.">还没有导览。写 1～3 条路径，每步说明「读什么、为什么下一步是它」。</div>
       </div>
     </section>
 
@@ -671,16 +719,16 @@
          ==================================================================== -->
     <section id="sec-notes">
       <div class="hr"></div>
-      <h2>模块笔记 <span class="hint">点开看接口和谁在往来</span></h2>
+      <h2><span data-zh="模块笔记" data-en="Module notes">模块笔记</span> <span class="hint" data-zh="点开看接口和谁在往来" data-en="Open for interfaces and neighbors">点开看接口和谁在往来</span></h2>
       <div class="section-body drill" id="notes">
         <details id="p01">
           <summary>
             <span class="amt">p01</span>
-            <span class="desc">还没有笔记</span>
-            <span class="meta">职责 · 对外接口 · 跨模块往来</span>
+            <span class="desc" data-zh="还没有笔记" data-en="No notes yet">还没有笔记</span>
+            <span class="meta" data-zh="职责 · 对外接口 · 跨模块往来" data-en="Duty · public API · cross-module">职责 · 对外接口 · 跨模块往来</span>
           </summary>
           <div class="body">
-            <p>用本次 page 输入填写：这个模块做什么、对外暴露什么、内部怎么串、和谁往来。</p>
+            <p data-zh="用本次 page 输入填写：这个模块做什么、对外暴露什么、内部怎么串、和谁往来。" data-en="Fill from this page input: what the module does, what it exposes, how it is wired internally, and who it talks to.">用本次 page 输入填写：这个模块做什么、对外暴露什么、内部怎么串、和谁往来。</p>
           </div>
         </details>
       </div>
@@ -691,34 +739,34 @@
          ==================================================================== -->
     <section id="sec-peripheral">
       <div class="hr"></div>
-      <h2>独立模块 <span class="hint">不在主链上，后看或不看</span></h2>
+      <h2><span data-zh="独立模块" data-en="Standalone modules">独立模块</span> <span class="hint" data-zh="不在主链上，后看或不看" data-en="Off the main path — read later or skip">不在主链上，后看或不看</span></h2>
       <div class="section-body" id="peripheral">
-        <div class="callout">未列出。没有依赖的模块写在这里，并说明为什么可以后看。</div>
+        <div class="callout" data-zh="未列出。没有依赖的模块写在这里，并说明为什么可以后看。" data-en="None listed. Put modules without dependencies here, and say why they can wait.">未列出。没有依赖的模块写在这里，并说明为什么可以后看。</div>
       </div>
     </section>
 
     <section id="sec-legend">
       <div class="hr"></div>
-      <h2>图例 <span class="hint">怎么读图和分层</span></h2>
+      <h2><span data-zh="图例" data-en="Legend">图例</span> <span class="hint" data-zh="怎么读图和分层" data-en="How to read the diagram and layers">怎么读图和分层</span></h2>
       <div class="section-body prose" id="legend">
         <ul>
-          <li><b>入口 / 应用 / 领域 / 存储</b>：图上的四层。没有依赖的页不进这四层。</li>
-          <li><b>risk</b>（赤陶）：枢纽或高扇入，改这里影响面最宽。</li>
-          <li><b>change</b>（陶土）：规模或依赖偏多的页。</li>
-          <li><b>独立模块</b>：本次导出没有列出依赖，后看或不看。</li>
+          <li><b data-zh="入口 / 应用 / 领域 / 存储" data-en="Entry / Application / Domain / Storage">入口 / 应用 / 领域 / 存储</b><span data-zh="：图上的四层。没有依赖的页不进这四层。" data-en=": the four layers on the diagram. Pages without deps do not enter these layers.">：图上的四层。没有依赖的页不进这四层。</span></li>
+          <li><b>risk</b><span data-zh="（赤陶）：枢纽或高扇入，改这里影响面最宽。" data-en=" (clay red): hub or high fan-in — changing it has the widest blast radius.">（赤陶）：枢纽或高扇入，改这里影响面最宽。</span></li>
+          <li><b>change</b><span data-zh="（陶土）：规模或依赖偏多的页。" data-en=" (clay): pages that are large or dependency-heavy.">（陶土）：规模或依赖偏多的页。</span></li>
+          <li><b data-zh="独立模块" data-en="Standalone">独立模块</b><span data-zh="：本次导出没有列出依赖，后看或不看。" data-en=": this export listed no dependencies — read later or skip.">：本次导出没有列出依赖，后看或不看。</span></li>
         </ul>
       </div>
     </section>
 
     <section id="sec-glossary">
       <div class="hr"></div>
-      <h2>术语 <span class="hint">本报告用词</span></h2>
+      <h2><span data-zh="术语" data-en="Glossary">术语</span> <span class="hint" data-zh="本报告用词" data-en="Words this report uses">本报告用词</span></h2>
       <div class="section-body prose" id="glossary">
         <ul>
-          <li><b>模块 / 社区</b>：编号 <code>p01</code> 起，对应一次导出里的一页。</li>
-          <li><b>依赖</b>：社区之间的有向边，阅读路径只沿这条边走。</li>
-          <li><b>枢纽</b>：依赖多或被调用多，先读对外接口。</li>
-          <li><b>规模</b>：该页收录的符号数量，用来排序，不是质量分。</li>
+          <li><b data-zh="模块 / 社区" data-en="Module / community">模块 / 社区</b><span data-zh="：编号 " data-en=": ids from ">：编号 </span><code>p01</code><span data-zh=" 起，对应一次导出里的一页。" data-en=" onward, one page in this export."> 起，对应一次导出里的一页。</span></li>
+          <li><b data-zh="依赖" data-en="Dependency">依赖</b><span data-zh="：社区之间的有向边，阅读路径只沿这条边走。" data-en=": a directed edge between communities; the reading path only follows these edges.">：社区之间的有向边，阅读路径只沿这条边走。</span></li>
+          <li><b data-zh="枢纽" data-en="Hub">枢纽</b><span data-zh="：依赖多或被调用多，先读对外接口。" data-en=": many deps or many callers — read its public API first.">：依赖多或被调用多，先读对外接口。</span></li>
+          <li><b data-zh="规模" data-en="Size">规模</b><span data-zh="：该页收录的符号数量，用来排序，不是质量分。" data-en=": symbol count on that page, used for ranking, not a quality score.">：该页收录的符号数量，用来排序，不是质量分。</span></li>
         </ul>
       </div>
     </section>
@@ -730,20 +778,20 @@
   </main>
 
   <aside class="toc">
-    <h3>本页目录</h3>
+    <h3 data-zh="本页目录" data-en="On this page">本页目录</h3>
     <ol id="page-toc">
-      <li><a href="#page-top">核心架构</a></li>
-      <li><a href="#sec-findings">关键发现</a></li>
-      <li><a href="#sec-overview">系统怎么运转</a></li>
-      <li><a href="#sec-map">模块地图</a></li>
-      <li><a href="#sec-layers">分层</a></li>
-      <li><a href="#sec-diagrams">架构图</a></li>
-      <li><a href="#sec-flow">数据流与存储</a></li>
-      <li><a href="#sec-guides">阅读路径</a></li>
-      <li><a href="#sec-notes">模块笔记</a></li>
-      <li><a href="#sec-peripheral">独立模块</a></li>
-      <li><a href="#sec-legend">图例</a></li>
-      <li><a href="#sec-glossary">术语</a></li>
+      <li><a href="#page-top" data-zh="核心架构" data-en="Core architecture">核心架构</a></li>
+      <li><a href="#sec-findings" data-zh="关键发现" data-en="Key findings">关键发现</a></li>
+      <li><a href="#sec-overview" data-zh="系统怎么运转" data-en="How the system runs">系统怎么运转</a></li>
+      <li><a href="#sec-map" data-zh="模块地图" data-en="Module map">模块地图</a></li>
+      <li><a href="#sec-layers" data-zh="分层" data-en="Layers">分层</a></li>
+      <li><a href="#sec-diagrams" data-zh="架构图" data-en="Architecture diagram">架构图</a></li>
+      <li><a href="#sec-flow" data-zh="数据流与存储" data-en="Data flow &amp; storage">数据流与存储</a></li>
+      <li><a href="#sec-guides" data-zh="阅读路径" data-en="Reading path">阅读路径</a></li>
+      <li><a href="#sec-notes" data-zh="模块笔记" data-en="Module notes">模块笔记</a></li>
+      <li><a href="#sec-peripheral" data-zh="独立模块" data-en="Standalone modules">独立模块</a></li>
+      <li><a href="#sec-legend" data-zh="图例" data-en="Legend">图例</a></li>
+      <li><a href="#sec-glossary" data-zh="术语" data-en="Glossary">术语</a></li>
     </ol>
   </aside>
 </div>
@@ -755,19 +803,19 @@
   try { await mermaid.run({ querySelector: '.mermaid' }); } catch { /* keep zoom for images */ }
 
   const toc = document.getElementById('page-toc');
-  if (toc) {
+  if (typeof window.__wikiRebuildToc === 'function') window.__wikiRebuildToc();
+  else if (toc) {
     const heading = document.querySelector('h1');
     const rows = [
       { id: 'page-top', text: (heading?.textContent || '总览').trim() },
       ...[...document.querySelectorAll('main section h2')].map((h) => ({
         id: h.closest('section')?.id || '',
-        text: (h.childNodes[0]?.textContent || h.textContent || '').trim(),
+        text: (h.querySelector('[data-zh]')?.textContent || h.childNodes[0]?.textContent || h.textContent || '').trim(),
       })),
     ].filter((row) => row.id && row.text);
     toc.innerHTML = rows.map((row) => `<li><a href="#${row.id}">${row.text}</a></li>`).join('');
   }
 
-  const links = [...document.querySelectorAll('.nav a[href^="#"], .toc a[href^="#"]')];
   const targets = [...document.querySelectorAll('section[id], #page-top, #sec-sources, #howto')];
   const mark = () => {
     let current = 'page-top';
@@ -775,7 +823,7 @@
       if (el.getBoundingClientRect().top <= 72) current = el.id;
     }
     const href = '#' + current;
-    for (const a of links) {
+    for (const a of document.querySelectorAll('.nav a[href^="#"], .toc a[href^="#"]')) {
       a.classList.toggle('active', a.getAttribute('href') === href);
     }
   };
@@ -836,11 +884,11 @@
       const bar = document.createElement('div');
       bar.className = 'zoom-toolbar';
       bar.innerHTML = [
-        '<button type="button" data-zoom="out" aria-label="缩小">−</button>',
+        '<button type="button" data-zoom="out" data-zh-aria="缩小" data-en-aria="Zoom out" aria-label="缩小">−</button>',
         '<span class="zoom-pct">100%</span>',
-        '<button type="button" data-zoom="in" aria-label="放大">+</button>',
-        '<button type="button" class="wide" data-zoom="reset">重置</button>',
-        '<button type="button" class="wide" data-zoom="expand">全屏</button>',
+        '<button type="button" data-zoom="in" data-zh-aria="放大" data-en-aria="Zoom in" aria-label="放大">+</button>',
+        '<button type="button" class="wide" data-zoom="reset" data-zh="重置" data-en="Reset">重置</button>',
+        '<button type="button" class="wide" data-zoom="expand" data-zh="全屏" data-en="Full screen">全屏</button>',
       ].join('');
       viewport.parentNode.insertBefore(bar, viewport);
 
@@ -886,7 +934,10 @@
         else if (action === 'expand') {
           const on = box.classList.toggle('is-expanded');
           document.body.classList.toggle('diagram-expanded', on);
-          btn.textContent = on ? '退出' : '全屏';
+          btn.setAttribute('data-zh', on ? '退出' : '全屏');
+          btn.setAttribute('data-en', on ? 'Exit' : 'Full screen');
+          const lang = document.documentElement.getAttribute('data-lang') === 'en' ? 'en' : 'zh';
+          btn.textContent = btn.getAttribute(lang === 'en' ? 'data-en' : 'data-zh');
           const backdrop = document.getElementById('diagram-backdrop');
           if (backdrop) backdrop.hidden = !on;
         }
@@ -934,7 +985,12 @@
       document.querySelectorAll('.diagram.is-expanded').forEach((box) => {
         box.classList.remove('is-expanded');
         const btn = box.querySelector('[data-zoom="expand"]');
-        if (btn) btn.textContent = '全屏';
+        if (btn) {
+          btn.setAttribute('data-zh', '全屏');
+          btn.setAttribute('data-en', 'Full screen');
+          const lang = document.documentElement.getAttribute('data-lang') === 'en' ? 'en' : 'zh';
+          btn.textContent = btn.getAttribute(lang === 'en' ? 'data-en' : 'data-zh');
+        }
       });
       document.body.classList.remove('diagram-expanded');
       if (backdrop) backdrop.hidden = true;
@@ -946,6 +1002,7 @@
   };
 
   initDiagramZoom();
+  if (typeof window.__wikiApplyI18n === 'function') window.__wikiApplyI18n();
 </script>
 <script>
 (function(){
@@ -953,14 +1010,50 @@
   const prefix = root.getAttribute('data-store') || 'wiki-report';
   const LANG_KEY = prefix + '-lang';
   const THEME_KEY = prefix + '-theme';
+  function esc(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
   function applyI18n(lang) {
     const attr = lang === 'en' ? 'data-en' : 'data-zh';
     document.querySelectorAll('[data-zh][data-en]').forEach(el => {
       const v = el.getAttribute(attr);
       if (v == null) return;
       if (el.tagName === 'TITLE') document.title = v;
+      else if (el.tagName === 'OPTION') el.textContent = v;
       else el.textContent = v;
     });
+    document.querySelectorAll('[data-zh-aria][data-en-aria]').forEach(el => {
+      el.setAttribute('aria-label', el.getAttribute(lang === 'en' ? 'data-en-aria' : 'data-zh-aria') || '');
+    });
+    document.querySelectorAll('[data-zh-placeholder][data-en-placeholder]').forEach(el => {
+      el.setAttribute('placeholder', el.getAttribute(lang === 'en' ? 'data-en-placeholder' : 'data-zh-placeholder') || '');
+    });
+  }
+  function headingI18n(h) {
+    const leaf = h && h.querySelector('[data-zh][data-en]');
+    const src = leaf || h;
+    const zh = (src && src.getAttribute && src.getAttribute('data-zh')) || (src && src.textContent) || '';
+    const en = (src && src.getAttribute && src.getAttribute('data-en')) || zh;
+    return { zh: zh.trim(), en: String(en).trim() };
+  }
+  function rebuildToc() {
+    const toc = document.getElementById('page-toc');
+    if (!toc) return;
+    const lang = root.getAttribute('data-lang') === 'en' ? 'en' : 'zh';
+    const rows = [{ id: 'page-top', ...headingI18n(document.querySelector('h1')) }];
+    document.querySelectorAll('main section h2').forEach((h) => {
+      const id = h.closest('section')?.id || '';
+      if (!id) return;
+      rows.push({ id, ...headingI18n(h) });
+    });
+    toc.innerHTML = rows.filter((row) => row.id && (row.zh || row.en)).map((row) => {
+      const shown = lang === 'en' ? (row.en || row.zh) : (row.zh || row.en);
+      return `<li><a href="#${row.id}" data-zh="${esc(row.zh)}" data-en="${esc(row.en)}">${esc(shown)}</a></li>`;
+    }).join('');
   }
   function setLang(lang) {
     root.setAttribute('data-lang', lang);
@@ -969,6 +1062,7 @@
       b.setAttribute('aria-pressed', b.getAttribute('data-set-lang') === lang ? 'true' : 'false');
     });
     applyI18n(lang);
+    rebuildToc();
     try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
   }
   function setTheme(theme) {
@@ -984,8 +1078,57 @@
   let lang = root.getAttribute('data-lang') || 'zh';
   let theme = root.getAttribute('data-theme') || 'light';
   try { lang = localStorage.getItem(LANG_KEY) || lang; theme = localStorage.getItem(THEME_KEY) || theme; } catch (e) {}
+  window.__wikiRebuildToc = rebuildToc;
+  window.__wikiApplyI18n = () => applyI18n(root.getAttribute('data-lang') === 'en' ? 'en' : 'zh');
   setLang(lang === 'en' ? 'en' : 'zh');
   setTheme(theme);
+
+  function wrapTakes() {
+    document.querySelectorAll('#takeaways .take:not(details)').forEach((el) => {
+      const fig = el.querySelector('.fig');
+      const txt = el.querySelector('.txt');
+      const details = document.createElement('details');
+      details.className = el.className;
+      const summary = document.createElement('summary');
+      if (fig) summary.appendChild(fig.cloneNode(true));
+      const title = document.createElement('div');
+      title.className = 'txt';
+      const b = txt && txt.querySelector('b');
+      if (b) title.appendChild(b.cloneNode(true));
+      else title.textContent = ((txt && txt.textContent) || el.textContent || '').trim().slice(0, 72);
+      summary.appendChild(title);
+      const chev = document.createElement('span');
+      chev.className = 'chev';
+      chev.setAttribute('aria-hidden', 'true');
+      summary.appendChild(chev);
+      const body = document.createElement('div');
+      body.className = 'take-body';
+      if (txt) body.innerHTML = txt.innerHTML;
+      details.appendChild(summary);
+      details.appendChild(body);
+      el.replaceWith(details);
+    });
+  }
+  wrapTakes();
+
+  function addWikiToolbar(target, detailsSelector) {
+    if (!target || target.previousElementSibling && target.previousElementSibling.classList.contains('wiki-toolbar')) return;
+    const bar = document.createElement('div');
+    bar.className = 'wiki-toolbar';
+    bar.innerHTML =
+      '<button type="button" data-expand="1" data-zh="展开全部" data-en="Expand all">展开全部</button>' +
+      '<button type="button" data-expand="0" data-zh="收起全部" data-en="Collapse all">收起全部</button>';
+    target.parentNode.insertBefore(bar, target);
+    bar.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-expand]');
+      if (!btn) return;
+      const open = btn.getAttribute('data-expand') === '1';
+      document.querySelectorAll(detailsSelector).forEach((d) => { d.open = open; });
+    });
+  }
+  addWikiToolbar(document.getElementById('takeaways'), '#takeaways details.take, #takeaways details');
+  addWikiToolbar(document.getElementById('notes'), '#notes details');
+  applyI18n(root.getAttribute('data-lang') === 'en' ? 'en' : 'zh');
 })();
 </script>
 </body>

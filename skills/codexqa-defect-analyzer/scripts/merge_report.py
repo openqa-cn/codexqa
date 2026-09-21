@@ -266,8 +266,8 @@ def _source_label(source):
 
 
 def _source_class(source):
-    return {'sast_confirmed': 'tag-confirmed', 'sast_only': 'tag-sast', 'llm_judged': 'tag-llm'}.get(
-        source or '', 'tag-llm')
+    return {'sast_confirmed': 'confirmed', 'sast_only': 'sast', 'llm_judged': 'llm'}.get(
+        source or '', 'llm')
 
 
 def _render_finding_card(finding, index):
@@ -276,18 +276,24 @@ def _render_finding_card(finding, index):
     conf = int(round(float(finding.get('confidence', 0)) * 100))
     rid = finding.get('rule_id') or '—'
     fid = finding.get('id') or '—'
-    return '''<article class="case open" id="finding-%d">
-  <div class="case-head">
+    loc = '%s:%s' % (finding.get('file', '?'), finding.get('line', '?'))
+    src = finding.get('source')
+    body_id = 'finding-%d-body' % index
+    return '''<article class="case" id="finding-%d" data-pri="%s">
+  <header class="case-head" role="button" tabindex="0" aria-expanded="false" aria-controls="%s">
     <span class="badge pri %s">%s</span>
-    <span class="badge type">%s</span>
+    <span class="badge source %s">%s</span>
     <span class="badge type">%s</span>
     <h3>%s</h3>
-    <span class="meta-id">%s:%s · %d%% · %s</span>
-  </div>
-  <div class="case-body">
+    <span class="meta-id">%s · %d%% · %s</span>
+    <span class="chev" aria-hidden="true"></span>
+  </header>
+  <div class="case-body" id="%s">
     <dl class="kv">
       <div><dt data-zh="分类" data-en="Category">分类</dt><dd>%s</dd></div>
       <div><dt>ID</dt><dd><code>%s</code></dd></div>
+      <div><dt data-zh="位置" data-en="Location">位置</dt><dd><code>%s</code></dd></div>
+      <div><dt data-zh="置信度" data-en="Confidence">置信度</dt><dd>%d%%</dd></div>
     </dl>
     <h4 data-zh="证据" data-en="Evidence">证据</h4>
     <div class="block"><p>%s</p></div>
@@ -295,17 +301,42 @@ def _render_finding_card(finding, index):
     <div class="block"><p>%s</p></div>
   </div>
 </article>''' % (
-        index, sev_l, _h(sev),
-        _h(_source_label(finding.get('source'))),
+        index, _h(sev),
+        body_id,
+        sev_l, _h(sev),
+        _source_class(src), _h(_source_label(src)),
         _h(rid),
         _h(finding.get('title', '')),
-        _h(finding.get('file', '?')), _h(finding.get('line', '?')),
-        conf, _h(fid),
+        _h(loc), conf, _h(fid),
+        body_id,
         _h(finding.get('category', '')),
         _h(fid),
+        _h(loc),
+        conf,
         _h(finding.get('evidence', '')),
         _h(finding.get('suggestion', '')),
     )
+
+
+def _render_toolbar(sev_counts, total):
+    tabs = [
+        '<button type="button" class="tab" data-sev="all" aria-selected="true">'
+        '<span data-zh="全部" data-en="All">全部</span> (%d)</button>' % total
+    ]
+    for sev in ('P0', 'P1', 'P2', 'P3'):
+        tabs.append(
+            '<button type="button" class="tab" data-sev="%s" aria-selected="false">%s (%d)</button>'
+            % (sev.lower(), sev, sev_counts.get(sev, 0))
+        )
+    return '''<div class="toolbar">
+    <div class="tabs" role="tablist" aria-label="Severity">
+      %s
+    </div>
+    <div class="filters">
+      <button class="tab" type="button" id="expandAll"><span data-zh="展开全部" data-en="Expand all">展开全部</span></button>
+      <button class="tab" type="button" id="collapseAll"><span data-zh="收起全部" data-en="Collapse all">收起全部</span></button>
+    </div>
+  </div>''' % '\n      '.join(tabs)
 
 
 def _render_severity_section(sev, findings, start_index):
@@ -316,14 +347,16 @@ def _render_severity_section(sev, findings, start_index):
     for f in findings:
         cards.append(_render_finding_card(f, idx))
         idx += 1
-    return '''<section class="panel" id="sev-%s">
+    return '''<section class="panel" id="sev-%s" data-sev-panel="%s">
   <div class="panel-head">
     <h2><span class="badge pri %s">%s</span> <span data-zh="发现项" data-en="Findings">发现项</span> <span class="count">%d</span></h2>
-    <p class="desc" data-zh="本级别的典型检测结果" data-en="Typical findings at this severity">本级别的典型检测结果</p>
+    <p class="desc" data-zh="点击卡片展开证据与修复建议" data-en="Click a card to expand evidence and remediation">点击卡片展开证据与修复建议</p>
   </div>
+  <div class="case-list">
   %s
+  </div>
 </section>''' % (
-        sev.lower(), sev.lower(), _h(sev), len(findings), '\n'.join(cards),
+        sev.lower(), sev.lower(), sev.lower(), _h(sev), len(findings), '\n'.join(cards),
     ), idx
 
 
@@ -348,10 +381,12 @@ def render_html_report(report):
         for s in ('P0', 'P1', 'P2', 'P3'))
 
     max_rule = max(by_rule.values()) if by_rule else 1
-    rule_rows = ''.join(
-        "<div class='bar-row'><span>%s</span><div class='bar'><i style='width:%.0f%%'></i></div><b>%d</b></div>"
-        % (_h(rid), 100 * n / max_rule, n)
-        for rid, n in sorted(by_rule.items(), key=lambda x: -x[1])[:8]
+    rule_rows = (
+        "<div class='rule-grid'>" + ''.join(
+            "<div class='bar-row'><span>%s</span><div class='bar'><i style='width:%.0f%%'></i></div><b>%d</b></div>"
+            % (_h(rid), 100 * n / max_rule, n)
+            for rid, n in sorted(by_rule.items(), key=lambda x: -x[1])[:8]
+        ) + "</div>"
     ) if by_rule else "<p class='muted'>—</p>"
 
     source_rows = ''.join(
@@ -368,6 +403,11 @@ def render_html_report(report):
         section, card_idx = _render_severity_section(sev, group, card_idx)
         if section:
             findings_html.append(section)
+    if not findings_html:
+        findings_html.append(
+            '<section class="panel"><div class="empty">'
+            '<span data-zh="暂无发现项" data-en="No findings">暂无发现项</span></div></section>'
+        )
 
     alerts = []
     if ts.get('missing'):
@@ -380,10 +420,20 @@ def render_html_report(report):
 
     extra_sections = []
     if report.get('module_summaries'):
-        items = ''.join("<article class='case open'><div class='case-head'><h3>%s</h3></div><div class='case-body'><div class='block'><p>%s</p></div></div></article>"
-                        % (_h(m.get('module')), _h(m.get('summary', '')))
-                        for m in report['module_summaries'][:12])
-        extra_sections.append('<section class="panel"><div class="panel-head"><h2 data-zh="模块风险" data-en="Module risk">模块风险</h2></div>%s</section>' % items)
+        items = ''.join(
+            "<article class='case'>"
+            "<header class='case-head' role='button' tabindex='0' aria-expanded='false'>"
+            "<h3>%s</h3><span class='chev' aria-hidden='true'></span></header>"
+            "<div class='case-body'><div class='block'><p>%s</p></div></div></article>"
+            % (_h(m.get('module')), _h(m.get('summary', '')))
+            for m in report['module_summaries'][:12]
+        )
+        extra_sections.append(
+            '<section class="panel"><div class="panel-head">'
+            '<h2 data-zh="模块风险" data-en="Module risk">模块风险</h2>'
+            '<p class="desc" data-zh="点击卡片展开模块摘要" data-en="Click a card to expand the module summary">'
+            '点击卡片展开模块摘要</p></div>%s</section>' % items
+        )
     if report.get('heat_map'):
         rows = ''.join("<tr><td><code>%s</code></td><td>%s</td></tr>"
                        % (_h(h['path']), _h('%.1f' % h.get('hot_score', 0)))
@@ -430,7 +480,7 @@ def render_html_report(report):
         <h2 data-zh="扫描覆盖" data-en="Scan coverage">扫描覆盖</h2>
         <div class="bar-row"><span>DET</span><div class="bar"><i style="width:{det:.1f}%"></i></div><b>{det:.0f}%</b></div>
         <div class="bar-row"><span>LLM</span><div class="bar"><i style="width:{llm:.1f}%"></i></div><b>{llm:.0f}%</b></div>
-        <div class="chip-row" style="margin-top:10px">{source_rows}</div>
+        <div class="chip-row sources">{source_rows}</div>
       </div>
     </div>
   </header>
@@ -442,7 +492,11 @@ def render_html_report(report):
     </div>
     {rule_rows}
   </section>
+  {_render_toolbar(sev_counts, total)}
   {''.join(findings_html)}
+  <section class="panel" id="sev-empty" hidden>
+    <div class="empty"><span data-zh="该级别暂无发现" data-en="No findings at this severity">该级别暂无发现</span></div>
+  </section>
   {''.join(extra_sections)}
   <p class="footer">codexqa-defect-analyzer · report_scan.html · {_h(report.get('generated_at', ''))}</p>
 </div>

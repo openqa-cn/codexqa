@@ -40,6 +40,37 @@ PREFS = """<div class="prefs" role="toolbar" aria-label="Language and theme">
 </div>"""
 
 
+def toolbar(tabs):
+    buttons = []
+    for i, (sev, label) in enumerate(tabs):
+        selected = "true" if i == 0 else "false"
+        buttons.append(
+            f'<button type="button" class="tab" data-sev="{sev}" aria-selected="{selected}">{label}</button>'
+        )
+    return f'''  <div class="toolbar">
+    <div class="tabs" role="tablist">
+      {" ".join(buttons)}
+    </div>
+    <div class="filters">
+      <button class="tab" type="button" id="expandAll"><span data-zh="展开全部" data-en="Expand all">展开全部</span></button>
+      <button class="tab" type="button" id="collapseAll"><span data-zh="收起全部" data-en="Collapse all">收起全部</span></button>
+    </div>
+  </div>'''
+
+
+def case_card(title, body, badges="", pri="", cid=""):
+    pri_attr = f' data-pri="{pri}"' if pri else ""
+    id_attr = f' id="{cid}"' if cid else ""
+    return f'''<article class="case"{id_attr}{pri_attr}>
+      <div class="case-head" role="button" tabindex="0" aria-expanded="false">
+        {badges}
+        <h3>{title}</h3>
+        <span class="chev" aria-hidden="true"></span>
+      </div>
+      <div class="case-body">{body}</div>
+    </article>'''
+
+
 def page(store, title_zh, title_en, body, lang="zh"):
     html_lang = "en" if lang == "en" else "zh-CN"
     shown = title_zh if lang == "zh" else title_en
@@ -132,7 +163,7 @@ def write_defect():
 
 
 def write_wiki():
-    body = """
+    body = f"""
   <header class="hero">
     <p class="kicker">codexqa-code-wiki · architecture wiki</p>
     <h1><span data-zh="架构知识图谱" data-en="Architecture wiki">架构知识图谱</span>
@@ -157,22 +188,17 @@ def write_wiki():
       </div>
     </div>
   </header>
+{toolbar([("all", "全部 (3)")])}
   <section class="panel">
     <div class="panel-head">
       <h2 data-zh="关键发现" data-en="Key findings">关键发现</h2>
+      <p class="desc" data-zh="点击卡片展开详情" data-en="Click a card to expand details">点击卡片展开详情</p>
     </div>
-    <article class="case open">
-      <div class="case-head"><span class="badge pri p0">p03</span><h3>p03 库存占用是枢纽：hold / expire / commit 都经过它</h3></div>
-      <div class="case-body"><div class="block"><p>改这里影响面最宽，先读对外接口再碰退款。</p></div></div>
-    </article>
-    <article class="case open">
-      <div class="case-head"><span class="badge type">path</span><h3>HTTP 入口 → 预订编排 → 库存占用 → db/cache</h3></div>
-      <div class="case-body"><div class="block"><p>相邻步都有真实依赖。</p></div></div>
-    </article>
-    <article class="case open">
-      <div class="case-head"><span class="badge pri p1">p05</span><h3>p05 退款封顶依赖 p03 的提交状态</h3></div>
-      <div class="case-body"><div class="block"><p>提交没写 COMMITTED 时，退款会打到空订单。</p></div></div>
-    </article>
+    <div class="case-list">
+      {case_card("p03 库存占用是枢纽：hold / expire / commit 都经过它", '<div class="block"><p>改这里影响面最宽，先读对外接口再碰退款。</p></div>', badges='<span class="badge pri p0">p03</span>', pri="P0", cid="wiki-1")}
+      {case_card("HTTP 入口 → 预订编排 → 库存占用 → db/cache", '<div class="block"><p>相邻步都有真实依赖。</p></div>', badges='<span class="badge type">path</span>', cid="wiki-2")}
+      {case_card("p05 退款封顶依赖 p03 的提交状态", '<div class="block"><p>提交没写 COMMITTED 时，退款会打到空订单。</p></div>', badges='<span class="badge pri p1">p05</span>', pri="P1", cid="wiki-3")}
+    </div>
   </section>
   <p class="footer">codexqa-code-wiki · assets/report-template.html</p>
 """
@@ -183,7 +209,7 @@ def write_wiki():
 
 
 def write_analyzer():
-    body = """
+    body = f"""
   <header class="hero">
     <p class="kicker">codexqa-code-analyzer · change-impact graph</p>
     <h1>Checkout: who calls the change, which entries fire, which tests miss it</h1>
@@ -192,7 +218,19 @@ def write_analyzer():
   <section class="panel">
     <div class="panel-head"><h2>Change-impact graph</h2></div>
     <div class="figure-frame">
-      <img src="checkout-change-impact.svg" alt="Checkout change-impact graph">
+      <img src="checkout-change-impact.svg" alt="Checkout change-impact graph" width="1200" height="720">
+    </div>
+  </section>
+{toolbar([("all", "All (3)")])}
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Impact records</h2>
+      <p class="desc">Click a card to expand callers, entries, and test gaps</p>
+    </div>
+    <div class="case-list">
+      {case_card("Who calls the change", '<div class="block"><p><code>checkout.js#placeOrder</code> and <code>cart.js#reprice</code> both reach <code>pricing.js#volumeDiscountRate</code>.</p></div>', badges='<span class="badge type">callers</span>', cid="an-1")}
+      {case_card("Which entries fire", '<div class="block"><p><code>POST /v1/checkout</code> and the cart reprice worker both enter the changed symbol.</p></div>', badges='<span class="badge type">entries</span>', cid="an-2")}
+      {case_card("Which tests miss it", '<div class="block"><p>Graph has no tests-reach edge on <code>volumeDiscountRate</code>. Existing checkout tests never cover the inclusive 10-unit tier.</p></div>', badges='<span class="badge pri p1">gap</span>', pri="P1", cid="an-3")}
     </div>
   </section>
   <p class="footer">codexqa-code-analyzer · illustration from the published SVG</p>
@@ -204,23 +242,23 @@ def write_analyzer():
 
 
 def write_rootcause():
-    body = """
+    body = f"""
   <header class="hero">
     <p class="kicker">codexqa-rootcause-analyzer · RCA</p>
     <h1>Exception diagnosis</h1>
     <p class="sub">inventory-service · <code>NullPointerException</code> on refund · <span class="badge pri p1">Confidence: medium</span></p>
   </header>
+{toolbar([("all", "All (3)")])}
   <section class="panel">
-    <div class="panel-head"><h2>Executive summary</h2></div>
-    <div class="block"><p><code>NullPointerException</code> on <code>refund.js#resolveRefundAmount</code>. Root is <code>reservation.js#commitReservation</code> leaving status unset.</p></div>
-  </section>
-  <section class="panel">
-    <div class="panel-head"><h2>Mapped call path</h2></div>
-    <div class="block"><p><code>POST /refunds → refund.js#refundOrder:44 → refund.js#resolveRefundAmount:18 → NPE</code></p></div>
-  </section>
-  <section class="panel">
-    <div class="panel-head"><h2>Root cause</h2></div>
-    <div class="block"><p>Throw is the trigger, not the root. <code>commitReservation</code> returns success without writing <code>COMMITTED</code>.</p></div>
+    <div class="panel-head">
+      <h2>Diagnosis records</h2>
+      <p class="desc">Click a card to expand summary, call path, and root cause</p>
+    </div>
+    <div class="case-list">
+      {case_card("Executive summary", '<div class="block"><p><code>NullPointerException</code> on <code>refund.js#resolveRefundAmount</code>. Root is <code>reservation.js#commitReservation</code> leaving status unset.</p></div>', badges='<span class="badge type">summary</span>', cid="rca-1")}
+      {case_card("Mapped call path", '<div class="block"><p><code>POST /refunds → refund.js#refundOrder:44 → refund.js#resolveRefundAmount:18 → NPE</code></p></div>', badges='<span class="badge type">path</span>', cid="rca-2")}
+      {case_card("Root cause", '<div class="block"><p>Throw is the trigger, not the root. <code>commitReservation</code> returns success without writing <code>COMMITTED</code>.</p></div>', badges='<span class="badge pri p1">cause</span>', pri="P1", cid="rca-3")}
+    </div>
   </section>
   <p class="footer">Native delivery is Markdown; this HTML is the README screenshot surface.</p>
 """
@@ -231,7 +269,7 @@ def write_rootcause():
 
 
 def write_ra():
-    body = """
+    body = f"""
   <header class="hero">
     <p class="kicker">codexqa-requirement-analyzer · gap register</p>
     <h1>Inventory hold v2 — one register, not three lists</h1>
@@ -253,22 +291,46 @@ def write_ra():
       </div>
     </div>
   </header>
-  <section class="panel">
-    <div class="panel-head"><h2>Gap register</h2></div>
-    <table class="steps">
-      <thead><tr><th>ID</th><th>Kind</th><th>Risk</th><th>What is missing or in conflict</th><th>P0 / P1 check</th></tr></thead>
-      <tbody>
-        <tr><td><code>RA-01</code></td><td>Conflict</td><td><span class="badge pri p0">P0</span></td>
-          <td>PRD says a hold expires after 15 minutes. The API note says until the client releases it.</td>
-          <td>Create a hold, wait 16 minutes, call get. Fail if the two sources still disagree.</td></tr>
-        <tr><td><code>RA-02</code></td><td>Gap</td><td><span class="badge pri p0">P0</span></td>
-          <td>Over-sell when two holds race on the last unit is not specified.</td>
-          <td>Two concurrent <code>quantity=1</code> requests when available=1. Expect one 200 and one 409.</td></tr>
-        <tr><td><code>RA-03</code></td><td>Gap</td><td><span class="badge pri p1">P1</span></td>
-          <td>No success metric for hold conversion to order.</td>
-          <td>Marked <code>untestable</code> until product names the metric.</td></tr>
-      </tbody>
-    </table>
+{toolbar([("all", "All (3)"), ("p0", "P0 (2)"), ("p1", "P1 (1)")])}
+  <section class="panel" data-sev-panel="p0">
+    <div class="panel-head">
+      <h2><span class="badge pri p0">P0</span> Gap register <span class="count">2</span></h2>
+      <p class="desc">Click a card to expand the conflict or gap and the P0 check</p>
+    </div>
+    <div class="case-list">
+      {case_card("PRD expiry vs API note until client release", '''<dl class="kv">
+        <div><dt>ID</dt><dd><code>RA-01</code></dd></div>
+        <div><dt>Kind</dt><dd>Conflict</dd></div>
+      </dl>
+      <h4>What is missing or in conflict</h4>
+      <div class="block"><p>PRD says a hold expires after 15 minutes. The API note says until the client releases it.</p></div>
+      <h4>P0 / P1 check</h4>
+      <div class="block"><p>Create a hold, wait 16 minutes, call get. Fail if the two sources still disagree.</p></div>''', badges='<span class="badge pri p0">P0</span><span class="badge type">Conflict</span><span class="badge type">RA-01</span>', pri="P0", cid="ra-01")}
+      {case_card("Last-unit race is not specified", '''<dl class="kv">
+        <div><dt>ID</dt><dd><code>RA-02</code></dd></div>
+        <div><dt>Kind</dt><dd>Gap</dd></div>
+      </dl>
+      <h4>What is missing or in conflict</h4>
+      <div class="block"><p>Over-sell when two holds race on the last unit is not specified.</p></div>
+      <h4>P0 / P1 check</h4>
+      <div class="block"><p>Two concurrent <code>quantity=1</code> requests when available=1. Expect one 200 and one 409.</p></div>''', badges='<span class="badge pri p0">P0</span><span class="badge type">Gap</span><span class="badge type">RA-02</span>', pri="P0", cid="ra-02")}
+    </div>
+  </section>
+  <section class="panel" data-sev-panel="p1">
+    <div class="panel-head">
+      <h2><span class="badge pri p1">P1</span> Gap register <span class="count">1</span></h2>
+      <p class="desc">Click a card to expand the gap and the check</p>
+    </div>
+    <div class="case-list">
+      {case_card("No success metric for hold conversion", '''<dl class="kv">
+        <div><dt>ID</dt><dd><code>RA-03</code></dd></div>
+        <div><dt>Kind</dt><dd>Gap</dd></div>
+      </dl>
+      <h4>What is missing or in conflict</h4>
+      <div class="block"><p>No success metric for hold conversion to order.</p></div>
+      <h4>P0 / P1 check</h4>
+      <div class="block"><p>Marked <code>untestable</code> until product names the metric.</p></div>''', badges='<span class="badge pri p1">P1</span><span class="badge type">Gap</span><span class="badge type">RA-03</span>', pri="P1", cid="ra-03")}
+    </div>
   </section>
   <p class="footer">codexqa-requirement-analyzer · sample register</p>
 """
@@ -279,29 +341,37 @@ def write_ra():
 
 
 def write_testdata():
-    body = """
+    ph = "{placeholder}"
+    product_body = (
+        '<dl class="kv">'
+        '<div><dt>Before</dt><dd><code>productId</code>: <span class="was">' + ph + '</span></dd></div>'
+        '<div><dt>After</dt><dd><code>productId</code>: <span class="now">prd_8f21</span></dd></div>'
+        '</dl><h4>Construction</h4>'
+        '<div class="block"><p>Created via <code>POST /v1/catalog/products</code>; id from <code>data.id</code></p></div>'
+    )
+    hold_body = (
+        '<dl class="kv">'
+        '<div><dt>Before</dt><dd><code>holdId</code>: <span class="was">' + ph + '</span></dd></div>'
+        '<div><dt>After</dt><dd><code>holdId</code>: <span class="now">hld_3c90</span></dd></div>'
+        '</dl><h4>Construction</h4>'
+        '<div class="block"><p>Created via <code>POST /v1/holds</code>; id from <code>data.holdId</code></p></div>'
+    )
+    body = f"""
   <header class="hero">
     <p class="kicker">codexqa-testdata-generator · write-back</p>
     <h1>Placeholders filled with IDs the backend returned</h1>
     <p class="sub"><span class="badge type">case-executable.md</span> · mock catalog</p>
   </header>
+{toolbar([("all", "All (2)")])}
   <section class="panel">
-    <div class="panel-head"><h2>Before (from codexqa-testcase-generator)</h2></div>
-    <table class="steps">
-      <thead><tr><th>Entity</th><th>Content</th><th>Construction</th></tr></thead>
-      <tbody><tr><td>Catalog product</td><td><code>productId</code>: {placeholder}</td><td><em>(empty)</em></td></tr></tbody>
-    </table>
-  </section>
-  <section class="panel">
-    <div class="panel-head"><h2>After (backend created the row)</h2></div>
-    <table class="steps">
-      <thead><tr><th>Entity</th><th>Content</th><th>Construction</th></tr></thead>
-      <tbody><tr>
-        <td>Catalog product</td>
-        <td><code>productId</code>: <span class="was">{placeholder}</span> <span class="now">prd_8f21</span></td>
-        <td>Created via <code>POST /v1/catalog/products</code>; id from <code>data.id</code></td>
-      </tr></tbody>
-    </table>
+    <div class="panel-head">
+      <h2>Write-back records</h2>
+      <p class="desc">Click a card to expand before/after IDs and how they were constructed</p>
+    </div>
+    <div class="case-list">
+      {case_card("Catalog product", product_body, badges='<span class="badge type">entity</span>', cid="td-1")}
+      {case_card("Inventory hold", hold_body, badges='<span class="badge type">entity</span>', cid="td-2")}
+    </div>
   </section>
   <p class="footer">codexqa-testdata-generator · sample write-back</p>
 """
