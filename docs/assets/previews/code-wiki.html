@@ -6,20 +6,20 @@
 <title>inventory-service — 架构知识图谱</title>
 <style>
   :root {
-    /* anthropic / claude-code palette — same tokens as official session-report */
+    /* daytime paper — README preview only; live skill template stays dark Claude chrome */
     --ivory: #FAF9F5;
-    --term-bg: #1a1918;
-    --term-fg: #d1cfc5;
-    --titlebar: #252321;
-    --outline: rgba(255,255,255,0.08);
-    --hover: rgba(255,255,255,0.035);
-    --clay: #D97757;
-    --dim: rgb(136,136,136);
-    --subtle: rgb(80,80,80);
-    --green: rgb(78,186,101);
-    --red: rgb(255,107,128);
-    --blue: rgb(177,185,249);
-    --yellow: rgb(255,193,7);
+    --term-bg: #ffffff;
+    --term-fg: #141413;
+    --titlebar: #F0EEE6;
+    --outline: rgba(20,20,19,0.10);
+    --hover: rgba(20,20,19,0.04);
+    --clay: #C96E52;
+    --dim: #5c6778;
+    --subtle: #8a8680;
+    --green: #176c3a;
+    --red: #b42318;
+    --blue: #1558b0;
+    --yellow: #8a5a00;
     --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
     --sans: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   }
@@ -39,7 +39,7 @@
     background: var(--term-bg);
     border-radius: 8px;
     outline: 1px solid var(--outline);
-    box-shadow: 0 20px 60px rgba(20,20,19,0.22);
+    box-shadow: 0 16px 40px rgba(20,20,19,0.08);
   }
   .titlebar {
     background: var(--titlebar);
@@ -48,7 +48,7 @@
     padding: 11px 14px;
     display: flex; align-items: center; gap: 7px;
   }
-  .titlebar .dot { width: 11px; height: 11px; border-radius: 50%; background: #3a3836; }
+  .titlebar .dot { width: 11px; height: 11px; border-radius: 50%; background: #D1CFC5; }
   .titlebar .path { margin-left: 14px; color: var(--dim); font-size: 11px; font-family: var(--mono); }
   .term-body { padding: 22px 30px 30px; }
 
@@ -162,7 +162,7 @@
             border-top: 1px solid var(--outline); border-bottom: 1px solid var(--outline); }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th, td { text-align: left; padding: 7px 10px; }
-  td { border-top: 1px solid rgba(255,255,255,0.04); }
+  td { border-top: 1px solid var(--outline); }
   th { position: sticky; top: 0; background: var(--term-bg); z-index: 1;
        font-weight: 500; font-size: 12px; color: var(--subtle);
        user-select: none;

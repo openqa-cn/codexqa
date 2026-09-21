@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="night">
+<html lang="zh-CN" data-theme="day">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,7 +9,7 @@
   try{
     var q=new URLSearchParams(location.search).get('theme');
     var t=(q==='day'||q==='night')?q:localStorage.getItem('aid-report-theme');
-    if(t!=='day'&&t!=='night') t='night';
+    if(t!=='day'&&t!=='night') t='day';
     document.documentElement.setAttribute('data-theme',t);
   }catch(e){}
 })();
@@ -51,7 +51,7 @@
     --thumb:linear-gradient(180deg,#f4d27a,#b8861c);
   }
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth;color-scheme:dark}
+  html{scroll-behavior:smooth;color-scheme:light}
   html[data-theme="day"]{color-scheme:light}
   body{font-family:var(--font-body);background:var(--bg);color:var(--text);
        line-height:1.6;-webkit-font-smoothing:antialiased}
@@ -219,14 +219,14 @@
 </head>
 <body>
 <div class="page">
-  <button type="button" class="watch-toggle" id="aidThemeToggle" aria-pressed="false" aria-label="切换为白天视图">
+  <button type="button" class="watch-toggle" id="aidThemeToggle" aria-pressed="true" aria-label="切换为黑夜视图">
     <span class="watch-rail" aria-hidden="true">
       <span class="watch-icon-sun"></span>
       <span class="watch-thumb"></span>
       <span class="watch-icon-moon"></span>
     </span>
     <span class="watch-meta">
-      <span class="watch-mode" id="aidThemeLabel">NIGHT</span>
+      <span class="watch-mode" id="aidThemeLabel">DAY</span>
       <span class="watch-hint">VIEW</span>
     </span>
   </button>
@@ -474,7 +474,7 @@
     if(q==='day'||q==='night') saved=q;
     else saved=localStorage.getItem(KEY);
   }catch(e){}
-  apply((saved==='day'||saved==='night')?saved:'night',false);
+  apply((saved==='day'||saved==='night')?saved:'day',false);
   requestAnimationFrame(function(){root.classList.add('theme-ready')});
   if(btn) btn.addEventListener('click',function(){
     apply(root.getAttribute('data-theme')==='day'?'night':'day',true);
