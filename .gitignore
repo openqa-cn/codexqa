@@ -6,6 +6,9 @@ node_modules/
 dist/
 coverage/
 .pytest_cache/
+.ruff_cache/
+.cursor/
+seo/
 __pycache__/
 # Local scan report artifacts (e.g. codexqa-defect-analyzer full/incremental outputs)
 reports/

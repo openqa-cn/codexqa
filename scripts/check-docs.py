@@ -26,7 +26,7 @@ def file_links(path):
 
 
 # Agent reference syntax is not a documentation link contract; check reader-facing docs.
-paths = list(root.glob('*.md')) + list((root / 'docs').glob('*.md')) + list((root / 'examples').rglob('*.md')) + list((root / 'seo').glob('*.md')) + [
+paths = list(root.glob('*.md')) + list((root / 'docs').glob('*.md')) + list((root / 'examples').rglob('*.md')) + [
     root / 'skills/README.md',
     root / 'skills/README.zh-CN.md',
     root / 'skills/codexqa-defect-analyzer/README.md',
@@ -79,7 +79,7 @@ translation_gaps = {
 declared_gaps = 0
 for zh in sorted(root.rglob('*.zh-CN.md')):
     rel = zh.relative_to(root).as_posix()
-    if 'node_modules' in zh.parts or '/data/' in f'/{rel}':
+    if 'node_modules' in zh.parts or '/data/' in f'/{rel}' or zh.parts[0] in {'.cursor', 'seo', '.ruff_cache'}:
         continue
     en = zh.with_name(zh.name.replace('.zh-CN.md', '.md'))
     if not en.exists():

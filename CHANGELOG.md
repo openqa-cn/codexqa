@@ -4,6 +4,8 @@ Each release has two sections. **Highlights** is what changes for someone using 
 
 ## Unreleased
 
+- Stop tracking `.cursor/rules` (local push-identity gate), Ruff cache, and internal `seo/` playbooks. `.github/` stays: Actions, release notes, and issue templates only run from the repository.
+
 ## 0.3.0 — 2026-09-21
 
 Eight published skills under the `codexqa-*` names, including `codexqa-code-wiki`. The root README is a product landing page; documentation ranks at [openqa.cn](https://openqa.cn/).

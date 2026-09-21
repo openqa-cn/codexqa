@@ -10,7 +10,6 @@ codexqa/
 ├── examples/     # Small, runnable public examples
 ├── benchmarks/   # Seeded defects and evaluation methodology
 ├── docs/         # Architecture, support, roadmap, release, and commercial boundaries
-├── seo/          # Organic-search playbooks (intents, directories, measurement)
 ├── skills.json   # Installer-facing skill index
 └── .github/      # CI, issue forms, contribution automation
 ```
