@@ -1,210 +1,455 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN" data-theme="light" data-lang="zh" data-store="wiki-report">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title data-zh="inventory-service — 架构知识图谱" data-en="inventory-service — architecture wiki">inventory-service — 架构知识图谱</title>
-<script>
-(function(){
-  try {
-    var prefix = document.documentElement.getAttribute('data-store') || 'codexqa-report';
-    var t = localStorage.getItem(prefix + '-theme');
-    var l = localStorage.getItem(prefix + '-lang');
-    if (t === 'day') t = 'light';
-    if (t === 'night') t = 'dark';
-    if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
-    if (l === 'en' || l === 'zh') {
-      document.documentElement.setAttribute('data-lang', l);
-      document.documentElement.lang = l === 'en' ? 'en' : 'zh-CN';
-    }
-  } catch (e) {}
-})();
-</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>codexqa — 架构知识图谱</title>
 <style>
-/* Shared CodexQA HTML report chrome — copied from codexqa-testcase-generator.
-   Keep in sync with skills/codexqa-testcase-generator/scripts/generate_case_report.py */
-:root, html[data-theme="light"] {
-  color-scheme: light;
-  --bg:#f0f3f6; --sheet:#ffffff; --ink:#1a2332; --muted:#5a6578;
-  --line:#d5dde8; --acc:#0f6b4c; --acc-soft:#e6f4ee; --acc-fg:#fff;
-  --web:#0b5cab; --web-bg:#e8f1fb; --web-line:#c5d9f0;
-  --server:#6b3fa0; --server-bg:#f3eafb; --server-line:#e0d0f2;
-  --app:#b45309; --app-bg:#fff4e6; --app-line:#f0d7b5;
-  --p0:#b42318; --p0-bg:#fde8e4;
-  --p1:#c2410c; --p1-bg:#ffedd5;
-  --p2:#9a6700; --p2-bg:#fef3c7;
-  --p3:#475569; --p3-bg:#e2e8f0;
-  --card:#f8fafc; --chip:#fff; --head:#fbfcfd; --code-bg:#eef2f6; --bar-track:#e8edf3;
-  --hero-a:#d9ebe3; --hero-b:#d6e4f5;
-  --ok:#17663a; --ok-bg:#dcfce7;
-  --toolbar-bg: color-mix(in srgb, var(--sheet) 92%, transparent);
-  --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-6:24px;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --sans: "Segoe UI", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
-}
-html[data-theme="dark"] {
-  color-scheme: dark;
-  --bg:#0f141b; --sheet:#1a222c; --ink:#e8edf2; --muted:#9aa7b5;
-  --line:#2f3b49; --acc:#3ecf8e; --acc-soft:#163526; --acc-fg:#0b1a12;
-  --web:#7eb6ff; --web-bg:#1a2a3d; --web-line:#2a4060;
-  --server:#c4a1ff; --server-bg:#2a1f3d; --server-line:#3d2f5c;
-  --app:#ffb074; --app-bg:#3a2718; --app-line:#5a3a22;
-  --p0:#ff8a80; --p0-bg:#3a1d1c;
-  --p1:#ffb074; --p1-bg:#3a2718;
-  --p2:#e6c35c; --p2-bg:#3a3218;
-  --p3:#cbd5e1; --p3-bg:#2a3441;
-  --card:#141b24; --chip:#1f2833; --head:#162029; --code-bg:#24303b; --bar-track:#24303b;
-  --hero-a:#1a2e28; --hero-b:#1a2433;
-  --ok:#7ddea4; --ok-bg:#163526;
-  --toolbar-bg: color-mix(in srgb, var(--sheet) 88%, transparent);
-}
-* { box-sizing: border-box; }
-html { scroll-padding-top: 120px; }
-body { margin:0; font:14px/1.55 var(--sans); color:var(--ink); background:
-  radial-gradient(1200px 500px at 10% -10%, var(--hero-a) 0%, transparent 55%),
-  radial-gradient(900px 400px at 100% 0%, var(--hero-b) 0%, transparent 50%),
-  var(--bg); }
-.prefs { position:sticky; top:0; z-index:20; display:flex; justify-content:flex-end; gap:var(--space-2);
-  padding:10px 20px; background:var(--toolbar-bg); backdrop-filter:blur(8px);
-  border-bottom:1px solid var(--line); }
-.prefs .group { display:flex; gap:4px; align-items:center; padding:2px;
-  border:1px solid var(--line); border-radius:999px; background:var(--sheet); }
-.prefs button { appearance:none; border:0; background:transparent; color:var(--muted);
-  font:inherit; font-size:12px; font-weight:600; letter-spacing:.02em; padding:8px 14px;
-  min-height:36px; border-radius:999px; cursor:pointer; }
-.prefs button[aria-pressed="true"] { background:var(--acc); color:var(--acc-fg); }
-.prefs button:focus-visible,
-.tab:focus-visible,
-.case-head:focus-visible,
-.stat-chip:focus-visible {
-  outline:2px solid var(--acc); outline-offset:2px;
-}
-.wrap { max-width:1180px; margin:0 auto; padding:var(--space-6) 20px 72px;
-  display:flex; flex-direction:column; gap:var(--space-5); }
-.hero { background:var(--sheet); border:1px solid var(--line); border-radius:14px;
-  padding:var(--space-6) 28px; margin:0; box-shadow:0 1px 0 rgba(26,35,50,.04); }
-.kicker { margin:0 0 8px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
-h1 { margin:0 0 10px; font-size:24px; letter-spacing:-.02em; text-wrap:balance; }
-.sub { color:var(--muted); margin:0 0 var(--space-4); }
-.meta-row { display:flex; flex-wrap:wrap; gap:10px 20px; font-size:12.5px; color:var(--muted); }
-.meta-row code { font-family:var(--mono); font-size:11.5px; background:var(--code-bg); padding:1px 5px; border-radius:4px; color:var(--ink); }
-.stats { display:grid; grid-template-columns: 1.2fr 1fr; gap:var(--space-4); margin:var(--space-5) 0 0; }
-@media (max-width:800px) { .stats { grid-template-columns:1fr; } }
-.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:var(--space-4) 18px; }
-.card h2 { margin:0 0 var(--space-3); font-size:13px; color:var(--muted); font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
-.chip-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(76px, 1fr)); gap:var(--space-3); }
-.chip-row.sources { margin-top:var(--space-3); }
-.stat-chip { min-width:0; width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--line);
-  background:var(--chip); text-decoration:none; color:inherit; display:block; }
-.stat-chip:hover { border-color:var(--acc); box-shadow:0 0 0 1px var(--acc-soft); }
-.stat-chip .n { display:block; font-size:22px; font-weight:700; line-height:1.1; }
-.stat-chip .l { font-size:11px; color:var(--muted); letter-spacing:.06em; }
-.stat-chip.p0 .n, .stat-chip.web .n { color:var(--p0); }
-.stat-chip.p0 { background:var(--p0-bg); border-color:var(--p0-bg); }
-.stat-chip.p1 .n { color:var(--p1); }
-.stat-chip.p1 { background:var(--p1-bg); border-color:var(--p1-bg); }
-.stat-chip.p2 .n { color:var(--p2); }
-.stat-chip.p2 { background:var(--p2-bg); border-color:var(--p2-bg); }
-.stat-chip.p3 .n { color:var(--p3); }
-.stat-chip.p3 { background:var(--p3-bg); border-color:var(--p3-bg); }
-.stat-chip.web { background:var(--web-bg); border-color:var(--web-line); }
-.stat-chip.web .n { color:var(--web); }
-.stat-chip.server { background:var(--server-bg); border-color:var(--server-line); }
-.stat-chip.server .n { color:var(--server); }
-.stat-chip.app { background:var(--app-bg); border-color:var(--app-line); }
-.stat-chip.app .n { color:var(--app); }
-.bar-row { display:grid; grid-template-columns:40px 1fr 40px; gap:var(--space-2); align-items:center; margin:8px 0; font-size:12px; }
-.bar { height:8px; background:var(--bar-track); border-radius:99px; overflow:hidden; }
-.bar i { display:block; height:100%; background:var(--acc); border-radius:99px; }
-.rule-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 28px; margin:4px 0 8px; }
-@media (max-width:800px) { .rule-grid { grid-template-columns:1fr; } }
-.rule-grid .bar-row { grid-template-columns:92px 1fr 28px; margin:0; min-height:28px; }
-.rule-grid .bar-row > span:first-child {
-  font-family:var(--mono); font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-}
-.toolbar { display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:center; margin:0;
-  background:var(--sheet); border:1px solid var(--line); border-radius:12px; padding:10px 14px;
-  position:sticky; top:52px; z-index:5; }
-.tabs { display:flex; gap:8px; flex-wrap:wrap; }
-.tab { border:1px solid var(--line); background:var(--chip); color:var(--ink); border-radius:999px;
-  padding:8px 14px; min-height:36px; cursor:pointer; font:inherit; font-size:13px; }
-.tab:hover { border-color:var(--acc); }
-.tab[aria-selected="true"] { background:var(--acc); border-color:var(--acc); color:var(--acc-fg); }
-.filters { display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; align-items:center; }
-.filters input, .filters select { border:1px solid var(--line); border-radius:8px; padding:8px 10px;
-  min-height:36px; font:inherit; background:var(--chip); color:var(--ink); }
-.filters input { min-width:180px; }
-.panel { background:var(--sheet); border:1px solid var(--line); border-radius:14px;
-  padding:20px 22px 16px; margin:0; }
-.panel[hidden] { display:none !important; }
-.panel-head h2 { margin:0; font-size:18px; }
-.panel-head .count { display:inline-block; margin-left:6px; font-size:12px; background:var(--acc-soft); color:var(--acc);
-  padding:2px 8px; border-radius:999px; vertical-align:middle; }
-.panel-head .desc { color:var(--muted); margin:8px 0 14px; font-size:13px; }
-.case-list { display:flex; flex-direction:column; gap:var(--space-3); }
-.case { border:1px solid var(--line); border-radius:10px; margin:0; overflow:hidden; background:var(--chip); }
-.case + .case { margin-top:var(--space-3); }
-.case-list .case + .case { margin-top:0; }
-.case[hidden] { display:none !important; }
-.case-head { display:flex; flex-wrap:wrap; gap:8px 10px; align-items:center;
-  padding:12px 14px; min-height:44px; cursor:pointer; background:var(--head); }
-.case-list .case-head { display:grid; grid-template-columns:auto auto auto minmax(0,1fr) auto auto;
-  align-items:center; }
-@media (max-width:720px) {
-  .case-list .case-head { grid-template-columns:auto auto minmax(0,1fr) auto; }
-  .case-list .case-head .badge.type,
-  .case-list .case-head .meta-id { display:none; }
-}
-.case-head:hover { background:color-mix(in srgb, var(--head) 55%, var(--acc-soft)); }
-.case-head h3 { margin:0; font-size:14px; font-weight:600; flex:1 1 220px; min-width:0;
-  text-wrap:balance; }
-.case-list .case-head h3 { flex:unset; overflow:visible; white-space:normal; text-wrap:balance; }
-.meta-id { font-family:var(--mono); font-size:11px; color:var(--muted); }
-.chev { width:8px; height:8px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted);
-  transform:rotate(45deg); transition:transform .15s ease; margin-right:4px; flex:0 0 auto; }
-.case.open .chev { transform:rotate(225deg); }
-.case-body { display:none; padding:12px 16px 16px; border-top:1px solid var(--line); }
-.case.open .case-body { display:block; }
-.badge { display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.04em; padding:2px 7px; border-radius:999px; }
-.badge.pri.p0 { background:var(--p0-bg); color:var(--p0); }
-.badge.pri.p1 { background:var(--p1-bg); color:var(--p1); }
-.badge.pri.p2 { background:var(--p2-bg); color:var(--p2); }
-.badge.pri.p3 { background:var(--p3-bg); color:var(--p3); }
-.badge.type { background:var(--code-bg); color:var(--muted); font-weight:600; }
-.badge.source.llm { background:var(--server-bg); color:var(--server); }
-.badge.source.sast { background:var(--web-bg); color:var(--web); }
-.badge.source.confirmed { background:var(--ok-bg); color:var(--ok); }
-.kv { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px 16px; margin:4px 0 14px; }
-.kv dt { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
-.kv dd { margin:2px 0 0; }
-.case-body h4 { margin:16px 0 8px; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
-.case-body h4:first-child { margin-top:4px; }
-.block { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
-.block p { margin:0 0 6px; }
-.block p:last-child { margin:0; }
-.block code, .steps code, code { font-family:var(--mono); font-size:11.5px; background:var(--code-bg); padding:1px 5px; border-radius:4px; color:var(--ink); }
-.block a, a { color:var(--acc); }
-.steps { width:100%; border-collapse:collapse; font-size:13px; }
-.steps th, .steps td { border:1px solid var(--line); padding:8px 9px; vertical-align:top; text-align:left; }
-.steps th { background:var(--code-bg); font-size:12px; }
-.empty { padding:28px; text-align:center; color:var(--muted); border:1px dashed var(--line); border-radius:10px; margin:0; }
-.muted { color:var(--muted); }
-.footer { margin:4px 0 0; color:var(--muted); font-size:12px; text-align:center; }
-.total-pill { display:inline-block; background:var(--acc-soft); color:var(--acc); font-weight:700;
-  padding:3px 10px; border-radius:999px; margin-left:6px; font-size:13px; }
-.alert { padding:12px 14px; border-radius:10px; font-size:13px; margin:0; border:1px solid var(--line); }
-.alert-warn { background:var(--p1-bg); color:var(--p1); border-color:transparent; }
-.alert-drop { background:var(--p0-bg); color:var(--p0); border-color:transparent; }
-html:not([data-lang="en"]) .unit-en { display:none; }
-html[data-lang="en"] .unit-zh { display:none; }
-.was { color:var(--p0); text-decoration:line-through; }
-.now { color:var(--acc); font-weight:600; }
-.figure-frame { background:var(--sheet); border:1px solid var(--line); border-radius:14px; padding:8px; }
-.figure-frame img { width:100%; height:auto; display:block; border-radius:10px; }
-@media (prefers-reduced-motion: reduce) {
-  .chev { transition:none; }
-}
+  :root, html[data-theme="light"] {
+    color-scheme: light;
+    --bg:#f0f3f6; --sheet:#ffffff; --ink:#1a2332; --muted:#5a6578;
+    --line:#d5dde8; --acc:#0f6b4c; --acc-soft:#e6f4ee; --acc-fg:#fff;
+    --ivory: var(--bg);
+    --term-bg: var(--sheet);
+    --term-fg: var(--ink);
+    --titlebar: #fbfcfd;
+    --outline: var(--line);
+    --hover: rgba(15,107,76,.06);
+    --clay: var(--acc);
+    --dim: var(--muted);
+    --subtle: var(--muted);
+    --green: var(--acc);
+    --red: #b42318;
+    --blue: #0b5cab;
+    --yellow: #c2410c;
+    --chip: #eef2f6;
+    --chip-loc: #f8fafc;
+    --sidebar-w: 252px;
+    --toc-w: 200px;
+    --prefs-h: 52px;
+    --topbar-h: 48px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: "Segoe UI", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    --toolbar-bg: color-mix(in srgb, var(--sheet) 92%, transparent);
+  }
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --bg:#0f141b; --sheet:#1a222c; --ink:#e8edf2; --muted:#9aa7b5;
+    --line:#2f3b49; --acc:#3ecf8e; --acc-soft:#163526; --acc-fg:#0b1a12;
+    --ivory: var(--bg);
+    --term-bg: var(--sheet);
+    --term-fg: var(--ink);
+    --titlebar: #162029;
+    --outline: var(--line);
+    --hover: rgba(62,207,142,.08);
+    --clay: var(--acc);
+    --dim: var(--muted);
+    --subtle: var(--muted);
+    --green: var(--acc);
+    --red: #ff8a80;
+    --blue: #7eb6ff;
+    --yellow: #ffb074;
+    --chip: #1f2833;
+    --chip-loc: #141b24;
+    --toolbar-bg: color-mix(in srgb, var(--sheet) 88%, transparent);
+  }
 
+  * { box-sizing: border-box; }
+  html { background: var(--ivory); scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font: 14px/1.7 var(--sans);
+    font-variant-numeric: tabular-nums;
+    color: var(--term-fg);
+    background:
+      radial-gradient(1200px 500px at 10% -10%, #d9ebe3 0%, transparent 55%),
+      radial-gradient(900px 400px at 100% 0%, #d6e4f5 0%, transparent 50%),
+      var(--bg);
+  }
+  html[data-theme="dark"] body {
+    background:
+      radial-gradient(1200px 500px at 10% -10%, #1a2e28 0%, transparent 55%),
+      radial-gradient(900px 400px at 100% 0%, #1a2433 0%, transparent 50%),
+      var(--bg);
+  }
+  .prefs { position:sticky; top:0; z-index:40; display:flex; justify-content:flex-end; gap:8px;
+    padding:10px 18px; background:var(--toolbar-bg); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line); }
+  .prefs .group { display:flex; gap:4px; align-items:center; padding:2px;
+    border:1px solid var(--line); border-radius:999px; background:var(--sheet); }
+  .prefs button { appearance:none; border:0; background:transparent; color:var(--muted);
+    font:inherit; font-size:12px; font-weight:600; letter-spacing:.02em; padding:6px 12px;
+    border-radius:999px; cursor:pointer; }
+  .prefs button[aria-pressed="true"] { background:var(--acc); color:var(--acc-fg); }
+
+  a { color: var(--clay); }
+  a:hover { color: var(--acc); }
+  code { color: var(--blue); font-family: var(--mono); font-size: 12px; }
+  ::selection { background: var(--acc); color: var(--acc-fg); }
+
+  /* ——— top bar (titlebar) ——— */
+  .topbar {
+    position: sticky; top: var(--prefs-h); z-index: 30;
+    height: var(--topbar-h);
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 16px;
+    background: var(--titlebar);
+    border-bottom: 1px solid var(--outline);
+  }
+  .topbar .dot { width: 11px; height: 11px; border-radius: 50%; background: var(--line); }
+  .brand { margin-left: 8px; font-weight: 500; font-size: 13px; color: var(--term-fg); text-decoration: none; }
+  .brand:hover { color: var(--clay); }
+  .repo { color: var(--dim); font-size: 12px; font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar-meta { margin-left: auto; color: var(--subtle); font-size: 11px; font-family: var(--mono); }
+
+  /* ——— 3-column wiki shell ——— */
+  .wiki-shell {
+    display: grid;
+    grid-template-columns: var(--sidebar-w) minmax(0, 1fr) var(--toc-w);
+    min-height: calc(100vh - var(--prefs-h) - var(--topbar-h));
+  }
+
+  .sidebar, .toc {
+    position: sticky; top: calc(var(--prefs-h) + var(--topbar-h));
+    height: calc(100vh - var(--prefs-h) - var(--topbar-h));
+    overflow: auto;
+  }
+  .sidebar {
+    padding: 14px 10px 48px;
+    border-right: 1px solid var(--outline);
+    background: var(--term-bg);
+  }
+  .toc {
+    padding: 24px 16px 48px 14px;
+    border-left: 1px solid var(--outline);
+  }
+
+  .indexed { font-size: 11px; color: var(--subtle); padding: 0 8px 10px; line-height: 1.5; }
+  .indexed .hash { font-family: var(--mono); }
+
+  .nav a, .toc a { display: block; text-decoration: none; border-radius: 8px; }
+  .nav a { padding: 5px 8px; font-size: 13px; color: var(--term-fg); }
+  .nav a:hover { background: var(--hover); color: var(--clay); }
+  .nav a.active { background: var(--acc-soft); color: var(--acc); }
+  .nav .children { padding-left: 10px; }
+  .nav .children a { color: var(--dim); font-size: 13px; }
+  .nav .children a.active { color: var(--acc); background: var(--acc-soft); }
+  .nav .nav-empty { color: var(--subtle); font-style: normal; }
+
+  .nav-group { margin: 2px 0; }
+  .nav-group > summary {
+    list-style: none; cursor: pointer;
+    padding: 6px 8px; border-radius: 4px;
+    font-size: 13px; color: var(--term-fg);
+  }
+  .nav-group > summary::-webkit-details-marker { display: none; }
+  .nav-group > summary::before {
+    content: "▾ "; font-family: var(--mono); font-size: 10px; color: var(--subtle);
+  }
+  .nav-group:not([open]) > summary::before { content: "▸ "; }
+  .nav-group > summary:hover { background: var(--hover); }
+
+  .toc h3 { margin: 0 0 10px; font-size: 12px; font-weight: 500; color: var(--dim); }
+  .toc ol { list-style: none; margin: 0; padding: 0; }
+  .toc a { color: var(--dim); font-size: 12px; padding: 4px 0; line-height: 1.4; }
+  .toc a:hover, .toc a.active { color: var(--term-fg); }
+
+  /* ——— article ——— */
+  .article { max-width: 780px; padding: 32px 40px 80px; }
+
+  h1 {
+    margin: 0 0 12px;
+    font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25;
+  }
+  h2 {
+    all: unset; display: block;
+    margin: 28px 0 12px;
+    color: var(--clay); font-weight: 500; font-size: 16px;
+  }
+  h2::before { content: "▸ "; font-family: var(--mono); }
+  h2 .hint { color: var(--subtle); font-size: 12px; font-weight: 400; margin-left: 8px; }
+  h3 { margin: 22px 0 8px; font-size: 14px; font-weight: 500; color: var(--term-fg); }
+  section { scroll-margin-top: calc(var(--topbar-h) + 16px); margin-top: 20px; }
+  .hr { display: none; }
+  .section-body { margin-top: 12px; }
+  .wiki-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+  .wiki-toolbar button {
+    appearance: none; min-height: 36px; padding: 8px 14px;
+    border: 1px solid var(--outline); border-radius: 999px;
+    background: var(--chip); color: var(--term-fg);
+    font: inherit; font-size: 13px; cursor: pointer;
+  }
+  .wiki-toolbar button:hover { border-color: var(--clay); color: var(--clay); }
+  .wiki-toolbar button:focus-visible,
+  .take > summary:focus-visible,
+  .drill summary:focus-visible {
+    outline: 2px solid var(--acc); outline-offset: 2px;
+  }
+
+  .cmd {
+    margin: 0 8px 12px;
+    color: var(--dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.45;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  }
+  .cmd .prompt { color: var(--clay); }
+  .cmd .flag { color: var(--blue); }
+
+  #meta-line { color: var(--subtle); font-size: 11px; margin: 0 0 8px; }
+
+  .sources-box {
+    margin: 0 0 16px;
+    border: 1px solid var(--outline);
+    border-radius: 8px;
+    background: var(--titlebar);
+    scroll-margin-top: calc(var(--topbar-h) + 16px);
+  }
+  .sources-box > summary {
+    list-style: none; cursor: pointer;
+    padding: 9px 12px; font-size: 13px; color: var(--dim);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sources-box > summary::-webkit-details-marker { display: none; }
+  .sources-box > summary::before { content: "▸"; font-size: 11px; color: var(--subtle); font-family: var(--mono); }
+  .sources-box[open] > summary::before { content: "▾"; }
+  .sources-box .files { padding: 0 12px 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .file, .file-static {
+    display: inline-flex; align-items: stretch;
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    text-decoration: none; color: var(--term-fg); border-radius: 4px; overflow: hidden;
+    line-height: 1;
+  }
+  .file:hover { color: var(--clay); }
+  .file-static:hover { opacity: 0.8; color: var(--term-fg); }
+  .file-path { background: var(--chip); padding: 5px 8px; }
+  .file-loc { background: var(--chip-loc); padding: 5px 8px; color: var(--dim); }
+
+  .howto {
+    margin: 0 0 20px; padding: 12px 16px;
+    border-left: 2px solid var(--clay);
+    color: var(--dim); font-size: 13px;
+  }
+  .howto b { color: var(--term-fg); font-weight: 500; }
+
+  #hero { margin: 8px 0 10px; }
+  #hero-total { display: flex; align-items: baseline; line-height: 1; }
+  #hero-total .num { font-size: 40px; font-weight: 700; font-family: var(--mono); }
+  #hero-total .unit { color: var(--clay); font-size: 18px; margin-left: 2px; font-weight: 700; }
+  #hero-total .label { font-size: 14px; font-weight: 400; color: var(--dim); margin-left: 6px; font-family: var(--sans); }
+  #hero-split { color: var(--dim); margin-top: 8px; }
+  #hero-split b { color: var(--term-fg); font-weight: 500; }
+  #hero-split .ok { color: var(--green); }
+  #hero-split .warn { color: var(--yellow); }
+
+  #overall-grid {
+    display: grid; gap: 12px 28px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    margin: 16px 0; padding: 16px 0;
+    border-top: 1px solid var(--outline);
+    border-bottom: 1px solid var(--outline);
+  }
+  .stat { padding: 4px 0; }
+  .stat .label { font-size: 12px; color: var(--dim); }
+  .stat .val { font-size: 22px; font-weight: 500; font-family: var(--mono); }
+  .stat .detail { font-size: 12px; color: var(--subtle); }
+
+  /* ——— takeaways ——— */
+  #takeaways { display: flex; flex-direction: column; gap: 12px; }
+  .take {
+    margin: 0; padding: 0;
+    border: 1px solid var(--outline); border-radius: 10px;
+    background: var(--titlebar);
+  }
+  div.take {
+    display: grid; grid-template-columns: 8ch 1fr; gap: 12px;
+    padding: 12px 14px; align-items: baseline; min-height: 44px;
+  }
+  .take > summary {
+    list-style: none; cursor: pointer;
+    display: grid; grid-template-columns: 8ch minmax(0, 1fr) auto; gap: 12px;
+    align-items: center; min-height: 44px; padding: 12px 14px;
+  }
+  .take > summary::-webkit-details-marker { display: none; }
+  .take > summary:hover { background: var(--hover); }
+  .take .fig { text-align: right; font-weight: 700; font-size: 15px; font-family: var(--mono); }
+  .take .txt { color: var(--dim); min-width: 0; }
+  .take .txt b { color: var(--term-fg); font-weight: 500; }
+  .take .take-body {
+    padding: 0 14px 14px; border-top: 1px solid var(--outline);
+    color: var(--dim); line-height: 1.65;
+  }
+  .take .take-body b { color: var(--term-fg); font-weight: 500; }
+  .take > summary .chev {
+    width: 8px; height: 8px; justify-self: end;
+    border-right: 2px solid var(--subtle); border-bottom: 2px solid var(--subtle);
+    transform: rotate(45deg); transition: transform .15s ease;
+  }
+  .take[open] > summary .chev { transform: rotate(225deg); }
+  .take.bad  .fig { color: var(--red); }
+  .take.good .fig { color: var(--green); }
+  .take.info .fig { color: var(--blue); }
+
+  /* ——— callouts (reading-guide steps) ——— */
+  .callout { padding: 12px 14px; border-left: 2px solid var(--subtle); color: var(--dim); margin: 0 0 12px; border-radius: 0 10px 10px 0; background: var(--titlebar); }
+  .callout b, .callout code { color: var(--term-fg); }
+  .callout.risk { border-left-color: var(--clay); }
+  .callout .why { display: block; margin-top: 4px; font-size: 12px; color: var(--subtle); }
+
+  /* ——— block-char bars (community size) ——— */
+  .bar {
+    display: grid; grid-template-columns: 22ch 1fr 6ch; gap: 12px;
+    padding: 2px 0; align-items: center; font-family: var(--mono); font-size: 12px;
+  }
+  .bar .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar .blocks { color: var(--clay); white-space: pre; overflow: hidden; }
+  .bar .blocks .empty { color: var(--subtle); }
+  .bar .pct { text-align: right; color: var(--dim); }
+  .bar:hover .name { color: var(--clay); }
+
+  /* ——— drill-down lists (module notes) ——— */
+  .drill details { border: 1px solid var(--outline); border-radius: 10px; margin: 0 0 10px; background: var(--titlebar); scroll-margin-top: calc(var(--topbar-h) + 16px); }
+  .drill details:last-of-type { margin-bottom: 0; }
+  .drill summary {
+    list-style: none; cursor: pointer;
+    display: grid; grid-template-columns: 6ch 1fr; gap: 14px;
+    padding: 12px 14px; min-height: 44px; align-items: center;
+  }
+  .drill summary::-webkit-details-marker { display: none; }
+  .drill summary:hover { background: var(--hover); }
+  .drill .amt { font-weight: 700; text-align: right; color: var(--clay); font-family: var(--mono); font-size: 13px; }
+  .drill .desc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .drill .meta { grid-column: 2; font-size: 12px; color: var(--subtle); }
+  .drill details[open] summary .desc { white-space: normal; }
+  .drill .body { padding: 8px 14px 16px calc(6ch + 28px); font-size: 13px; color: var(--dim); }
+  .drill .body p { margin: 0 0 8px; }
+  .drill .body p:last-child { margin-bottom: 0; }
+
+  /* ——— ivory insets: mermaid paper ——— */
+  .ctx, .diagram {
+    margin: 8px 0 12px; padding: 12px 14px;
+    background: var(--chip); color: var(--ink);
+    border-radius: 6px; font-size: 13px;
+  }
+  .diagram { background: var(--ivory); overflow: hidden; position: relative; }
+  .diagram .mermaid { margin: 0; }
+  .diagram .mermaid svg { max-width: none !important; height: auto; }
+  .diagram-meta, .sources {
+    margin-top: 10px; color: #87867F; font-size: 12px;
+  }
+  .diagram-meta div { padding: 1px 0; }
+
+  .zoom-toolbar {
+    display: flex; align-items: center; justify-content: flex-end; gap: 6px;
+    margin: 0 0 8px;
+  }
+  .zoom-toolbar button {
+    font-family: var(--mono); font-size: 13px; line-height: 1;
+    width: 28px; height: 28px; padding: 0;
+    color: var(--ink); background: var(--chip);
+    border: 1px solid #D1CFC5; border-radius: 4px; cursor: pointer;
+  }
+  .zoom-toolbar button.wide { width: auto; padding: 0 8px; font-size: 12px; }
+  .zoom-toolbar button:hover { border-color: var(--clay); color: var(--clay); }
+  .zoom-pct { font-family: var(--mono); font-size: 11px; color: #87867F; min-width: 4ch; text-align: center; }
+  .zoom-viewport {
+    overflow: hidden;
+    max-height: min(72vh, 640px);
+    border-radius: 4px;
+    cursor: grab;
+    touch-action: none;
+  }
+  .zoom-viewport.is-dragging { cursor: grabbing; }
+  .zoom-stage { transform-origin: 0 0; will-change: transform; width: max-content; }
+
+  .diagram-backdrop {
+    display: none; position: fixed; inset: 0; z-index: 55;
+    background: rgba(0, 0, 0, 0.55);
+  }
+  body.diagram-expanded { overflow: hidden; }
+  body.diagram-expanded .diagram-backdrop { display: block; }
+  .diagram.is-expanded {
+    position: fixed; inset: 56px 24px 24px; z-index: 60;
+    margin: 0; max-width: none;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  }
+  .diagram.is-expanded .zoom-viewport { max-height: calc(100vh - 160px); }
+
+  .prose { color: var(--dim); }
+  .prose p { margin: 0 0 10px; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose b, .prose strong { color: var(--term-fg); font-weight: 500; }
+  .prose ul { margin: 0 0 10px; padding-left: 1.2em; }
+  .prose li { margin: 4px 0; }
+  .tag {
+    display: inline-block; padding: 0 6px; margin-left: 6px;
+    border: 1px solid var(--subtle); border-radius: 3px;
+    font-size: 11px; color: var(--dim);
+  }
+  .tag.risk { border-color: var(--clay); color: var(--clay); }
+  .tag.change { border-color: var(--yellow); color: var(--yellow); }
+
+  /* ——— tables ——— */
+  .scroll {
+    max-height: 440px; overflow: auto;
+    border-top: 1px solid var(--outline); border-bottom: 1px solid var(--outline);
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 10px; }
+  td { border-top: 1px solid rgba(255,255,255,0.04); }
+  th {
+    position: sticky; top: 0; background: var(--term-bg); z-index: 1;
+    font-weight: 500; font-size: 12px; color: var(--subtle);
+    user-select: none;
+    border-bottom: 1px solid var(--outline);
+  }
+  td.num, th.num { text-align: right; font-family: var(--mono); }
+  td.mono { font-family: var(--mono); font-size: 12px; }
+  tbody tr:hover td { background: var(--hover); }
+
+  .layer-grid {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 12px;
+  }
+  .layer-card {
+    border: 1px solid var(--outline); border-radius: 10px; padding: 14px 16px;
+  }
+  .layer-card h3 { margin: 0 0 6px; color: var(--clay); font-size: 13px; }
+  .layer-card ul { margin: 0; padding-left: 1.1em; color: var(--dim); }
+  .layer-card li { margin: 3px 0; }
+
+  footer {
+    margin-top: 36px; padding-top: 14px;
+    border-top: 1px solid var(--outline);
+    color: var(--subtle); font-size: 12px;
+    display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  }
+
+  @media (max-width: 1100px) {
+    #overall-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .layer-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 880px) {
+    .wiki-shell { grid-template-columns: var(--sidebar-w) minmax(0, 1fr); }
+    .toc { display: none; }
+  }
+  @media (max-width: 760px) {
+    .wiki-shell { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .article { padding: 20px 16px 56px; }
+    #hero-total .num { font-size: 32px; }
+    .bar { grid-template-columns: 14ch 1fr 5ch; gap: 8px; }
+    .drill summary { grid-template-columns: 5ch 1fr; }
+    .drill .body { padding-left: 8px; }
+    .take { grid-template-columns: 6ch 1fr; gap: 10px; }
+    div.take, .take > summary { grid-template-columns: 6ch minmax(0, 1fr) auto; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .take > summary .chev { transition: none; }
+  }
 </style>
 </head>
 <body>
@@ -218,107 +463,799 @@ html[data-lang="en"] .unit-zh { display:none; }
     <button type="button" data-set-theme="dark" aria-pressed="false"><span data-zh="黑夜" data-en="Dark">黑夜</span></button>
   </div>
 </div>
-<div class="wrap">
+<header class="topbar">
+  <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+  <a class="brand" href="#page-top">Code Wiki</a>
+  <span class="repo" id="title-path">openqa-cn/codexqa@leviacicig-dev — 架构知识图谱</span>
+  <span class="topbar-meta" id="foot-gen">生成于 2026-09-21 22:29</span>
+</header>
 
-  <header class="hero">
-    <p class="kicker">codexqa-code-wiki · architecture wiki</p>
-    <h1><span data-zh="架构知识图谱" data-en="Architecture wiki">架构知识图谱</span>
-      <span class="total-pill">6 <span class="unit-zh">个模块</span><span class="unit-en"> modules</span></span>
-    </h1>
-    <p class="sub">inventory-service</p>
-    <div class="meta-row">
-      <span>wiki inputs <code>examples/inventory-service --kind architecture --limit 8</code></span>
+<div class="wiki-shell">
+  <aside class="sidebar">
+    <div hidden>
+      <div id="meta-line">最近索引 2026-09-21 22:29 · 本报告收录 8 / 12 · 未调用模型</div>
+      <span id="cmd-repo">openqa-cn/codexqa</span>
+      <span id="cmd-flags">--kind architecture --limit 8 · --kind overview · --kind page --limit 8</span>
     </div>
-    <div class="stats">
-      <div class="card">
-        <h2 data-zh="规模" data-en="Scale">规模</h2>
-        <div class="chip-row">
-          <div class="stat-chip"><span class="n">6</span><span class="l">communities</span></div>
-          <div class="stat-chip p1"><span class="n">2</span><span class="l">standalone</span></div>
-          <div class="stat-chip web"><span class="n">7</span><span class="l">dep edges</span></div>
+    <nav class="nav" id="wiki-nav">
+      <a href="#page-top" class="active" data-zh="总览" data-en="Overview">总览</a>
+
+      <details class="nav-group" open>
+        <summary data-zh="快速上手" data-en="Get started">快速上手</summary>
+        <div class="children">
+          <a href="#howto" data-zh="怎么读" data-en="How to read">怎么读</a>
+          <a href="#sec-findings" data-zh="关键发现" data-en="Key findings">关键发现</a>
+          <a href="#sec-guides" data-zh="阅读路径" data-en="Reading path">阅读路径</a>
+        </div>
+      </details>
+
+      <details class="nav-group" open>
+        <summary data-zh="系统架构" data-en="Architecture">系统架构</summary>
+        <div class="children">
+          <a href="#sec-overview" data-zh="核心架构" data-en="Core architecture">核心架构</a>
+          <a href="#sec-map" data-zh="模块地图" data-en="Module map">模块地图</a>
+          <a href="#sec-diagrams" data-zh="架构图" data-en="Architecture diagram">架构图</a>
+          <a href="#sec-layers" data-zh="分层" data-en="Layers">分层</a>
+          <a href="#sec-flow" data-zh="数据流与存储" data-en="Data flow &amp; storage">数据流与存储</a>
+        </div>
+      </details>
+
+      <details class="nav-group" open>
+        <summary data-zh="入口" data-en="Entry">入口</summary>
+        <div class="children" id="nav-entry">
+          <a href="#p01">p01 仓库脚本入口</a>
+          <a href="#p06">p06 测试数据校验套件</a>
+        </div>
+      </details>
+
+      <details class="nav-group" open>
+        <summary data-zh="应用" data-en="Application">应用</summary>
+        <div class="children" id="nav-app">
+          <a href="#p03">p03 缺陷扫描编排</a>
+          <a href="#p07">p07 用例知识与报告</a>
+        </div>
+      </details>
+
+      <details class="nav-group" open>
+        <summary data-zh="领域" data-en="Domain">领域</summary>
+        <div class="children" id="nav-domain">
+          <a href="#p04">p04 工具绑定流水线</a>
+        </div>
+      </details>
+
+      <details class="nav-group" open>
+        <summary data-zh="存储" data-en="Storage">存储</summary>
+        <div class="children" id="nav-storage">
+          <a href="#p02">p02 测试数据适配存储</a>
+          <a href="#p08">p08 增量拉取与冻结</a>
+        </div>
+      </details>
+
+      <details class="nav-group" open>
+        <summary data-zh="核心模块" data-en="Core modules">核心模块</summary>
+        <div class="children" id="nav-modules">
+          <a href="#p01">p01 仓库脚本入口</a>
+          <a href="#p02">p02 测试数据适配存储</a>
+          <a href="#p03">p03 缺陷扫描编排</a>
+          <a href="#p04">p04 工具绑定流水线</a>
+          <a href="#p06">p06 测试数据校验套件</a>
+          <a href="#p07">p07 用例知识与报告</a>
+          <a href="#p08">p08 增量拉取与冻结</a>
+        </div>
+      </details>
+
+      <details class="nav-group" open>
+        <summary data-zh="独立模块" data-en="Standalone">独立模块</summary>
+        <div class="children" id="nav-peripheral">
+          <a href="#p05">p05 审查规则扫描器</a>
+        </div>
+      </details>
+
+      <details class="nav-group" open>
+        <summary data-zh="参考" data-en="Reference">参考</summary>
+        <div class="children">
+          <a href="#sec-sources" data-zh="相关源文件" data-en="Related sources">相关源文件</a>
+          <a href="#sec-legend" data-zh="图例" data-en="Legend">图例</a>
+          <a href="#sec-glossary" data-zh="术语" data-en="Glossary">术语</a>
+        </div>
+      </details>
+    </nav>
+  </aside>
+
+  <main class="article" id="page-top">
+    <h1>核心架构</h1>
+
+    <details class="sources-box" id="sec-sources">
+      <summary data-zh="相关源文件" data-en="Related sources">相关源文件</summary>
+      <div class="files" id="source-files">
+        <a class="file" href="https://github.com/openqa-cn/codexqa/blob/leviacicig-dev/docs/assets/previews/rebuild_previews.py" target="_blank" rel="noopener"><span class="file-path">docs/assets/previews/rebuild_previews.py</span></a>
+        <a class="file" href="https://github.com/openqa-cn/codexqa/blob/leviacicig-dev/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/cache_tool_binding.ts" target="_blank" rel="noopener"><span class="file-path">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/cache_tool_binding.ts</span></a>
+        <a class="file" href="https://github.com/openqa-cn/codexqa/blob/leviacicig-dev/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/bind_action.ts" target="_blank" rel="noopener"><span class="file-path">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/bind_action.ts</span></a>
+        <a class="file" href="https://github.com/openqa-cn/codexqa/blob/leviacicig-dev/skills/codexqa-defect-analyzer/scripts/agent_llm.py" target="_blank" rel="noopener"><span class="file-path">skills/codexqa-defect-analyzer/scripts/agent_llm.py</span></a>
+        <a class="file" href="https://github.com/openqa-cn/codexqa/blob/leviacicig-dev/skills/codexqa-testcase-generator/scripts/bootstrap_knowledge.py" target="_blank" rel="noopener"><span class="file-path">skills/codexqa-testcase-generator/scripts/bootstrap_knowledge.py</span></a>
+        <a class="file" href="https://github.com/openqa-cn/codexqa/blob/leviacicig-dev/skills/codexqa-testcase-generator/scripts/incremental/build_diff_candidates.py" target="_blank" rel="noopener"><span class="file-path">skills/codexqa-testcase-generator/scripts/incremental/build_diff_candidates.py</span></a>
+        <a class="file" href="https://github.com/openqa-cn/codexqa/blob/leviacicig-dev/skills/codexqa-code-reviewer/scripts/lib/_annotation_edges_body.py" target="_blank" rel="noopener"><span class="file-path">skills/codexqa-code-reviewer/scripts/lib/_annotation_edges_body.py</span></a>
+        <a class="file" href="https://github.com/openqa-cn/codexqa/blob/leviacicig-dev/skills/codexqa-rootcause-analyzer/scripts/diagnose.ts" target="_blank" rel="noopener"><span class="file-path">skills/codexqa-rootcause-analyzer/scripts/diagnose.ts</span></a>
+      </div>
+    </details>
+
+    <div class="howto" id="howto">
+      <b data-zh="怎么读：" data-en="How to read: ">怎么读：</b><span data-zh="先看「关键发现」：本仓不是一条总线，而是三条互不连通的技能簇。测试数据从 p06 进 p02 再到 p04；缺陷扫描走 p01↔p03；用例生成走 p07↔p08。p05 审查扫描器没有跨社区依赖，后看。" data-en="Start with Key findings: this repo is three disconnected skill clusters, not one bus. Testdata goes p06 → p02 → p04; defect scan is p01↔p03; case generation is p07↔p08. p05 reviewer scanners have no cross-community deps — read later.">先看「关键发现」：本仓不是一条总线，而是三条互不连通的技能簇。测试数据从 p06 进 p02 再到 p04；缺陷扫描走 p01↔p03；用例生成走 p07↔p08。p05 审查扫描器没有跨社区依赖，后看。</span>
+    </div>
+
+    <div id="hero">
+      <div id="hero-total"><span class="num">8</span><span class="unit" data-zh="个模块" data-en=" modules">个模块</span><span class="label" data-zh="本报告收录" data-en="in this report">本报告收录</span></div>
+      <div id="hero-split">7 个有依赖 · 1 个独立 · 图上共 12 个社区（按规模截到 8）</div>
+    </div>
+
+    <div id="overall-grid">
+      <div class="stat"><div class="label" data-zh="模块社区" data-en="Communities">模块社区</div><div class="val">12</div><div class="detail" data-zh="图上全部社区" data-en="All communities on the graph">图上全部社区</div></div>
+      <div class="stat"><div class="label" data-zh="本报告收录" data-en="In this report">本报告收录</div><div class="val">8</div><div class="detail" data-zh="按规模选取" data-en="Selected by size">按规模选取</div></div>
+      <div class="stat"><div class="label" data-zh="独立模块" data-en="Standalone">独立模块</div><div class="val">1</div><div class="detail" data-zh="没有列出的依赖" data-en="No listed dependencies">没有列出的依赖</div></div>
+      <div class="stat"><div class="label" data-zh="依赖关系" data-en="Dependencies">依赖关系</div><div class="val">8</div><div class="detail" data-zh="社区之间的有向边" data-en="Directed edges between communities">社区之间的有向边</div></div>
+    </div>
+
+    <!-- ====================================================================
+         关键发现 — 3～5 条。每条 = 事实 + 对读者意味着什么。
+         .bad = 枢纽 / 风险 / 意外孤立, .good = 一条能走通的路径, .info = 中性事实。
+         ==================================================================== -->
+    <section id="sec-findings">
+      <div class="hr"></div>
+      <h2><span data-zh="关键发现" data-en="Key findings">关键发现</span> <span class="hint" data-zh="先看这些，再下钻" data-en="Read these first, then drill down">先看这些，再下钻</span></h2>
+      <div class="section-body" id="takeaways">
+        <details class="take bad">
+          <summary>
+            <div class="fig">8/12</div>
+            <div class="txt"><b>报告按规模截断</b></div>
+            <span class="chev" aria-hidden="true"></span>
+          </summary>
+          <div class="take-body">图上有 12 个模块社区，本页只收录规模最大的 8 个。根因诊断里的 <code>ensure_codexqa.ts</code> / <code>draft_report.ts</code> 以及 <code>smoke.mjs</code> 等不在这 8 页里，不要把本图当成全仓地图。</div>
+        </details>
+        <details class="take info">
+          <summary>
+            <div class="fig">p02</div>
+            <div class="txt"><b>p02 测试数据适配存储</b>是枢纽</div>
+            <span class="chev" aria-hidden="true"></span>
+          </summary>
+          <div class="take-body">它同时依赖 p06 和 p04；p04 工具绑定流水线对它有最重的调用边。改适配器、配置存储或 HTTP 客户端，会同时碰到绑定流水线和校验套件。先读它对外的 <code>JsonObject</code> 用法和 store/adapter。</div>
+        </details>
+        <details class="take info">
+          <summary>
+            <div class="fig">3</div>
+            <div class="txt"><b>三条互不连通的技能簇</b></div>
+            <span class="chev" aria-hidden="true"></span>
+          </summary>
+          <div class="take-body">收录页之间没有一条能从「所有入口」走到「所有存储」的边。缺陷扫描（p01↔p03）、测试数据（p06↔p02↔p04）、用例生成（p07↔p08）是三张子图。按你要改的技能选一条路径，不要指望有总总线。</div>
+        </details>
+        <details class="take good">
+          <summary>
+            <div class="fig">p06</div>
+            <div class="txt"><b>测试数据主链路走得通</b></div>
+            <span class="chev" aria-hidden="true"></span>
+          </summary>
+          <div class="take-body">校验套件 p06 依赖 p02，p02 再依赖领域流水线 p04（反向也成立）。要读测试数据生成，从 <code>_verify_enterprise_onboard.ts</code> 进适配层，再进 <code>bind_action.ts</code> / <code>selectTool</code>。</div>
+        </details>
+        <details class="take info">
+          <summary>
+            <div class="fig">p05</div>
+            <div class="txt"><b>p05 审查扫描器是独立模块</b></div>
+            <span class="chev" aria-hidden="true"></span>
+          </summary>
+          <div class="take-body"><code>scan_file</code> 扇入很高，但这次导出没有列出跨社区依赖。它是 code-reviewer 的规则扫描脚本簇，不进入口/应用/领域/存储四层，后看即可。</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         系统怎么运转 — 这个仓库是什么、主链路怎么走。不要堆字段名。
+         ==================================================================== -->
+    <section id="sec-overview">
+      <div class="hr"></div>
+      <h2><span data-zh="系统怎么运转" data-en="How the system runs">系统怎么运转</span> <span class="hint" data-zh="一句话定位 + 主链路" data-en="One-line positioning + main path">一句话定位 + 主链路</span></h2>
+      <div class="section-body prose" id="overview">
+        <p>这是 <b>CodexQA 技能仓库</b>：若干可单独安装的技能脚本（缺陷扫描、测试数据、用例生成、代码审查、根因诊断等），外加文档预览与发布脚本。它不是一个统一进程里的「请求进来再落库」产品，社区检测也按类型/符号簇切开，而不是按技能目录一一对应。</p>
+        <p>主协作落在三处。测试数据技能：校验套件（p06）进出适配与存储（p02），再和工具绑定流水线（p04）互调，其中 p04→p02 的调用最重。缺陷扫描技能：Python 编排（p03，<code>render_html_report</code> / <code>ensure_scan_tools</code>）与仓库脚本入口（p01，含 <code>scan_full</code>、<code>cmd_submit</code>、文档预览重建）双向依赖。用例生成技能：知识库与 HTML 报告（p07，<code>render_html</code> / <code>ingest_one</code>）和增量拉取/冻结（p08，<code>fetch_pr</code> / <code>archive</code>）互指。</p>
+        <p>入口层是「人怎么把任务跑起来」：p01 里的 CLI/扫描/预览脚本，以及 p06 的验证套件 <code>main</code>。应用层是两条编排：p03 缺陷扫描、p07 用例知识与报告。领域层是 p04 的 <code>selectTool</code> / <code>runPipeline</code> / <code>invokeEntity</code>。存储层是 p02 的配置/数据/API 适配，以及 p08 对远程代码的拉取与归档。</p>
+        <p>索引质量：本地节点约 2467、占位约 366（约 13%），无碰撞组。社区边界和跨技能边可以信方向，但 p01 把文档预览、根因 CLI、测试数据 mock 和需求解析捆在同一页，标题 <code>rebuild_previews · ZipReader</code> 只是规则名，不要当成单一产品模块。</p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         模块地图 — 社区编号、人话职责、真实依赖。孤立页不要进分层。
+         ==================================================================== -->
+    <section id="sec-map">
+      <div class="hr"></div>
+      <h2><span data-zh="模块地图" data-en="Module map">模块地图</span> <span class="hint" data-zh="入口 → 应用 → 领域 → 存储" data-en="Entry → Application → Domain → Storage">入口 → 应用 → 领域 → 存储</span></h2>
+      <div class="section-body" id="module-map">
+        <div id="community-bars">
+          <div class="bar"><span class="name">p01 仓库脚本入口</span><span class="blocks">████████████████████████████████████████████████</span><span class="pct">354</span></div>
+          <div class="bar"><span class="name">p02 测试数据适配存储</span><span class="blocks">██████████████████████████████████████████░░░░░░</span><span class="pct">312</span></div>
+          <div class="bar"><span class="name">p03 缺陷扫描编排</span><span class="blocks">███████████████████████████████████████░░░░░░░░░</span><span class="pct">292</span></div>
+          <div class="bar"><span class="name">p04 工具绑定流水线</span><span class="blocks">████████████████████████████████████░░░░░░░░░░░░</span><span class="pct">271</span></div>
+          <div class="bar"><span class="name">p07 用例知识与报告</span><span class="blocks">█████████████████████████░░░░░░░░░░░░░░░░░░░░░░░</span><span class="pct">185</span></div>
+        </div>
+        <div class="scroll" style="margin-top:12px">
+          <table>
+            <thead>
+              <tr>
+                <th data-zh="编号" data-en="ID">编号</th>
+                <th data-zh="分层" data-en="Layer">分层</th>
+                <th data-zh="模块" data-en="Module">模块</th>
+                <th class="num" data-zh="规模" data-en="Size">规模</th>
+                <th data-zh="依赖谁" data-en="Depends on">依赖谁</th>
+              </tr>
+            </thead>
+            <tbody id="module-rows">
+              <tr><td class="mono">p01</td><td>入口</td><td>仓库脚本入口 · CLI / 预览 / 扫描启动</td><td class="num">354</td><td>p03</td></tr>
+              <tr><td class="mono">p06</td><td>入口</td><td>测试数据校验套件 · 企业接入与场景验证</td><td class="num">207</td><td>p02</td></tr>
+              <tr><td class="mono">p03</td><td>应用</td><td>缺陷扫描编排 · 工具、范围、HTML 报告</td><td class="num">292</td><td>p01</td></tr>
+              <tr><td class="mono">p07</td><td>应用</td><td>用例知识与报告 · 入库、门禁、HTML</td><td class="num">185</td><td>p08</td></tr>
+              <tr><td class="mono">p04</td><td>领域</td><td>工具绑定流水线 · selectTool / runPipeline</td><td class="num">271</td><td>p02</td></tr>
+              <tr><td class="mono">p02</td><td>存储</td><td>测试数据适配存储 · 配置、目录、HTTP</td><td class="num">312</td><td>p06，p04</td></tr>
+              <tr><td class="mono">p08</td><td>存储</td><td>增量拉取与冻结 · fetch_pr / archive</td><td class="num">129</td><td>p07</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
-      <div class="card">
-        <h2 data-zh="怎么读" data-en="How to read">怎么读</h2>
-        <p class="muted" style="margin:0">先看关键发现抓住枢纽，再按入口到存储往下读。</p>
-      </div>
-    </div>
-  </header>
-  <div class="toolbar">
-    <div class="tabs" role="tablist">
-      <button type="button" class="tab" data-sev="all" aria-selected="true">全部 (3)</button>
-    </div>
-    <div class="filters">
-      <button class="tab" type="button" id="expandAll"><span data-zh="展开全部" data-en="Expand all">展开全部</span></button>
-      <button class="tab" type="button" id="collapseAll"><span data-zh="收起全部" data-en="Collapse all">收起全部</span></button>
-    </div>
-  </div>
-  <section class="panel">
-    <div class="panel-head">
-      <h2 data-zh="关键发现" data-en="Key findings">关键发现</h2>
-      <p class="desc" data-zh="点击卡片展开详情" data-en="Click a card to expand details">点击卡片展开详情</p>
-    </div>
-    <div class="case-list">
-      <article class="case" id="wiki-1" data-pri="P0">
-      <div class="case-head" role="button" tabindex="0" aria-expanded="false">
-        <span class="badge pri p0">p03</span>
-        <h3>p03 库存占用是枢纽：hold / expire / commit 都经过它</h3>
-        <span class="chev" aria-hidden="true"></span>
-      </div>
-      <div class="case-body"><div class="block"><p>改这里影响面最宽，先读对外接口再碰退款。</p></div></div>
-    </article>
-      <article class="case" id="wiki-2">
-      <div class="case-head" role="button" tabindex="0" aria-expanded="false">
-        <span class="badge type">path</span>
-        <h3>HTTP 入口 → 预订编排 → 库存占用 → db/cache</h3>
-        <span class="chev" aria-hidden="true"></span>
-      </div>
-      <div class="case-body"><div class="block"><p>相邻步都有真实依赖。</p></div></div>
-    </article>
-      <article class="case" id="wiki-3" data-pri="P1">
-      <div class="case-head" role="button" tabindex="0" aria-expanded="false">
-        <span class="badge pri p1">p05</span>
-        <h3>p05 退款封顶依赖 p03 的提交状态</h3>
-        <span class="chev" aria-hidden="true"></span>
-      </div>
-      <div class="case-body"><div class="block"><p>提交没写 COMMITTED 时，退款会打到空订单。</p></div></div>
-    </article>
-    </div>
-  </section>
-  <p class="footer">codexqa-code-wiki · assets/report-template.html</p>
+    </section>
 
+    <!-- ====================================================================
+         分层 — 侧栏四层的对照。只放有真实依赖的页。
+         ==================================================================== -->
+    <section id="sec-layers">
+      <div class="hr"></div>
+      <h2><span data-zh="分层" data-en="Layers">分层</span> <span class="hint" data-zh="入口 → 应用 → 领域 → 存储" data-en="Entry → Application → Domain → Storage">入口 → 应用 → 领域 → 存储</span></h2>
+      <div class="section-body">
+        <div class="layer-grid">
+          <div class="layer-card" id="layer-entry">
+            <h3 data-zh="入口" data-en="Entry">入口</h3>
+            <ul id="layer-entry-list"><li><a href="#p01">p01 仓库脚本入口</a></li><li><a href="#p06">p06 测试数据校验套件</a></li></ul>
+          </div>
+          <div class="layer-card" id="layer-app">
+            <h3 data-zh="应用" data-en="Application">应用</h3>
+            <ul id="layer-app-list"><li><a href="#p03">p03 缺陷扫描编排</a></li><li><a href="#p07">p07 用例知识与报告</a></li></ul>
+          </div>
+          <div class="layer-card" id="layer-domain">
+            <h3 data-zh="领域" data-en="Domain">领域</h3>
+            <ul id="layer-domain-list"><li><a href="#p04">p04 工具绑定流水线</a></li></ul>
+          </div>
+          <div class="layer-card" id="layer-storage">
+            <h3 data-zh="存储" data-en="Storage">存储</h3>
+            <ul id="layer-storage-list"><li><a href="#p02">p02 测试数据适配存储</a></li><li><a href="#p08">p08 增量拉取与冻结</a></li></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         架构图 — 至少一张。init + classDef 从 diagrams.md 原样复制。
+         图下三行：依据 / 是否截断 / 图在说明什么。
+         ==================================================================== -->
+    <section id="sec-diagrams">
+      <div class="hr"></div>
+      <h2><span data-zh="架构图" data-en="Architecture diagram">架构图</span> <span class="hint" data-zh="分层与真实依赖" data-en="Layers and real dependencies">分层与真实依赖</span></h2>
+      <div class="section-body" id="diagrams">
+        <div class="diagram">
+          <pre class="mermaid">%%{init: {'theme':'base','themeVariables':{'background':'#f0f3f6','primaryColor':'#ffffff','primaryTextColor':'#1a2332','primaryBorderColor':'#d5dde8','lineColor':'#5a6578','secondaryColor':'#e6f4ee','tertiaryColor':'#f0f3f6','clusterBkg':'#f8fafc','clusterBorder':'#d5dde8','fontFamily':'Segoe UI,PingFang SC,sans-serif'}}}%%
+flowchart TB
+  subgraph entry["Entry"]
+    P01["p01 仓库脚本入口"]
+    P06["p06 测试数据校验套件"]
+  end
+  subgraph app["Application"]
+    P03["p03 缺陷扫描编排"]
+    P07["p07 用例知识与报告"]
+  end
+  subgraph domain["Domain"]
+    P04["p04 工具绑定流水线"]
+  end
+  subgraph store["Storage"]
+    P02["p02 测试数据适配存储"]
+    P08["p08 增量拉取与冻结"]
+  end
+  P01 -->|deps| P03
+  P03 -->|deps| P01
+  P06 -->|deps| P02
+  P02 -->|deps| P06
+  P02 -->|deps| P04
+  P04 -->|deps| P02
+  P07 -->|deps| P08
+  P08 -->|deps| P07
+classDef add fill:#e6f4ee,stroke:#0f6b4c,color:#1a2332
+classDef change fill:#ffedd5,stroke:#c2410c,color:#1a2332
+classDef risk fill:#fde8e4,stroke:#b42318,color:#1a2332
+  class P02 risk
+  class P01 change
+  class P04 change
+          </pre>
+          <div class="diagram-meta">
+            <div>依据：<code>wiki inputs --kind architecture --limit 8</code> 的社区依赖；分层按签名（CLI/校验套件 → 编排 → 绑定流水线 → 适配存储/远程拉取）。</div>
+            <div>是否截断：是。12 个社区只画规模最大的 8 个；独立页 p05 未进四层。</div>
+            <div>图在说明：三条互不连通的双向依赖簇，没有总入口接到所有存储。赤陶 p02 是测试数据枢纽。</div>
+          </div>
+        </div>
+        <div class="diagram">
+          <pre class="mermaid">%%{init: {'theme':'base','themeVariables':{'background':'#f0f3f6','primaryColor':'#ffffff','primaryTextColor':'#1a2332','primaryBorderColor':'#d5dde8','lineColor':'#5a6578','secondaryColor':'#e6f4ee','tertiaryColor':'#f0f3f6','clusterBkg':'#f8fafc','clusterBorder':'#d5dde8','fontFamily':'Segoe UI,PingFang SC,sans-serif'}}}%%
+flowchart LR
+  G1["p06 校验套件"]
+  G2["p02 适配存储"]
+  G3["p04 绑定流水线"]
+  G1 -->|deps| G2
+  G2 -->|deps| G3
+classDef add fill:#e6f4ee,stroke:#0f6b4c,color:#1a2332
+classDef change fill:#ffedd5,stroke:#c2410c,color:#1a2332
+classDef risk fill:#fde8e4,stroke:#b42318,color:#1a2332
+  class G2 risk
+          </pre>
+          <div class="diagram-meta">
+            <div>依据：architecture 中 p06→p02、p02→p04；page 交叉边上 p04 对 p02 的 calls/uses 最重。</div>
+            <div>是否截断：否（只画测试数据这一条真实路径）。</div>
+            <div>图在说明：要改测试数据生成时的阅读顺序：校验入口 → 适配存储 → 工具绑定。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         数据流与存储 — 请求 / 数据怎么穿过各层。不要编造边。
+         ==================================================================== -->
+    <section id="sec-flow">
+      <div class="hr"></div>
+      <h2><span data-zh="数据流与存储" data-en="Data flow &amp; storage">数据流与存储</span> <span class="hint" data-zh="主链路怎么穿过各层" data-en="How the main path crosses layers">主链路怎么穿过各层</span></h2>
+      <div class="section-body prose" id="data-flow">
+        <p><b>测试数据：</b>人从 p06 的验证 <code>main</code> / <code>runEnterpriseOnboardSuite</code> 进来，落到 p02 的配置、目录和 HTTP 适配（<code>loadConfig</code>、<code>JsonObject</code>），再进入 p04 的 <code>selectTool</code> → <code>runPipeline</code> → <code>invokeEntity</code>。反向边也存在：绑定流水线大量调用适配层。</p>
+        <p><b>缺陷扫描：</b>p01 的 <code>scan_full</code> / <code>scan_incremental</code> / <code>cmd_submit</code> 与 p03 的 <code>ensure_scan_tools</code>、<code>build_scope_plan</code>、<code>render_html_report</code> 互相调用。没有再连到 p02 存储簇。</p>
+        <p><b>用例生成：</b>p07 的 <code>ingest_one</code> / <code>render_html</code> 调用 p08 的拉取与归档（<code>fetch_pr</code>、<code>archive</code>）；p08 再指回 p07。这是第二条存储出口，只服务用例技能。</p>
+        <p>p05 不出现在上述任何边上。</p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         阅读路径 — 相邻步骤必须出现在 deps / 真实依赖 里。
+         ==================================================================== -->
+    <section id="sec-guides">
+      <div class="hr"></div>
+      <h2><span data-zh="阅读路径" data-en="Reading path">阅读路径</span> <span class="hint" data-zh="按这个顺序读源码" data-en="Read source in this order">按这个顺序读源码</span></h2>
+      <div class="section-body" id="guides">
+        <div class="callout"><b>1. p06 测试数据校验套件</b> — 入口；<code>runEnterpriseOnboardSuite</code> / <code>runPipelineScenarioSuite</code> 把场景跑起来，下一步是它列出的依赖 p02。</div>
+        <div class="callout risk"><b>2. p02 测试数据适配存储</b> — 从 p06 列有依赖；配置、目录、收藏和 HTTP 都在这里，先搞清 <code>JsonObject</code> 和 store。<span class="why">p04 对它的调用最重，改这里会同时碰到绑定流水线。</span></div>
+        <div class="callout"><b>3. p04 工具绑定流水线</b> — 从 p02 列有依赖；读 <code>selectTool</code>、<code>runPipeline</code>、<code>invokeEntity</code>，看一次实体怎么被绑到工具。</div>
+        <div class="callout"><b>路径 B · 缺陷扫描：p01 → p03</b> — p01 有 <code>scan_full</code> / <code>cmd_submit</code>，且依赖 p03；到 p03 读 <code>ensure_scan_tools</code> 与 <code>render_html_report</code>。两条之间有真实双向依赖，不要跳到 p02。</div>
+        <div class="callout"><b>路径 C · 用例生成：p07 → p08</b> — p07 的 <code>ingest_one</code> / <code>render_html</code> 依赖 p08 的 <code>fetch_pr</code> / <code>archive</code>。只在改增量用例时走这条。</div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         模块笔记 — 职责 / 对外接口 / 内部调用 / 跨模块往来
+         ==================================================================== -->
+    <section id="sec-notes">
+      <div class="hr"></div>
+      <h2><span data-zh="模块笔记" data-en="Module notes">模块笔记</span> <span class="hint" data-zh="点开看接口和谁在往来" data-en="Open for interfaces and neighbors">点开看接口和谁在往来</span></h2>
+      <div class="section-body drill" id="notes">
+        <details id="p01">
+          <summary>
+            <span class="amt">p01</span>
+            <span class="desc">仓库脚本入口 <span class="tag change">规模最大</span></span>
+            <span class="meta">354 个符号 · 依赖 p03 · 37 个文件</span>
+          </summary>
+          <div class="body">
+            <p><b>职责：</b>把「人怎么启动任务」捆在一起：文档预览重建、缺陷扫描 CLI、根因 <code>diagnose.ts</code>、需求解析、测试数据 mock。规则标题是 <code>rebuild_previews · ZipReader</code>。</p>
+            <p><b>对外接口：</b><code>scan_full</code>、<code>scan_incremental</code>、<code>cmd_submit</code>、<code>cmd_write_report</code>、<code>convertFile</code>、<code>runParse</code>。</p>
+            <p><b>内部调用：</b>多条命令落到 <code>run_script</code>（<code>scan_full</code> / <code>cmd_finalize</code> / <code>cmd_agent_stage2</code>）。</p>
+            <p><b>跨模块：</b>与 p03 双向依赖。不要假设它会调用 p02。</p>
+          </div>
+        </details>
+        <details id="p02">
+          <summary>
+            <span class="amt">p02</span>
+            <span class="desc">测试数据适配存储 <span class="tag risk">枢纽</span></span>
+            <span class="meta">312 个符号 · 依赖 p06、p04 · 被 p04 高扇入调用</span>
+          </summary>
+          <div class="body">
+            <p><b>职责：</b>测试数据技能的适配层：配置、数据存储、API 目录、收藏、HTTP、slot 脚手架。</p>
+            <p><b>对外接口：</b><code>loadConfig</code>、<code>main</code>、<code>cmdAdd</code>、<code>scaffold</code>，以及多处 <code>executorStub</code> 构造。</p>
+            <p><b>内部调用：</b><code>loadPinned</code> / <code>loadFavorites</code> / <code>search</code> / <code>listByService</code> 都 uses <code>JsonObject</code>。</p>
+            <p><b>跨模块：</b>依赖 p06、p04；p04 以 calls/uses 大量指向这里。改 store 或 HTTP 客户端影响绑定流水线。</p>
+          </div>
+        </details>
+        <details id="p03">
+          <summary>
+            <span class="amt">p03</span>
+            <span class="desc">缺陷扫描编排</span>
+            <span class="meta">292 个符号 · 依赖 p01 · Python</span>
+          </summary>
+          <div class="body">
+            <p><b>职责：</b>缺陷分析技能的编排：选场景、拉 CodexQA、收集增量/全量、SAST 适配、合并 HTML 报告。</p>
+            <p><b>对外接口：</b><code>render_html_report</code>、<code>ensure_scan_tools</code>、<code>build_scope_plan</code>、<code>rag_related_snippets</code>、<code>main</code>。</p>
+            <p><b>内部调用：</b>扫描主流程把工具就绪、范围计划和报告渲染串起来。</p>
+            <p><b>跨模块：</b>只与 p01 双向依赖（扫描入口脚本）。</p>
+          </div>
+        </details>
+        <details id="p04">
+          <summary>
+            <span class="amt">p04</span>
+            <span class="desc">工具绑定流水线 <span class="tag change">高扇出</span></span>
+            <span class="meta">271 个符号 · 依赖 p02</span>
+          </summary>
+          <div class="body">
+            <p><b>职责：</b>把用例实体绑到测试数据工具：选工具、跑流水线、调 HTTP、写回。</p>
+            <p><b>对外接口：</b><code>selectTool</code>、<code>runPipeline</code>、<code>invokeEntity</code>、<code>callHttp</code>。</p>
+            <p><b>内部调用：</b><code>main</code> / <code>runWriteback</code> / <code>runDataTrack</code> 都进 <code>dumpManifest</code>。</p>
+            <p><b>跨模块：</b>对 p02 有最重的 calls/uses；自身也出现在 p02 的依赖列表里。</p>
+          </div>
+        </details>
+        <details id="p06">
+          <summary>
+            <span class="amt">p06</span>
+            <span class="desc">测试数据校验套件</span>
+            <span class="meta">207 个符号 · 依赖 p02 · 6 个文件</span>
+          </summary>
+          <div class="body">
+            <p><b>职责：</b>企业接入、扩场景、流水线、改写、用户旅程的验证，以及 <code>pack_skills.ts</code>。</p>
+            <p><b>对外接口：</b><code>runEnterpriseOnboardSuite</code>、<code>runExtendSceneSuite</code>、<code>runPipelineScenarioSuite</code>、<code>runUserJourneySuite</code>、<code>main</code>。</p>
+            <p><b>内部调用：</b>打包校验 uses <code>work</code>（<code>verifyPackSkills</code> / <code>writeConfig</code> / <code>openapiDir</code>）。</p>
+            <p><b>跨模块：</b>依赖 p02，并被 p02 回指。</p>
+          </div>
+        </details>
+        <details id="p07">
+          <summary>
+            <span class="amt">p07</span>
+            <span class="desc">用例知识与报告</span>
+            <span class="meta">185 个符号 · 依赖 p08</span>
+          </summary>
+          <div class="body">
+            <p><b>职责：</b>用例生成技能的知识入库、门禁、HTML 报告（<code>generate_case_report</code>）。</p>
+            <p><b>对外接口：</b><code>render_html</code>、<code>ingest_one</code>、<code>initialize</code>、<code>check_stage_artifacts</code>。</p>
+            <p><b>内部调用：</b><code>render_html</code> → 双语/_esc；<code>close_stage</code> → <code>_result</code>。</p>
+            <p><b>跨模块：</b>依赖 p08（增量拉取），p08 回指本页。</p>
+          </div>
+        </details>
+        <details id="p08">
+          <summary>
+            <span class="amt">p08</span>
+            <span class="desc">增量拉取与冻结</span>
+            <span class="meta">129 个符号 · 依赖 p07</span>
+          </summary>
+          <div class="body">
+            <p><b>职责：</b>增量用例：拉 PR/远程代码、冻结输入与标准、写任务状态。</p>
+            <p><b>对外接口：</b><code>fetch_pr</code>、<code>archive</code>、<code>parse_source_url</code>、<code>resolve_run_context</code>、<code>update</code>。</p>
+            <p><b>内部调用：</b>路径/git 辅助在失败时构造 <code>SkillError</code>。</p>
+            <p><b>跨模块：</b>被 p07 调用，并依赖 p07。</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         独立模块 — 没有列出的依赖。不要硬塞进分层。
+         ==================================================================== -->
+    <section id="sec-peripheral">
+      <div class="hr"></div>
+      <h2><span data-zh="独立模块" data-en="Standalone modules">独立模块</span> <span class="hint" data-zh="不在主链上，后看或不看" data-en="Off the main path — read later or skip">不在主链上，后看或不看</span></h2>
+      <div class="section-body" id="peripheral">
+        <details id="p05">
+          <summary>
+            <span class="amt">p05</span>
+            <span class="desc">审查规则扫描器</span>
+            <span class="meta">271 个符号 · 无跨社区依赖 · 可后看</span>
+          </summary>
+          <div class="body">
+            <p><b>为什么可以后看：</b>本次导出 <code>deps</code> 为空，也不在其他收录页的依赖列表里。它是 code-reviewer 的 <code>scan_file</code> / 规则体脚本（注解边、复杂度、隐私、韧性等），自己内部 <code>scan_file</code>→<code>hit</code> 很密，但不参与测试数据、缺陷扫描或用例生成主链。做审查规则时再打开。</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section id="sec-legend">
+      <div class="hr"></div>
+      <h2><span data-zh="图例" data-en="Legend">图例</span> <span class="hint" data-zh="怎么读图和分层" data-en="How to read the diagram and layers">怎么读图和分层</span></h2>
+      <div class="section-body prose" id="legend">
+        <ul>
+          <li><b data-zh="入口 / 应用 / 领域 / 存储" data-en="Entry / Application / Domain / Storage">入口 / 应用 / 领域 / 存储</b><span data-zh="：图上的四层。没有依赖的页不进这四层。" data-en=": the four layers on the diagram. Pages without deps do not enter these layers.">：图上的四层。没有依赖的页不进这四层。</span></li>
+          <li><b>risk</b><span data-zh="（赤陶）：枢纽或高扇入，改这里影响面最宽。" data-en=" (clay red): hub or high fan-in — changing it has the widest blast radius.">（赤陶）：枢纽或高扇入，改这里影响面最宽。</span></li>
+          <li><b>change</b><span data-zh="（陶土）：规模或依赖偏多的页。" data-en=" (clay): pages that are large or dependency-heavy.">（陶土）：规模或依赖偏多的页。</span></li>
+          <li><b data-zh="独立模块" data-en="Standalone">独立模块</b><span data-zh="：本次导出没有列出依赖，后看或不看。" data-en=": this export listed no dependencies — read later or skip.">：本次导出没有列出依赖，后看或不看。</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="sec-glossary">
+      <div class="hr"></div>
+      <h2><span data-zh="术语" data-en="Glossary">术语</span> <span class="hint" data-zh="本报告用词" data-en="Words this report uses">本报告用词</span></h2>
+      <div class="section-body prose" id="glossary">
+        <ul>
+          <li><b data-zh="模块 / 社区" data-en="Module / community">模块 / 社区</b><span data-zh="：编号 " data-en=": ids from ">：编号 </span><code>p01</code><span data-zh=" 起，对应一次导出里的一页。" data-en=" onward, one page in this export."> 起，对应一次导出里的一页。</span></li>
+          <li><b data-zh="依赖" data-en="Dependency">依赖</b><span data-zh="：社区之间的有向边，阅读路径只沿这条边走。" data-en=": a directed edge between communities; the reading path only follows these edges.">：社区之间的有向边，阅读路径只沿这条边走。</span></li>
+          <li><b data-zh="枢纽" data-en="Hub">枢纽</b><span data-zh="：依赖多或被调用多，先读对外接口。" data-en=": many deps or many callers — read its public API first.">：依赖多或被调用多，先读对外接口。</span></li>
+          <li><b data-zh="规模" data-en="Size">规模</b><span data-zh="：该页收录的符号数量，用来排序，不是质量分。" data-en=": symbol count on that page, used for ranking, not a quality score.">：该页收录的符号数量，用来排序，不是质量分。</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      <span id="foot-gen">生成于 2026-09-21 22:29</span>
+      <span id="foot-stats">codexqa-code-wiki · wiki inputs architecture/overview/page --limit 8 · openqa-cn/codexqa@leviacicig-dev · 未调用模型</span>
+    </footer>
+  </main>
+
+  <aside class="toc">
+    <h3 data-zh="本页目录" data-en="On this page">本页目录</h3>
+    <ol id="page-toc">
+      <li><a href="#page-top" data-zh="核心架构" data-en="Core architecture">核心架构</a></li>
+      <li><a href="#sec-findings" data-zh="关键发现" data-en="Key findings">关键发现</a></li>
+      <li><a href="#sec-overview" data-zh="系统怎么运转" data-en="How the system runs">系统怎么运转</a></li>
+      <li><a href="#sec-map" data-zh="模块地图" data-en="Module map">模块地图</a></li>
+      <li><a href="#sec-layers" data-zh="分层" data-en="Layers">分层</a></li>
+      <li><a href="#sec-diagrams" data-zh="架构图" data-en="Architecture diagram">架构图</a></li>
+      <li><a href="#sec-flow" data-zh="数据流与存储" data-en="Data flow &amp; storage">数据流与存储</a></li>
+      <li><a href="#sec-guides" data-zh="阅读路径" data-en="Reading path">阅读路径</a></li>
+      <li><a href="#sec-notes" data-zh="模块笔记" data-en="Module notes">模块笔记</a></li>
+      <li><a href="#sec-peripheral" data-zh="独立模块" data-en="Standalone modules">独立模块</a></li>
+      <li><a href="#sec-legend" data-zh="图例" data-en="Legend">图例</a></li>
+      <li><a href="#sec-glossary" data-zh="术语" data-en="Glossary">术语</a></li>
+    </ol>
+  </aside>
 </div>
+
+<div class="diagram-backdrop" id="diagram-backdrop"></div>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: false, theme: 'base' });
+  try { await mermaid.run({ querySelector: '.mermaid' }); } catch { /* keep zoom for images */ }
+
+  const toc = document.getElementById('page-toc');
+  if (typeof window.__wikiRebuildToc === 'function') window.__wikiRebuildToc();
+  else if (toc) {
+    const heading = document.querySelector('h1');
+    const rows = [
+      { id: 'page-top', text: (heading?.textContent || '总览').trim() },
+      ...[...document.querySelectorAll('main section h2')].map((h) => ({
+        id: h.closest('section')?.id || '',
+        text: (h.querySelector('[data-zh]')?.textContent || h.childNodes[0]?.textContent || h.textContent || '').trim(),
+      })),
+    ].filter((row) => row.id && row.text);
+    toc.innerHTML = rows.map((row) => `<li><a href="#${row.id}">${row.text}</a></li>`).join('');
+  }
+
+  const targets = [...document.querySelectorAll('section[id], #page-top, #sec-sources, #howto')];
+  const mark = () => {
+    let current = 'page-top';
+    for (const el of targets) {
+      if (el.getBoundingClientRect().top <= 72) current = el.id;
+    }
+    const href = '#' + current;
+    for (const a of document.querySelectorAll('.nav a[href^="#"], .toc a[href^="#"]')) {
+      a.classList.toggle('active', a.getAttribute('href') === href);
+    }
+  };
+  const openHashDetails = (id) => {
+    if (!id) return;
+    const el = document.getElementById(decodeURIComponent(id));
+    if (el && el.tagName === 'DETAILS') el.open = true;
+  };
+  document.querySelectorAll('a[href^="#"]').forEach((a) => {
+    a.addEventListener('click', () => {
+      const href = a.getAttribute('href') || '';
+      openHashDetails(href.slice(1));
+    });
+  });
+  window.addEventListener('hashchange', () => openHashDetails(location.hash.slice(1)));
+  openHashDetails(location.hash.slice(1));
+  document.addEventListener('scroll', mark, { passive: true });
+  mark();
+
+  const ZOOM_MIN = 0.4;
+  const ZOOM_MAX = 4;
+  const ZOOM_STEP = 0.25;
+
+  const initDiagramZoom = () => {
+    document.querySelectorAll('main img:not(.zoom-stage img)').forEach((img) => {
+      if (img.closest('.diagram')) return;
+      const wrap = document.createElement('div');
+      wrap.className = 'diagram';
+      img.replaceWith(wrap);
+      wrap.appendChild(img);
+    });
+
+    document.querySelectorAll('.diagram').forEach((box) => {
+      if (box.dataset.zoomReady) return;
+      const target = box.querySelector('.mermaid') || box.querySelector('img');
+      if (!target) return;
+      box.dataset.zoomReady = '1';
+
+      const svg = target.querySelector?.('svg');
+      if (svg) {
+        const raw = svg.getAttribute('width') || '';
+        const fromAttr = raw && !raw.includes('%') ? parseFloat(raw) : NaN;
+        const w = Number.isFinite(fromAttr) && fromAttr > 0
+          ? fromAttr
+          : svg.viewBox?.baseVal?.width;
+        if (w) svg.style.width = `${w}px`;
+      }
+
+      const viewport = document.createElement('div');
+      viewport.className = 'zoom-viewport';
+      viewport.tabIndex = 0;
+      const stage = document.createElement('div');
+      stage.className = 'zoom-stage';
+      target.parentNode.insertBefore(viewport, target);
+      stage.appendChild(target);
+      viewport.appendChild(stage);
+
+      const bar = document.createElement('div');
+      bar.className = 'zoom-toolbar';
+      bar.innerHTML = [
+        '<button type="button" data-zoom="out" data-zh-aria="缩小" data-en-aria="Zoom out" aria-label="缩小">−</button>',
+        '<span class="zoom-pct">100%</span>',
+        '<button type="button" data-zoom="in" data-zh-aria="放大" data-en-aria="Zoom in" aria-label="放大">+</button>',
+        '<button type="button" class="wide" data-zoom="reset" data-zh="重置" data-en="Reset">重置</button>',
+        '<button type="button" class="wide" data-zoom="expand" data-zh="全屏" data-en="Full screen">全屏</button>',
+      ].join('');
+      viewport.parentNode.insertBefore(bar, viewport);
+
+      let scale = 1;
+      let x = 0;
+      let y = 0;
+      let dragging = false;
+      let lastX = 0;
+      let lastY = 0;
+      const pct = bar.querySelector('.zoom-pct');
+
+      const apply = () => {
+        stage.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+        pct.textContent = `${Math.round(scale * 100)}%`;
+      };
+
+      const setScale = (next, cx, cy) => {
+        const clamped = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, next));
+        if (cx != null && cy != null && scale > 0) {
+          const rect = viewport.getBoundingClientRect();
+          const px = cx - rect.left;
+          const py = cy - rect.top;
+          const ratio = clamped / scale;
+          x = px - ratio * (px - x);
+          y = py - ratio * (py - y);
+        }
+        scale = clamped;
+        if (Math.abs(scale - 1) < 0.001) {
+          scale = 1;
+          x = 0;
+          y = 0;
+        }
+        apply();
+      };
+
+      bar.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-zoom]');
+        if (!btn) return;
+        const action = btn.getAttribute('data-zoom');
+        if (action === 'in') setScale(scale + ZOOM_STEP);
+        else if (action === 'out') setScale(scale - ZOOM_STEP);
+        else if (action === 'reset') setScale(1);
+        else if (action === 'expand') {
+          const on = box.classList.toggle('is-expanded');
+          document.body.classList.toggle('diagram-expanded', on);
+          btn.setAttribute('data-zh', on ? '退出' : '全屏');
+          btn.setAttribute('data-en', on ? 'Exit' : 'Full screen');
+          const lang = document.documentElement.getAttribute('data-lang') === 'en' ? 'en' : 'zh';
+          btn.textContent = btn.getAttribute(lang === 'en' ? 'data-en' : 'data-zh');
+          const backdrop = document.getElementById('diagram-backdrop');
+          if (backdrop) backdrop.hidden = !on;
+        }
+      });
+
+      viewport.addEventListener('wheel', (event) => {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        const dir = event.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+        setScale(scale + dir, event.clientX, event.clientY);
+      }, { passive: false });
+
+      viewport.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        dragging = true;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        viewport.classList.add('is-dragging');
+        viewport.setPointerCapture(event.pointerId);
+      });
+      viewport.addEventListener('pointermove', (event) => {
+        if (!dragging) return;
+        x += event.clientX - lastX;
+        y += event.clientY - lastY;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        apply();
+      });
+      const endDrag = (event) => {
+        dragging = false;
+        viewport.classList.remove('is-dragging');
+        if (event.pointerId != null) {
+          try { viewport.releasePointerCapture(event.pointerId); } catch { /* already released */ }
+        }
+      };
+      viewport.addEventListener('pointerup', endDrag);
+      viewport.addEventListener('pointercancel', endDrag);
+      viewport.addEventListener('dblclick', (event) => {
+        setScale(scale > 1.05 ? 1 : 2, event.clientX, event.clientY);
+      });
+    });
+
+    const backdrop = document.getElementById('diagram-backdrop');
+    const closeExpanded = () => {
+      document.querySelectorAll('.diagram.is-expanded').forEach((box) => {
+        box.classList.remove('is-expanded');
+        const btn = box.querySelector('[data-zoom="expand"]');
+        if (btn) {
+          btn.setAttribute('data-zh', '全屏');
+          btn.setAttribute('data-en', 'Full screen');
+          const lang = document.documentElement.getAttribute('data-lang') === 'en' ? 'en' : 'zh';
+          btn.textContent = btn.getAttribute(lang === 'en' ? 'data-en' : 'data-zh');
+        }
+      });
+      document.body.classList.remove('diagram-expanded');
+      if (backdrop) backdrop.hidden = true;
+    };
+    backdrop?.addEventListener('click', closeExpanded);
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeExpanded();
+    });
+  };
+
+  initDiagramZoom();
+  if (typeof window.__wikiApplyI18n === 'function') window.__wikiApplyI18n();
+</script>
 <script>
 (function(){
   const root = document.documentElement;
-  const prefix = root.getAttribute('data-store') || 'codexqa-report';
+  const prefix = root.getAttribute('data-store') || 'wiki-report';
   const LANG_KEY = prefix + '-lang';
   const THEME_KEY = prefix + '-theme';
-
+  function esc(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
   function applyI18n(lang) {
     const attr = lang === 'en' ? 'data-en' : 'data-zh';
     document.querySelectorAll('[data-zh][data-en]').forEach(el => {
       const v = el.getAttribute(attr);
       if (v == null) return;
-      if (el.tagName === 'TITLE') {
-        document.title = v;
-        return;
-      }
-      if (el.tagName === 'OPTION') {
-        el.textContent = v;
-        return;
-      }
-      if (el.children.length) return;
-      el.textContent = v;
+      if (el.tagName === 'TITLE') document.title = v;
+      else if (el.tagName === 'OPTION') el.textContent = v;
+      else el.textContent = v;
+    });
+    document.querySelectorAll('[data-zh-aria][data-en-aria]').forEach(el => {
+      el.setAttribute('aria-label', el.getAttribute(lang === 'en' ? 'data-en-aria' : 'data-zh-aria') || '');
     });
     document.querySelectorAll('[data-zh-placeholder][data-en-placeholder]').forEach(el => {
       el.setAttribute('placeholder', el.getAttribute(lang === 'en' ? 'data-en-placeholder' : 'data-zh-placeholder') || '');
     });
-    document.querySelectorAll('[data-zh-alt][data-en-alt]').forEach(el => {
-      el.setAttribute('alt', el.getAttribute(lang === 'en' ? 'data-en-alt' : 'data-zh-alt') || '');
-    });
   }
-
+  function headingI18n(h) {
+    const leaf = h && h.querySelector('[data-zh][data-en]');
+    const src = leaf || h;
+    const zh = (src && src.getAttribute && src.getAttribute('data-zh')) || (src && src.textContent) || '';
+    const en = (src && src.getAttribute && src.getAttribute('data-en')) || zh;
+    return { zh: zh.trim(), en: String(en).trim() };
+  }
+  function rebuildToc() {
+    const toc = document.getElementById('page-toc');
+    if (!toc) return;
+    const lang = root.getAttribute('data-lang') === 'en' ? 'en' : 'zh';
+    const rows = [{ id: 'page-top', ...headingI18n(document.querySelector('h1')) }];
+    document.querySelectorAll('main section h2').forEach((h) => {
+      const id = h.closest('section')?.id || '';
+      if (!id) return;
+      rows.push({ id, ...headingI18n(h) });
+    });
+    toc.innerHTML = rows.filter((row) => row.id && (row.zh || row.en)).map((row) => {
+      const shown = lang === 'en' ? (row.en || row.zh) : (row.zh || row.en);
+      return `<li><a href="#${row.id}" data-zh="${esc(row.zh)}" data-en="${esc(row.en)}">${esc(shown)}</a></li>`;
+    }).join('');
+  }
   function setLang(lang) {
     root.setAttribute('data-lang', lang);
     root.lang = lang === 'en' ? 'en' : 'zh-CN';
@@ -326,112 +1263,74 @@ html[data-lang="en"] .unit-zh { display:none; }
       b.setAttribute('aria-pressed', b.getAttribute('data-set-lang') === lang ? 'true' : 'false');
     });
     applyI18n(lang);
+    rebuildToc();
     try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
   }
-
-  function normalizeTheme(t) {
-    if (t === 'day' || t === 'light') return 'light';
-    if (t === 'night' || t === 'dark') return 'dark';
-    return 'light';
-  }
-
   function setTheme(theme) {
-    theme = normalizeTheme(theme);
+    theme = (theme === 'dark' || theme === 'night') ? 'dark' : 'light';
     root.setAttribute('data-theme', theme);
     document.querySelectorAll('[data-set-theme]').forEach(b => {
       b.setAttribute('aria-pressed', b.getAttribute('data-set-theme') === theme ? 'true' : 'false');
     });
     try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
   }
-
-  document.querySelectorAll('[data-set-lang]').forEach(b => {
-    b.addEventListener('click', () => setLang(b.getAttribute('data-set-lang')));
-  });
-  document.querySelectorAll('[data-set-theme]').forEach(b => {
-    b.addEventListener('click', () => setTheme(b.getAttribute('data-set-theme')));
-  });
-
+  document.querySelectorAll('[data-set-lang]').forEach(b => b.addEventListener('click', () => setLang(b.getAttribute('data-set-lang'))));
+  document.querySelectorAll('[data-set-theme]').forEach(b => b.addEventListener('click', () => setTheme(b.getAttribute('data-set-theme'))));
   let lang = root.getAttribute('data-lang') || 'zh';
   let theme = root.getAttribute('data-theme') || 'light';
-  try {
-    lang = localStorage.getItem(LANG_KEY) || lang;
-    theme = localStorage.getItem(THEME_KEY) || theme;
-  } catch (e) {}
+  try { lang = localStorage.getItem(LANG_KEY) || lang; theme = localStorage.getItem(THEME_KEY) || theme; } catch (e) {}
+  window.__wikiRebuildToc = rebuildToc;
+  window.__wikiApplyI18n = () => applyI18n(root.getAttribute('data-lang') === 'en' ? 'en' : 'zh');
   setLang(lang === 'en' ? 'en' : 'zh');
-  setTheme(normalizeTheme(theme));
+  setTheme(theme);
 
-  function setCaseOpen(card, open) {
-    if (!card) return;
-    card.classList.toggle('open', open);
-    const head = card.querySelector('.case-head');
-    if (head) head.setAttribute('aria-expanded', open ? 'true' : 'false');
-  }
-
-  document.querySelectorAll('.case-head').forEach(head => {
-    const card = head.closest('.case');
-    if (head.tagName !== 'BUTTON') {
-      if (!head.hasAttribute('role')) head.setAttribute('role', 'button');
-      if (!head.hasAttribute('tabindex')) head.setAttribute('tabindex', '0');
-    }
-    if (!head.hasAttribute('aria-expanded')) {
-      head.setAttribute('aria-expanded', card && card.classList.contains('open') ? 'true' : 'false');
-    }
-    head.addEventListener('click', () => {
-      if (!card || card.classList.contains('empty') || card.classList.contains('is-empty')) return;
-      setCaseOpen(card, !card.classList.contains('open'));
-    });
-    head.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        head.click();
-      }
-    });
-  });
-
-  const expandAll = document.getElementById('expandAll');
-  const collapseAll = document.getElementById('collapseAll');
-  function toggleableCases(expand) {
-    const scoped = document.querySelectorAll(
-      '.panel:not([hidden]) .case:not([hidden]), [data-sev-panel]:not([hidden]) .case:not([hidden])'
-    );
-    const cards = scoped.length ? scoped : document.querySelectorAll('.case:not([hidden])');
-    cards.forEach(c => {
-      if (c.classList.contains('empty') || c.classList.contains('is-empty')) return;
-      setCaseOpen(c, expand);
+  function wrapTakes() {
+    document.querySelectorAll('#takeaways .take:not(details)').forEach((el) => {
+      const fig = el.querySelector('.fig');
+      const txt = el.querySelector('.txt');
+      const details = document.createElement('details');
+      details.className = el.className;
+      const summary = document.createElement('summary');
+      if (fig) summary.appendChild(fig.cloneNode(true));
+      const title = document.createElement('div');
+      title.className = 'txt';
+      const b = txt && txt.querySelector('b');
+      if (b) title.appendChild(b.cloneNode(true));
+      else title.textContent = ((txt && txt.textContent) || el.textContent || '').trim().slice(0, 72);
+      summary.appendChild(title);
+      const chev = document.createElement('span');
+      chev.className = 'chev';
+      chev.setAttribute('aria-hidden', 'true');
+      summary.appendChild(chev);
+      const body = document.createElement('div');
+      body.className = 'take-body';
+      if (txt) body.innerHTML = txt.innerHTML;
+      details.appendChild(summary);
+      details.appendChild(body);
+      el.replaceWith(details);
     });
   }
-  if (expandAll) expandAll.addEventListener('click', () => toggleableCases(true));
-  if (collapseAll) collapseAll.addEventListener('click', () => toggleableCases(false));
+  wrapTakes();
 
-  const sevTabs = document.querySelectorAll('.tab[data-sev]');
-  const sevPanels = document.querySelectorAll('[data-sev-panel]');
-  function showSev(name) {
-    if (!sevTabs.length) return;
-    sevTabs.forEach(t => t.setAttribute('aria-selected', t.getAttribute('data-sev') === name ? 'true' : 'false'));
-    sevPanels.forEach(p => {
-      p.hidden = name !== 'all' && p.getAttribute('data-sev-panel') !== name;
+  function addWikiToolbar(target, detailsSelector) {
+    if (!target || target.previousElementSibling && target.previousElementSibling.classList.contains('wiki-toolbar')) return;
+    const bar = document.createElement('div');
+    bar.className = 'wiki-toolbar';
+    bar.innerHTML =
+      '<button type="button" data-expand="1" data-zh="展开全部" data-en="Expand all">展开全部</button>' +
+      '<button type="button" data-expand="0" data-zh="收起全部" data-en="Collapse all">收起全部</button>';
+    target.parentNode.insertBefore(bar, target);
+    bar.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-expand]');
+      if (!btn) return;
+      const open = btn.getAttribute('data-expand') === '1';
+      document.querySelectorAll(detailsSelector).forEach((d) => { d.open = open; });
     });
-    const matched = name === 'all' || Array.prototype.some.call(
-      sevPanels, p => p.getAttribute('data-sev-panel') === name);
-    const emptyEl = document.getElementById('sev-empty');
-    if (emptyEl) emptyEl.hidden = matched;
   }
-  sevTabs.forEach(t => t.addEventListener('click', () => showSev(t.getAttribute('data-sev'))));
-
-  function openHash() {
-    if (!location.hash) return;
-    let el;
-    try { el = document.querySelector(location.hash); } catch (e) { return; }
-    if (!el) return;
-    const panel = el.closest('[data-sev-panel]') || (el.hasAttribute('data-sev-panel') ? el : null);
-    if (panel && panel.getAttribute('data-sev-panel')) showSev('all');
-    const card = el.classList && el.classList.contains('case') ? el : el.closest('.case');
-    if (card) setCaseOpen(card, true);
-  }
-  openHash();
-  window.addEventListener('hashchange', openHash);
+  addWikiToolbar(document.getElementById('takeaways'), '#takeaways details.take, #takeaways details');
+  addWikiToolbar(document.getElementById('notes'), '#notes details');
+  applyI18n(root.getAttribute('data-lang') === 'en' ? 'en' : 'zh');
 })();
-
 </script>
 </body>
 </html>

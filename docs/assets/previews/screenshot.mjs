@@ -1,17 +1,18 @@
 #!/usr/bin/env node
 /** Capture README preview PNGs at a fixed 4:3 viewport in daytime theme. */
 
-import { existsSync, readdirSync, writeFileSync, mkdirSync } from "node:fs";
+import { existsSync, readdirSync, writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { homedir } from "node:os";
-import { dirname, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { dirname, resolve, extname, join } from "node:path";
+import { createServer } from "node:http";
 
 const root = dirname(new URL(import.meta.url).pathname);
 const VIEW_W = 1280;
 const VIEW_H = 960;
 const SCALE = 2;
 const PORT = 9333;
+const HTTP_PORT = 18767;
 
 const LIGHT = `
       document.documentElement.setAttribute('data-theme','light');
@@ -62,13 +63,20 @@ const shots = [
     png: "code-wiki.png",
     prepare: `
       document.documentElement.setAttribute('data-theme','light');
+      document.documentElement.setAttribute('data-lang','zh');
+      document.documentElement.lang='zh-CN';
       document.querySelectorAll('[data-set-theme]').forEach(function(b){
         b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
       });
-      var first=document.querySelector('.case');
-      if(first) first.classList.add('open');
+      document.querySelectorAll('[data-set-lang]').forEach(function(b){
+        b.setAttribute('aria-pressed', b.getAttribute('data-set-lang')==='zh' ? 'true' : 'false');
+      });
+      var first=document.querySelector('#takeaways details.take');
+      if(first) first.open=true;
       window.scrollTo(0,0);
     `,
+    waitMs: 2500,
+    waitMermaid: true,
   },
   {
     html: "code-analyzer.html",
@@ -205,9 +213,42 @@ function cdpSession(ws) {
   };
 }
 
+function startStaticServer(dir, port) {
+  const mime = {
+    ".html": "text/html; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".js": "text/javascript; charset=utf-8",
+    ".mjs": "text/javascript; charset=utf-8",
+    ".svg": "image/svg+xml",
+    ".png": "image/png",
+    ".json": "application/json",
+  };
+  const server = createServer((req, res) => {
+    const name = decodeURIComponent((req.url || "/").split("?")[0].replace(/^\//, ""));
+    const file = join(dir, name);
+    if (!file.startsWith(dir) || !existsSync(file)) {
+      res.writeHead(404);
+      res.end("not found");
+      return;
+    }
+    try {
+      const body = readFileSync(file);
+      res.writeHead(200, { "Content-Type": mime[extname(file)] || "application/octet-stream" });
+      res.end(body);
+    } catch (err) {
+      res.writeHead(500);
+      res.end(String(err));
+    }
+  });
+  return new Promise((resolve) => {
+    server.listen(port, "127.0.0.1", () => resolve(server));
+  });
+}
+
 async function capture(chromePath) {
   const userData = resolve(`/tmp/codexqa-preview-shot-${process.pid}`);
   mkdirSync(userData, { recursive: true });
+  const httpd = await startStaticServer(root, HTTP_PORT);
   const child = spawn(
     chromePath,
     [
@@ -236,7 +277,7 @@ async function capture(chromePath) {
     });
     const cdp = cdpSession(ws);
     await cdp.send("Browser.setDownloadBehavior", { behavior: "deny", eventsEnabled: false }).catch(() => {});
-    for (const shot of shots) {
+    for (const shot of selected) {
       const htmlPath = resolve(root, shot.html);
       const pngPath = resolve(root, shot.png);
       if (!existsSync(htmlPath)) throw new Error(`missing ${shot.html}`);
@@ -275,20 +316,32 @@ async function capture(chromePath) {
         };
         ws.addEventListener("message", handler);
       });
-      await send("Page.navigate", { url: pathToFileURL(htmlPath).href });
+      await send("Page.navigate", { url: `http://127.0.0.1:${HTTP_PORT}/${shot.html}` });
       await Promise.race([loaded, sleep(8000)]);
-      await sleep(400);
+      await sleep(shot.waitMs || 400);
       if (shot.prepare) {
         await send("Runtime.evaluate", { expression: shot.prepare, returnByValue: true });
       }
-      await sleep(500);
-      const { data } = await send("Page.captureScreenshot", { format: "png", fromSurface: true });
+      if (shot.waitMermaid) {
+        await send("Runtime.evaluate", {
+          expression: `(async()=>{for(let i=0;i<40;i++){if(document.querySelector('.mermaid svg'))return true;await new Promise(r=>setTimeout(r,250));}return false;})()`,
+          awaitPromise: true,
+          returnByValue: true,
+        });
+      }
+      await sleep(shot.waitMs ? 800 : 500);
+      const { data } = await send("Page.captureScreenshot", {
+        format: "png",
+        fromSurface: true,
+        clip: { x: 0, y: 0, width: VIEW_W, height: VIEW_H, scale: 1 },
+      });
       writeFileSync(pngPath, Buffer.from(data, "base64"));
       await cdp.send("Target.closeTarget", { targetId }).catch(() => {});
       process.stdout.write(`${shot.png}\n`);
     }
     ws.close();
   } finally {
+    httpd.close();
     child.kill("SIGKILL");
     if (stderr && !stderr.includes("DevTools listening")) {
       process.stderr.write(stderr);
@@ -296,6 +349,14 @@ async function capture(chromePath) {
   }
 }
 
+const only = process.argv.includes("--only")
+  ? process.argv[process.argv.indexOf("--only") + 1]
+  : "";
+const selected = only ? shots.filter((s) => s.html === only || s.png === only) : shots;
+if (only && !selected.length) {
+  console.error(`No shot matching --only ${only}`);
+  process.exit(1);
+}
 const executablePath = findChrome();
 if (!executablePath) {
   console.error("No Chromium binary. Set PLAYWRIGHT_CHROME.");

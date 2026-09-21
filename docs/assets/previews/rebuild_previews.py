@@ -175,48 +175,14 @@ def write_defect():
 
 
 def write_wiki():
-    body = f"""
-  <header class="hero">
-    <p class="kicker">codexqa-code-wiki · architecture wiki</p>
-    <h1><span data-zh="架构知识图谱" data-en="Architecture wiki">架构知识图谱</span>
-      <span class="total-pill">6 <span class="unit-zh">个模块</span><span class="unit-en"> modules</span></span>
-    </h1>
-    <p class="sub">inventory-service</p>
-    <div class="meta-row">
-      <span>wiki inputs <code>examples/inventory-service --kind architecture --limit 8</code></span>
-    </div>
-    <div class="stats">
-      <div class="card">
-        <h2 data-zh="规模" data-en="Scale">规模</h2>
-        <div class="chip-row">
-          <div class="stat-chip"><span class="n">6</span><span class="l">communities</span></div>
-          <div class="stat-chip p1"><span class="n">2</span><span class="l">standalone</span></div>
-          <div class="stat-chip web"><span class="n">7</span><span class="l">dep edges</span></div>
-        </div>
-      </div>
-      <div class="card">
-        <h2 data-zh="怎么读" data-en="How to read">怎么读</h2>
-        <p class="muted" style="margin:0">先看关键发现抓住枢纽，再按入口到存储往下读。</p>
-      </div>
-    </div>
-  </header>
-{toolbar([("all", "全部 (3)")])}
-  <section class="panel">
-    <div class="panel-head">
-      <h2 data-zh="关键发现" data-en="Key findings">关键发现</h2>
-      <p class="desc" data-zh="点击卡片展开详情" data-en="Click a card to expand details">点击卡片展开详情</p>
-    </div>
-    <div class="case-list">
-      {case_card("p03 库存占用是枢纽：hold / expire / commit 都经过它", '<div class="block"><p>改这里影响面最宽，先读对外接口再碰退款。</p></div>', badges='<span class="badge pri p0">p03</span>', pri="P0", cid="wiki-1")}
-      {case_card("HTTP 入口 → 预订编排 → 库存占用 → db/cache", '<div class="block"><p>相邻步都有真实依赖。</p></div>', badges='<span class="badge type">path</span>', cid="wiki-2")}
-      {case_card("p05 退款封顶依赖 p03 的提交状态", '<div class="block"><p>提交没写 COMMITTED 时，退款会打到空订单。</p></div>', badges='<span class="badge pri p1">p05</span>', pri="P1", cid="wiki-3")}
-    </div>
-  </section>
-  <p class="footer">codexqa-code-wiki · assets/report-template.html</p>
-"""
-    (PREVIEWS / "code-wiki.html").write_text(
-        page("wiki-report", "inventory-service — 架构知识图谱", "inventory-service — architecture wiki", body),
-        encoding="utf-8")
+    """README preview uses the DeepWiki report chrome, not the case-list illustration."""
+    src = ROOT / "codexqa-code-wiki-codexqa-20260921-2229.html"
+    if not src.is_file():
+        raise SystemExit("missing %s (fill a wiki report first)" % src)
+    html = src.read_text(encoding="utf-8")
+    html = html.replace("/root/come_here/codexqa@leviacicig-dev", "openqa-cn/codexqa@leviacicig-dev")
+    html = html.replace("/root/come_here/codexqa", "openqa-cn/codexqa")
+    (PREVIEWS / "code-wiki.html").write_text(html, encoding="utf-8")
     print("code-wiki.html")
 
 
