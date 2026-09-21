@@ -3,12 +3,13 @@ name: code-wiki
 description: >
   Builds a local CodexQA architecture knowledge graph from community
   detection and `wiki inputs` (no model), then writes a DeepWiki-style
-  HTML wiki report. Use when the user mentions code-wiki,
-  wiki, 代码知识图谱, 架构 Wiki, 模块地图, 阅读导览, wiki inputs,
-  --no-llm, 社区检测, HTML 报告, or asks to map modules / generate a
-  repo wiki without an LLM. Not change review (that is code-analyzer),
-  not CodexQA evidence-pack HTML review (that is ai-code-reviewer), and not
-  SAST+agent code-risk scan reports (that is defect-detection).
+  HTML wiki report. Use when the user mentions code-wiki, wiki,
+  knowledge graph, architecture wiki, module map, reading guide,
+  wiki inputs, --no-llm, community detection, HTML report, or asks
+  to map modules / generate a repo wiki without an LLM. Not change
+  review (that is code-analyzer), not CodexQA evidence-pack HTML
+  review (that is ai-code-reviewer), and not SAST+agent code-risk
+  scan reports (that is defect-detection).
 license: Apache-2.0
 compatibility: >
   Requires Node.js >= 18 and the `codexqa` CLI
@@ -74,7 +75,7 @@ wiki layout with the original dark Claude chrome (`#1a1918`, clay
 `#D97757`, JetBrains Mono, left sidebar tree, article, on-this-page TOC).
 Copy [assets/report-template.html](assets/report-template.html)
 into the working directory, then fill slots with Edit (do not rewrite CSS).
-**Default the filled report to 简体中文** (headings, stats, findings,
+**Default the filled report to Simplified Chinese** (headings, stats, findings,
 overview, guides, notes). Keep `p01` aliases and symbol names. Write for a
 newcomer: what the system is, where to start, which module is the hub,
 which pages are standalone. Not a product brochure, and not an Archify /
@@ -84,14 +85,14 @@ Read [references/diagrams.md](references/diagrams.md) before drawing. A diagram 
 
 Report body (HTML slots) is only these blocks:
 
-- 关键发现 (3–5 `.take` lines: fact + what the reader should do)
-- 系统怎么运转 (from `overview` / `architecture` `input`, in plain Chinese)
-- 模块地图 (community ids, human titles, real `deps`)
-- 分层 / 数据流 (same modules, grouped Entry → Storage; no invented edges)
-- 阅读路径 (only steps backed by a real dependency)
-- 模块笔记 (职责 / 对外接口 / 内部调用 / 跨模块往来)
-- 独立模块 (empty `deps` — do not force them into a layer)
-- **架构图**: at least one Mermaid block in `.diagram`, and it must pass the quality bar
+- Key findings (3–5 `.take` lines: fact + what the reader should do)
+- How the system works (from `overview` / `architecture` `input`, in plain language)
+- Module map (community ids, human titles, real `deps`)
+- Layers / data flow (same modules, grouped Entry → Storage; no invented edges)
+- Reading path (only steps backed by a real dependency)
+- Module notes (responsibility / public API / internal calls / cross-module traffic)
+- Peripheral modules (empty `deps` — do not force them into a layer)
+- **Architecture diagram**: at least one Mermaid block in `.diagram`, and it must pass the quality bar
 - Fill the sidebar tree (`#nav-entry` / `#nav-app` / `#nav-domain` / `#nav-storage` / `#nav-modules` / `#nav-peripheral`) so it looks like a DeepWiki wiki, not 8 flat links
 
 Trust only the `input` object on each `wiki inputs` row. `system` / `user` are prompt templates, not evidence. `page` rows carry the digest; `visualization` / `architecture` / `overview` use rule titles and have no model-written body.
@@ -109,4 +110,4 @@ Reject the whole report and rewrite if any of these hold:
 - Report was delivered as Markdown-only / chat-only with no HTML file
 - Archify / grouped-swimlane architecture canvas was generated (this skill does not ask for that)
 - Chrome or body left in English when the user did not ask for English (findings / overview / pages selected)
-- Findings or overview dump field names (`deps`, `cross_community`, `wiki inputs`) instead of 职责 / 依赖 / 阅读顺序
+- Findings or overview dump field names (`deps`, `cross_community`, `wiki inputs`) instead of responsibility / dependency / reading order
