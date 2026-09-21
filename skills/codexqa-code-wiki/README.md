@@ -8,7 +8,7 @@
 
 **Turn a repository into a local architecture knowledge graph — module map, real dependencies, and reading guides — without calling a model.**
 
-CodexQA indexes the repo, then `wiki inputs` exports Leiden communities and digests as JSON. Cursor / Claude Code read [`SKILL.md`](SKILL.md) and write a Claude Code official-style HTML wiki report from that JSON.
+CodexQA indexes the repo, then `wiki inputs` exports Leiden communities and digests as JSON. Cursor / Claude Code read [`SKILL.md`](SKILL.md) and write a DeepWiki-style HTML wiki report from that JSON.
 
 - **Module map** — communities (`p01`…) with rule titles and real `deps`
 - **Module notes** — signatures, in-community `call_chain`, `method_flows`, `cross_community`
@@ -93,7 +93,7 @@ index
   → wiki inputs --kind architecture / overview / page / visualization
   → group pages (Entry → Application → Domain → Storage)
   → reading guides along real deps
-  → Claude Code official-style HTML report (Mermaid inside)
+  → DeepWiki-style HTML wiki report (sidebar + article + TOC, Mermaid inside)
 ```
 
 Optional: `wiki --no-llm` persists rule-only pages. The agent report still comes from `wiki inputs`.
@@ -133,7 +133,7 @@ codexqa-code-wiki/
 ├── README.zh-CN.md           # Chinese
 ├── SKILL.md                  # agent routing + report contract
 ├── assets/
-│   └── report-template.html  # Claude Code official-style HTML chrome
+│   └── report-template.html  # DeepWiki-style HTML chrome (default 简体中文)
 └── references/
     ├── playbook.md           # scenario steps (load on demand)
     ├── report.md             # how to fill the HTML report
