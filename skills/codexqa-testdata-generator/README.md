@@ -7,7 +7,7 @@ Vendor-neutral [Agent Skill](https://agentskills.io/specification) for construct
 What write-back looks like:
 
 <p align="center">
-  <a href="https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testdata-writeback.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/testdata-writeback.png" alt="Sample testdata write-back" width="880"></a>
+  <a href="https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/testdata-writeback.html"><img src="https://raw.githubusercontent.com/openqa-cn/codexqa/main/docs/assets/previews/testdata-writeback.png" alt="Sample testdata write-back" width="880"></a>
 </p>
 
 It does **not** invent business IDs. "Construct succeeded" means the backend returned an ID, not that one appeared in the chat. It also does **not** author test cases from a PRD — that is the sibling [`codexqa-testcase-generator`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-testcase-generator/README.md) skill.

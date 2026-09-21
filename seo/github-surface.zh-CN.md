@@ -21,7 +21,7 @@ GitHub Settings 无法进 git。定位一变，就在 `https://github.com/openqa
 ## README 约定
 
 - H1 仍是 `codexqa`。
-- H1 下一行是「写得快 vs 立刻知道写得好不好」；紧跟测试验证阶段的 360° 维度（缺陷、回归、用例、图谱、架构、安全、需求、造数），再跟上可核对数字和截图。
+- H1 下一行是「写得快 vs 立刻知道写得好不好」，并点明**完全本地执行、开箱安装即用**；紧跟测试验证阶段的 360° 维度（缺陷、回归、用例、图谱、架构、安全、需求、造数），再跟上可核对数字和截图。
 - 首屏视觉是 skill HTML 报告截图；八个干活 skill 在 `docs/assets/previews/` 各有一份预览。
 - **Documentation** 链 [openqa.cn](https://openqa.cn/)（可用 `utm_source=github&utm_medium=readme&utm_campaign=oss-seo`），GitHub 当源码仓。
 

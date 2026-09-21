@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** Capture README preview PNGs. Uses Playwright Chromium cache or PLAYWRIGHT_CHROME. */
+/** Capture README preview PNGs at a fixed 4:3 viewport. Uses Playwright Chromium cache or PLAYWRIGHT_CHROME. */
 
 import { existsSync, readdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -8,16 +8,19 @@ import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const root = dirname(new URL(import.meta.url).pathname);
+/** CSS pixels. With --force-device-scale-factor=2 the PNG is 2560×1920 (still 4:3). */
+const VIEW_W = 1280;
+const VIEW_H = 960;
 const shots = [
-  ["defect-report.html", "defect-report.png", 1280, 1600],
-  ["review-report.html", "review-report.png", 1280, 900],
-  ["code-wiki.html", "code-wiki.png", 1280, 900],
-  ["code-analyzer.html", "code-analyzer.png", 1480, 900],
-  ["rootcause.html", "rootcause.png", 1100, 900],
-  ["ra-register.html", "ra-register.png", 1100, 620],
-  ["testcase-report.html", "testcase-report.png", 1280, 900],
-  ["testdata-writeback.html", "testdata-writeback.png", 1100, 720],
-  ["testcase-sample.html", "testcase-sample.png", 1100, 980],
+  ["defect-report.html", "defect-report.png"],
+  ["review-report.html", "review-report.png"],
+  ["code-wiki.html", "code-wiki.png"],
+  ["code-analyzer.html", "code-analyzer.png"],
+  ["rootcause.html", "rootcause.png"],
+  ["ra-register.html", "ra-register.png"],
+  ["testcase-report.html", "testcase-report.png"],
+  ["testdata-writeback.html", "testdata-writeback.png"],
+  ["testcase-sample.html", "testcase-sample.png"],
 ];
 
 function findChrome() {
@@ -42,7 +45,7 @@ if (!executablePath) {
   process.exit(1);
 }
 
-for (const [html, png, w, h] of shots) {
+for (const [html, png] of shots) {
   const htmlPath = resolve(root, html);
   const pngPath = resolve(root, png);
   if (!existsSync(htmlPath)) {
@@ -58,7 +61,7 @@ for (const [html, png, w, h] of shots) {
       "--disable-dev-shm-usage",
       "--hide-scrollbars",
       "--force-device-scale-factor=2",
-      `--window-size=${w},${h}`,
+      `--window-size=${VIEW_W},${VIEW_H}`,
       `--screenshot=${pngPath}`,
       pathToFileURL(htmlPath).href,
     ],

@@ -14,7 +14,9 @@ Sample HTML used as screenshots in the repository README. They are **illustratio
 | `testdata-writeback.html` / `.png` | `codexqa-testdata-generator` | `{placeholder}` replaced with a backend-returned id |
 | `testcase-sample.html` / `.png` | `codexqa-testcase-generator` | Extra: one V56 server-end case table |
 
-Capture PNGs (needs the Playwright Chromium cache or `PLAYWRIGHT_CHROME`):
+GitHub’s blob view shows HTML as source. README screenshot links therefore open the rendered page via jsDelivr (`https://cdn.jsdelivr.net/gh/openqa-cn/codexqa@main/docs/assets/previews/<file>.html`), which serves `text/html`. Locally, open the `.html` file in this directory.
+
+Capture PNGs at **4:3** (`1280×960` CSS, `2560×1920` at 2×). Needs the Playwright Chromium cache or `PLAYWRIGHT_CHROME`:
 
 ```bash
 node docs/assets/previews/screenshot.mjs
