@@ -5,7 +5,7 @@ Each release has two sections. **Highlights** is what changes for someone using 
 ## Unreleased
 
 - Stop tracking `.cursor/rules` (local push-identity gate), Ruff cache, and internal `seo/` playbooks. `.github/` stays: Actions, release notes, and issue templates only run from the repository.
-- Stop tracking `.editorconfig` (editor-local). Keep `.gitignore` and `.gitattributes` in the repository: ignore rules and LF line endings have to travel with the clone.
+- Stop tracking `.editorconfig` (editor-local). `.gitattributes` stays so clones keep LF line endings. `.gitignore` is local-only and is not tracked.
 
 ## 0.3.0 — 2026-09-21
 
