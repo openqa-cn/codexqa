@@ -2,14 +2,15 @@
 
 [English](ROADMAP.md)
 
-codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。当前价值更具体、范围也更克制：七个本地优先的验证 skill，把需求、代码变更、审查、用例、测试数据、代码风险扫描和异常诊断拆成独立、可核查的工作流，另有 [`codexqa-skill-router`](../skills/codexqa-skill-router/README.zh-CN.md) 自动选型并可按需拉取干活 skill。本仓库当前提供 [`codexqa-skill-router`](../skills/codexqa-skill-router/README.zh-CN.md)、[`codexqa-code-analyzer`](../skills/codexqa-code-analyzer/README.zh-CN.md)、[`codexqa-rootcause-analyzer`](../skills/codexqa-rootcause-analyzer/README.zh-CN.md)、[`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.zh-CN.md)、[`codexqa-code-reviewer`](../skills/codexqa-code-reviewer/README.zh-CN.md)、[`codexqa-requirement-analyzer`](../skills/codexqa-requirement-analyzer/README.zh-CN.md)、[`codexqa-testcase-generator`](../skills/codexqa-testcase-generator/README.zh-CN.md) 和 [`codexqa-testdata-generator`](../skills/codexqa-testdata-generator/README.zh-CN.md)。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由这些工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
+codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。当前价值更具体、范围也更克制：八个本地优先的验证 skill，把需求、架构、代码变更、审查、用例、测试数据、代码风险扫描和异常诊断拆成独立、可核查的工作流，另有 [`codexqa-skill-router`](../skills/codexqa-skill-router/README.zh-CN.md) 自动选型并可按需拉取干活 skill。本仓库当前提供 [`codexqa-skill-router`](../skills/codexqa-skill-router/README.zh-CN.md)、[`code-wiki`](../skills/code-wiki/README.zh-CN.md)、[`codexqa-code-analyzer`](../skills/codexqa-code-analyzer/README.zh-CN.md)、[`codexqa-rootcause-analyzer`](../skills/codexqa-rootcause-analyzer/README.zh-CN.md)、[`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.zh-CN.md)、[`codexqa-code-reviewer`](../skills/codexqa-code-reviewer/README.zh-CN.md)、[`codexqa-requirement-analyzer`](../skills/codexqa-requirement-analyzer/README.zh-CN.md)、[`codexqa-testcase-generator`](../skills/codexqa-testcase-generator/README.zh-CN.md) 和 [`codexqa-testdata-generator`](../skills/codexqa-testdata-generator/README.zh-CN.md)。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由这些工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
 
 ## 能力地图
 
 | 能力 | 当前仓库状态 | 范围 |
 | --- | --- | --- |
 | 缺陷检测 | **已提供** | 面向代码变更、测试计划和交付任务的 Agent 静态与业务逻辑审查 |
-| 代码分析 | **已提供** | `codexqa-code-analyzer` 为支持的语言建立本地符号图；`codexqa-defect-analyzer` 另有 SAST/lint/secrets/SCA + Agent LLM Detection 扫描报告（去重合并）；parser 与框架覆盖仍有差异 |
+| 代码分析 | **已提供** | `codexqa-code-analyzer` 为支持的语言建立本地符号图，`codexqa-defect-analyzer` 另有 AST 规则和变更方法分析；parser 与框架覆盖仍有差异 |
+| 架构知识图谱 | **已提供** | `code-wiki` 用 `wiki inputs`（不调模型）导出 Leiden 社区和真实 `deps`，再写 Claude Code 风格 HTML Wiki；无模型时标题保持规则标题 |
 | 需求评审 | **已提供** | 对需求文档做缺口/冲突分析（`codexqa-requirement-analyzer`）；实现是否符合需求仍是计划中 |
 | 规格评审 | **计划中** | 检查技术规格的完整性、一致性和可测试性 |
 | AI Code Review | **已提供** | CodexQA 证据包 + 启发式维度 + Agent LLM judgment（去重）→ 双语 `REVIEW-REPORT.html`（`codexqa-code-reviewer`）；本地有 fixture validate+render 冒烟 |

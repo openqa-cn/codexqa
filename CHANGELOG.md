@@ -3,6 +3,7 @@
 Each release has two sections. **Highlights** is what changes for someone using the skills. **Internal** is the full engineering record — refactors, test changes, and fixes with no user-visible effect. If you are upgrading, Highlights is enough.
 
 ## Unreleased
+- Synced docs for `code-wiki` (architecture wiki) alongside the `codexqa-*` skill rename.
 - **Renamed all eight published skills** to the `codexqa-*` namespace (directories, `SKILL.md` `name`, `skills.json`, catalog, CI paths, and docs): `ai-code-reviewer`→`codexqa-code-reviewer`, `code-analyzer`→`codexqa-code-analyzer`, `defect-detection`→`codexqa-defect-analyzer`, `requirements-analyzer`→`codexqa-requirement-analyzer`, `root-cause-diagnosis`→`codexqa-rootcause-analyzer`, `skill-router`→`codexqa-skill-router`, `testdata-generation`→`codexqa-testdata-generator`, `testcase-generation`→`codexqa-testcase-generator`. Install with `npx skills add openqa-cn/codexqa --skill <new-name>`.
 - `codexqa-code-reviewer` v0.0.3: new **Agent LLM judgment** dimension (order 16) — host embedded model reviews pack-scoped diffs, then `merge-llm-findings.py` dedupes/merges against heuristic findings (`22-llm-judgment.json`).
 - `codexqa-defect-analyzer` v0.0.2 / pipeline 1.3.0: first-class **Agent LLM Detection** dimension (`prompts/agent_detect.md`) — host embedded model runs one analysis round, then Stage2 verify; `finalize` dedupes/merges with deterministic SAST/lint/secrets/SCA and stamps `dimension` on findings.
@@ -17,6 +18,7 @@ Each release has two sections. **Highlights** is what changes for someone using 
 
 ### Highlights
 
+- **New `code-wiki` skill.** Index a local repository, export Leiden communities and digests with `wiki inputs` (no model), and write a Claude Code official-style HTML architecture wiki (module map, real deps, reading guides). The Skill, playbook, report template, and limitations are published here; it uses the same separately distributed `@openqa-cn/codexqa` engine as `codexqa-code-analyzer`.
 - **Skill rename to `codexqa-*`.** Every published skill directory and frontmatter `name` now uses the `codexqa-` prefix (see Unreleased). Update install flags and docs bookmarks accordingly (`--skill codexqa-defect-analyzer`, etc.).
 - **`codexqa-code-reviewer` Agent LLM judgment (v0.0.3).** After heuristic dimension drafts, the host embedded model runs an order-16 semantic CR pass; `merge-llm-findings.py` dedupes/merges into final P0/P1/P2 (`22-llm-judgment.json`). Collect/validate/render still need no external LLM API.
 - **`codexqa-defect-analyzer` Agent LLM Detection (v0.0.2).** First-class detection dimension via `prompts/agent_detect.md` (Stage1 + Stage2); `finalize` dedupes/merges with deterministic SAST/lint/secrets/SCA and stamps `dimension` on findings. Default `--llm-mode agent` needs no API key.

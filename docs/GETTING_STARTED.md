@@ -2,13 +2,13 @@
 
 [简体中文](GETTING_STARTED.zh-CN.md)
 
-Install one skill at a time on Cursor, Claude Code, Codex, or OpenClaw. This page walks [`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.md) because it has a CLI you can smoke-test. The same command also takes `--skill codexqa-skill-router`, `--skill codexqa-code-analyzer`, `--skill codexqa-rootcause-analyzer`, `--skill codexqa-code-reviewer`, `--skill codexqa-requirement-analyzer`, `--skill codexqa-testcase-generator`, and `--skill codexqa-testdata-generator`. Prefer [`codexqa-skill-router`](../skills/codexqa-skill-router/README.md) when you are unsure which worker to install — it can match and fetch workers on demand. `codexqa-code-analyzer`, `codexqa-rootcause-analyzer`, and `codexqa-code-reviewer` use the separate `codexqa` symbol-graph CLI; `codexqa-defect-analyzer` is Python-orchestrated and also uses that CLI for live graphs; `codexqa-skill-router` needs Python 3.10+ for discover/ensure.
+Install one skill at a time on Cursor, Claude Code, Codex, or OpenClaw. This page walks [`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.md) because it has a CLI you can smoke-test. The same command also takes `--skill codexqa-skill-router`, `--skill codexqa-code-analyzer`, `--skill code-wiki`, `--skill codexqa-rootcause-analyzer`, `--skill codexqa-code-reviewer`, `--skill codexqa-requirement-analyzer`, `--skill codexqa-testcase-generator`, and `--skill codexqa-testdata-generator`. Prefer [`codexqa-skill-router`](../skills/codexqa-skill-router/README.md) when you are unsure which worker to install — it can match and fetch workers on demand. `codexqa-code-analyzer`, `code-wiki`, `codexqa-rootcause-analyzer`, and `codexqa-code-reviewer` use the separate `codexqa` symbol-graph CLI; `codexqa-defect-analyzer` is Python-orchestrated and also uses that CLI for live graphs; `codexqa-skill-router` needs Python 3.10+ for discover/ensure.
 
 What you give each skill is different ([FAQ](FAQ.md#what-do-i-have-to-give-each-skill)). What a finished report looks like: [README · What the output looks like](../README.md#what-the-output-looks-like).
 
 ## Requirements
 
-Use Node.js, npm/npx, Git, and a coding agent able to read skill files and run commands. `codexqa-code-analyzer` requires Node.js 18 or newer. `codexqa-testcase-generator` requires Python 3.10+ (invoke via that skill's `scripts/tcg-python`). The `codexqa-defect-analyzer` Python pipeline is exercised with Python 3.11 locally and in CI:
+Use Node.js, npm/npx, Git, and a coding agent able to read skill files and run commands. `codexqa-code-analyzer` and `code-wiki` require Node.js 18 or newer. `codexqa-testcase-generator` requires Python 3.10+ (invoke via that skill's `scripts/tcg-python`). The `codexqa-defect-analyzer` Python pipeline is exercised with Python 3.11 locally and in CI:
 
 ```bash
 python3 --version   # 3.10+; 3.11 recommended (codexqa-defect-analyzer / codexqa-testcase-generator)
@@ -81,6 +81,7 @@ For global installations add `--global` where supported. Back up configuration a
 
 ```bash
 npx skills add openqa-cn/codexqa --skill codexqa-code-analyzer
+npx skills add openqa-cn/codexqa --skill code-wiki
 npm install -g @openqa-cn/codexqa
 
 npx skills add openqa-cn/codexqa --skill codexqa-skill-router
@@ -91,22 +92,24 @@ npx skills add openqa-cn/codexqa --skill codexqa-testcase-generator
 npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
 ```
 
-The `codexqa-code-analyzer`, `codexqa-rootcause-analyzer`, `codexqa-defect-analyzer`, and `codexqa-skill-router` Skills are published in this repository. `@openqa-cn/codexqa` is the separately distributed, closed-source local code-analysis engine; indexes and sessions live under `~/.codexqa/`. See [`codexqa-code-analyzer` known limitations](../skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.md), [`codexqa-rootcause-analyzer` known limitations](../skills/codexqa-rootcause-analyzer/KNOWN_LIMITATIONS.md), [`codexqa-defect-analyzer` known limitations](../skills/codexqa-defect-analyzer/KNOWN_LIMITATIONS.md), and [`codexqa-skill-router` known limitations](../skills/codexqa-skill-router/KNOWN_LIMITATIONS.md).
+The `codexqa-code-analyzer`, `code-wiki`, `codexqa-rootcause-analyzer`, `codexqa-defect-analyzer`, and `codexqa-skill-router` Skills are published in this repository. `@openqa-cn/codexqa` is the separately distributed, closed-source local code-analysis engine; indexes and sessions live under `~/.codexqa/`. See [`codexqa-code-analyzer` known limitations](../skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.md), [`code-wiki` known limitations](../skills/code-wiki/KNOWN_LIMITATIONS.md), [`codexqa-rootcause-analyzer` known limitations](../skills/codexqa-rootcause-analyzer/KNOWN_LIMITATIONS.md), [`codexqa-defect-analyzer` known limitations](../skills/codexqa-defect-analyzer/KNOWN_LIMITATIONS.md), and [`codexqa-skill-router` known limitations](../skills/codexqa-skill-router/KNOWN_LIMITATIONS.md).
 
-For a model-free `codexqa-code-analyzer` smoke check, index a local checkout and inspect its summary:
+For a model-free `codexqa-code-analyzer` / `code-wiki` smoke check, index a local checkout and inspect its summary:
 
 ```bash
 codexqa --help
 codexqa index /path/to/repo
 codexqa stats /path/to/repo
+codexqa wiki inputs /path/to/repo --kind architecture --limit 8
 ```
 
-`--help` should list the CLI commands. A successful `stats` call should report indexed files, symbols, and languages. For change review, rebuild the index with `--diff-base <ref>`; without a diff base, changed symbols remain `default` and there is no change set to review.
+`--help` should list the CLI commands. A successful `stats` call should report indexed files, symbols, and languages. For change review, rebuild the index with `--diff-base <ref>`; without a diff base, changed symbols remain `default` and there is no change set to review. `wiki inputs` should print community / digest JSON without calling a model.
 
 After install, start a new agent session and point it at the skill. Inputs differ:
 
 - `codexqa-skill-router` needs a user request to route (and Python 3.10+). It matches the bundled/live catalog and can run `ensure_skill.py` to fetch a worker beside the router. See its [README](../skills/codexqa-skill-router/README.md).
 - `codexqa-code-analyzer` needs a local repository. For change review, index it with a baseline such as `origin/main`; indexes live under `~/.codexqa/`. See its [README](../skills/codexqa-code-analyzer/README.md).
+- `code-wiki` needs a local repository and an existing index. It exports `wiki inputs` and writes an HTML architecture report; it does not review a change. See its [README](../skills/code-wiki/README.md).
 - `codexqa-rootcause-analyzer` needs exception evidence (stack / log / dump) plus a git URL, local dir, file, or already-open workspace. See its [README](../skills/codexqa-rootcause-analyzer/README.md).
 - `codexqa-defect-analyzer` needs a diff, repo, upload, or paste for a code-risk scan. See its [README](../skills/codexqa-defect-analyzer/README.md).
 - `codexqa-code-reviewer` needs a local checkout, `codexqa` + `jq` on PATH, and (for PR mode) `--diff-base`. See [codexqa-code-reviewer README](../skills/codexqa-code-reviewer/README.md).
@@ -127,7 +130,7 @@ Method write-ups: [How it works index](HOW_IT_WORKS.md). What to bring: [FAQ](FA
 | Unknown `.ts` extension | Node runtime and TypeScript stripping environment |
 | Missing plan | Provide repository/branch and business materials; degraded loading does not mean sufficient materials |
 | Static/call-graph analysis unavailable | Tool installation result, PATH, permissions, and network access |
-| `codexqa` command not found or graph query is empty | Install `@openqa-cn/codexqa`, check PATH, confirm the repository was indexed, and use `--diff-base` for change review |
+| `codexqa` command not found or graph query is empty | Install `@openqa-cn/codexqa`, check PATH, confirm the repository was indexed, and use `--diff-base` for change review. For `code-wiki`, run `wiki inputs` (not `wiki` without `--no-llm`) |
 | Local report link does not open | Open the returned HTML file in a browser |
 
 For support include the commit, Node version, OS, agent/version, command, and sanitized error. Do not upload source or task directories containing private data.

@@ -37,6 +37,7 @@ paths = list(root.glob('*.md')) + list((root / 'docs').glob('*.md')) + list((roo
     root / 'skills/codexqa-code-analyzer/README.md',
     root / 'skills/codexqa-rootcause-analyzer/README.md',
     root / 'skills/codexqa-skill-router/README.md',
+    root / 'skills/code-wiki/README.md',
 ]
 for p in paths:
     for target in file_links(p):

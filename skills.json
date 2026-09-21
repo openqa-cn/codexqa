@@ -41,6 +41,11 @@
       "name": "codexqa-skill-router",
       "path": "skills/codexqa-skill-router",
       "status": "available"
+    },
+    {
+      "name": "code-wiki",
+      "path": "skills/code-wiki",
+      "status": "available"
     }
   ]
 }

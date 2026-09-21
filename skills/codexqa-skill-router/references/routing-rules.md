@@ -35,7 +35,8 @@ Pick the highest score. If top two are close, ask.
 |---|---|---|
 | Scan diff/repo/paste for SAST + Agent LLM Detection → `report_scan.*` | `codexqa-defect-analyzer` | `codexqa-code-reviewer`, `codexqa-code-analyzer` |
 | CodexQA evidence pack + Agent LLM judgment → bilingual REVIEW-REPORT.html | `codexqa-code-reviewer` | `codexqa-defect-analyzer` |
-| Index repo, callers, regression scope, test gaps, `--diff-base` | `codexqa-code-analyzer` | full HTML CR / SAST report |
+| Index repo, callers, regression scope, test gaps, `--diff-base` | `codexqa-code-analyzer` | full HTML CR / SAST report / architecture wiki |
+| Architecture wiki / module map / `wiki inputs` (no model) | `code-wiki` | change impact or SAST report |
 | Stack / log / crash → root cause | `codexqa-rootcause-analyzer` | structure-only or scan report |
 | PRD quality / gap / conflict register | `codexqa-requirement-analyzer` | writing cases |
 | Test plan / cases / Plan·Exec / 提测后增量 | `codexqa-testcase-generator` | live backend data |

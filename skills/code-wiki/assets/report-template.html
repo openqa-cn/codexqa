@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>架构知识图谱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* anthropic / claude-code palette — same tokens as official session-report */
+    --ivory: #FAF9F5;
+    --term-bg: #1a1918;
+    --term-fg: #d1cfc5;
+    --titlebar: #252321;
+    --outline: rgba(255,255,255,0.08);
+    --hover: rgba(255,255,255,0.035);
+    --clay: #D97757;
+    --dim: rgb(136,136,136);
+    --subtle: rgb(80,80,80);
+    --green: rgb(78,186,101);
+    --red: rgb(255,107,128);
+    --blue: rgb(177,185,249);
+    --yellow: rgb(255,193,7);
+    --mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, Monaco, monospace;
+    --sans: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { background: var(--ivory); }
+  body {
+    margin: 0; padding: 48px 24px 80px;
+    font: 14px/1.7 var(--sans);
+    font-variant-numeric: tabular-nums;
+    color: var(--term-fg);
+  }
+
+  /* ——— terminal window chrome ——— */
+  .term {
+    max-width: 1180px; margin: 0 auto;
+    background: var(--term-bg);
+    border-radius: 8px;
+    outline: 1px solid var(--outline);
+    box-shadow: 0 20px 60px rgba(20,20,19,0.22);
+  }
+  .titlebar {
+    background: var(--titlebar);
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid var(--outline);
+    padding: 11px 14px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .titlebar .dot { width: 11px; height: 11px; border-radius: 50%; background: #3a3836; }
+  .titlebar .path { margin-left: 14px; color: var(--dim); font-size: 11px; font-family: var(--mono); }
+  .term-body { padding: 22px 30px 30px; }
+
+  /* ——— command + hero ——— */
+  .cmd { color: var(--dim); margin-bottom: 6px; font-family: var(--mono); font-size: 12px; }
+  .cmd .prompt { color: var(--clay); }
+  .cmd .flag { color: var(--blue); }
+  #meta-line { color: var(--subtle); font-size: 12px; }
+
+  #hero { margin: 14px 0 6px; }
+  #hero-total { font-size: 52px; font-weight: 700; line-height: 1; font-family: var(--mono); }
+  #hero-total .unit { color: var(--clay); font-size: 22px; margin-left: 6px; }
+  #hero-total .label { font-size: 16px; font-weight: 400; color: var(--dim); margin-left: 8px; font-family: var(--sans); }
+  #hero-split { color: var(--dim); margin-top: 10px; }
+  #hero-split b { color: var(--term-fg); font-weight: 500; }
+  #hero-split .ok { color: var(--green); }
+  #hero-split .warn { color: var(--yellow); }
+
+  .howto {
+    margin: 14px 0 4px; padding: 10px 14px;
+    border-left: 2px solid var(--clay);
+    color: var(--dim); font-size: 13px;
+  }
+  .howto b { color: var(--term-fg); font-weight: 500; }
+
+  /* ——— sections ——— */
+  section { margin-top: 26px; }
+  .hr { color: var(--subtle); overflow: hidden; white-space: nowrap;
+        user-select: none; margin-bottom: 8px; font-family: var(--mono); }
+  .hr::after { content: '────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────'; }
+  h2 { all: unset; display: block; color: var(--clay); font-weight: 500; }
+  h2::before { content: '▸ '; font-family: var(--mono); }
+  h2 .hint { color: var(--subtle); font-size: 12px; font-weight: 400; margin-left: 10px; }
+  .section-body { margin-top: 10px; }
+
+  /* ——— overall stat grid ——— */
+  #overall-grid { display: grid; gap: 4px 28px;
+                  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .stat { padding: 4px 0; }
+  .stat .label { font-size: 12px; color: var(--dim); }
+  .stat .val { font-size: 22px; font-weight: 500; font-family: var(--mono); }
+  .stat .detail { font-size: 12px; color: var(--subtle); }
+
+  /* ——— takeaways ——— */
+  .take { display: grid; grid-template-columns: 9ch 1fr; gap: 18px;
+          padding: 8px 0; align-items: baseline; }
+  .take .fig { text-align: right; font-weight: 700; font-size: 15px; font-family: var(--mono); }
+  .take .txt { color: var(--dim); }
+  .take .txt b { color: var(--term-fg); font-weight: 500; }
+  .take.bad  .fig { color: var(--red); }
+  .take.good .fig { color: var(--green); }
+  .take.info .fig { color: var(--blue); }
+
+  /* ——— callouts (reading-guide steps) ——— */
+  .callout { padding: 8px 0 8px 14px; border-left: 2px solid var(--subtle);
+             color: var(--dim); margin: 8px 0; }
+  .callout b, .callout code { color: var(--term-fg); }
+  .callout.risk { border-left-color: var(--clay); }
+  .callout .why { display: block; margin-top: 4px; font-size: 12px; color: var(--subtle); }
+
+  /* ——— block-char bars (community size) ——— */
+  .bar { display: grid; grid-template-columns: 28ch 1fr 8ch; gap: 14px;
+         padding: 2px 0; align-items: center; font-family: var(--mono); font-size: 12px; }
+  .bar .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar .blocks { color: var(--clay); white-space: pre; overflow: hidden; }
+  .bar .blocks .empty { color: var(--subtle); }
+  .bar .pct { text-align: right; color: var(--dim); }
+  .bar:hover .name { color: var(--clay); }
+
+  /* ——— drill-down lists (module notes) ——— */
+  .drill details { border-top: 1px solid var(--outline); }
+  .drill details:last-of-type { border-bottom: 1px solid var(--outline); }
+  .drill summary { list-style: none; cursor: pointer;
+    display: grid; grid-template-columns: 8ch 1fr; gap: 16px;
+    padding: 10px 4px; align-items: baseline; }
+  .drill summary::-webkit-details-marker { display: none; }
+  .drill summary:hover { background: var(--hover); }
+  .drill .amt { font-weight: 700; text-align: right; color: var(--clay); font-family: var(--mono); }
+  .drill .desc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .drill .meta { grid-column: 2; font-size: 12px; color: var(--subtle); }
+  .drill details[open] summary .desc { white-space: normal; }
+  .drill .body { padding: 4px 4px 16px calc(8ch + 20px); font-size: 13px; color: var(--dim); }
+  .drill .body p { margin: 0 0 8px; }
+  .drill .body p:last-child { margin-bottom: 0; }
+
+  /* ——— ivory insets: mermaid paper + quoted digest ——— */
+  .ctx, .diagram {
+    margin: 8px 0 12px; padding: 12px 14px;
+    background: #F0EEE6; color: #1a1918;
+    border-radius: 6px; font-size: 13px;
+  }
+  .diagram { background: #FAF9F5; overflow-x: auto; }
+  .diagram .mermaid { margin: 0; }
+  .diagram-meta { margin-top: 10px; color: #87867F; font-size: 12px; }
+  .diagram-meta div { padding: 1px 0; }
+
+  .prose { color: var(--dim); }
+  .prose p { margin: 0 0 10px; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose b, .prose strong { color: var(--term-fg); font-weight: 500; }
+  .tag {
+    display: inline-block; padding: 0 6px; margin-right: 6px;
+    border: 1px solid var(--subtle); border-radius: 3px;
+    font-size: 11px; color: var(--dim);
+  }
+  .tag.risk { border-color: var(--clay); color: var(--clay); }
+  .tag.change { border-color: var(--yellow); color: var(--yellow); }
+
+  /* ——— tables ——— */
+  .scroll { max-height: 440px; overflow: auto;
+            border-top: 1px solid var(--outline); border-bottom: 1px solid var(--outline); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 10px; }
+  td { border-top: 1px solid rgba(255,255,255,0.04); }
+  th { position: sticky; top: 0; background: var(--term-bg); z-index: 1;
+       font-weight: 500; font-size: 12px; color: var(--subtle);
+       user-select: none;
+       border-bottom: 1px solid var(--outline); }
+  td.num, th.num { text-align: right; font-family: var(--mono); }
+  td.mono { font-family: var(--mono); font-size: 12px; }
+  tbody tr:hover td { background: var(--hover); }
+
+  footer { margin-top: 28px; color: var(--subtle); font-size: 12px;
+           display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  code { color: var(--blue); font-family: var(--mono); font-size: 12px; }
+  a { color: var(--clay); }
+  ::selection { background: var(--clay); color: var(--term-bg); }
+
+  @media (max-width: 760px) {
+    body { padding: 20px 12px 48px; }
+    .term-body { padding: 16px 16px 24px; }
+    #hero-total { font-size: 36px; }
+    .bar { grid-template-columns: 16ch 1fr 7ch; gap: 8px; }
+    .drill summary { grid-template-columns: 6ch 1fr; }
+    .drill .body { padding-left: 12px; }
+    .take { grid-template-columns: 7ch 1fr; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="term">
+  <div class="titlebar">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span class="path" id="title-path">仓库 — 架构知识图谱</span>
+  </div>
+  <div class="term-body">
+
+    <div class="cmd"><span class="prompt">&gt;</span> wiki inputs <span id="cmd-repo">/path/to/repo</span> <span class="flag" id="cmd-flags">--kind architecture --limit 8</span></div>
+    <div id="meta-line">社区 — · 本报告收录 — · 未调用模型</div>
+
+    <div id="hero">
+      <div id="hero-total">— <span class="unit">个模块</span><span class="label">本报告收录</span></div>
+      <div id="hero-split">有依赖的模块走主阅读路径 · 无依赖的放在文末「独立模块」</div>
+    </div>
+
+    <div class="howto" id="howto">
+      <b>怎么读：</b>先看「关键发现」抓住枢纽和风险，再按「阅读路径」从入口往下读；地图和对图用来对照，不要从孤立工具读起。
+    </div>
+
+    <div id="overall-grid">
+      <div class="stat"><div class="label">模块社区</div><div class="val">—</div><div class="detail">图上全部社区</div></div>
+      <div class="stat"><div class="label">本报告收录</div><div class="val">—</div><div class="detail">按规模选取</div></div>
+      <div class="stat"><div class="label">独立模块</div><div class="val">—</div><div class="detail">没有列出的依赖</div></div>
+      <div class="stat"><div class="label">依赖关系</div><div class="val">—</div><div class="detail">社区之间的有向边</div></div>
+    </div>
+
+    <!-- ====================================================================
+         关键发现 — 3～5 条。每条 = 事实 + 对读者意味着什么。
+         .bad = 枢纽 / 风险 / 意外孤立, .good = 一条能走通的路径, .info = 中性事实。
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>关键发现 <span class="hint">先看这些，再下钻</span></h2>
+      <div class="section-body" id="takeaways">
+        <div class="take"><div class="fig">—</div><div class="txt">还没有发现。跑完 wiki inputs 后，用「谁是枢纽 / 从哪读 / 哪些别先碰」填写。</div></div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         系统怎么运转 — 这个仓库是什么、主链路怎么走。不要堆字段名。
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>系统怎么运转 <span class="hint">一句话定位 + 主链路</span></h2>
+      <div class="section-body prose" id="overview">
+        <p>还没有概览。用 2～4 段说明：这个系统是什么、请求从哪进来、核心模块各自干什么、独立工具放哪。</p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         模块地图 — 社区编号、人话职责、真实依赖。孤立页不要进分层。
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>模块地图 <span class="hint">入口 → 应用 → 领域 → 存储</span></h2>
+      <div class="section-body" id="module-map">
+        <div id="community-bars"></div>
+        <div class="scroll" style="margin-top:12px">
+          <table>
+            <thead>
+              <tr>
+                <th>编号</th>
+                <th>分层</th>
+                <th>模块</th>
+                <th class="num">规模</th>
+                <th>依赖谁</th>
+              </tr>
+            </thead>
+            <tbody id="module-rows">
+              <tr><td colspan="5">还没有模块。分层只用「入口 / 应用 / 领域 / 存储」；没有依赖的放到文末。</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         架构图 — 至少一张。init + classDef 从 diagrams.md 原样复制。
+         图下三行：依据 / 是否截断 / 图在说明什么。
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>架构图 <span class="hint">分层与真实依赖</span></h2>
+      <div class="section-body" id="diagrams">
+        <div class="diagram">
+          <pre class="mermaid">flowchart LR
+  A["用本次 wiki inputs 里的真实模块替换"]
+          </pre>
+          <div class="diagram-meta">
+            <div>依据：wiki inputs --kind …</div>
+            <div>是否截断：—</div>
+            <div>图在说明：—</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         阅读路径 — 相邻步骤必须出现在 deps / 真实依赖 里。
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>阅读路径 <span class="hint">按这个顺序读源码</span></h2>
+      <div class="section-body" id="guides">
+        <div class="callout">还没有导览。写 1～3 条路径，每步说明「读什么、为什么下一步是它」。</div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         模块笔记 — 职责 / 对外接口 / 内部调用 / 跨模块往来
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>模块笔记 <span class="hint">点开看接口和谁在往来</span></h2>
+      <div class="section-body drill" id="notes">
+        <details>
+          <summary>
+            <span class="amt">p00</span>
+            <span class="desc">还没有笔记</span>
+            <span class="meta">职责 · 对外接口 · 跨模块往来</span>
+          </summary>
+          <div class="body">
+            <p>用本次 page 输入填写：这个模块做什么、对外暴露什么、内部怎么串、和谁往来。</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         独立模块 — 没有列出的依赖。不要硬塞进分层。
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>独立模块 <span class="hint">不在主链上，后看或不看</span></h2>
+      <div class="section-body" id="peripheral">
+        <div class="callout">未列出。没有依赖的模块写在这里，并说明为什么可以后看。</div>
+      </div>
+    </section>
+
+    <footer>
+      <span id="foot-gen">生成于 —</span>
+      <span id="foot-stats">code-wiki · 只读本次导出 · 未调用模型</span>
+    </footer>
+  </div>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'base' });
+</script>
+</body>
+</html>
