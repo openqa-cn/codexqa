@@ -77,8 +77,7 @@ daytime HTML chrome as `codexqa-testcase-generator` (light default, 中文/EN
 and 白天/黑夜 toggles, green accent `#0f6b4c`).
 Copy [assets/report-template.html](assets/report-template.html)
 into the working directory, then fill slots with Edit (do not rewrite CSS).
-**Default the filled report to Simplified Chinese** (headings, stats, findings,
-overview, guides, notes). Show community aliases as `P01` (capitalize the leading p). Keep symbol names as-is. Write for a
+**Default the filled report to Simplified Chinese** (headings, overview, guides, notes). Show community aliases as `P01` (capitalize the leading p). Keep symbol names as-is. Write for a
 newcomer: what the system is, where to start, which module is the hub,
 which pages are standalone. Not a product brochure, and not an Archify /
 architecture canvas.
@@ -87,7 +86,6 @@ Read [references/diagrams.md](references/diagrams.md) before drawing. A diagram 
 
 Report body (HTML slots) is only these blocks:
 
-- Key findings (3–5 `.take` lines: fact + what the reader should do)
 - How the system works (from `overview` / `architecture` `input`, in plain language)
 - Module map (community ids, human titles, real `deps`)
 - Layers / data flow (same modules, grouped Entry → Storage; no invented edges)
@@ -111,5 +109,5 @@ Reject the whole report and rewrite if any of these hold:
 - HTML is missing the bundled wiki chrome (sidebar + article + TOC), or was written from scratch instead of copying the template
 - Report was delivered as Markdown-only / chat-only with no HTML file
 - Archify / grouped-swimlane architecture canvas was generated (this skill does not ask for that)
-- Chrome or body left in English when the user did not ask for English (findings / overview / pages selected)
-- Findings or overview dump field names (`deps`, `cross_community`, `wiki inputs`) instead of responsibility / dependency / reading order
+- Chrome or body left in English when the user did not ask for English (overview / pages selected)
+- Overview dumps field names (`deps`, `cross_community`, `wiki inputs`) instead of responsibility / dependency / reading order

@@ -187,7 +187,6 @@
   }
   .wiki-toolbar button:hover { border-color: var(--clay); color: var(--clay); }
   .wiki-toolbar button:focus-visible,
-  .take > summary:focus-visible,
   .drill summary:focus-visible {
     outline: 2px solid var(--acc); outline-offset: 2px;
   }
@@ -251,87 +250,29 @@
   }
   .howto b { color: var(--term-fg); font-weight: 500; }
 
-  #hero { margin: 8px 0 10px; }
-  #hero-total { display: flex; align-items: baseline; line-height: 1; }
-  #hero-total .num { font-size: 40px; font-weight: 700; font-family: var(--mono); }
-  #hero-total .unit { color: var(--clay); font-size: 18px; margin-left: 2px; font-weight: 700; }
-  #hero-total .label { font-size: 14px; font-weight: 400; color: var(--dim); margin-left: 6px; font-family: var(--sans); }
-  #hero-split { color: var(--dim); margin-top: 8px; }
-  #hero-split b { color: var(--term-fg); font-weight: 500; }
-  #hero-split .ok { color: var(--green); }
-  #hero-split .warn { color: var(--yellow); }
-
-  #overall-grid {
-    display: grid; gap: 12px 28px;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    margin: 16px 0; padding: 16px 0;
-    border-top: 1px solid var(--outline);
-    border-bottom: 1px solid var(--outline);
-  }
-  .stat { padding: 4px 0; }
-  .stat .label { font-size: 12px; color: var(--dim); }
-  .stat .val { font-size: 22px; font-weight: 500; font-family: var(--mono); }
-  .stat .detail { font-size: 12px; color: var(--subtle); }
-
-  /* ——— takeaways ——— */
-  #takeaways { display: flex; flex-direction: column; gap: 12px; }
-  .take {
-    margin: 0; padding: 0;
-    border: 1px solid var(--outline); border-radius: 10px;
-    background: var(--titlebar);
-  }
-  div.take {
-    display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 12px;
-    padding: 12px 14px; align-items: center; min-height: 44px;
-  }
-  .take > summary {
-    list-style: none; cursor: pointer;
-    display: grid; grid-template-columns: 8.5rem minmax(0, 1fr) auto; gap: 12px;
-    align-items: center; min-height: 44px; padding: 12px 14px;
-  }
-  .take > summary::-webkit-details-marker { display: none; }
-  .take > summary:hover { background: var(--hover); }
-  .take .fig {
-    text-align: right; font-weight: 700; font-size: 15px; font-family: var(--mono);
-    line-height: 1.2; white-space: nowrap;
-  }
-  .take .fig:has(.fig-unit) {
-    display: grid; grid-template-columns: minmax(3.2rem, 1fr) 4.25rem;
-    align-items: baseline; justify-items: end; column-gap: 6px;
-  }
-  .take .fig .fig-unit {
-    font-family: var(--sans); font-size: 12px; font-weight: 500;
-    color: var(--subtle); justify-self: start;
-  }
-  .take .txt { color: var(--dim); min-width: 0; }
-  .take .txt b { color: var(--term-fg); font-weight: 500; }
-  .take .take-body {
-    padding: 0 14px 14px; border-top: 1px solid var(--outline);
-    color: var(--dim); line-height: 1.65;
-  }
-  .take .take-body b { color: var(--term-fg); font-weight: 500; }
-  .take > summary .chev {
-    width: 8px; height: 8px; justify-self: end;
-    border-right: 2px solid var(--subtle); border-bottom: 2px solid var(--subtle);
-    transform: rotate(45deg); transition: transform .15s ease;
-  }
-  .take[open] > summary .chev { transform: rotate(225deg); }
-  .take.bad  .fig { color: var(--red); }
-  .take.good .fig { color: var(--green); }
-  .take.info .fig { color: var(--blue); }
-
   /* ——— callouts (reading-guide steps) ——— */
   .callout { padding: 12px 14px; border-left: 2px solid var(--subtle); color: var(--dim); margin: 0 0 12px; border-radius: 0 10px 10px 0; background: var(--titlebar); }
   .callout b, .callout code { color: var(--term-fg); }
   .callout.risk { border-left-color: var(--clay); }
   .callout .why { display: block; margin-top: 4px; font-size: 12px; color: var(--subtle); }
 
-  /* ——— block-char bars (community size) ——— */
-  .bar {
-    display: grid; grid-template-columns: 22ch 1fr 6ch; gap: 12px;
-    padding: 2px 0; align-items: center; font-family: var(--mono); font-size: 12px;
+  /* ——— module list: size bar plus layer, what it does, and calls ——— */
+  .bar-head, .bar {
+    display: grid;
+    grid-template-columns: minmax(14ch, 20ch) 8ch minmax(7ch, 1fr) 5ch minmax(14ch, 1.5fr) minmax(8ch, 0.9fr);
+    gap: 10px; align-items: center;
   }
-  .bar .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-head {
+    padding: 0 0 6px; margin-bottom: 4px;
+    border-bottom: 1px solid var(--outline);
+    font-size: 12px; color: var(--subtle);
+  }
+  .bar {
+    padding: 4px 0; font-family: var(--mono); font-size: 12px;
+  }
+  .bar .name, .bar .does, .bar .calls, .bar .layer { white-space: normal; line-height: 1.45; }
+  .bar .layer, .bar .does, .bar .calls { font-family: var(--sans); color: var(--dim); }
+  .bar .does { color: var(--term-fg); }
   .bar .blocks { color: var(--clay); white-space: pre; overflow: hidden; }
   .bar .blocks .empty { color: var(--subtle); }
   .bar .pct { text-align: right; color: var(--dim); }
@@ -362,13 +303,17 @@
     border-radius: 6px; font-size: 13px;
   }
   .diagram { background: var(--ivory); overflow: hidden; position: relative; }
-  .diagram .mermaid { margin: 0; }
+  .diagram .mermaid { margin: 0; font-family: var(--sans); }
   .diagram .mermaid svg { max-width: none !important; height: auto; }
-  .diagram-meta, .sources {
-    margin-top: 10px; color: #87867F; font-size: 12px;
+  /* pre 默认等宽字体会进 foreignObject，节点框却按主题无衬线字体量宽，末尾被裁掉。 */
+  .diagram .mermaid foreignObject { overflow: visible; }
+  .diagram .mermaid foreignObject div,
+  .diagram .mermaid foreignObject span,
+  .diagram .mermaid foreignObject p {
+    font-family: var(--sans) !important;
+    box-sizing: content-box !important;
+    margin: 0;
   }
-  .diagram-meta div { padding: 1px 0; }
-
   .zoom-toolbar {
     display: flex; align-items: center; justify-content: flex-end; gap: 6px;
     margin: 0 0 8px;
@@ -459,7 +404,6 @@
   }
 
   @media (max-width: 1100px) {
-    #overall-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .layer-grid { grid-template-columns: 1fr; }
   }
   @media (max-width: 880px) {
@@ -470,14 +414,10 @@
     .wiki-shell { grid-template-columns: 1fr; }
     .sidebar { display: none; }
     .article { padding: 20px 16px 56px; }
-    #hero-total .num { font-size: 32px; }
-    .bar { grid-template-columns: 14ch 1fr 5ch; gap: 8px; }
+    .bar-head, .bar { grid-template-columns: minmax(0, 1.1fr) auto minmax(4ch, 0.6fr) auto; gap: 8px; }
+    .bar-head .does, .bar-head .calls, .bar .does, .bar .calls { grid-column: 1 / -1; }
     .drill summary { grid-template-columns: 5ch 1fr; }
     .drill .body { padding-left: 8px; }
-    div.take, .take > summary { grid-template-columns: 8.5rem minmax(0, 1fr) auto; gap: 10px; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .take > summary .chev { transition: none; }
   }
 </style>
 </head>
@@ -513,7 +453,6 @@
         <summary data-zh="快速上手" data-en="Get started">快速上手</summary>
         <div class="children">
           <a href="#howto" data-zh="先读这里" data-en="Start here">先读这里</a>
-          <a href="#sec-findings" data-zh="先看结论" data-en="Read this first">先看结论</a>
           <a href="#sec-guides" data-zh="建议阅读顺序" data-en="Suggested reading order">建议阅读顺序</a>
         </div>
       </details>
@@ -599,7 +538,7 @@
       </div>
     </details>
 
-    <!-- 它是什么放在数字前面：先用一段人话讲清仓库，再给覆盖范围。 -->
+    <!-- 先用一段人话讲清仓库。 -->
     <section id="sec-overview">
       <div class="hr"></div>
       <h2><span data-zh="它是什么" data-en="What this is">它是什么</span> <span class="hint" data-zh="这个仓库做什么、请求怎么走" data-en="What the repo does and how a request moves">这个仓库做什么、请求怎么走</span></h2>
@@ -609,38 +548,9 @@
     </section>
 
     <div class="howto" id="howto">
-      <b data-zh="先读这里：" data-en="Start here: ">先读这里：</b><span data-zh="先看下面几条结论：谁最关键、从哪读、哪里先别改。再按「建议阅读顺序」从入口往下读。模块一览和架构图用来对照。和主链路没有调用关系的，放在文末，可以后看。" data-en="Start with the conclusions below: what matters, where to start, and what not to change yet. Then follow Suggested reading order from the entry layer down. Use the module list and diagram to cross-check. Modules that call nothing else sit at the end and can wait.">先看下面几条结论：谁最关键、从哪读、哪里先别改。再按「建议阅读顺序」从入口往下读。模块一览和架构图用来对照。和主链路没有调用关系的，放在文末，可以后看。</span>
+      <b data-zh="先读这里：" data-en="Start here: ">先读这里：</b><span data-zh="按「建议阅读顺序」从入口往下读。模块一览和架构图用来对照。和主链路没有调用关系的，放在文末，可以后看。" data-en="Follow Suggested reading order from the entry layer down. Use the module list and diagram to cross-check. Modules that call nothing else sit at the end and can wait.">按「建议阅读顺序」从入口往下读。模块一览和架构图用来对照。和主链路没有调用关系的，放在文末，可以后看。</span>
     </div>
 
-    <div id="hero">
-      <div id="hero-total"><span class="num">—</span><span class="unit" data-zh="个模块" data-en=" modules">个模块</span><span class="label" data-zh="写进本页" data-en="written up here">写进本页</span></div>
-      <div id="hero-split" data-zh="和别的模块有调用的，从入口往下读；没有调用关系的放在文末，可以后看。" data-en="Modules that call others are read from the entry layer downward. Modules with no calls sit at the end and can wait.">和别的模块有调用的，从入口往下读；没有调用关系的放在文末，可以后看。</div>
-    </div>
-
-    <div id="overall-grid">
-      <div class="stat"><div class="label" data-zh="分成几组" data-en="Groups">分成几组</div><div class="val">—</div><div class="detail" data-zh="全库按调用关系，含本页没写开的" data-en="Whole repo by call relations, including groups not expanded here">全库按调用关系，含本页没写开的</div></div>
-      <div class="stat"><div class="label" data-zh="本页写了" data-en="Written here">本页写了</div><div class="val">—</div><div class="detail" data-zh="只展开较大的几组" data-en="Only the larger groups are expanded">只展开较大的几组</div></div>
-      <div class="stat"><div class="label" data-zh="可以后看" data-en="Read later">可以后看</div><div class="val">—</div><div class="detail" data-zh="和别的组没有调用" data-en="No calls to other groups">和别的组没有调用</div></div>
-      <div class="stat"><div class="label" data-zh="互相调用" data-en="Calls">互相调用</div><div class="val">—</div><div class="detail" data-zh="组与组之间谁调用谁" data-en="Which group calls which">组与组之间谁调用谁</div></div>
-    </div>
-
-    <!-- ====================================================================
-         先看结论 — 3～5 条。每条 = 带单位的数字 + 一句能独立看懂的话。
-         .bad = 意外孤立 / 缺边 / 图被截断, .good = 一条能走通的路径, .info = 中性事实。
-         .fig 里数字在前，.fig-unit 写这个数是什么（条依赖 / 个符号 / 个模块）。
-         ==================================================================== -->
-    <section id="sec-findings">
-      <div class="hr"></div>
-      <h2><span data-zh="先看结论" data-en="Read this first">先看结论</span> <span class="hint" data-zh="改代码前先读这几条" data-en="Read these before changing code">改代码前先读这几条</span></h2>
-      <div class="section-body" id="takeaways">
-        <div class="take info">
-          <div class="fig">—</div>
-          <div class="txt"><b data-zh="还没有结论" data-en="No conclusions yet">还没有结论</b><span data-zh="。每条左边写数字和单位，右边用一句话写清：谁最关键、从哪读、哪里先别改。" data-en=". Each row has a number with a unit, then one sentence: what matters, where to start, and what not to change yet.">。每条左边写数字和单位，右边用一句话写清：谁最关键、从哪读、哪里先别改。</span></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 架构图紧跟结论。图下三行：这张图在讲 / 图是否完整 / 对应代码。 -->
     <section id="sec-diagrams">
       <div class="hr"></div>
       <h2><span data-zh="架构图" data-en="Architecture diagram">架构图</span> <span class="hint" data-zh="请求从哪进、最后落到哪" data-en="Where a request enters and where it lands">请求从哪进、最后落到哪</span></h2>
@@ -650,11 +560,6 @@
           <pre class="mermaid">flowchart LR
   A["待填：入口模块"]
           </pre>
-          <div class="diagram-meta">
-            <div data-zh="这张图在讲：请求从哪进、经过谁、最后落到哪。" data-en="This diagram shows: where a request enters, who it passes, and where it lands.">这张图在讲：请求从哪进、经过谁、最后落到哪。</div>
-            <div data-zh="图是否完整：—" data-en="Complete: —">图是否完整：—</div>
-            <div data-zh="对应代码：见上方「相关源文件」。" data-en="Code: see Related sources above.">对应代码：见上方「相关源文件」。</div>
-          </div>
         </div>
       </div>
     </section>
@@ -674,22 +579,23 @@
       <h2><span data-zh="模块一览" data-en="Module list">模块一览</span> <span class="hint" data-zh="每组代码做什么、会调用谁" data-en="What each group does and who it calls">每组代码做什么、会调用谁</span></h2>
       <p class="section-lead" data-zh="每一行是一组经常一起被改到的代码。P01 只是本页里的简称，后面写的是它做什么。" data-en="Each row is a group of code that changes together. P01 is only a short name on this page; the text after it says what it does.">每一行是一组经常一起被改到的代码。P01 只是本页里的简称，后面写的是它做什么。</p>
       <div class="section-body" id="module-map">
-        <div id="community-bars"></div>
-        <div class="scroll" style="margin-top:12px">
-          <table>
-            <thead>
-              <tr>
-                <th data-zh="编号" data-en="ID">编号</th>
-                <th data-zh="所在层" data-en="Layer">所在层</th>
-                <th data-zh="做什么" data-en="What it does">做什么</th>
-                <th class="num" data-zh="符号数" data-en="Symbols">符号数</th>
-                <th data-zh="会调用" data-en="Calls">会调用</th>
-              </tr>
-            </thead>
-            <tbody id="module-rows">
-              <tr><td colspan="5" data-zh="还没有。有调用关系的才放进入口、应用、领域、存储；没有调用关系的写到文末「可以后看」。" data-en="None yet. Only modules that call others go into Entry, Application, Domain, or Storage. Modules with no calls go under Read later.">还没有。有调用关系的才放进入口、应用、领域、存储；没有调用关系的写到文末「可以后看」。</td></tr>
-            </tbody>
-          </table>
+        <div class="bar bar-head">
+          <span data-zh="编号" data-en="ID">编号</span>
+          <span data-zh="所在层" data-en="Layer">所在层</span>
+          <span data-zh="规模" data-en="Size">规模</span>
+          <span></span>
+          <span data-zh="做什么" data-en="What it does">做什么</span>
+          <span data-zh="会调用" data-en="Calls">会调用</span>
+        </div>
+        <div id="community-bars">
+          <div class="bar">
+            <span class="name" data-zh="还没有" data-en="None yet">还没有</span>
+            <span class="layer">—</span>
+            <span class="blocks"><span class="empty">░░░░░░░░</span></span>
+            <span class="pct">—</span>
+            <span class="does" data-zh="有调用关系的才写进入口、应用、领域、存储。" data-en="Only modules that call others go into Entry, Application, Domain, or Storage.">有调用关系的才写进入口、应用、领域、存储。</span>
+            <span class="calls">—</span>
+          </div>
         </div>
       </div>
     </section>
@@ -803,7 +709,6 @@
     <ol id="page-toc">
       <li><a href="#page-top" data-zh="总览" data-en="Overview">总览</a></li>
       <li><a href="#sec-overview" data-zh="它是什么" data-en="What this is">它是什么</a></li>
-      <li><a href="#sec-findings" data-zh="先看结论" data-en="Read this first">先看结论</a></li>
       <li><a href="#sec-diagrams" data-zh="架构图" data-en="Architecture diagram">架构图</a></li>
       <li><a href="#sec-flow" data-zh="请求怎么走" data-en="How a request moves">请求怎么走</a></li>
       <li><a href="#sec-map" data-zh="模块一览" data-en="Module list">模块一览</a></li>
@@ -868,6 +773,41 @@
   const ZOOM_MAX = 4;
   const ZOOM_STEP = 0.25;
 
+  const fitMermaidLabels = (svg) => {
+    const scale = svg.getScreenCTM()?.a || 1;
+    if (!scale) return;
+    svg.querySelectorAll('foreignObject').forEach((fo) => {
+      const label = fo.querySelector('span') || fo.querySelector('div');
+      if (!label) return;
+      fo.setAttribute('overflow', 'visible');
+      const box = label.getBoundingClientRect();
+      const needed = Math.ceil(box.width / scale) + 2;
+      const neededH = Math.ceil(box.height / scale) + 2;
+      const current = parseFloat(fo.getAttribute('width')) || 0;
+      const currentH = parseFloat(fo.getAttribute('height')) || 0;
+      if (needed > current + 0.5) {
+        const grow = needed - current;
+        fo.setAttribute('width', String(needed));
+        const g = fo.parentElement;
+        const t = g?.getAttribute?.('transform') || '';
+        const m = /translate\(\s*([-\d.eE+]+)(?:[,\s]+([-\d.eE+]+))?\s*\)/.exec(t);
+        if (g && m) {
+          const x = parseFloat(m[1]) - grow / 2;
+          const y = m[2] != null ? parseFloat(m[2]) : 0;
+          g.setAttribute('transform', t.replace(m[0], `translate(${x}, ${y})`));
+        }
+        const rect = fo.closest('.node')?.querySelector('rect');
+        if (rect?.hasAttribute('width')) {
+          const rw = parseFloat(rect.getAttribute('width')) || 0;
+          const rx = parseFloat(rect.getAttribute('x')) || 0;
+          rect.setAttribute('width', String(rw + grow));
+          rect.setAttribute('x', String(rx - grow / 2));
+        }
+      }
+      if (neededH > currentH + 0.5) fo.setAttribute('height', String(neededH));
+    });
+  };
+
   const initDiagramZoom = () => {
     document.querySelectorAll('main img:not(.zoom-stage img)').forEach((img) => {
       if (img.closest('.diagram')) return;
@@ -887,10 +827,19 @@
       if (svg) {
         const raw = svg.getAttribute('width') || '';
         const fromAttr = raw && !raw.includes('%') ? parseFloat(raw) : NaN;
-        const w = Number.isFinite(fromAttr) && fromAttr > 0
-          ? fromAttr
-          : svg.viewBox?.baseVal?.width;
-        if (w) svg.style.width = `${w}px`;
+        const vb = svg.viewBox?.baseVal;
+        const w = Number.isFinite(fromAttr) && fromAttr > 0 ? fromAttr : vb?.width;
+        const h = vb?.height;
+        if (w) {
+          svg.setAttribute('width', String(w));
+          svg.style.width = `${w}px`;
+          svg.style.maxWidth = 'none';
+        }
+        if (h) {
+          svg.setAttribute('height', String(h));
+          svg.style.height = `${h}px`;
+        }
+        fitMermaidLabels(svg);
       }
 
       const viewport = document.createElement('div');

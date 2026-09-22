@@ -14,7 +14,7 @@ An Archify / grouped-swimlane architecture canvas is **not** the deliverable.
 5. Architecture `subgraph` titles may only be **Entry / Application / Domain / Storage**. Put real community aliases (`P01` + rule title) inside those layers.
 6. 8–15 real nodes. If there are more, keep the top N by `node_count` / dep weight and write `truncated`.
 7. Label edges with the wiki kind (`deps` / `calls` / `imports` / `references`) and every edge must match this `input`.
-8. Three Chinese lines under the diagram: 依据, 是否截断, 图在说明. Do not drop an empty picture.
+8. Do not put a caption under the diagram. Do not drop an empty picture.
 
 Do not use: `theme:neutral` / Material green-orange-red, plain white or cold-gray ground, navy ground, a custom palette, package names as layers, or “there are nodes” without `classDef`.
 
@@ -110,4 +110,4 @@ classDef risk fill:#fde8e4,stroke:#b42318,color:#1a2332
   class Price risk
 ```
 
-Three Chinese lines under the diagram: `依据` (`wiki inputs --kind …`), `是否截断`, and `图在说明` (point at edges on the diagram). Do not drop an empty picture.
+Do not put a caption under the diagram. Do not drop an empty picture.

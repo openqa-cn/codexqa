@@ -4,9 +4,9 @@
 
 交付物是**一份自包含 HTML**。对话里的 Markdown 只负责指向这个文件，不是报告本身。
 
-外观沿用 DeepWiki 三栏 Wiki，皮肤与 `codexqa-testcase-generator` 的 HTML 报告一致：白天默认、右上角中文/EN 与白天/黑夜开关、绿色强调 `#0f6b4c`。左侧是可展开的完整 Wiki 树（总览 / 快速上手 / 系统架构 / 入口 / 应用 / 领域 / 存储 / 模块说明 / 可以后看 / 参考），右侧「本页目录」。正文顺序也按 DeepWiki：先「它是什么」，再结论和架构图，然后才是表。不要改成 Archify 画布。Mermaid 仍用 [diagrams.md](diagrams.md) 的纸色 `init`。
+外观沿用 DeepWiki 三栏 Wiki，皮肤与 `codexqa-testcase-generator` 的 HTML 报告一致：白天默认、右上角中文/EN 与白天/黑夜开关、绿色强调 `#0f6b4c`。左侧是可展开的完整 Wiki 树（总览 / 快速上手 / 系统架构 / 入口 / 应用 / 领域 / 存储 / 模块说明 / 可以后看 / 参考），右侧「本页目录」。正文顺序也按 DeepWiki：先「它是什么」，再架构图，然后才是表。不要改成 Archify 画布。Mermaid 仍用 [diagrams.md](diagrams.md) 的纸色 `init`。
 
-**默认语言是简体中文。** 填写正文（发现、概览、笔记、图注）用中文。来源编号 `p01` 写进报告时首字母大写，写成 `P01`；符号名原样保留。用户没要求英文时，不要把栏目标成 findings / overview / pages selected。模板壳层（导航、分区标题、表头、图例、术语、展开/收起）已带 `data-zh` / `data-en`，读者点右上角 EN 会切到英语；**不要删这些属性**。用户填写的模块名、发现正文不会自动翻译。
+**默认语言是简体中文。** 填写正文（概览、笔记、图注）用中文。来源编号 `p01` 写进报告时首字母大写，写成 `P01`；符号名原样保留。用户没要求英文时，不要把栏目标成 findings / overview / pages selected。模板壳层（导航、分区标题、表头、图例、术语、展开/收起）已带 `data-zh` / `data-en`，读者点右上角 EN 会切到英语；**不要删这些属性**。用户填写的模块名、正文不会自动翻译。
 
 读者是「刚打开这个仓库的人」。每段都要回答：这是什么、先读谁、改哪里风险大、哪些可以后看。不要把 `deps` / `cross_community` / `wiki inputs` / `node_count` 当作读者词汇——内部字段只用来取证，写成「依赖」「跨模块关系」「本次导出」「规模」。
 
@@ -29,29 +29,21 @@
      - `#nav-peripheral` — 没有依赖的页；没有则保留「未列出」
      - `#layer-entry-list` 等四个列表与侧栏四层一致
    - `#data-flow` — 主链路怎么穿过各层，只写有依赖的边
-   - `#hero-total` / `#hero-split`（数字写在 `.num` 里，紧贴 `.unit`，不要在数字后加空格；单位写「个模块」）
-   - `#howto` 可按本仓改一句，但必须告诉读者先看发现、再按路径读
-   - `#overall-grid`（分成几组 / 本页写了 / 可以后看 / 互相调用）。数字下面的说明用读者能懂的话：按调用关系分成的组、只展开较大的几组、和别的组没有调用、谁调用谁。不要写「社区」「有向边」「按规模选取」。
-   - `#takeaways` — **3～5** 条，每条 = 事实 + 对读者意味着什么。整句直接显示，不要收成只剩编号或半句话的卡片。精确 markup：
-     ```html
-     <div class="take info"><div class="fig">8<span class="fig-unit" data-zh="条依赖" data-en="deps">条依赖</span></div><div class="txt"><b>P03 计价</b>是枢纽：列出 6 条依赖、规模最大。改这里影响面最宽，先读它的对外接口。</div></div>
-     ```
-     分类：`.take bad`（意外孤立 / 缺边 / 图被截断）、`.take good`（一条能走通的 入口→存储 路径）、`.take info`（中性事实）。`.fig` 先写短数字或编号（`8`、`3/12`、`P03`、`51%`），后面必须紧跟 `<span class="fig-unit">`，用读者能懂的短单位说明这个数是什么，例如「条依赖」「个符号」「个模块」「收录」（英文用 `deps` / `symbols` / `modules` / `share`）。不要只留 `8`、`0`、`P03` 这种看不出在数什么的记号。主语包在 `<b>` 里，`<b>` 外面把整句结论写完。不要写「from this wiki inputs run」这种内部口吻。填写时用上面的 `div.take` markup，不要改成 `<details>`。
-   - `#overview` — 2～4 段人话：这个系统是什么、主链路怎么走、各层干什么。规则标题可以当模块名，但必须补一句职责。空的 `（无摘要）` 不是发现，不要贴进正文。
-   - `#community-bars` / `#module-rows` — 每个收录页一行。分层列只用 **入口 / 应用 / 领域 / 存储**（图里的 subgraph 标题仍按 diagrams.md 用 Entry / Application / Domain / Storage）。没有依赖的页不要进这四层，列到 `#peripheral`。
-   - `#diagrams` — 至少一张 `.diagram`，内含 `<pre class="mermaid">`。`%%{init:...}%%` 和三行 `classDef` 从 [diagrams.md](diagrams.md) 原样复制。图下三行用读者的话，保持这三个开头：`这张图在讲`、`图是否完整`、`对应代码`。不要写 `wiki inputs`。节点标签里的 `<` 要转义。模板已给图加缩放（按钮 / ⌘或 Ctrl+滚轮 / 拖拽 / 全屏），不要改 `<script>`，也不要另起一张不能缩放的图。
+   - `#howto` 可按本仓改一句，但必须告诉读者按「建议阅读顺序」从入口往下读
+   - `#overview` — 2～4 段人话：这个系统是什么、主链路怎么走、各层干什么。规则标题可以当模块名，但必须补一句职责。空的 `（无摘要）` 不要贴进正文。
+   - `#community-bars` — 每个收录页一行，不要再写单独的表格。所在层只用 **入口 / 应用 / 领域 / 存储**（图里的 subgraph 标题仍按 diagrams.md 用 Entry / Application / Domain / Storage）。没有依赖的页不要写进这四层：所在层写「可以后看」，会调用写「—」，并在 `#peripheral` 说明原因。
+   - `#diagrams` — 至少一张 `.diagram`，内含 `<pre class="mermaid">`。`%%{init:...}%%` 和三行 `classDef` 从 [diagrams.md](diagrams.md) 原样复制。图下方不要写说明文字。不要写 `wiki inputs`。节点标签里的 `<` 要转义。模板已给图加缩放（按钮 / ⌘或 Ctrl+滚轮 / 拖拽 / 全屏），不要改 `<script>`，也不要另起一张不能缩放的图。
    - `#guides` — 1～3 条路径，用 `.callout`。相邻步骤必须出现在 `deps` / `真实依赖` 里。每步写「读什么 + 为什么下一步是它」；枢纽步加 `.callout.risk`，并可加 `<span class="why">…</span>`。
    - `#notes` — 每个核心页一个 `<details>`（`amt` = `P01`，`desc` = 人话职责，body = 职责 / 对外接口 / 内部调用 / 跨模块往来）。不要把 `signatures` / `call_chain` 当小标题原文甩给读者。
    - `#peripheral` — 没有依赖的页，并写清「为什么可以后看」（独立工具 / 实验原型 / 演示）。没有则写「未列出」。
    - `#foot-gen` / `#foot-stats` — 生成时间和用过的 `wiki inputs` 命令（顶栏与文末）。
-4. **不要改现有分区结构，也不要重做皮肤，也不要把栏目标题改回去。** 读者看到的标题已经是：它是什么、先看结论、架构图、请求怎么走、模块一览、四层是什么、建议阅读顺序、各模块说明、可以后看。不要改回「关键发现 / 系统怎么运转 / 模块地图 / 模块社区」。本场景确实没有的内容可以留空提示，不要删标题。
+4. **不要改现有分区结构，也不要重做皮肤，也不要把栏目标题改回去。** 读者看到的标题已经是：它是什么、架构图、请求怎么走、模块一览、四层是什么、建议阅读顺序、各模块说明、可以后看。不要改回「关键发现 / 系统怎么运转 / 模块地图 / 模块社区」。本场景确实没有的内容可以留空提示，不要删标题。
 5. **把文件路径告诉用户。** 不要在对话里打开文件或粘贴整份 HTML。
 
 ## 各栏怎么写才有用
 
 | 栏 | 读者要带走的 | 不要写成 |
 |---|---|---|
-| 先看结论 | 谁最关键、从哪读、哪些别先碰、图有没有被截断 | 字段名堆砌、目录名复读、没有「所以呢」、左边只留一个看不出含义的数 |
 | 它是什么 | 一句话定位 + 主链路 + 各层职责 | 产品介绍、用例清单、优缺点打分 |
 | 模块一览 | 每个编号在哪一层、做什么、会调用谁、符号数 | 把没有调用关系的模块塞进某一层 |
 | 架构图 | 一眼看到入口→存储，以及哪一个是核心 | 空图、包名当层名、编造边 |
@@ -63,16 +55,10 @@
 
 ## Markup 速查
 
-社区规模条（可选，按 `node_count` 取前 N；宽 48 格）：
+模块一览一行（按 `node_count` 取前 N；条宽 48 格）。所在层、做什么、会调用写在同一行，不要另起表格：
 
 ```html
-<div class="bar"><span class="name">P03 计价</span><span class="blocks">████████░░░░░░░░</span><span class="pct">24%</span></div>
-```
-
-模块地图行：
-
-```html
-<tr><td class="mono">P03</td><td>领域</td><td>计价 · 折扣与报价</td><td class="num">42</td><td>P01，P04</td></tr>
+<div class="bar"><span class="name">P03 计价</span><span class="layer">领域</span><span class="blocks">████████░░░░░░░░</span><span class="pct">24%</span><span class="does">计价 · 折扣与报价</span><span class="calls">P01，P04</span></div>
 ```
 
 阅读路径一步：
@@ -122,4 +108,4 @@
 - 证据不是本次 `wiki inputs`
 - 生成了 Archify / 分组泳道架构画布
 - 用户没要求英文，但栏目标题或正文仍是 findings / overview / pages selected
-- 发现或概览把 `deps` / `cross_community` / `wiki inputs` 当读者用语，没有写出职责和阅读顺序
+- 概览把 `deps` / `cross_community` / `wiki inputs` 当读者用语，没有写出职责和阅读顺序
