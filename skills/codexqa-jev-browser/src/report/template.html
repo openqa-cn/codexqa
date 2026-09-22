@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{title}}</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --line: #e7edf5;
+      --text: #101828;
+      --muted: #667085;
+      --kicker: #98a2b3;
+      --pass: #12b76a;
+      --pass-soft: #ecfdf3;
+      --fail: #f04438;
+      --fail-soft: #fef3f2;
+      --skip: #f79009;
+      --skip-soft: #fffaeb;
+      --blocked: #7a5af8;
+      --blocked-soft: #f4f3ff;
+      --cyan: #0ea5e9;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--text); }
+    body {
+      font: 14px/1.45 "SF Pro Display", "Geist", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
+      min-height: 100vh;
+      background:
+        radial-gradient(900px 420px at 8% -16%, rgba(14, 165, 233, 0.1), transparent 56%),
+        radial-gradient(720px 360px at 92% -8%, rgba(18, 183, 106, 0.1), transparent 52%),
+        #f4f7fb;
+    }
+    body.outcome-fail {
+      background:
+        radial-gradient(900px 420px at 8% -16%, rgba(240, 68, 56, 0.08), transparent 56%),
+        #f7f2f3;
+    }
+    body:before {
+      content: "";
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(16, 24, 40, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(16, 24, 40, 0.035) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(180deg, #000 0%, transparent 62%);
+      pointer-events: none;
+    }
+    button { font: inherit; }
+    a { color: #1570ef; }
+    .wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 22px 32px 80px; }
+    .nav {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 22px; padding: 4px 0;
+    }
+    .mark {
+      width: 28px; height: 28px; border-radius: 8px;
+      display: grid; place-items: center;
+      font-weight: 800; letter-spacing: -0.06em; font-size: 13px;
+      background: linear-gradient(160deg, #38bdf8 0%, #12b76a 100%);
+      color: #fff;
+    }
+    .brand { display: flex; align-items: baseline; gap: 10px; }
+    .brand b { font-size: 16px; letter-spacing: -0.03em; }
+    .brand .tag {
+      color: var(--kicker); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase;
+    }
+    .grow { flex: 1; min-width: 8px; }
+    .lang {
+      display: inline-flex; border-radius: 10px; overflow: hidden;
+      border: 1px solid var(--line); background: #fff;
+    }
+    .lang button {
+      border: 0; background: transparent; color: var(--muted);
+      padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+    .lang button[aria-pressed="true"] { background: #f0f9ff; color: #0284c7; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      border-radius: 999px; padding: 4px 8px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+    }
+    .chip svg { width: 14px; height: 14px; }
+    .chip-pass { color: var(--pass); background: var(--pass-soft); }
+    .chip-fail { color: var(--fail); background: var(--fail-soft); }
+    .chip-skip { color: var(--skip); background: var(--skip-soft); }
+    .chip-blocked { color: var(--blocked); background: var(--blocked-soft); }
+    .chip-muted { color: var(--muted); background: #f2f4f7; }
+    .hero {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 20px rgba(16, 24, 40, 0.04);
+    }
+    .hero:before {
+      content: "";
+      position: absolute; left: 0; right: 0; top: 0; height: 2px;
+      background: linear-gradient(90deg, #12b76a, #0ea5e9);
+    }
+    body.outcome-fail .hero:before { background: linear-gradient(90deg, #fb7185, #f04438); }
+    .kicker {
+      color: var(--kicker); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase;
+    }
+    .metric {
+      position: relative;
+      display: flex; flex-direction: column; justify-content: center;
+      gap: 4px; padding: 12px 18px; min-width: 0; min-height: 64px;
+    }
+    .metric + .metric:before {
+      content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 1px;
+      background: var(--line);
+    }
+    .metric em {
+      display: block;
+      font-style: normal; color: var(--muted); font-size: 12px; font-weight: 500; margin: 0;
+    }
+    .metric b {
+      display: block; font-size: 22px; letter-spacing: -0.04em; font-weight: 650; line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .metric.pass b { color: #079455; }
+    .metric.fail b { color: #d92d20; }
+    .metric.rate b { color: #0b6e99; }
+    body.outcome-fail .metric.rate b { color: #d92d20; }
+    .rec-row {
+      display: inline-flex; flex: none; align-items: center; gap: 6px;
+      margin-right: 8px; padding: 4px 10px; border: 0; border-radius: 999px;
+      background: #f4f7fb; color: var(--text); font: inherit; font-size: 12px; font-weight: 650;
+      cursor: pointer;
+    }
+    .rec-row:hover { background: #f8fafc; }
+    .rec-row:before {
+      content: ""; width: 8px; height: 8px; border-radius: 50%; background: #f04438; flex: none;
+    }
+    dialog video {
+      display: block; width: min(92vw, 1120px); max-height: 86vh;
+      background: #0f172a; border-radius: 12px;
+    }
+    .run-meta {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
+      margin: 14px 2px 28px;
+      color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums;
+    }
+    .run-meta .when { display: inline-flex; align-items: baseline; gap: 6px; }
+    .run-meta em { font-style: normal; color: var(--kicker); }
+    .run-meta b { font-weight: 600; color: #344054; }
+    .run-meta .sep { opacity: 0.45; }
+    .section {
+      display: flex; align-items: center; gap: 10px;
+      margin: 0 2px 14px;
+    }
+    .section:before {
+      content: ""; width: 3px; height: 16px; border-radius: 99px;
+      background: linear-gradient(180deg, var(--cyan), var(--pass));
+    }
+    .section h2 { margin: 0; font-size: 16px; letter-spacing: -0.02em; font-weight: 650; }
+    .section-meta { margin-left: auto; color: var(--muted); font-size: 12px; }
+    .case-list {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 10px 28px rgba(16, 24, 40, 0.04);
+    }
+    details.case { border-bottom: 1px solid var(--line); }
+    details.case:last-child { border-bottom: 0; }
+    details.case > summary {
+      list-style: none; cursor: pointer;
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 20px; user-select: none;
+    }
+    details.case > summary::-webkit-details-marker { display: none; }
+    details.case > summary:hover { background: #f8fafc; }
+    details.case[open] > summary { padding-bottom: 12px; }
+    .case-no {
+      flex: none; color: var(--kicker); font-size: 12px; font-weight: 700;
+      font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
+    }
+    .case h3 {
+      margin: 0; font-size: 15px; font-weight: 650; letter-spacing: -0.02em;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      word-break: break-word;
+    }
+    details.case[open] h3 { -webkit-line-clamp: 8; }
+    .case small { color: var(--muted); font-size: 12px; }
+    .pill {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+      padding: 4px 8px; border-radius: 999px;
+    }
+    .pill.pass { color: var(--pass); background: var(--pass-soft); }
+    .pill.fail { color: var(--fail); background: var(--fail-soft); }
+    .pill.skip { color: var(--skip); background: var(--skip-soft); }
+    .pill.blocked { color: var(--blocked); background: var(--blocked-soft); }
+    .time { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .chevron {
+      width: 8px; height: 8px; border-right: 1.5px solid #c5cdd8; border-bottom: 1.5px solid #c5cdd8;
+      transform: rotate(45deg); margin: 0 4px 4px 2px; transition: transform .16s ease;
+    }
+    details[open] > summary .chevron { transform: rotate(-135deg); margin-bottom: 0; }
+    .body { padding: 0 20px 20px; }
+    .goal {
+      color: var(--muted); font-size: 13px; padding: 10px 12px;
+      background: #f8fafc; border-radius: 12px; margin-bottom: 16px;
+    }
+    .outline {
+      margin: 0 0 16px; padding: 12px 14px; border-radius: 14px;
+      background: linear-gradient(180deg, #f8fbff, #f4f7fb);
+      border: 1px solid #e7edf5;
+    }
+    .outline ol { margin: 8px 0 10px; padding-left: 18px; }
+    .outline li { margin: 4px 0; }
+    .outline p { margin: 0; color: var(--text); font-size: 13px; }
+    .steps { display: flex; flex-direction: column; }
+    details.step-row {
+      display: block;
+      padding: 4px 0;
+    }
+    details.step-row > summary {
+      list-style: none; cursor: pointer;
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 0;
+    }
+    details.step-row > summary::-webkit-details-marker { display: none; }
+    details.step-row > summary .grow {
+      display: flex; align-items: baseline; gap: 10px; min-width: 0;
+    }
+    details.step-row > summary b { flex: none; }
+    details.step-row > summary p {
+      margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .step-body {
+      display: grid; grid-template-columns: minmax(0, 1fr) 240px;
+      grid-template-areas: "times shot" "detail detail";
+      gap: 12px 16px; align-items: start;
+      padding: 4px 0 14px;
+    }
+    .step-body > .times { grid-area: times; }
+    .step-body > .card-detail { grid-area: detail; }
+    .step-body > .shot { grid-area: shot; }
+    .step-body > .http, .step-body > .err { grid-column: 1 / -1; }
+    details.step-row.no-shot .step-body {
+      grid-template-columns: 1fr;
+      grid-template-areas: "times" "detail";
+    }
+    .t-item b {
+      display: block; font-size: 11px; letter-spacing: 0.08em;
+      color: #667085; font-weight: 700;
+    }
+    .t-item p { margin: 4px 0 0; font-size: 13px; }
+    .t-item span { display: block; color: var(--muted); font-size: 12px; }
+    details.step-row .times {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+      gap: 8px;
+    }
+    details.step-row .times .phase {
+      display: flex; flex-direction: column; gap: 4px;
+      min-height: 0; padding: 10px 12px; border-radius: 12px;
+      background: #f8fafc; border: 1px solid var(--line);
+    }
+    details.step-row .times .phase:hover { border-color: #c7e0f5; }
+    details.step-row .times .phase em {
+      font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+      line-height: 1.2; color: var(--kicker); white-space: nowrap;
+    }
+    details.step-row .times .phase b {
+      display: block; font-size: 13px; font-weight: 650; line-height: 1.2; color: var(--text);
+      font-variant-numeric: tabular-nums; white-space: nowrap;
+    }
+    details.step-row .times .phase small {
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      margin: 0; color: var(--muted); font-size: 10px; line-height: 1.35;
+      font-variant-numeric: tabular-nums; overflow: hidden;
+    }
+    details.step-row .times .phase small:empty { display: none; }
+    details.step-row .times .phase small span { display: block; color: inherit; font-size: inherit; }
+    details.step-row .times .phase.model {
+      background: #f0f9ff; border-color: #dbeafe;
+    }
+    details.step-row .times .phase.capture {
+      background: #ecfdf3; border-color: #d1fae5;
+    }
+    details.step-row .times .phase.can-open { cursor: pointer; }
+    details.step-row .times .phase.can-open.open {
+      border-color: #7dd3fc;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.16);
+    }
+    .card-detail {
+      margin: 0; padding: 0; border-radius: 14px;
+      background: #fff; border: 1px solid var(--line);
+      color: var(--text); font-size: 12px; line-height: 1.5;
+      max-height: 420px; overflow: auto;
+    }
+    .card-detail[hidden] { display: none; }
+    .card-detail .sec + .sec { border-top: 1px solid var(--line); }
+    .card-detail .sec > header {
+      padding: 10px 14px 0;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--kicker);
+    }
+    .card-detail .sec-b { padding: 8px 14px 12px; }
+    .card-detail dl { margin: 0; display: grid; gap: 8px; }
+    .card-detail dl > div {
+      display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 8px 12px; align-items: start;
+    }
+    .card-detail dl > div.stack { grid-template-columns: 1fr; gap: 4px; }
+    .card-detail dt { color: var(--kicker); font-weight: 650; }
+    .card-detail dd { margin: 0; color: var(--text); word-break: break-word; }
+    .card-detail .els {
+      list-style: none; margin: 6px 0 0; padding: 0;
+      display: grid; gap: 2px;
+    }
+    .card-detail .els li {
+      display: grid; grid-template-columns: 40px 92px minmax(0, 1fr);
+      gap: 8px; padding: 5px 8px; border-radius: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+    .card-detail .els li:nth-child(odd) { background: #f8fafc; }
+    .card-detail .els i { color: var(--kicker); font-style: normal; font-weight: 650; }
+    .card-detail .els b { font-weight: 650; color: #475467; }
+    .card-detail .els span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card-detail p { margin: 0 0 6px; white-space: pre-wrap; word-break: break-word; }
+    .card-detail p:last-child { margin-bottom: 0; }
+    .shot {
+      width: 100%; max-width: 240px; justify-self: end;
+      border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff;
+      cursor: zoom-in;
+    }
+    .shot:hover { border-color: #bae6fd; }
+    .shot img {
+      display: block; width: 100%; height: 148px; object-fit: cover; object-position: top;
+      background: #fff;
+    }
+    .shot i {
+      display: block; padding: 8px 10px; font-style: normal; color: var(--muted); font-size: 11px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .err { color: var(--fail); white-space: pre-wrap; margin: 12px 0 0; font-size: 13px; }
+    .http { color: var(--muted); font-size: 12px; word-break: break-all; }
+    dialog { border: 0; padding: 0; background: transparent; }
+    dialog::backdrop { background: rgba(15, 23, 42, 0.55); }
+    dialog img {
+      display: block; width: auto; height: auto; max-width: 92vw; max-height: 88vh;
+      object-fit: contain; background: #fff; border-radius: 16px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.28);
+    }
+    @media (max-width: 640px) {
+      .hero { grid-template-columns: repeat(2, 1fr); }
+      .metric:nth-child(odd):before { display: none; }
+    }
+    @media (max-width: 860px) {
+      .wrap { padding: 18px 16px 48px; }
+      .nav { flex-wrap: wrap; }
+      .body { padding-left: 20px; }
+      .step-body, details.step-row.no-shot .step-body {
+        grid-template-columns: 1fr;
+        grid-template-areas: "times" "shot" "detail";
+      }
+      .shot { max-width: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ring-progress { animation: none; stroke-dashoffset: var(--to); }
+    }
+    @media print {
+      body, body.outcome-fail { background: #fff; }
+      body:before { display: none; }
+      .lang { display: none; }
+      .hero, .case-list { box-shadow: none; }
+      .ring-progress { animation: none; stroke-dashoffset: var(--to); }
+      details.case { break-inside: avoid; }
+      details.case:not([open]) { display: block; }
+      details.case > summary { display: flex; }
+      .shot { width: 180px; }
+      .shot img { height: 100px; cursor: default; }
+    }
+  </style>
+</head>
+<body class="outcome-{{outcome}}">
+  <div class="wrap">
+    <header class="nav">
+      <div class="mark">P</div>
+      <div class="brand">
+        <b>CodexQA Jev Browser</b>
+        <span class="tag" data-en="TEST REPORT" data-zh="测试报告">TEST REPORT</span>
+      </div>
+      <div class="grow"></div>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-set-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-set-lang="zh" aria-pressed="false">中文</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="metric">
+        <em><span data-en="Cases" data-zh="用例">Cases</span></em>
+        <b>{{total}}</b>
+      </div>
+      <div class="metric pass">
+        <em><span data-en="Passed" data-zh="通过">Passed</span></em>
+        <b>{{passed}}</b>
+      </div>
+      <div class="metric {{failed_class}}">
+        <em><span data-en="Failed" data-zh="失败">Failed</span></em>
+        <b>{{failed}}</b>
+      </div>
+      <div class="metric rate">
+        <em><span data-en="Pass rate" data-zh="通过率">Pass rate</span></em>
+        <b>{{pass_rate}}</b>
+      </div>
+    </section>
+
+    <div class="run-meta">
+      <span class="when"><em data-en="Duration" data-zh="耗时">Duration</em><b>{{duration_label}}</b></span>
+      <span class="sep">·</span>
+      <span class="when"><em data-en="Steps" data-zh="步骤">Steps</em><b>{{steps}}</b></span>
+      <span class="sep">·</span>
+      <span class="when"><em data-en="Start" data-zh="开始">Start</em><b title="{{started_full}}">{{started_label}}</b></span>
+      <span class="sep">·</span>
+      <span class="when"><em data-en="End" data-zh="结束">End</em><b title="{{finished_full}}">{{finished_label}}</b></span>
+      <span class="sep">·</span>
+      <span>{{browser}}</span>
+      <span class="sep">·</span>
+      <span>{{viewport}}</span>
+    </div>
+
+    <div class="section">
+      <h2 data-en="Cases" data-zh="用例回放">Cases</h2>
+      <div class="section-meta">{{run_id}}</div>
+    </div>
+    <div class="case-list">{{cases}}</div>
+  </div>
+
+  <dialog id="zoom" onclick="this.close()"><img alt=""></dialog>
+  <dialog id="player"><video controls playsinline></video></dialog>
+  <script>
+    const zoom = document.getElementById("zoom");
+    document.querySelectorAll(".shot").forEach((card) => {
+      const img = card.querySelector("img");
+      if (!img) return;
+      card.addEventListener("click", () => {
+        zoom.querySelector("img").src = img.src;
+        zoom.querySelector("img").alt = img.alt || "";
+        zoom.showModal();
+      });
+    });
+    const player = document.getElementById("player");
+    const playerVideo = player.querySelector("video");
+    document.querySelectorAll(".rec-row").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        playerVideo.src = button.dataset.video;
+        player.showModal();
+        playerVideo.play();
+      });
+    });
+    player.addEventListener("click", (event) => {
+      if (event.target === player) player.close();
+    });
+    player.addEventListener("close", () => {
+      playerVideo.pause();
+      playerVideo.removeAttribute("src");
+      playerVideo.load();
+    });
+    const langButtons = [...document.querySelectorAll("[data-set-lang]")];
+    function applyLang(lang) {
+      const next = lang === "zh" ? "zh" : "en";
+      document.documentElement.lang = next === "zh" ? "zh-CN" : "en";
+      document.querySelectorAll("[data-en]").forEach((el) => {
+        el.textContent = next === "zh" ? el.dataset.zh || "" : el.dataset.en || "";
+      });
+      document.querySelectorAll(".phase.open").forEach((card) => {
+        const panel = card.closest(".step-body")?.querySelector(".card-detail");
+        if (panel && !panel.hidden) panel.innerHTML = renderDetail(detailText(card, next));
+      });
+      for (const button of langButtons) button.setAttribute("aria-pressed", String(button.dataset.setLang === next));
+      try { localStorage.setItem("codexqa-jev-browser-report-lang", next); } catch { /* private mode */ }
+    }
+    function detailText(card, lang) {
+      return lang === "zh" ? card.dataset.detailZh || "" : card.dataset.detailEn || "";
+    }
+    function esc(text) {
+      return String(text).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    }
+    function renderDetail(text) {
+      const headers = new Set(["Input", "Reply", "Thinking", "输入", "回复", "思考", "Action", "动作"]);
+      const sections = [];
+      let current = { title: "", body: [] };
+      for (const line of String(text).split("\n")) {
+        if (headers.has(line.trim())) {
+          if (current.title || current.body.length) sections.push(current);
+          current = { title: line.trim(), body: [] };
+        } else current.body.push(line);
+      }
+      if (current.title || current.body.length) sections.push(current);
+      return sections.map((sec) => {
+        const head = sec.title ? `<header>${esc(sec.title)}</header>` : "";
+        return `<section class="sec">${head}<div class="sec-b">${formatDetailBody(sec.body)}</div></section>`;
+      }).join("");
+    }
+    function formatDetailBody(lines) {
+      const chunks = [];
+      let kv = [];
+      let list = [];
+      let para = [];
+      const flushKv = () => {
+        if (!kv.length) return;
+        chunks.push(`<dl>${kv.join("")}</dl>`);
+        kv = [];
+      };
+      const flushList = () => {
+        if (!list.length) return;
+        chunks.push(`<ul class="els">${list.join("")}</ul>`);
+        list = [];
+      };
+      const flushPara = () => {
+        if (!para.length) return;
+        chunks.push(`<p>${esc(para.join("\n"))}</p>`);
+        para = [];
+      };
+      for (const raw of lines) {
+        const line = raw.replace(/\s+$/, "");
+        if (!line.trim()) { flushKv(); flushList(); flushPara(); continue; }
+        const el = line.match(/^\s*\[([^\]]+)\]\s+(\S+)\s+(.*)$/);
+        if (el) {
+          flushKv(); flushPara();
+          list.push(`<li><i>${esc(el[1])}</i><b>${esc(el[2])}</b><span title="${esc(el[3])}">${esc(el[3])}</span></li>`);
+          continue;
+        }
+        const pair = line.match(/^([\w\u4e00-\u9fff]{1,20})\s*[:：]\s*(.*)$/);
+        if (pair && !/^https?:/.test(line)) {
+          flushList(); flushPara();
+          const stacked = pair[2].length > 80 || pair[1] === "goal";
+          kv.push(`<div${stacked ? ' class="stack"' : ""}><dt>${esc(pair[1])}</dt><dd>${esc(pair[2] || "—")}</dd></div>`);
+          continue;
+        }
+        flushKv(); flushList();
+        para.push(line);
+      }
+      flushKv(); flushList(); flushPara();
+      return chunks.join("") || `<p>${esc(lines.join("\n"))}</p>`;
+    }
+    document.querySelectorAll(".phase.can-open").forEach((card) => {
+      const toggle = () => {
+        const body = card.closest(".step-body");
+        const panel = body?.querySelector(".card-detail");
+        if (!panel) return;
+        const lang = document.documentElement.lang.startsWith("zh") ? "zh" : "en";
+        const same = card.classList.contains("open");
+        body.querySelectorAll(".phase.open").forEach((el) => el.classList.remove("open"));
+        if (same) {
+          panel.hidden = true;
+          return;
+        }
+        panel.hidden = false;
+        panel.innerHTML = renderDetail(detailText(card, lang));
+        card.classList.add("open");
+      };
+      card.addEventListener("click", toggle);
+      card.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          toggle();
+        }
+      });
+    });
+    for (const button of langButtons) button.addEventListener("click", () => applyLang(button.dataset.setLang));
+    let stored = "en";
+    try { stored = localStorage.getItem("codexqa-jev-browser-report-lang") || "en"; } catch { /* private mode */ }
+    applyLang(stored);
+  </script>
+</body>
+</html>

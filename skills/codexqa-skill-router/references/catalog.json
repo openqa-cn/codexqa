@@ -36,6 +36,14 @@
       "installHint": "npx skills add openqa-cn/codexqa --skill codexqa-defect-analyzer"
     },
     {
+      "name": "codexqa-jev-browser",
+      "directory": "codexqa-jev-browser",
+      "repoPath": "skills/codexqa-jev-browser",
+      "description": "Jev browser automation with indexed actions. Replay YAML/Markdown/API cases, run goal-driven flows, generate cases, and explore sites in a real browser. Use when the user mentions Jev, browser automation, UI automation, E2E replay, test case generation, exploratory crawl, or YAML/MD/API test cases. Not a fork of browser-use/jev-ultrafast.",
+      "compatibility": "",
+      "installHint": "npx skills add openqa-cn/codexqa --skill codexqa-jev-browser"
+    },
+    {
       "name": "codexqa-requirement-analyzer",
       "directory": "codexqa-requirement-analyzer",
       "repoPath": "skills/codexqa-requirement-analyzer",

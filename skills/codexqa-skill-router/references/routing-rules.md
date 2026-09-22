@@ -41,6 +41,7 @@ Pick the highest score. If top two are close, ask.
 | PRD quality / gap / conflict register | `codexqa-requirement-analyzer` | writing cases |
 | Test plan / cases / Plan·Exec / 提测后增量 | `codexqa-testcase-generator` | live backend data |
 | Construct backend IDs / write back preconditions | `codexqa-testdata-generator` | authoring cases from PRD |
+| Jev browser / replay or generate browser UI cases / explore a site | `codexqa-jev-browser` | writing a test plan from a PRD |
 
 This table is a hint only. Bundled + live descriptions win over this table.
 
