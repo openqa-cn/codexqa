@@ -31,7 +31,7 @@
    - `#data-flow` — 主链路怎么穿过各层，只写有依赖的边
    - `#howto` 可按本仓改一句，但必须告诉读者按「建议阅读顺序」从入口往下读
    - `#overview` — 2～4 段人话：这个系统是什么、主链路怎么走、各层干什么。规则标题可以当模块名，但必须补一句职责。空的 `（无摘要）` 不要贴进正文。
-   - `#community-bars` — 每个收录页一行，不要再写单独的表格。所在层只用 **入口 / 应用 / 领域 / 存储**（图里的 subgraph 标题仍按 diagrams.md 用 Entry / Application / Domain / Storage）。没有依赖的页不要写进这四层：所在层写「可以后看」，会调用写「—」，并在 `#peripheral` 说明原因。
+   - `#community-bars` — 每个收录页一行，不要再写单独的表格。所在层只用 **入口 / 应用 / 领域 / 存储**（图里的 subgraph 标题仍按 diagrams.md 用 Entry / Application / Domain / Storage）。没有依赖的页不要写进这四层：所在层写「可以后看」，并在 `#peripheral` 说明原因。
    - `#diagrams` — 至少一张 `.diagram`，内含 `<pre class="mermaid">`。`%%{init:...}%%` 和三行 `classDef` 从 [diagrams.md](diagrams.md) 原样复制。图下方不要写说明文字。不要写 `wiki inputs`。节点标签里的 `<` 要转义。模板已给图加缩放（按钮 / ⌘或 Ctrl+滚轮 / 拖拽 / 全屏），不要改 `<script>`，也不要另起一张不能缩放的图。
    - `#guides` — 1～3 条路径，用 `.callout`。相邻步骤必须出现在 `deps` / `真实依赖` 里。每步写「读什么 + 为什么下一步是它」；枢纽步加 `.callout.risk`，并可加 `<span class="why">…</span>`。
    - `#notes` — 每个核心页一个 `<details>`（`amt` = `P01`，`desc` = 人话职责，body = 职责 / 对外接口 / 内部调用 / 跨模块往来）。不要把 `signatures` / `call_chain` 当小标题原文甩给读者。
@@ -45,7 +45,7 @@
 | 栏 | 读者要带走的 | 不要写成 |
 |---|---|---|
 | 它是什么 | 一句话定位 + 主链路 + 各层职责 | 产品介绍、用例清单、优缺点打分 |
-| 模块一览 | 每个编号在哪一层、做什么、会调用谁、符号数 | 把没有调用关系的模块塞进某一层 |
+| 模块一览 | 每个编号、模块名、所在层、规模和功能 | 把没有调用关系的模块塞进某一层 |
 | 架构图 | 一眼看到入口→存储，以及哪一个是核心 | 空图、包名当层名、编造边 |
 | 建议阅读顺序 | 打开编辑器后的先后顺序，每步有真实调用 | 「然后去看 README」或跳步 |
 | 各模块说明 | 做什么、对外暴露什么、和谁往来 | 把 JSON 字段原样贴上 |
@@ -55,10 +55,10 @@
 
 ## Markup 速查
 
-模块一览一行（按 `node_count` 取前 N；条宽 48 格）。所在层、做什么、会调用写在同一行，不要另起表格：
+模块一览一行（按 `node_count` 取前 N；条宽 48 格）。编号、模块、所在层、功能写在同一行，不要另起表格：
 
 ```html
-<div class="bar"><span class="name">P03 计价</span><span class="layer">领域</span><span class="blocks">████████░░░░░░░░</span><span class="pct">24%</span><span class="does">计价 · 折扣与报价</span><span class="calls">P01，P04</span></div>
+<div class="bar"><span class="pid">P03</span><span class="name">计价</span><span class="layer">领域</span><span class="blocks">████████░░░░░░░░</span><span class="pct">24%</span><span class="does">计价 · 折扣与报价</span></div>
 ```
 
 阅读路径一步：

@@ -256,11 +256,23 @@
   .callout.risk { border-left-color: var(--clay); }
   .callout .why { display: block; margin-top: 4px; font-size: 12px; color: var(--subtle); }
 
-  /* ——— module list: size bar plus layer, what it does, and calls ——— */
-  .bar-head, .bar {
+  /* ——— module list: id, module, layer, size bar, function ——— */
+  #module-map {
     display: grid;
-    grid-template-columns: minmax(14ch, 20ch) 8ch minmax(7ch, 1fr) 5ch minmax(14ch, 1.5fr) minmax(8ch, 0.9fr);
-    gap: 10px; align-items: center;
+    grid-template-columns: max-content minmax(8ch, 20ch) max-content max-content max-content minmax(14ch, 1fr);
+    column-gap: 12px;
+    align-items: start;
+  }
+  #community-bars {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+  }
+  .bar-head, #community-bars .bar {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    align-items: center;
   }
   .bar-head {
     padding: 0 0 6px; margin-bottom: 4px;
@@ -270,12 +282,13 @@
   .bar {
     padding: 4px 0; font-family: var(--mono); font-size: 12px;
   }
-  .bar .name, .bar .does, .bar .calls, .bar .layer { white-space: normal; line-height: 1.45; }
-  .bar .layer, .bar .does, .bar .calls { font-family: var(--sans); color: var(--dim); }
-  .bar .does { color: var(--term-fg); }
+  .bar .pid { white-space: nowrap; }
+  .bar .name, .bar .does, .bar .layer { white-space: normal; line-height: 1.45; }
+  .bar .layer, .bar .does { font-family: var(--sans); color: var(--dim); }
+  .bar .does { color: var(--term-fg); min-width: 0; }
   .bar .blocks { color: var(--clay); white-space: pre; overflow: hidden; }
   .bar .blocks .empty { color: var(--subtle); }
-  .bar .pct { text-align: right; color: var(--dim); }
+  .bar .pct { margin-left: -6px; text-align: left; color: var(--dim); white-space: nowrap; }
   .bar:hover .name { color: var(--clay); }
 
   /* ——— drill-down lists (module notes) ——— */
@@ -414,8 +427,7 @@
     .wiki-shell { grid-template-columns: 1fr; }
     .sidebar { display: none; }
     .article { padding: 20px 16px 56px; }
-    .bar-head, .bar { grid-template-columns: minmax(0, 1.1fr) auto minmax(4ch, 0.6fr) auto; gap: 8px; }
-    .bar-head .does, .bar-head .calls, .bar .does, .bar .calls { grid-column: 1 / -1; }
+    #module-map { overflow-x: auto; }
     .drill summary { grid-template-columns: 5ch 1fr; }
     .drill .body { padding-left: 8px; }
   }
@@ -573,28 +585,28 @@
       </div>
     </section>
 
-    <!-- 模块一览 — 编号、人话职责、真实调用。没有调用关系的不要放进四层。 -->
+    <!-- 模块一览 — 编号、模块、功能。没有调用关系的不要放进四层。 -->
     <section id="sec-map">
       <div class="hr"></div>
-      <h2><span data-zh="模块一览" data-en="Module list">模块一览</span> <span class="hint" data-zh="每组代码做什么、会调用谁" data-en="What each group does and who it calls">每组代码做什么、会调用谁</span></h2>
-      <p class="section-lead" data-zh="每一行是一组经常一起被改到的代码。P01 只是本页里的简称，后面写的是它做什么。" data-en="Each row is a group of code that changes together. P01 is only a short name on this page; the text after it says what it does.">每一行是一组经常一起被改到的代码。P01 只是本页里的简称，后面写的是它做什么。</p>
+      <h2><span data-zh="模块一览" data-en="Module list">模块一览</span> <span class="hint" data-zh="每组代码的名字和功能" data-en="Each group's name and what it does">每组代码的名字和功能</span></h2>
+      <p class="section-lead" data-zh="每一行是一组经常一起被改到的代码。编号是本页里的简称，模块是这组代码的名字，功能写它做什么。" data-en="Each row is a group of code that changes together. ID is a short name on this page, Module is the group's name, and Function says what it does.">每一行是一组经常一起被改到的代码。编号是本页里的简称，模块是这组代码的名字，功能写它做什么。</p>
       <div class="section-body" id="module-map">
         <div class="bar bar-head">
           <span data-zh="编号" data-en="ID">编号</span>
+          <span data-zh="模块" data-en="Module">模块</span>
           <span data-zh="所在层" data-en="Layer">所在层</span>
           <span data-zh="规模" data-en="Size">规模</span>
-          <span></span>
-          <span data-zh="做什么" data-en="What it does">做什么</span>
-          <span data-zh="会调用" data-en="Calls">会调用</span>
+          <span class="pct"></span>
+          <span data-zh="功能" data-en="Function">功能</span>
         </div>
         <div id="community-bars">
           <div class="bar">
+            <span class="pid">—</span>
             <span class="name" data-zh="还没有" data-en="None yet">还没有</span>
             <span class="layer">—</span>
             <span class="blocks"><span class="empty">░░░░░░░░</span></span>
             <span class="pct">—</span>
             <span class="does" data-zh="有调用关系的才写进入口、应用、领域、存储。" data-en="Only modules that call others go into Entry, Application, Domain, or Storage.">有调用关系的才写进入口、应用、领域、存储。</span>
-            <span class="calls">—</span>
           </div>
         </div>
       </div>
