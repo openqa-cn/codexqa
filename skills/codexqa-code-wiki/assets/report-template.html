@@ -76,10 +76,10 @@
     padding:10px 18px; background:var(--toolbar-bg); backdrop-filter:blur(8px);
     border-bottom:1px solid var(--line); }
   .prefs .group { display:flex; gap:4px; align-items:center; padding:2px;
-    border:1px solid var(--line); border-radius:999px; background:var(--sheet); }
+    border:1px solid var(--line); border-radius:4px; background:var(--sheet); }
   .prefs button { appearance:none; border:0; background:transparent; color:var(--muted);
     font:inherit; font-size:12px; font-weight:600; letter-spacing:.02em; padding:6px 12px;
-    border-radius:999px; cursor:pointer; }
+    border-radius:4px; cursor:pointer; }
   .prefs button[aria-pressed="true"] { background:var(--acc); color:var(--acc-fg); }
 
   a { color: var(--clay); }
@@ -105,6 +105,7 @@
   /* ——— 3-column wiki shell ——— */
   .wiki-shell {
     display: grid;
+    width: 100%;
     grid-template-columns: var(--sidebar-w) minmax(0, 1fr) var(--toc-w);
     min-height: calc(100vh - var(--prefs-h) - var(--topbar-h));
   }
@@ -155,7 +156,12 @@
   .toc a:hover, .toc a.active { color: var(--term-fg); }
 
   /* ——— article ——— */
-  .article { max-width: 780px; padding: 32px 40px 80px; }
+  .article {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    padding: 32px clamp(24px, 3vw, 48px) 80px;
+  }
 
   h1 {
     margin: 0 0 12px;
@@ -175,7 +181,7 @@
   .wiki-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
   .wiki-toolbar button {
     appearance: none; min-height: 36px; padding: 8px 14px;
-    border: 1px solid var(--outline); border-radius: 999px;
+    border: 1px solid var(--outline); border-radius: 4px;
     background: var(--chip); color: var(--term-fg);
     font: inherit; font-size: 13px; cursor: pointer;
   }
@@ -228,9 +234,20 @@
   .file-loc { background: var(--chip-loc); padding: 5px 8px; color: var(--dim); }
 
   .howto {
-    margin: 0 0 20px; padding: 12px 16px;
-    border-left: 2px solid var(--clay);
-    color: var(--dim); font-size: 13px;
+    position: relative;
+    margin: 12px 0 32px;
+    padding: 0 0 0 16px;
+    color: var(--dim); font-size: 13px; line-height: 1.7;
+  }
+  .howto::before {
+    content: "";
+    position: absolute; left: 0; width: 2px;
+    background: var(--clay);
+    /* 0.35em = (line-height 1.7 - 1) / 2，给不支持 lh 的浏览器 */
+    top: 0.35em;
+    bottom: 0.35em;
+    top: calc((1lh - 1em) / 2);
+    bottom: calc((1lh - 1em) / 2);
   }
   .howto b { color: var(--term-fg); font-weight: 500; }
 
@@ -264,17 +281,28 @@
     background: var(--titlebar);
   }
   div.take {
-    display: grid; grid-template-columns: 8ch 1fr; gap: 12px;
-    padding: 12px 14px; align-items: baseline; min-height: 44px;
+    display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 12px;
+    padding: 12px 14px; align-items: center; min-height: 44px;
   }
   .take > summary {
     list-style: none; cursor: pointer;
-    display: grid; grid-template-columns: 8ch minmax(0, 1fr) auto; gap: 12px;
+    display: grid; grid-template-columns: 8.5rem minmax(0, 1fr) auto; gap: 12px;
     align-items: center; min-height: 44px; padding: 12px 14px;
   }
   .take > summary::-webkit-details-marker { display: none; }
   .take > summary:hover { background: var(--hover); }
-  .take .fig { text-align: right; font-weight: 700; font-size: 15px; font-family: var(--mono); }
+  .take .fig {
+    text-align: right; font-weight: 700; font-size: 15px; font-family: var(--mono);
+    line-height: 1.2; white-space: nowrap;
+  }
+  .take .fig:has(.fig-unit) {
+    display: grid; grid-template-columns: minmax(3.2rem, 1fr) 4.25rem;
+    align-items: baseline; justify-items: end; column-gap: 6px;
+  }
+  .take .fig .fig-unit {
+    font-family: var(--sans); font-size: 12px; font-weight: 500;
+    color: var(--subtle); justify-self: start;
+  }
   .take .txt { color: var(--dim); min-width: 0; }
   .take .txt b { color: var(--term-fg); font-weight: 500; }
   .take .take-body {
@@ -446,8 +474,7 @@
     .bar { grid-template-columns: 14ch 1fr 5ch; gap: 8px; }
     .drill summary { grid-template-columns: 5ch 1fr; }
     .drill .body { padding-left: 8px; }
-    .take { grid-template-columns: 6ch 1fr; gap: 10px; }
-    div.take, .take > summary { grid-template-columns: 6ch minmax(0, 1fr) auto; }
+    div.take, .take > summary { grid-template-columns: 8.5rem minmax(0, 1fr) auto; gap: 10px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .take > summary .chev { transition: none; }
@@ -598,21 +625,18 @@
     </div>
 
     <!-- ====================================================================
-         关键发现 — 3～5 条。每条 = 事实 + 对读者意味着什么。
-         .bad = 枢纽 / 风险 / 意外孤立, .good = 一条能走通的路径, .info = 中性事实。
+         先看结论 — 3～5 条。每条 = 带单位的数字 + 一句能独立看懂的话。
+         .bad = 意外孤立 / 缺边 / 图被截断, .good = 一条能走通的路径, .info = 中性事实。
+         .fig 里数字在前，.fig-unit 写这个数是什么（条依赖 / 个符号 / 个模块）。
          ==================================================================== -->
     <section id="sec-findings">
       <div class="hr"></div>
       <h2><span data-zh="先看结论" data-en="Read this first">先看结论</span> <span class="hint" data-zh="改代码前先读这几条" data-en="Read these before changing code">改代码前先读这几条</span></h2>
       <div class="section-body" id="takeaways">
-        <details class="take info">
-          <summary>
-            <div class="fig">—</div>
-            <div class="txt"><b data-zh="还没有结论" data-en="No conclusions yet">还没有结论</b></div>
-            <span class="chev" aria-hidden="true"></span>
-          </summary>
-          <div class="take-body" data-zh="每条写成：哪一个模块最关键、应该从哪读起、哪里先别改。" data-en="Each item says which module matters most, where to start reading, and what not to change yet.">每条写成：哪一个模块最关键、应该从哪读起、哪里先别改。</div>
-        </details>
+        <div class="take info">
+          <div class="fig">—</div>
+          <div class="txt"><b data-zh="还没有结论" data-en="No conclusions yet">还没有结论</b><span data-zh="。每条左边写数字和单位，右边用一句话写清：谁最关键、从哪读、哪里先别改。" data-en=". Each row has a number with a unit, then one sentence: what matters, where to start, and what not to change yet.">。每条左边写数字和单位，右边用一句话写清：谁最关键、从哪读、哪里先别改。</span></div>
+        </div>
       </div>
     </section>
 
@@ -1080,34 +1104,6 @@
   setLang(lang === 'en' ? 'en' : 'zh');
   setTheme(theme);
 
-  function wrapTakes() {
-    document.querySelectorAll('#takeaways .take:not(details)').forEach((el) => {
-      const fig = el.querySelector('.fig');
-      const txt = el.querySelector('.txt');
-      const details = document.createElement('details');
-      details.className = el.className;
-      const summary = document.createElement('summary');
-      if (fig) summary.appendChild(fig.cloneNode(true));
-      const title = document.createElement('div');
-      title.className = 'txt';
-      const b = txt && txt.querySelector('b');
-      if (b) title.appendChild(b.cloneNode(true));
-      else title.textContent = ((txt && txt.textContent) || el.textContent || '').trim().slice(0, 72);
-      summary.appendChild(title);
-      const chev = document.createElement('span');
-      chev.className = 'chev';
-      chev.setAttribute('aria-hidden', 'true');
-      summary.appendChild(chev);
-      const body = document.createElement('div');
-      body.className = 'take-body';
-      if (txt) body.innerHTML = txt.innerHTML;
-      details.appendChild(summary);
-      details.appendChild(body);
-      el.replaceWith(details);
-    });
-  }
-  wrapTakes();
-
   function addWikiToolbar(target, detailsSelector) {
     if (!target || target.previousElementSibling && target.previousElementSibling.classList.contains('wiki-toolbar')) return;
     const bar = document.createElement('div');
@@ -1123,7 +1119,6 @@
       document.querySelectorAll(detailsSelector).forEach((d) => { d.open = open; });
     });
   }
-  addWikiToolbar(document.getElementById('takeaways'), '#takeaways details.take, #takeaways details');
   addWikiToolbar(document.getElementById('notes'), '#notes details');
   applyI18n(root.getAttribute('data-lang') === 'en' ? 'en' : 'zh');
 })();
