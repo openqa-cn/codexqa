@@ -418,8 +418,10 @@
     border: 1px solid var(--outline); border-radius: 10px; padding: 14px 16px;
   }
   .layer-card h3 { margin: 0 0 6px; color: var(--clay); font-size: 13px; }
+  .layer-card .role { margin: 0 0 8px; font-size: 12px; color: var(--subtle); line-height: 1.5; }
   .layer-card ul { margin: 0; padding-left: 1.1em; color: var(--dim); }
   .layer-card li { margin: 3px 0; }
+  .section-lead { margin: 0 0 12px; color: var(--dim); font-size: 13px; }
 
   footer {
     margin-top: 36px; padding-top: 14px;
@@ -472,8 +474,8 @@
 
 <div class="wiki-shell">
   <aside class="sidebar">
-    <div hidden>
-      <div id="meta-line">最近索引 — · 本报告收录 — · 未调用模型</div>
+      <div hidden>
+      <div id="meta-line">最近索引 — · 本页写开 — · 未调用模型</div>
       <span id="cmd-repo">/path/to/repo</span>
       <span id="cmd-flags">--kind architecture --limit 8</span>
     </div>
@@ -483,67 +485,67 @@
       <details class="nav-group" open>
         <summary data-zh="快速上手" data-en="Get started">快速上手</summary>
         <div class="children">
-          <a href="#howto" data-zh="怎么读" data-en="How to read">怎么读</a>
-          <a href="#sec-findings" data-zh="关键发现" data-en="Key findings">关键发现</a>
-          <a href="#sec-guides" data-zh="阅读路径" data-en="Reading path">阅读路径</a>
+          <a href="#howto" data-zh="先读这里" data-en="Start here">先读这里</a>
+          <a href="#sec-findings" data-zh="先看结论" data-en="Read this first">先看结论</a>
+          <a href="#sec-guides" data-zh="建议阅读顺序" data-en="Suggested reading order">建议阅读顺序</a>
         </div>
       </details>
 
       <details class="nav-group" open>
         <summary data-zh="系统架构" data-en="Architecture">系统架构</summary>
         <div class="children">
-          <a href="#sec-overview" data-zh="核心架构" data-en="Core architecture">核心架构</a>
-          <a href="#sec-map" data-zh="模块地图" data-en="Module map">模块地图</a>
+          <a href="#sec-overview" data-zh="它是什么" data-en="What this is">它是什么</a>
           <a href="#sec-diagrams" data-zh="架构图" data-en="Architecture diagram">架构图</a>
-          <a href="#sec-layers" data-zh="分层" data-en="Layers">分层</a>
-          <a href="#sec-flow" data-zh="数据流与存储" data-en="Data flow &amp; storage">数据流与存储</a>
+          <a href="#sec-flow" data-zh="请求怎么走" data-en="How a request moves">请求怎么走</a>
+          <a href="#sec-map" data-zh="模块一览" data-en="Module list">模块一览</a>
+          <a href="#sec-layers" data-zh="四层是什么" data-en="The four layers">四层是什么</a>
         </div>
       </details>
 
       <details class="nav-group" open>
-        <summary data-zh="入口" data-en="Entry">入口</summary>
+        <summary data-zh="入口 · 请求从哪进" data-en="Entry · where work starts">入口 · 请求从哪进</summary>
         <div class="children" id="nav-entry">
-          <a class="nav-empty" href="#sec-layers" data-zh="按层填写模块" data-en="Fill modules by layer">按层填写模块</a>
+          <a class="nav-empty" href="#sec-layers" data-zh="待补充" data-en="To be filled">待补充</a>
         </div>
       </details>
 
       <details class="nav-group" open>
-        <summary data-zh="应用" data-en="Application">应用</summary>
+        <summary data-zh="应用 · 谁在编排" data-en="Application · who orchestrates">应用 · 谁在编排</summary>
         <div class="children" id="nav-app">
-          <a class="nav-empty" href="#sec-layers" data-zh="按层填写模块" data-en="Fill modules by layer">按层填写模块</a>
+          <a class="nav-empty" href="#sec-layers" data-zh="待补充" data-en="To be filled">待补充</a>
         </div>
       </details>
 
       <details class="nav-group" open>
-        <summary data-zh="领域" data-en="Domain">领域</summary>
+        <summary data-zh="领域 · 规则与计算" data-en="Domain · rules and computation">领域 · 规则与计算</summary>
         <div class="children" id="nav-domain">
-          <a class="nav-empty" href="#sec-layers" data-zh="按层填写模块" data-en="Fill modules by layer">按层填写模块</a>
+          <a class="nav-empty" href="#sec-layers" data-zh="待补充" data-en="To be filled">待补充</a>
         </div>
       </details>
 
       <details class="nav-group" open>
-        <summary data-zh="存储" data-en="Storage">存储</summary>
+        <summary data-zh="存储 · 数据落在哪" data-en="Storage · where data lands">存储 · 数据落在哪</summary>
         <div class="children" id="nav-storage">
-          <a class="nav-empty" href="#sec-layers" data-zh="按层填写模块" data-en="Fill modules by layer">按层填写模块</a>
+          <a class="nav-empty" href="#sec-layers" data-zh="待补充" data-en="To be filled">待补充</a>
         </div>
       </details>
 
       <details class="nav-group" open>
-        <summary data-zh="核心模块" data-en="Core modules">核心模块</summary>
+        <summary data-zh="模块说明" data-en="Module notes">模块说明</summary>
         <div class="children" id="nav-modules">
-          <a href="#p01">p01 待填</a>
-          <a href="#p02">p02 待填</a>
-          <a href="#p03">p03 待填</a>
-          <a href="#p04">p04 待填</a>
-          <a href="#p05">p05 待填</a>
-          <a href="#p06">p06 待填</a>
-          <a href="#p07">p07 待填</a>
-          <a href="#p08">p08 待填</a>
+          <a href="#P01">P01 待填</a>
+          <a href="#P02">P02 待填</a>
+          <a href="#P03">P03 待填</a>
+          <a href="#P04">P04 待填</a>
+          <a href="#P05">P05 待填</a>
+          <a href="#P06">P06 待填</a>
+          <a href="#P07">P07 待填</a>
+          <a href="#P08">P08 待填</a>
         </div>
       </details>
 
       <details class="nav-group" open>
-        <summary data-zh="独立模块" data-en="Standalone">独立模块</summary>
+        <summary data-zh="可以后看" data-en="Read later">可以后看</summary>
         <div class="children" id="nav-peripheral">
           <a class="nav-empty" href="#sec-peripheral" data-zh="未列出" data-en="None listed">未列出</a>
         </div>
@@ -561,29 +563,38 @@
   </aside>
 
   <main class="article" id="page-top">
-    <h1>核心架构</h1>
+    <h1><span data-zh="总览" data-en="Overview">总览</span></h1>
 
     <details class="sources-box" id="sec-sources">
       <summary data-zh="相关源文件" data-en="Related sources">相关源文件</summary>
       <div class="files" id="source-files">
-        <span class="file-static"><span class="file-path">用本次导出里的真实路径替换</span></span>
+        <span class="file-static"><span class="file-path">待填：本页提到的源文件</span></span>
       </div>
     </details>
 
+    <!-- 它是什么放在数字前面：先用一段人话讲清仓库，再给覆盖范围。 -->
+    <section id="sec-overview">
+      <div class="hr"></div>
+      <h2><span data-zh="它是什么" data-en="What this is">它是什么</span> <span class="hint" data-zh="这个仓库做什么、请求怎么走" data-en="What the repo does and how a request moves">这个仓库做什么、请求怎么走</span></h2>
+      <div class="section-body prose" id="overview">
+        <p data-zh="还没有概览。用两三句话说明：这个仓库是做什么的、一次任务从哪进来、经过哪些模块、数据最后落在哪。" data-en="No overview yet. In a few sentences: what this repo does, where a task enters, which modules it passes, and where data lands.">还没有概览。用两三句话说明：这个仓库是做什么的、一次任务从哪进来、经过哪些模块、数据最后落在哪。</p>
+      </div>
+    </section>
+
     <div class="howto" id="howto">
-      <b data-zh="怎么读：" data-en="How to read: ">怎么读：</b><span data-zh="先看「关键发现」抓住枢纽和风险，再按「阅读路径」从入口往下读；地图和对图用来对照，不要从孤立工具读起。" data-en="Start with Key findings for hubs and risks, then follow Reading path from entry downward. Use the map and diagrams to cross-check; do not start from standalone tools.">先看「关键发现」抓住枢纽和风险，再按「阅读路径」从入口往下读；地图和对图用来对照，不要从孤立工具读起。</span>
+      <b data-zh="先读这里：" data-en="Start here: ">先读这里：</b><span data-zh="先看下面几条结论：谁最关键、从哪读、哪里先别改。再按「建议阅读顺序」从入口往下读。模块一览和架构图用来对照。和主链路没有调用关系的，放在文末，可以后看。" data-en="Start with the conclusions below: what matters, where to start, and what not to change yet. Then follow Suggested reading order from the entry layer down. Use the module list and diagram to cross-check. Modules that call nothing else sit at the end and can wait.">先看下面几条结论：谁最关键、从哪读、哪里先别改。再按「建议阅读顺序」从入口往下读。模块一览和架构图用来对照。和主链路没有调用关系的，放在文末，可以后看。</span>
     </div>
 
     <div id="hero">
-      <div id="hero-total"><span class="num">—</span><span class="unit" data-zh="个模块" data-en=" modules">个模块</span><span class="label" data-zh="本报告收录" data-en="in this report">本报告收录</span></div>
-      <div id="hero-split">有依赖的模块走主阅读路径 · 无依赖的放在文末「独立模块」</div>
+      <div id="hero-total"><span class="num">—</span><span class="unit" data-zh="个模块" data-en=" modules">个模块</span><span class="label" data-zh="写进本页" data-en="written up here">写进本页</span></div>
+      <div id="hero-split" data-zh="和别的模块有调用的，从入口往下读；没有调用关系的放在文末，可以后看。" data-en="Modules that call others are read from the entry layer downward. Modules with no calls sit at the end and can wait.">和别的模块有调用的，从入口往下读；没有调用关系的放在文末，可以后看。</div>
     </div>
 
     <div id="overall-grid">
-      <div class="stat"><div class="label" data-zh="模块社区" data-en="Communities">模块社区</div><div class="val">—</div><div class="detail" data-zh="图上全部社区" data-en="All communities on the graph">图上全部社区</div></div>
-      <div class="stat"><div class="label" data-zh="本报告收录" data-en="In this report">本报告收录</div><div class="val">—</div><div class="detail" data-zh="按规模选取" data-en="Selected by size">按规模选取</div></div>
-      <div class="stat"><div class="label" data-zh="独立模块" data-en="Standalone">独立模块</div><div class="val">—</div><div class="detail" data-zh="没有列出的依赖" data-en="No listed dependencies">没有列出的依赖</div></div>
-      <div class="stat"><div class="label" data-zh="依赖关系" data-en="Dependencies">依赖关系</div><div class="val">—</div><div class="detail" data-zh="社区之间的有向边" data-en="Directed edges between communities">社区之间的有向边</div></div>
+      <div class="stat"><div class="label" data-zh="分成几组" data-en="Groups">分成几组</div><div class="val">—</div><div class="detail" data-zh="全库按调用关系，含本页没写开的" data-en="Whole repo by call relations, including groups not expanded here">全库按调用关系，含本页没写开的</div></div>
+      <div class="stat"><div class="label" data-zh="本页写了" data-en="Written here">本页写了</div><div class="val">—</div><div class="detail" data-zh="只展开较大的几组" data-en="Only the larger groups are expanded">只展开较大的几组</div></div>
+      <div class="stat"><div class="label" data-zh="可以后看" data-en="Read later">可以后看</div><div class="val">—</div><div class="detail" data-zh="和别的组没有调用" data-en="No calls to other groups">和别的组没有调用</div></div>
+      <div class="stat"><div class="label" data-zh="互相调用" data-en="Calls">互相调用</div><div class="val">—</div><div class="detail" data-zh="组与组之间谁调用谁" data-en="Which group calls which">组与组之间谁调用谁</div></div>
     </div>
 
     <!-- ====================================================================
@@ -592,36 +603,52 @@
          ==================================================================== -->
     <section id="sec-findings">
       <div class="hr"></div>
-      <h2><span data-zh="关键发现" data-en="Key findings">关键发现</span> <span class="hint" data-zh="先看这些，再下钻" data-en="Read these first, then drill down">先看这些，再下钻</span></h2>
+      <h2><span data-zh="先看结论" data-en="Read this first">先看结论</span> <span class="hint" data-zh="改代码前先读这几条" data-en="Read these before changing code">改代码前先读这几条</span></h2>
       <div class="section-body" id="takeaways">
         <details class="take info">
           <summary>
             <div class="fig">—</div>
-            <div class="txt"><b data-zh="还没有发现" data-en="No findings yet">还没有发现</b></div>
+            <div class="txt"><b data-zh="还没有结论" data-en="No conclusions yet">还没有结论</b></div>
             <span class="chev" aria-hidden="true"></span>
           </summary>
-          <div class="take-body" data-zh="跑完 wiki inputs 后，用「谁是枢纽 / 从哪读 / 哪些别先碰」填写。" data-en="After wiki inputs, fill who the hub is, where to start, and what not to touch first.">跑完 wiki inputs 后，用「谁是枢纽 / 从哪读 / 哪些别先碰」填写。</div>
+          <div class="take-body" data-zh="每条写成：哪一个模块最关键、应该从哪读起、哪里先别改。" data-en="Each item says which module matters most, where to start reading, and what not to change yet.">每条写成：哪一个模块最关键、应该从哪读起、哪里先别改。</div>
         </details>
       </div>
     </section>
 
-    <!-- ====================================================================
-         系统怎么运转 — 这个仓库是什么、主链路怎么走。不要堆字段名。
-         ==================================================================== -->
-    <section id="sec-overview">
+    <!-- 架构图紧跟结论。图下三行：这张图在讲 / 图是否完整 / 对应代码。 -->
+    <section id="sec-diagrams">
       <div class="hr"></div>
-      <h2><span data-zh="系统怎么运转" data-en="How the system runs">系统怎么运转</span> <span class="hint" data-zh="一句话定位 + 主链路" data-en="One-line positioning + main path">一句话定位 + 主链路</span></h2>
-      <div class="section-body prose" id="overview">
-        <p data-zh="还没有概览。用 2～4 段说明：这个系统是什么、请求从哪进来、核心模块各自干什么、独立工具放哪。" data-en="No overview yet. In 2–4 paragraphs: what this system is, where requests enter, what core modules do, and where standalone tools sit.">还没有概览。用 2～4 段说明：这个系统是什么、请求从哪进来、核心模块各自干什么、独立工具放哪。</p>
+      <h2><span data-zh="架构图" data-en="Architecture diagram">架构图</span> <span class="hint" data-zh="请求从哪进、最后落到哪" data-en="Where a request enters and where it lands">请求从哪进、最后落到哪</span></h2>
+      <p class="section-lead" data-zh="先看这张图在讲什么，再对下面的模块一览。图上的英文 Entry / Application / Domain / Storage 就是入口、应用、领域、存储。" data-en="Read what the diagram is showing, then check the module list. Entry / Application / Domain / Storage on the diagram are the four layers below.">先看这张图在讲什么，再对下面的模块一览。图上的英文 Entry / Application / Domain / Storage 就是入口、应用、领域、存储。</p>
+      <div class="section-body" id="diagrams">
+        <div class="diagram">
+          <pre class="mermaid">flowchart LR
+  A["待填：入口模块"]
+          </pre>
+          <div class="diagram-meta">
+            <div data-zh="这张图在讲：请求从哪进、经过谁、最后落到哪。" data-en="This diagram shows: where a request enters, who it passes, and where it lands.">这张图在讲：请求从哪进、经过谁、最后落到哪。</div>
+            <div data-zh="图是否完整：—" data-en="Complete: —">图是否完整：—</div>
+            <div data-zh="对应代码：见上方「相关源文件」。" data-en="Code: see Related sources above.">对应代码：见上方「相关源文件」。</div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- ====================================================================
-         模块地图 — 社区编号、人话职责、真实依赖。孤立页不要进分层。
-         ==================================================================== -->
+    <!-- 请求怎么走 — 只写有真实调用的边。 -->
+    <section id="sec-flow">
+      <div class="hr"></div>
+      <h2><span data-zh="请求怎么走" data-en="How a request moves">请求怎么走</span> <span class="hint" data-zh="一次调用穿过哪些层" data-en="Which layers one call crosses">一次调用穿过哪些层</span></h2>
+      <div class="section-body prose" id="data-flow">
+        <p data-zh="还没有。按真实调用写：请求从哪进、在哪变成业务规则、最后写到哪。和主链路无关的模块不要写进来。" data-en="None yet. Follow real calls: where the request enters, where it becomes business rules, and where it is written. Leave out modules that are off this path.">还没有。按真实调用写：请求从哪进、在哪变成业务规则、最后写到哪。和主链路无关的模块不要写进来。</p>
+      </div>
+    </section>
+
+    <!-- 模块一览 — 编号、人话职责、真实调用。没有调用关系的不要放进四层。 -->
     <section id="sec-map">
       <div class="hr"></div>
-      <h2><span data-zh="模块地图" data-en="Module map">模块地图</span> <span class="hint" data-zh="入口 → 应用 → 领域 → 存储" data-en="Entry → Application → Domain → Storage">入口 → 应用 → 领域 → 存储</span></h2>
+      <h2><span data-zh="模块一览" data-en="Module list">模块一览</span> <span class="hint" data-zh="每组代码做什么、会调用谁" data-en="What each group does and who it calls">每组代码做什么、会调用谁</span></h2>
+      <p class="section-lead" data-zh="每一行是一组经常一起被改到的代码。P01 只是本页里的简称，后面写的是它做什么。" data-en="Each row is a group of code that changes together. P01 is only a short name on this page; the text after it says what it does.">每一行是一组经常一起被改到的代码。P01 只是本页里的简称，后面写的是它做什么。</p>
       <div class="section-body" id="module-map">
         <div id="community-bars"></div>
         <div class="scroll" style="margin-top:12px">
@@ -629,77 +656,47 @@
             <thead>
               <tr>
                 <th data-zh="编号" data-en="ID">编号</th>
-                <th data-zh="分层" data-en="Layer">分层</th>
-                <th data-zh="模块" data-en="Module">模块</th>
-                <th class="num" data-zh="规模" data-en="Size">规模</th>
-                <th data-zh="依赖谁" data-en="Depends on">依赖谁</th>
+                <th data-zh="所在层" data-en="Layer">所在层</th>
+                <th data-zh="做什么" data-en="What it does">做什么</th>
+                <th class="num" data-zh="符号数" data-en="Symbols">符号数</th>
+                <th data-zh="会调用" data-en="Calls">会调用</th>
               </tr>
             </thead>
             <tbody id="module-rows">
-              <tr><td colspan="5" data-zh="还没有模块。分层只用「入口 / 应用 / 领域 / 存储」；没有依赖的放到文末。" data-en="No modules yet. Layers are only Entry / Application / Domain / Storage; modules without deps go at the end.">还没有模块。分层只用「入口 / 应用 / 领域 / 存储」；没有依赖的放到文末。</td></tr>
+              <tr><td colspan="5" data-zh="还没有。有调用关系的才放进入口、应用、领域、存储；没有调用关系的写到文末「可以后看」。" data-en="None yet. Only modules that call others go into Entry, Application, Domain, or Storage. Modules with no calls go under Read later.">还没有。有调用关系的才放进入口、应用、领域、存储；没有调用关系的写到文末「可以后看」。</td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- ====================================================================
-         分层 — 侧栏四层的对照。只放有真实依赖的页。
-         ==================================================================== -->
+    <!-- 四层 — 和侧栏一致。只放有真实调用的模块。 -->
     <section id="sec-layers">
       <div class="hr"></div>
-      <h2><span data-zh="分层" data-en="Layers">分层</span> <span class="hint" data-zh="入口 → 应用 → 领域 → 存储" data-en="Entry → Application → Domain → Storage">入口 → 应用 → 领域 → 存储</span></h2>
+      <h2><span data-zh="四层是什么" data-en="The four layers">四层是什么</span> <span class="hint" data-zh="请求从哪进，数据落到哪" data-en="Where work starts and where data lands">请求从哪进，数据落到哪</span></h2>
       <div class="section-body">
         <div class="layer-grid">
           <div class="layer-card" id="layer-entry">
             <h3 data-zh="入口" data-en="Entry">入口</h3>
-            <ul id="layer-entry-list"><li data-zh="还没有。把请求进来的模块写在这里。" data-en="None yet. Put request-entry modules here.">还没有。把请求进来的模块写在这里。</li></ul>
+            <p class="role" data-zh="人怎么把任务跑起来：命令行、HTTP、定时任务。" data-en="How a person starts the work: a CLI, HTTP, or a scheduled job.">人怎么把任务跑起来：命令行、HTTP、定时任务。</p>
+            <ul id="layer-entry-list"><li data-zh="还没有。" data-en="None yet.">还没有。</li></ul>
           </div>
           <div class="layer-card" id="layer-app">
             <h3 data-zh="应用" data-en="Application">应用</h3>
-            <ul id="layer-app-list"><li data-zh="还没有。编排 / 用例写在这里。" data-en="None yet. Orchestration / use-cases go here.">还没有。编排 / 用例写在这里。</li></ul>
+            <p class="role" data-zh="把几步串成一条用例，自己不算业务规则。" data-en="Chains steps into one use case. This layer does not own the business rules.">把几步串成一条用例，自己不算业务规则。</p>
+            <ul id="layer-app-list"><li data-zh="还没有。" data-en="None yet.">还没有。</li></ul>
           </div>
           <div class="layer-card" id="layer-domain">
             <h3 data-zh="领域" data-en="Domain">领域</h3>
-            <ul id="layer-domain-list"><li data-zh="还没有。规则与核心计算写在这里。" data-en="None yet. Rules and core computation go here.">还没有。规则与核心计算写在这里。</li></ul>
+            <p class="role" data-zh="业务规则和核心计算放在这里。" data-en="Business rules and the core computation live here.">业务规则和核心计算放在这里。</p>
+            <ul id="layer-domain-list"><li data-zh="还没有。" data-en="None yet.">还没有。</li></ul>
           </div>
           <div class="layer-card" id="layer-storage">
             <h3 data-zh="存储" data-en="Storage">存储</h3>
-            <ul id="layer-storage-list"><li data-zh="还没有。持久化与外部状态写在这里。" data-en="None yet. Persistence and external state go here.">还没有。持久化与外部状态写在这里。</li></ul>
+            <p class="role" data-zh="数据写到哪，以及外部系统、缓存、文件在哪。" data-en="Where data is written, and where external systems, caches, and files sit.">数据写到哪，以及外部系统、缓存、文件在哪。</p>
+            <ul id="layer-storage-list"><li data-zh="还没有。" data-en="None yet.">还没有。</li></ul>
           </div>
         </div>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         架构图 — 至少一张。init + classDef 从 diagrams.md 原样复制。
-         图下三行：依据 / 是否截断 / 图在说明什么。
-         ==================================================================== -->
-    <section id="sec-diagrams">
-      <div class="hr"></div>
-      <h2><span data-zh="架构图" data-en="Architecture diagram">架构图</span> <span class="hint" data-zh="分层与真实依赖" data-en="Layers and real dependencies">分层与真实依赖</span></h2>
-      <div class="section-body" id="diagrams">
-        <div class="diagram">
-          <pre class="mermaid">flowchart LR
-  A["用本次 wiki inputs 里的真实模块替换"]
-          </pre>
-          <div class="diagram-meta">
-            <div data-zh="依据：wiki inputs --kind …" data-en="Source: wiki inputs --kind …">依据：wiki inputs --kind …</div>
-            <div data-zh="是否截断：—" data-en="Truncated: —">是否截断：—</div>
-            <div data-zh="图在说明：—" data-en="The diagram shows: —">图在说明：—</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         数据流与存储 — 请求 / 数据怎么穿过各层。不要编造边。
-         ==================================================================== -->
-    <section id="sec-flow">
-      <div class="hr"></div>
-      <h2><span data-zh="数据流与存储" data-en="Data flow &amp; storage">数据流与存储</span> <span class="hint" data-zh="主链路怎么穿过各层" data-en="How the main path crosses layers">主链路怎么穿过各层</span></h2>
-      <div class="section-body prose" id="data-flow">
-        <p data-zh="还没有数据流。按真实依赖写：请求从哪进、在哪一层变成领域规则、最后落到哪一处存储。独立模块不要写进来。" data-en="No data flow yet. Follow real dependencies: where the request enters, where it becomes domain rules, and which store it lands in. Do not include standalone modules.">还没有数据流。按真实依赖写：请求从哪进、在哪一层变成领域规则、最后落到哪一处存储。独立模块不要写进来。</p>
       </div>
     </section>
 
@@ -708,9 +705,9 @@
          ==================================================================== -->
     <section id="sec-guides">
       <div class="hr"></div>
-      <h2><span data-zh="阅读路径" data-en="Reading path">阅读路径</span> <span class="hint" data-zh="按这个顺序读源码" data-en="Read source in this order">按这个顺序读源码</span></h2>
+      <h2><span data-zh="建议阅读顺序" data-en="Suggested reading order">建议阅读顺序</span> <span class="hint" data-zh="打开编辑器后先看谁" data-en="What to open first in the editor">打开编辑器后先看谁</span></h2>
       <div class="section-body" id="guides">
-        <div class="callout" data-zh="还没有导览。写 1～3 条路径，每步说明「读什么、为什么下一步是它」。" data-en="No guide yet. Write 1–3 paths; each step says what to read and why the next step follows.">还没有导览。写 1～3 条路径，每步说明「读什么、为什么下一步是它」。</div>
+        <div class="callout" data-zh="还没有。写 1～3 条顺序，每一步说明读什么、为什么下一步是它。下一步必须是上一步真的会调用的模块。" data-en="None yet. Write 1–3 orders. Each step says what to read and why the next step follows. The next step must be a module the previous one actually calls.">还没有。写 1～3 条顺序，每一步说明读什么、为什么下一步是它。下一步必须是上一步真的会调用的模块。</div>
       </div>
     </section>
 
@@ -719,16 +716,16 @@
          ==================================================================== -->
     <section id="sec-notes">
       <div class="hr"></div>
-      <h2><span data-zh="模块笔记" data-en="Module notes">模块笔记</span> <span class="hint" data-zh="点开看接口和谁在往来" data-en="Open for interfaces and neighbors">点开看接口和谁在往来</span></h2>
+      <h2><span data-zh="各模块说明" data-en="About each module">各模块说明</span> <span class="hint" data-zh="点开看它做什么、和谁往来" data-en="Open to see what it does and who it talks to">点开看它做什么、和谁往来</span></h2>
       <div class="section-body drill" id="notes">
-        <details id="p01">
+        <details id="P01">
           <summary>
-            <span class="amt">p01</span>
-            <span class="desc" data-zh="还没有笔记" data-en="No notes yet">还没有笔记</span>
-            <span class="meta" data-zh="职责 · 对外接口 · 跨模块往来" data-en="Duty · public API · cross-module">职责 · 对外接口 · 跨模块往来</span>
+            <span class="amt">P01</span>
+            <span class="desc" data-zh="还没有说明" data-en="No notes yet">还没有说明</span>
+            <span class="meta" data-zh="做什么 · 对外接口 · 和谁往来" data-en="What it does · public API · who it talks to">做什么 · 对外接口 · 和谁往来</span>
           </summary>
           <div class="body">
-            <p data-zh="用本次 page 输入填写：这个模块做什么、对外暴露什么、内部怎么串、和谁往来。" data-en="Fill from this page input: what the module does, what it exposes, how it is wired internally, and who it talks to.">用本次 page 输入填写：这个模块做什么、对外暴露什么、内部怎么串、和谁往来。</p>
+            <p data-zh="这个模块做什么、对外提供什么、内部怎么串起来、会调用谁、谁会调用它。" data-en="What this module does, what it exposes, how it is wired inside, who it calls, and who calls it.">这个模块做什么、对外提供什么、内部怎么串起来、会调用谁、谁会调用它。</p>
           </div>
         </details>
       </div>
@@ -739,57 +736,57 @@
          ==================================================================== -->
     <section id="sec-peripheral">
       <div class="hr"></div>
-      <h2><span data-zh="独立模块" data-en="Standalone modules">独立模块</span> <span class="hint" data-zh="不在主链上，后看或不看" data-en="Off the main path — read later or skip">不在主链上，后看或不看</span></h2>
+      <h2><span data-zh="可以后看" data-en="Read later">可以后看</span> <span class="hint" data-zh="和主链路没有调用关系" data-en="No calls on the main path">和主链路没有调用关系</span></h2>
       <div class="section-body" id="peripheral">
-        <div class="callout" data-zh="未列出。没有依赖的模块写在这里，并说明为什么可以后看。" data-en="None listed. Put modules without dependencies here, and say why they can wait.">未列出。没有依赖的模块写在这里，并说明为什么可以后看。</div>
+        <div class="callout" data-zh="还没有。和别的模块没有调用关系的写在这里，并说明为什么可以后看，例如独立工具、实验或演示。" data-en="None yet. Put modules that call nothing else here, and say why they can wait — a standalone tool, an experiment, or a demo.">还没有。和别的模块没有调用关系的写在这里，并说明为什么可以后看，例如独立工具、实验或演示。</div>
       </div>
     </section>
 
     <section id="sec-legend">
       <div class="hr"></div>
-      <h2><span data-zh="图例" data-en="Legend">图例</span> <span class="hint" data-zh="怎么读图和分层" data-en="How to read the diagram and layers">怎么读图和分层</span></h2>
+      <h2><span data-zh="图例" data-en="Legend">图例</span> <span class="hint" data-zh="图上的四层和颜色" data-en="Layers and colors on the diagram">图上的四层和颜色</span></h2>
       <div class="section-body prose" id="legend">
         <ul>
-          <li><b data-zh="入口 / 应用 / 领域 / 存储" data-en="Entry / Application / Domain / Storage">入口 / 应用 / 领域 / 存储</b><span data-zh="：图上的四层。没有依赖的页不进这四层。" data-en=": the four layers on the diagram. Pages without deps do not enter these layers.">：图上的四层。没有依赖的页不进这四层。</span></li>
-          <li><b>risk</b><span data-zh="（赤陶）：枢纽或高扇入，改这里影响面最宽。" data-en=" (clay red): hub or high fan-in — changing it has the widest blast radius.">（赤陶）：枢纽或高扇入，改这里影响面最宽。</span></li>
-          <li><b>change</b><span data-zh="（陶土）：规模或依赖偏多的页。" data-en=" (clay): pages that are large or dependency-heavy.">（陶土）：规模或依赖偏多的页。</span></li>
-          <li><b data-zh="独立模块" data-en="Standalone">独立模块</b><span data-zh="：本次导出没有列出依赖，后看或不看。" data-en=": this export listed no dependencies — read later or skip.">：本次导出没有列出依赖，后看或不看。</span></li>
+          <li><b data-zh="四层" data-en="Four layers">四层</b><span data-zh="：图上的 Entry、Application、Domain、Storage，分别是入口、应用、领域、存储。和别的模块没有调用关系的，不放进这四层。" data-en=": Entry, Application, Domain, and Storage on the diagram are where work starts, who orchestrates, the rules, and where data lands. Modules that call nothing else stay out of these four layers.">：图上的 Entry、Application、Domain、Storage，分别是入口、应用、领域、存储。和别的模块没有调用关系的，不放进这四层。</span></li>
+          <li><b data-zh="重点" data-en="Focus">重点</b><span data-zh="：图上用强调色标出的模块。很多地方会调用它，改这里影响最广，先看它对外的接口。" data-en=": the module marked in the accent color. Many places call it, so changing it has the widest effect. Read its public API first.">：图上用强调色标出的模块。很多地方会调用它，改这里影响最广，先看它对外的接口。</span></li>
+          <li><b data-zh="注意" data-en="Watch">注意</b><span data-zh="：代码多，或者它调用的模块特别多。先搞清边界再改。" data-en=": a lot of code, or it calls many other modules. Understand the boundary before changing it.">：代码多，或者它调用的模块特别多。先搞清边界再改。</span></li>
+          <li><b data-zh="可以后看" data-en="Read later">可以后看</b><span data-zh="：和别的模块没有调用关系，多半是独立工具或演示。" data-en=": no calls to other modules, usually a standalone tool or a demo.">：和别的模块没有调用关系，多半是独立工具或演示。</span></li>
         </ul>
       </div>
     </section>
 
     <section id="sec-glossary">
       <div class="hr"></div>
-      <h2><span data-zh="术语" data-en="Glossary">术语</span> <span class="hint" data-zh="本报告用词" data-en="Words this report uses">本报告用词</span></h2>
+      <h2><span data-zh="术语" data-en="Glossary">术语</span> <span class="hint" data-zh="本页用词" data-en="Words on this page">本页用词</span></h2>
       <div class="section-body prose" id="glossary">
         <ul>
-          <li><b data-zh="模块 / 社区" data-en="Module / community">模块 / 社区</b><span data-zh="：编号 " data-en=": ids from ">：编号 </span><code>p01</code><span data-zh=" 起，对应一次导出里的一页。" data-en=" onward, one page in this export."> 起，对应一次导出里的一页。</span></li>
-          <li><b data-zh="依赖" data-en="Dependency">依赖</b><span data-zh="：社区之间的有向边，阅读路径只沿这条边走。" data-en=": a directed edge between communities; the reading path only follows these edges.">：社区之间的有向边，阅读路径只沿这条边走。</span></li>
-          <li><b data-zh="枢纽" data-en="Hub">枢纽</b><span data-zh="：依赖多或被调用多，先读对外接口。" data-en=": many deps or many callers — read its public API first.">：依赖多或被调用多，先读对外接口。</span></li>
-          <li><b data-zh="规模" data-en="Size">规模</b><span data-zh="：该页收录的符号数量，用来排序，不是质量分。" data-en=": symbol count on that page, used for ranking, not a quality score.">：该页收录的符号数量，用来排序，不是质量分。</span></li>
+          <li><b data-zh="模块" data-en="Module">模块</b><span data-zh="：表格里的 P01、P02。是一组经常一起被改到的代码，不是评分，也不等于一个目录名。" data-en=": P01, P02 in the table. A group of code that changes together — not a score, and not the same as a folder name.">：表格里的 P01、P02。是一组经常一起被改到的代码，不是评分，也不等于一个目录名。</span></li>
+          <li><b data-zh="会调用" data-en="Calls">会调用</b><span data-zh="：读代码时能从这一组走到下一组。建议阅读顺序只沿这种真实调用走。" data-en=": reading the code can go from this group to the next. The suggested order only follows real calls.">：读代码时能从这一组走到下一组。建议阅读顺序只沿这种真实调用走。</span></li>
+          <li><b data-zh="最关键的模块" data-en="The module that matters most">最关键的模块</b><span data-zh="：很多模块会调用它，或者它会调用很多模块。改它之前先看对外接口。" data-en=": many modules call it, or it calls many modules. Read its public API before changing it.">：很多模块会调用它，或者它会调用很多模块。改它之前先看对外接口。</span></li>
+          <li><b data-zh="符号数" data-en="Symbols">符号数</b><span data-zh="：这组里收录了多少函数、类和类型，用来比谁更大，不是质量分。" data-en=": how many functions, classes, and types are in the group. It compares size, not quality.">：这组里收录了多少函数、类和类型，用来比谁更大，不是质量分。</span></li>
         </ul>
       </div>
     </section>
 
     <footer>
       <span id="foot-gen">生成于 —</span>
-      <span id="foot-stats">codexqa-code-wiki · 只读本次导出 · 未调用模型</span>
+      <span id="foot-stats" data-zh="codexqa-code-wiki · 只根据这次索引 · 未调用模型" data-en="codexqa-code-wiki · this index only · no model">codexqa-code-wiki · 只根据这次索引 · 未调用模型</span>
     </footer>
   </main>
 
   <aside class="toc">
     <h3 data-zh="本页目录" data-en="On this page">本页目录</h3>
     <ol id="page-toc">
-      <li><a href="#page-top" data-zh="核心架构" data-en="Core architecture">核心架构</a></li>
-      <li><a href="#sec-findings" data-zh="关键发现" data-en="Key findings">关键发现</a></li>
-      <li><a href="#sec-overview" data-zh="系统怎么运转" data-en="How the system runs">系统怎么运转</a></li>
-      <li><a href="#sec-map" data-zh="模块地图" data-en="Module map">模块地图</a></li>
-      <li><a href="#sec-layers" data-zh="分层" data-en="Layers">分层</a></li>
+      <li><a href="#page-top" data-zh="总览" data-en="Overview">总览</a></li>
+      <li><a href="#sec-overview" data-zh="它是什么" data-en="What this is">它是什么</a></li>
+      <li><a href="#sec-findings" data-zh="先看结论" data-en="Read this first">先看结论</a></li>
       <li><a href="#sec-diagrams" data-zh="架构图" data-en="Architecture diagram">架构图</a></li>
-      <li><a href="#sec-flow" data-zh="数据流与存储" data-en="Data flow &amp; storage">数据流与存储</a></li>
-      <li><a href="#sec-guides" data-zh="阅读路径" data-en="Reading path">阅读路径</a></li>
-      <li><a href="#sec-notes" data-zh="模块笔记" data-en="Module notes">模块笔记</a></li>
-      <li><a href="#sec-peripheral" data-zh="独立模块" data-en="Standalone modules">独立模块</a></li>
+      <li><a href="#sec-flow" data-zh="请求怎么走" data-en="How a request moves">请求怎么走</a></li>
+      <li><a href="#sec-map" data-zh="模块一览" data-en="Module list">模块一览</a></li>
+      <li><a href="#sec-layers" data-zh="四层是什么" data-en="The four layers">四层是什么</a></li>
+      <li><a href="#sec-guides" data-zh="建议阅读顺序" data-en="Suggested reading order">建议阅读顺序</a></li>
+      <li><a href="#sec-notes" data-zh="各模块说明" data-en="About each module">各模块说明</a></li>
+      <li><a href="#sec-peripheral" data-zh="可以后看" data-en="Read later">可以后看</a></li>
       <li><a href="#sec-legend" data-zh="图例" data-en="Legend">图例</a></li>
       <li><a href="#sec-glossary" data-zh="术语" data-en="Glossary">术语</a></li>
     </ol>

@@ -78,7 +78,7 @@ and 白天/黑夜 toggles, green accent `#0f6b4c`).
 Copy [assets/report-template.html](assets/report-template.html)
 into the working directory, then fill slots with Edit (do not rewrite CSS).
 **Default the filled report to Simplified Chinese** (headings, stats, findings,
-overview, guides, notes). Keep `p01` aliases and symbol names. Write for a
+overview, guides, notes). Show community aliases as `P01` (capitalize the leading p). Keep symbol names as-is. Write for a
 newcomer: what the system is, where to start, which module is the hub,
 which pages are standalone. Not a product brochure, and not an Archify /
 architecture canvas.
