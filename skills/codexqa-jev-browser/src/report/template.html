@@ -1,232 +1,199 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light" data-lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{title}}</title>
   <style>
-    :root {
-      --bg: #f4f7fb;
-      --card: #ffffff;
-      --line: #e7edf5;
-      --text: #101828;
-      --muted: #667085;
-      --kicker: #98a2b3;
-      --pass: #12b76a;
-      --pass-soft: #ecfdf3;
-      --fail: #f04438;
-      --fail-soft: #fef3f2;
-      --skip: #f79009;
-      --skip-soft: #fffaeb;
-      --blocked: #7a5af8;
-      --blocked-soft: #f4f3ff;
-      --cyan: #0ea5e9;
-      --radius: 18px;
+    :root, html[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f0f3f6;
+      --sheet: #ffffff;
+      --ink: #1a2332;
+      --muted: #5a6578;
+      --line: #d5dde8;
+      --acc: #0f6b4c;
+      --acc-soft: #e6f4ee;
+      --acc-fg: #fff;
+      --card: #f8fafc;
+      --chip: #fff;
+      --head: #fbfcfd;
+      --code-bg: #eef2f6;
+      --bar-track: #e8edf3;
+      --hero-a: #d9ebe3;
+      --hero-b: #d6e4f5;
+      --toolbar-bg: color-mix(in srgb, var(--sheet) 92%, transparent);
+      --pass: #0f6b4c;
+      --pass-soft: #e6f4ee;
+      --fail: #b42318;
+      --fail-soft: #fde8e4;
+      --skip: #9a6700;
+      --skip-soft: #fef3c7;
+      --blocked: #6b3fa0;
+      --blocked-soft: #f3eafb;
+      --kicker: #5a6578;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --sans: "Segoe UI", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0f141b;
+      --sheet: #1a222c;
+      --ink: #e8edf2;
+      --muted: #9aa7b5;
+      --line: #2f3b49;
+      --acc: #3ecf8e;
+      --acc-soft: #163526;
+      --acc-fg: #0b1a12;
+      --card: #141b24;
+      --chip: #1f2833;
+      --head: #162029;
+      --code-bg: #24303b;
+      --bar-track: #24303b;
+      --hero-a: #1a2e28;
+      --hero-b: #1a2433;
+      --toolbar-bg: color-mix(in srgb, var(--sheet) 88%, transparent);
+      --pass: #3ecf8e;
+      --pass-soft: #163526;
+      --fail: #ff8a80;
+      --fail-soft: #3a1d1c;
+      --skip: #e6c35c;
+      --skip-soft: #3a3218;
+      --blocked: #c4a1ff;
+      --blocked-soft: #2a1f3d;
+      --kicker: #9aa7b5;
     }
     * { box-sizing: border-box; }
-    html, body { margin: 0; background: var(--bg); color: var(--text); }
+    html, body { margin: 0; }
     body {
-      font: 14px/1.45 "SF Pro Display", "Geist", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
-      min-height: 100vh;
+      font: 14px/1.55 var(--sans);
+      color: var(--ink);
       background:
-        radial-gradient(900px 420px at 8% -16%, rgba(14, 165, 233, 0.1), transparent 56%),
-        radial-gradient(720px 360px at 92% -8%, rgba(18, 183, 106, 0.1), transparent 52%),
-        #f4f7fb;
-    }
-    body.outcome-fail {
-      background:
-        radial-gradient(900px 420px at 8% -16%, rgba(240, 68, 56, 0.08), transparent 56%),
-        #f7f2f3;
-    }
-    body:before {
-      content: "";
-      position: fixed; inset: 0; z-index: 0;
-      background-image:
-        linear-gradient(rgba(16, 24, 40, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(16, 24, 40, 0.035) 1px, transparent 1px);
-      background-size: 48px 48px;
-      mask-image: linear-gradient(180deg, #000 0%, transparent 62%);
-      pointer-events: none;
+        radial-gradient(1200px 500px at 10% -10%, var(--hero-a) 0%, transparent 55%),
+        radial-gradient(900px 400px at 100% 0%, var(--hero-b) 0%, transparent 50%),
+        var(--bg);
     }
     button { font: inherit; }
-    a { color: #1570ef; }
-    .wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 22px 32px 80px; }
-    .nav {
-      display: flex; align-items: center; gap: 12px;
-      margin-bottom: 22px; padding: 4px 0;
+    a { color: var(--acc); }
+    .prefs {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; justify-content: flex-end; gap: 8px;
+      padding: 10px 18px;
+      background: var(--toolbar-bg);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
     }
-    .mark {
-      width: 28px; height: 28px; border-radius: 8px;
-      display: grid; place-items: center;
-      font-weight: 800; letter-spacing: -0.06em; font-size: 13px;
-      background: linear-gradient(160deg, #38bdf8 0%, #12b76a 100%);
-      color: #fff;
+    .prefs .group {
+      display: flex; gap: 4px; align-items: center; padding: 2px;
+      border: 1px solid var(--line); border-radius: 999px; background: var(--sheet);
     }
-    .brand { display: flex; align-items: baseline; gap: 10px; }
-    .brand b { font-size: 16px; letter-spacing: -0.03em; }
-    .brand .tag {
-      color: var(--kicker); font-size: 11px; font-weight: 700;
-      letter-spacing: 0.16em; text-transform: uppercase;
+    .prefs button {
+      appearance: none; border: 0; background: transparent; color: var(--muted);
+      font-size: 12px; font-weight: 600; letter-spacing: .02em;
+      padding: 6px 12px; border-radius: 999px; cursor: pointer;
     }
-    .grow { flex: 1; min-width: 8px; }
-    .lang {
-      display: inline-flex; border-radius: 10px; overflow: hidden;
-      border: 1px solid var(--line); background: #fff;
-    }
-    .lang button {
-      border: 0; background: transparent; color: var(--muted);
-      padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer;
-    }
-    .lang button[aria-pressed="true"] { background: #f0f9ff; color: #0284c7; }
-    .chip {
-      display: inline-flex; align-items: center; gap: 6px;
-      border-radius: 999px; padding: 4px 8px;
-      font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
-    }
-    .chip svg { width: 14px; height: 14px; }
-    .chip-pass { color: var(--pass); background: var(--pass-soft); }
-    .chip-fail { color: var(--fail); background: var(--fail-soft); }
-    .chip-skip { color: var(--skip); background: var(--skip-soft); }
-    .chip-blocked { color: var(--blocked); background: var(--blocked-soft); }
-    .chip-muted { color: var(--muted); background: #f2f4f7; }
+    .prefs button[aria-pressed="true"] { background: var(--acc); color: var(--acc-fg); }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 22px 18px 64px; }
     .hero {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      background: var(--card);
+      background: var(--sheet);
       border: 1px solid var(--line);
-      border-radius: 16px;
-      overflow: hidden;
-      position: relative;
-      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 20px rgba(16, 24, 40, 0.04);
+      border-radius: 14px;
+      padding: 22px 24px;
+      margin-bottom: 18px;
+      box-shadow: 0 1px 0 rgba(26, 35, 50, .04);
     }
-    .hero:before {
-      content: "";
-      position: absolute; left: 0; right: 0; top: 0; height: 2px;
-      background: linear-gradient(90deg, #12b76a, #0ea5e9);
-    }
-    body.outcome-fail .hero:before { background: linear-gradient(90deg, #fb7185, #f04438); }
     .kicker {
-      color: var(--kicker); font-size: 11px; font-weight: 700;
-      letter-spacing: 0.16em; text-transform: uppercase;
+      margin: 0 0 6px;
+      font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
     }
-    .metric {
-      position: relative;
-      display: flex; flex-direction: column; justify-content: center;
-      gap: 4px; padding: 12px 18px; min-width: 0; min-height: 64px;
+    h1 { margin: 0 0 8px; font-size: 24px; letter-spacing: -.02em; }
+    .sub { color: var(--muted); margin: 0 0 14px; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 10px 18px; font-size: 12.5px; color: var(--muted); }
+    .meta-row code, .meta-row b {
+      font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+      background: var(--code-bg); padding: 1px 5px; border-radius: 4px; color: var(--ink);
     }
-    .metric + .metric:before {
-      content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 1px;
-      background: var(--line);
+    .stats { display: grid; grid-template-columns: 1.4fr .8fr; gap: 14px; margin: 18px 0 0; }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
     }
-    .metric em {
-      display: block;
-      font-style: normal; color: var(--muted); font-size: 12px; font-weight: 500; margin: 0;
+    .card h2 {
+      margin: 0 0 10px; font-size: 13px; color: var(--muted); font-weight: 600;
+      letter-spacing: .04em; text-transform: uppercase;
     }
-    .metric b {
-      display: block; font-size: 22px; letter-spacing: -0.04em; font-weight: 650; line-height: 1;
-      font-variant-numeric: tabular-nums;
+    .chip-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .stat-chip {
+      min-width: 88px; padding: 10px 12px; border-radius: 10px;
+      border: 1px solid var(--line); background: var(--chip);
     }
-    .metric.pass b { color: #079455; }
-    .metric.fail b { color: #d92d20; }
-    .metric.rate b { color: #0b6e99; }
-    body.outcome-fail .metric.rate b { color: #d92d20; }
-    .rec-row {
-      display: inline-flex; flex: none; align-items: center; gap: 6px;
-      margin-right: 8px; padding: 4px 10px; border: 0; border-radius: 999px;
-      background: #f4f7fb; color: var(--text); font: inherit; font-size: 12px; font-weight: 650;
-      cursor: pointer;
+    .stat-chip .n { display: block; font-size: 22px; font-weight: 700; line-height: 1.1; }
+    .stat-chip .l { font-size: 11px; color: var(--muted); letter-spacing: .06em; }
+    .stat-chip.pass { background: var(--pass-soft); border-color: color-mix(in srgb, var(--pass) 35%, var(--line)); }
+    .stat-chip.pass .n { color: var(--pass); }
+    .stat-chip.fail { background: var(--fail-soft); border-color: color-mix(in srgb, var(--fail) 35%, var(--line)); }
+    .stat-chip.fail .n { color: var(--fail); }
+    .bar-row { display: grid; grid-template-columns: 52px 1fr 48px; gap: 8px; align-items: center; margin: 6px 0; font-size: 12px; }
+    .bar { height: 8px; background: var(--bar-track); border-radius: 99px; overflow: hidden; }
+    .bar i { display: block; height: 100%; background: var(--acc); border-radius: 99px; }
+    .panel {
+      background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px 8px;
     }
-    .rec-row:hover { background: #f8fafc; }
-    .rec-row:before {
-      content: ""; width: 8px; height: 8px; border-radius: 50%; background: #f04438; flex: none;
+    .panel-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+    .panel-head h2 { margin: 0; font-size: 18px; }
+    .panel-head .count {
+      font-size: 12px; background: var(--acc-soft); color: var(--acc);
+      padding: 2px 8px; border-radius: 999px;
     }
-    dialog video {
-      display: block; width: min(92vw, 1120px); max-height: 86vh;
-      background: #0f172a; border-radius: 12px;
+    .case-list { display: flex; flex-direction: column; gap: 10px; }
+    details.case {
+      border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--chip);
     }
-    .run-meta {
-      display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
-      margin: 14px 2px 28px;
-      color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums;
-    }
-    .run-meta .when { display: inline-flex; align-items: baseline; gap: 6px; }
-    .run-meta em { font-style: normal; color: var(--kicker); }
-    .run-meta b { font-weight: 600; color: #344054; }
-    .run-meta .sep { opacity: 0.45; }
-    .section {
-      display: flex; align-items: center; gap: 10px;
-      margin: 0 2px 14px;
-    }
-    .section:before {
-      content: ""; width: 3px; height: 16px; border-radius: 99px;
-      background: linear-gradient(180deg, var(--cyan), var(--pass));
-    }
-    .section h2 { margin: 0; font-size: 16px; letter-spacing: -0.02em; font-weight: 650; }
-    .section-meta { margin-left: auto; color: var(--muted); font-size: 12px; }
-    .case-list {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      overflow: hidden;
-      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 10px 28px rgba(16, 24, 40, 0.04);
-    }
-    details.case { border-bottom: 1px solid var(--line); }
-    details.case:last-child { border-bottom: 0; }
     details.case > summary {
       list-style: none; cursor: pointer;
-      display: flex; align-items: center; gap: 12px;
-      padding: 16px 20px; user-select: none;
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 12px; background: var(--head); user-select: none;
     }
     details.case > summary::-webkit-details-marker { display: none; }
-    details.case > summary:hover { background: #f8fafc; }
-    details.case[open] > summary { padding-bottom: 12px; }
     .case-no {
-      flex: none; color: var(--kicker); font-size: 12px; font-weight: 700;
-      font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
+      flex: none; font-family: var(--mono); font-size: 11px; color: var(--muted);
     }
-    .case h3 {
-      margin: 0; font-size: 15px; font-weight: 650; letter-spacing: -0.02em;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-      word-break: break-word;
+    .grow { flex: 1; min-width: 0; }
+    details.case h3 {
+      margin: 0; font-size: 14px; font-weight: 600;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    details.case[open] h3 { -webkit-line-clamp: 8; }
-    .case small { color: var(--muted); font-size: 12px; }
+    details.case small { color: var(--muted); font-size: 12px; }
     .pill {
-      font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
-      padding: 4px 8px; border-radius: 999px;
+      display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .04em;
+      padding: 2px 7px; border-radius: 999px;
     }
-    .pill.pass { color: var(--pass); background: var(--pass-soft); }
-    .pill.fail { color: var(--fail); background: var(--fail-soft); }
-    .pill.skip { color: var(--skip); background: var(--skip-soft); }
-    .pill.blocked { color: var(--blocked); background: var(--blocked-soft); }
+    .pill.pass { background: var(--pass-soft); color: var(--pass); }
+    .pill.fail { background: var(--fail-soft); color: var(--fail); }
+    .pill.skip { background: var(--skip-soft); color: var(--skip); }
+    .pill.blocked { background: var(--blocked-soft); color: var(--blocked); }
     .time { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
     .chevron {
-      width: 8px; height: 8px; border-right: 1.5px solid #c5cdd8; border-bottom: 1.5px solid #c5cdd8;
-      transform: rotate(45deg); margin: 0 4px 4px 2px; transition: transform .16s ease;
+      width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
+      transform: rotate(45deg); margin: 0 4px 4px 2px; transition: transform .15s;
     }
-    details[open] > summary .chevron { transform: rotate(-135deg); margin-bottom: 0; }
-    .body { padding: 0 20px 20px; }
+    details[open] > summary .chevron { transform: rotate(225deg); margin-bottom: 0; }
+    .body { padding: 4px 14px 14px; border-top: 1px solid var(--line); }
     .goal {
       color: var(--muted); font-size: 13px; padding: 10px 12px;
-      background: #f8fafc; border-radius: 12px; margin-bottom: 16px;
+      background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin: 12px 0;
     }
     .outline {
-      margin: 0 0 16px; padding: 12px 14px; border-radius: 14px;
-      background: linear-gradient(180deg, #f8fbff, #f4f7fb);
-      border: 1px solid #e7edf5;
+      margin: 0 0 12px; padding: 12px 14px; border-radius: 10px;
+      background: var(--card); border: 1px solid var(--line);
     }
     .outline ol { margin: 8px 0 10px; padding-left: 18px; }
     .outline li { margin: 4px 0; }
-    .outline p { margin: 0; color: var(--text); font-size: 13px; }
+    .outline p { margin: 0; font-size: 13px; }
     .steps { display: flex; flex-direction: column; }
-    details.step-row {
-      display: block;
-      padding: 4px 0;
-    }
+    details.step-row { display: block; padding: 4px 0; border-top: 1px solid var(--line); }
     details.step-row > summary {
       list-style: none; cursor: pointer;
-      display: flex; align-items: center; gap: 12px;
-      padding: 8px 0;
+      display: flex; align-items: center; gap: 12px; padding: 8px 0;
     }
     details.step-row > summary::-webkit-details-marker { display: none; }
     details.step-row > summary .grow {
@@ -239,8 +206,7 @@
     .step-body {
       display: grid; grid-template-columns: minmax(0, 1fr) 240px;
       grid-template-areas: "times shot" "detail detail";
-      gap: 12px 16px; align-items: start;
-      padding: 4px 0 14px;
+      gap: 12px 16px; align-items: start; padding: 4px 0 14px;
     }
     .step-body > .times { grid-area: times; }
     .step-body > .card-detail { grid-area: detail; }
@@ -251,11 +217,10 @@
       grid-template-areas: "times" "detail";
     }
     .t-item b {
-      display: block; font-size: 11px; letter-spacing: 0.08em;
-      color: #667085; font-weight: 700;
+      display: block; font-size: 11px; letter-spacing: .08em;
+      color: var(--muted); font-weight: 700;
     }
     .t-item p { margin: 4px 0 0; font-size: 13px; }
-    .t-item span { display: block; color: var(--muted); font-size: 12px; }
     details.step-row .times {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
@@ -263,16 +228,15 @@
     }
     details.step-row .times .phase {
       display: flex; flex-direction: column; gap: 4px;
-      min-height: 0; padding: 10px 12px; border-radius: 12px;
-      background: #f8fafc; border: 1px solid var(--line);
+      padding: 10px 12px; border-radius: 10px;
+      background: var(--card); border: 1px solid var(--line);
     }
-    details.step-row .times .phase:hover { border-color: #c7e0f5; }
     details.step-row .times .phase em {
-      font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
-      line-height: 1.2; color: var(--kicker); white-space: nowrap;
+      font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: .04em;
+      line-height: 1.2; color: var(--muted); white-space: nowrap;
     }
     details.step-row .times .phase b {
-      display: block; font-size: 13px; font-weight: 650; line-height: 1.2; color: var(--text);
+      display: block; font-size: 13px; font-weight: 650; line-height: 1.2; color: var(--ink);
       font-variant-numeric: tabular-nums; white-space: nowrap;
     }
     details.step-row .times .phase small {
@@ -282,29 +246,24 @@
     }
     details.step-row .times .phase small:empty { display: none; }
     details.step-row .times .phase small span { display: block; color: inherit; font-size: inherit; }
-    details.step-row .times .phase.model {
-      background: #f0f9ff; border-color: #dbeafe;
-    }
-    details.step-row .times .phase.capture {
-      background: #ecfdf3; border-color: #d1fae5;
-    }
+    details.step-row .times .phase.model { background: var(--acc-soft); }
     details.step-row .times .phase.can-open { cursor: pointer; }
     details.step-row .times .phase.can-open.open {
-      border-color: #7dd3fc;
-      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.16);
+      border-color: var(--acc);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 22%, transparent);
     }
     .card-detail {
-      margin: 0; padding: 0; border-radius: 14px;
-      background: #fff; border: 1px solid var(--line);
-      color: var(--text); font-size: 12px; line-height: 1.5;
+      margin: 0; padding: 0; border-radius: 10px;
+      background: var(--sheet); border: 1px solid var(--line);
+      color: var(--ink); font-size: 12px; line-height: 1.5;
       max-height: 420px; overflow: auto;
     }
     .card-detail[hidden] { display: none; }
     .card-detail .sec + .sec { border-top: 1px solid var(--line); }
     .card-detail .sec > header {
       padding: 10px 14px 0;
-      font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--kicker);
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--muted);
     }
     .card-detail .sec-b { padding: 8px 14px 12px; }
     .card-detail dl { margin: 0; display: grid; gap: 8px; }
@@ -312,32 +271,27 @@
       display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 8px 12px; align-items: start;
     }
     .card-detail dl > div.stack { grid-template-columns: 1fr; gap: 4px; }
-    .card-detail dt { color: var(--kicker); font-weight: 650; }
-    .card-detail dd { margin: 0; color: var(--text); word-break: break-word; }
-    .card-detail .els {
-      list-style: none; margin: 6px 0 0; padding: 0;
-      display: grid; gap: 2px;
-    }
+    .card-detail dt { color: var(--muted); font-weight: 650; }
+    .card-detail dd { margin: 0; color: var(--ink); word-break: break-word; }
+    .card-detail .els { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 2px; }
     .card-detail .els li {
       display: grid; grid-template-columns: 40px 92px minmax(0, 1fr);
-      gap: 8px; padding: 5px 8px; border-radius: 8px;
-      font-variant-numeric: tabular-nums;
+      gap: 8px; padding: 5px 8px; border-radius: 8px; font-variant-numeric: tabular-nums;
     }
-    .card-detail .els li:nth-child(odd) { background: #f8fafc; }
-    .card-detail .els i { color: var(--kicker); font-style: normal; font-weight: 650; }
-    .card-detail .els b { font-weight: 650; color: #475467; }
+    .card-detail .els li:nth-child(odd) { background: var(--card); }
+    .card-detail .els i { color: var(--muted); font-style: normal; font-weight: 650; }
+    .card-detail .els b { font-weight: 650; }
     .card-detail .els span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .card-detail p { margin: 0 0 6px; white-space: pre-wrap; word-break: break-word; }
     .card-detail p:last-child { margin-bottom: 0; }
     .shot {
       width: 100%; max-width: 240px; justify-self: end;
-      border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff;
+      border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--sheet);
       cursor: zoom-in;
     }
-    .shot:hover { border-color: #bae6fd; }
     .shot img {
       display: block; width: 100%; height: 148px; object-fit: cover; object-position: top;
-      background: #fff;
+      background: var(--sheet);
     }
     .shot i {
       display: block; padding: 8px 10px; font-style: normal; color: var(--muted); font-size: 11px;
@@ -345,97 +299,93 @@
     }
     .err { color: var(--fail); white-space: pre-wrap; margin: 12px 0 0; font-size: 13px; }
     .http { color: var(--muted); font-size: 12px; word-break: break-all; }
+    .rec-row {
+      display: inline-flex; flex: none; align-items: center; gap: 6px;
+      margin-right: 4px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px;
+      background: var(--chip); color: var(--ink); font-size: 12px; font-weight: 650; cursor: pointer;
+    }
+    .rec-row:before {
+      content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--fail); flex: none;
+    }
     dialog { border: 0; padding: 0; background: transparent; }
-    dialog::backdrop { background: rgba(15, 23, 42, 0.55); }
+    dialog::backdrop { background: rgba(15, 20, 27, .55); }
     dialog img {
       display: block; width: auto; height: auto; max-width: 92vw; max-height: 88vh;
-      object-fit: contain; background: #fff; border-radius: 16px;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.28);
+      object-fit: contain; background: var(--sheet); border-radius: 14px;
     }
-    @media (max-width: 640px) {
-      .hero { grid-template-columns: repeat(2, 1fr); }
-      .metric:nth-child(odd):before { display: none; }
+    dialog video {
+      display: block; width: min(92vw, 1120px); max-height: 86vh;
+      background: #0f172a; border-radius: 12px;
     }
+    .footer { color: var(--muted); font-size: 12px; margin: 18px 2px 0; }
+    @media (max-width: 800px) { .stats { grid-template-columns: 1fr; } }
     @media (max-width: 860px) {
-      .wrap { padding: 18px 16px 48px; }
-      .nav { flex-wrap: wrap; }
-      .body { padding-left: 20px; }
       .step-body, details.step-row.no-shot .step-body {
         grid-template-columns: 1fr;
         grid-template-areas: "times" "shot" "detail";
       }
       .shot { max-width: none; }
     }
-    @media (prefers-reduced-motion: reduce) {
-      .ring-progress { animation: none; stroke-dashoffset: var(--to); }
-    }
     @media print {
-      body, body.outcome-fail { background: #fff; }
-      body:before { display: none; }
-      .lang { display: none; }
-      .hero, .case-list { box-shadow: none; }
-      .ring-progress { animation: none; stroke-dashoffset: var(--to); }
-      details.case { break-inside: avoid; }
-      details.case:not([open]) { display: block; }
-      details.case > summary { display: flex; }
-      .shot { width: 180px; }
-      .shot img { height: 100px; cursor: default; }
+      .prefs { display: none; }
+      body { background: #fff; }
+      .hero, details.case { box-shadow: none; }
     }
   </style>
 </head>
 <body class="outcome-{{outcome}}">
+  <div class="prefs" role="toolbar" aria-label="Language and theme">
+    <div class="group" role="group" aria-label="Language">
+      <button type="button" data-set-lang="zh" aria-pressed="false">中文</button>
+      <button type="button" data-set-lang="en" aria-pressed="true">EN</button>
+    </div>
+    <div class="group" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="light" aria-pressed="true"><span data-zh="白天" data-en="Light">Light</span></button>
+      <button type="button" data-set-theme="dark" aria-pressed="false"><span data-zh="黑夜" data-en="Dark">Dark</span></button>
+    </div>
+  </div>
   <div class="wrap">
-    <header class="nav">
-      <div class="mark">P</div>
-      <div class="brand">
-        <b>CodexQA Jev Browser</b>
-        <span class="tag" data-en="TEST REPORT" data-zh="测试报告">TEST REPORT</span>
+    <header class="hero">
+      <p class="kicker">codexqa-jev-browser</p>
+      <h1><span data-en="Browser replay report" data-zh="浏览器回放报告">Browser replay report</span></h1>
+      <p class="sub">{{title}}</p>
+      <div class="meta-row">
+        <span>Run ID: <code>{{run_id}}</code></span>
+        <span><span data-en="Duration" data-zh="耗时">Duration</span>: <b>{{duration_label}}</b></span>
+        <span><span data-en="Steps" data-zh="步骤">Steps</span>: <b>{{steps}}</b></span>
+        <span><span data-en="Start" data-zh="开始">Start</span>: <b title="{{started_full}}">{{started_label}}</b></span>
+        <span><span data-en="End" data-zh="结束">End</span>: <b title="{{finished_full}}">{{finished_label}}</b></span>
+        <span>{{browser}}</span>
+        <span>{{viewport}}</span>
       </div>
-      <div class="grow"></div>
-      <div class="lang" role="group" aria-label="Language">
-        <button type="button" data-set-lang="en" aria-pressed="true">EN</button>
-        <button type="button" data-set-lang="zh" aria-pressed="false">中文</button>
+      <div class="stats">
+        <div class="card">
+          <h2><span data-en="Result" data-zh="结果">Result</span></h2>
+          <div class="chip-row">
+            <div class="stat-chip"><span class="n">{{total}}</span><span class="l" data-en="CASES" data-zh="用例">CASES</span></div>
+            <div class="stat-chip pass"><span class="n">{{passed}}</span><span class="l" data-en="PASSED" data-zh="通过">PASSED</span></div>
+            <div class="stat-chip {{failed_class}}"><span class="n">{{failed}}</span><span class="l" data-en="FAILED" data-zh="失败">FAILED</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2><span data-en="Pass rate" data-zh="通过率">Pass rate</span></h2>
+          <div class="bar-row">
+            <span data-en="Pass" data-zh="通过">Pass</span>
+            <div class="bar"><i style="width:{{pass_rate}}"></i></div>
+            <b>{{pass_rate}}</b>
+          </div>
+        </div>
       </div>
     </header>
 
-    <section class="hero">
-      <div class="metric">
-        <em><span data-en="Cases" data-zh="用例">Cases</span></em>
-        <b>{{total}}</b>
+    <section class="panel">
+      <div class="panel-head">
+        <h2 data-en="Cases" data-zh="用例回放">Cases</h2>
+        <span class="count">{{total}}</span>
       </div>
-      <div class="metric pass">
-        <em><span data-en="Passed" data-zh="通过">Passed</span></em>
-        <b>{{passed}}</b>
-      </div>
-      <div class="metric {{failed_class}}">
-        <em><span data-en="Failed" data-zh="失败">Failed</span></em>
-        <b>{{failed}}</b>
-      </div>
-      <div class="metric rate">
-        <em><span data-en="Pass rate" data-zh="通过率">Pass rate</span></em>
-        <b>{{pass_rate}}</b>
-      </div>
+      <div class="case-list">{{cases}}</div>
     </section>
-
-    <div class="run-meta">
-      <span class="when"><em data-en="Duration" data-zh="耗时">Duration</em><b>{{duration_label}}</b></span>
-      <span class="sep">·</span>
-      <span class="when"><em data-en="Steps" data-zh="步骤">Steps</em><b>{{steps}}</b></span>
-      <span class="sep">·</span>
-      <span class="when"><em data-en="Start" data-zh="开始">Start</em><b title="{{started_full}}">{{started_label}}</b></span>
-      <span class="sep">·</span>
-      <span class="when"><em data-en="End" data-zh="结束">End</em><b title="{{finished_full}}">{{finished_label}}</b></span>
-      <span class="sep">·</span>
-      <span>{{browser}}</span>
-      <span class="sep">·</span>
-      <span>{{viewport}}</span>
-    </div>
-
-    <div class="section">
-      <h2 data-en="Cases" data-zh="用例回放">Cases</h2>
-      <div class="section-meta">{{run_id}}</div>
-    </div>
-    <div class="case-list">{{cases}}</div>
+    <p class="footer"><span data-en="Local HTML from codexqa-jev-browser. Screenshots stay in this run folder." data-zh="由 codexqa-jev-browser 在本地生成。截图留在这次运行的目录里。">Local HTML from codexqa-jev-browser. Screenshots stay in this run folder.</span></p>
   </div>
 
   <dialog id="zoom" onclick="this.close()"><img alt=""></dialog>
@@ -471,9 +421,11 @@
       playerVideo.load();
     });
     const langButtons = [...document.querySelectorAll("[data-set-lang]")];
+    const themeButtons = [...document.querySelectorAll("[data-set-theme]")];
     function applyLang(lang) {
       const next = lang === "zh" ? "zh" : "en";
       document.documentElement.lang = next === "zh" ? "zh-CN" : "en";
+      document.documentElement.dataset.lang = next;
       document.querySelectorAll("[data-en]").forEach((el) => {
         el.textContent = next === "zh" ? el.dataset.zh || "" : el.dataset.en || "";
       });
@@ -483,6 +435,12 @@
       });
       for (const button of langButtons) button.setAttribute("aria-pressed", String(button.dataset.setLang === next));
       try { localStorage.setItem("codexqa-jev-browser-report-lang", next); } catch { /* private mode */ }
+    }
+    function applyTheme(theme) {
+      const next = theme === "dark" ? "dark" : "light";
+      document.documentElement.dataset.theme = next;
+      for (const button of themeButtons) button.setAttribute("aria-pressed", String(button.dataset.setTheme === next));
+      try { localStorage.setItem("codexqa-jev-browser-report-theme", next); } catch { /* private mode */ }
     }
     function detailText(card, lang) {
       return lang === "zh" ? card.dataset.detailZh || "" : card.dataset.detailEn || "";
@@ -573,9 +531,15 @@
       });
     });
     for (const button of langButtons) button.addEventListener("click", () => applyLang(button.dataset.setLang));
+    for (const button of themeButtons) button.addEventListener("click", () => applyTheme(button.dataset.setTheme));
     let stored = "en";
-    try { stored = localStorage.getItem("codexqa-jev-browser-report-lang") || "en"; } catch { /* private mode */ }
+    let theme = "light";
+    try {
+      stored = localStorage.getItem("codexqa-jev-browser-report-lang") || "en";
+      theme = localStorage.getItem("codexqa-jev-browser-report-theme") || "light";
+    } catch { /* private mode */ }
     applyLang(stored);
+    applyTheme(theme);
   </script>
 </body>
 </html>
