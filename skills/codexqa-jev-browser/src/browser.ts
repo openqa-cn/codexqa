@@ -42,9 +42,13 @@ export class BrowserSession {
     }
     this.watchPages();
     this.page!.setDefaultTimeout(this.config.timeoutMs);
-    await this.beginRecording();
-    if (url) return this.goto(url);
-    return null;
+    try {
+      const opening = url ? this.goto(url) : Promise.resolve(null);
+      await this.beginRecording();
+      return await opening;
+    } finally {
+      if (!headless) await this.revealWindow();
+    }
   }
 
   async goto(url: string): Promise<PageState> {
@@ -124,11 +128,13 @@ export class BrowserSession {
   private async launchCloak(cloak: CloakLaunch, headless: boolean): Promise<void> {
     mkdirSync(cloak.userDataDir, { recursive: true });
     this.engine = "cloak";
+    const args = headless ? cloak.args : [...cloak.args, "--window-position=-32000,-32000"];
     try {
       this.context = await chromium.launchPersistentContext(cloak.userDataDir, {
         executablePath: cloak.executablePath,
         headless,
-        args: cloak.args,
+        chromiumSandbox: true,
+        args,
         ignoreDefaultArgs: ["--enable-automation", "--enable-unsafe-swiftshader"],
         viewport: headless ? { width: this.config.viewportWidth, height: this.config.viewportHeight } : null,
         extraHTTPHeaders: this.options.headers,
@@ -143,7 +149,8 @@ export class BrowserSession {
       this.context = await chromium.launchPersistentContext(fallback, {
         executablePath: cloak.executablePath,
         headless,
-        args: cloak.args,
+        chromiumSandbox: true,
+        args,
         ignoreDefaultArgs: ["--enable-automation", "--enable-unsafe-swiftshader"],
         viewport: headless ? { width: this.config.viewportWidth, height: this.config.viewportHeight } : null,
         extraHTTPHeaders: this.options.headers,
@@ -153,6 +160,30 @@ export class BrowserSession {
     this.page = this.context.pages()[0] ?? (await this.context.newPage());
     await this.applyStorageState();
     console.error(`browser cloak ${cloak.executablePath}`);
+  }
+
+  private async revealWindow(): Promise<void> {
+    const page = this.page;
+    const browser = this.browser;
+    if (!page || !browser || page.isClosed()) return;
+    try {
+      const session = await page.context().newCDPSession(page);
+      const { windowId } = await session.send("Browser.getWindowForTarget");
+      await session.send("Browser.setWindowBounds", {
+        windowId,
+        bounds: {
+          left: 48,
+          top: 48,
+          width: this.config.viewportWidth,
+          height: this.config.viewportHeight + 120,
+          windowState: "normal",
+        },
+      });
+      await session.detach().catch(() => undefined);
+      await page.bringToFront().catch(() => undefined);
+    } catch {
+      /* The window stays where the browser placed it. */
+    }
   }
 
   private async beginRecording(): Promise<void> {
@@ -166,10 +197,18 @@ export class BrowserSession {
 
   private watchPages(): void {
     this.context?.on("page", (page) => {
+      const current = this.page;
+      if (current && current !== page && !current.isClosed() && page.url() === "about:blank") {
+        void current.bringToFront().catch(() => undefined);
+      }
       page.once("domcontentloaded", () => {
         if (!this.page || this.page.isClosed()) {
           this.page = page;
           void this.recorder?.follow(page).catch(() => undefined);
+          return;
+        }
+        if (this.page !== page && page.url() === "about:blank") {
+          void this.page.bringToFront().catch(() => undefined);
         }
       });
     });

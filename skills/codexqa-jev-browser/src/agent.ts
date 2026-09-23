@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { parse as parseYaml } from "yaml";
 import { execute, settle } from "./act.js";
 import type { BrowserSession } from "./browser.js";
-import { DecisionError, StalePage } from "./errors.js";
+import { DecisionError, EmptyField, StalePage } from "./errors.js";
 import { actionMarkLabel, asCandidate, contentKey, controlSnapshot, elementLabel } from "./observe/snapshot.js";
 import { JevProvider, createDecisionProvider, decisionModelLabel, jevAssert } from "./jev.js";
 import { retrieveKnowledge } from "./knowledge.js";
@@ -41,14 +41,17 @@ export class Agent {
     hooks: { onStep?: (result: CaseResult) => void } = {},
   ): Promise<{ result: CaseResult; history: Record<string, unknown>[] }> {
     this.knowledge = retrieveKnowledge({ url, goal });
-    const plan = this.provider instanceof ScriptedProvider ? undefined : await planTask(goal, this.config, this.knowledge);
+    const planning = this.provider instanceof ScriptedProvider ? null : planTask(goal, this.config, this.knowledge);
+    const opening = this.session.url && this.session.url !== "about:blank" ? this.session.observe() : this.session.goto(url);
+    const plan = planning ? await planning : undefined;
     const guidedGoal = guideGoal(goal, plan, this.knowledge);
-    let page = await this.session.goto(url);
+    let page = await opening;
     const history: Record<string, unknown>[] = [];
     const result = emptyCase({ id: caseId, name: goal.slice(0, 80) || caseId, source: "auto", goal, plan });
     const started = Date.now();
     let unchanged = 0;
     let sameContentSkips = 0;
+    let emptyFieldSkips = 0;
     let staleRetries = 0;
     let waitRetries = 0;
     let status = "pass";
@@ -155,6 +158,33 @@ export class Agent {
       }
       try {
         const acted = await this.act(page, goal, decision, history);
+        if (acted.skippedEmpty) {
+          history.push(acted.item);
+          emptyFieldSkips += 1;
+          result.steps.push(
+            await this.record(caseId, stepIndex, "type", page, {
+              decision,
+              status: "skip",
+              error: "no text for this field",
+              durationMs: elapsedMs(stepStarted),
+              observeMs,
+              observed,
+              modelMs,
+              model,
+              modelUsage,
+            }),
+          );
+          hooks.onStep?.(result);
+          if (emptyFieldSkips >= 3) {
+            status = "fail";
+            error = "Text model returned no field value; nothing typed";
+            break;
+          }
+          page = await this.session.observe();
+          this.predictedContent = "";
+          continue;
+        }
+        emptyFieldSkips = 0;
         page = acted.page;
         history.push(acted.item);
         result.steps.push(
@@ -181,11 +211,8 @@ export class Agent {
         );
         hooks.onStep?.(result);
         const actedStep = result.steps.at(-1);
-        if (actedStep?.status === "fail") {
-          status = "fail";
-          error = actedStep.error ?? "action had no visible effect";
-          break;
-        }
+        if (actedStep?.status === "fail") error = actedStep.error ?? "action had no visible effect";
+        else if (actedStep?.status === "pass") error = undefined;
         if (acted.item.op === "wait") {
           waitRetries += 1;
           if (waitRetries >= 3) {
@@ -340,10 +367,26 @@ export class Agent {
         textMs = 0;
         textModel = "decision";
       } else {
-        const filled = await fieldText(context, this.config);
-        this.pendingText = { context: key, ...filled };
-        text = filled.text;
-        ({ textMs, textModel, textUsage, textThought } = readTextHelper(filled.helper));
+        try {
+          const filled = await fieldText(context, this.config);
+          this.pendingText = { context: key, ...filled };
+          text = filled.text;
+          ({ textMs, textModel, textUsage, textThought } = readTextHelper(filled.helper));
+        } catch (err) {
+          if (!(err instanceof EmptyField) || !element) throw err;
+          return {
+            page,
+            skippedEmpty: true,
+            item: {
+              op: "type",
+              action: elementLabel(element),
+              text: "",
+              page_changed: false,
+              matched: asCandidate(element),
+              operation: decision.operation,
+            },
+          };
+        }
       }
     }
     const opts = {
@@ -373,6 +416,7 @@ export class Agent {
       : undefined;
     return {
       page: next,
+      skippedEmpty: false,
       textMs,
       textModel,
       textUsage,

@@ -219,7 +219,7 @@ async function cmdAuto(argv: string[], config: PilotConfig, screenshots: boolean
   });
   const session = openSession(config, writer, { headed });
   try {
-    await session.start();
+    await session.start(url);
     report.browser = session.engine;
     const decisions = flag(argv, "--decisions");
     const agent = new Agent(session, writer, config, { script: decisions ? loadScript(decisions) : undefined });
@@ -274,7 +274,7 @@ async function cmdGenerate(argv: string[], config: PilotConfig, screenshots: boo
     console.log(`updated ${paths[0]} steps=${compiled.steps.length}`);
   };
   try {
-    await session.start();
+    await session.start(url);
     report.browser = session.engine;
     const decisions = flag(argv, "--decisions");
     const agent = new Agent(session, writer, config, { script: decisions ? loadScript(decisions) : undefined });
@@ -310,7 +310,7 @@ async function cmdExplore(argv: string[], config: PilotConfig, screenshots: bool
   mkdirSync(out, { recursive: true });
   const session = openSession(config, writer, { headed });
   try {
-    await session.start();
+    await session.start(url);
     report.browser = session.engine;
     const { graph, result, compiled } = await explore(session, writer, url, {
       maxStates: Number(flag(argv, "--max-states") ?? 12),

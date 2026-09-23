@@ -182,13 +182,20 @@
       color: var(--muted); font-size: 13px; padding: 10px 12px;
       background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin: 12px 0;
     }
-    .outline {
-      margin: 0 0 12px; padding: 12px 14px; border-radius: 10px;
+    details.outline {
+      margin: 12px 0; border-radius: 10px;
       background: var(--card); border: 1px solid var(--line);
     }
-    .outline ol { margin: 8px 0 10px; padding-left: 18px; }
-    .outline li { margin: 4px 0; }
-    .outline p { margin: 0; font-size: 13px; }
+    details.outline > summary {
+      list-style: none; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; user-select: none;
+    }
+    details.outline > summary::-webkit-details-marker { display: none; }
+    details.outline > summary .kicker { margin: 0; flex: 1; }
+    details.outline ol { margin: 0 14px 10px; padding-left: 18px; }
+    details.outline li { margin: 4px 0; }
+    details.outline p { margin: 0 14px 12px; font-size: 13px; }
     .steps { display: flex; flex-direction: column; }
     details.step-row { display: block; padding: 4px 0; border-top: 1px solid var(--line); }
     details.step-row > summary {

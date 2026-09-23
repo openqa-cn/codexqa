@@ -78,7 +78,6 @@ export function cloakArgs(opts: {
   height: number;
 }): string[] {
   const args = [
-    "--no-sandbox",
     `--fingerprint=${opts.fingerprintSeed}`,
     `--fingerprint-storage-quota=${opts.storageQuota}`,
     `--profile-directory=${opts.profileDirectory}`,

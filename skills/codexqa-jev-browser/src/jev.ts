@@ -219,11 +219,23 @@ function pickPool<T>(indexes: string[], pool: Record<string, T>): Record<string,
   return Object.fromEntries(indexes.filter((index) => pool[index]).map((index) => [index, pool[index]]));
 }
 
+function linkHint(href?: string | null): string {
+  if (!href || !/^https?:/i.test(href)) return "";
+  try {
+    const url = new URL(href);
+    const host = url.hostname.replace(/^www\./, "");
+    const segment = url.pathname.split("/").filter(Boolean)[0];
+    return segment ? `${host}/${segment}` : host;
+  } catch {
+    return "";
+  }
+}
+
 function addTargetQuestion(
   questions: Record<string, unknown>,
   key: string,
   operation: string,
-  pool: Record<string, { index: string; name: string; role: string; value: string }>,
+  pool: Record<string, { index: string; name: string; role: string; value: string; href?: string | null }>,
   goal: string,
 ): void {
   const entries = Object.entries(pool);
@@ -234,7 +246,9 @@ function addTargetQuestion(
       entries.map(([index, item]) => [
         index,
         {
-          element: `[${index}] ${item.role} ${item.name || "(unnamed)"}`.trim(),
+          element: [`[${index}] ${item.role} ${item.name || "(unnamed)"}`.trim(), linkHint(item.href)]
+            .filter(Boolean)
+            .join(" · "),
           current_value: publicValue(item.name, item.value),
         },
       ]),

@@ -123,6 +123,33 @@ describe("jev provider", () => {
     expect(JSON.stringify(body)).not.toContain("super-secret");
   });
 
+  it("labels a click target with the link host", () => {
+    const space = buildSpace(
+      page(
+        el({
+          index: "15",
+          node: 15,
+          role: "link",
+          name: "携程官网",
+          operations: ["CLICK"],
+          href: "https://www.baidu.com/s?wd=%E6%90%BA%E7%A8%8B%E5%AE%98%E7%BD%91",
+        }),
+        el({
+          index: "22",
+          node: 22,
+          role: "link",
+          name: "www.ctrip.com",
+          operations: ["CLICK"],
+          href: "https://www.ctrip.com/",
+        }),
+      ),
+    );
+    const body = buildJevRequest(defaultConfig(), { url: "https://www.baidu.com/s", title: "携程_百度搜索" }, "打开携程官网", [], space);
+    const criteria = (body.questions as { click_target: { criteria: Record<string, { element: string }> } }).click_target.criteria;
+    expect(criteria["15"].element).toContain("baidu.com/s");
+    expect(criteria["22"].element).toContain("ctrip.com");
+  });
+
   it("maps Jev answers onto a CLICK decision", () => {
     const decision = parseJevAnswers({
       operation: { choice: "CLICK" },

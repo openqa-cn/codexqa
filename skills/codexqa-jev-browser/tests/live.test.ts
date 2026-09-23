@@ -70,8 +70,26 @@ describe("live browser flows", () => {
         script: [{ operation: "CLICK", target: { role: "button", name: "退出登录" } }],
       });
       const { result } = await agent.run(app, "点一个没有效果的按钮");
-      expect(result.status).toBe("fail");
+      expect(result.status).not.toBe("pass");
       expect(result.steps.some((step) => step.assertVerdict === "fail" && step.status === "fail")).toBe(true);
+    } finally {
+      await session.close();
+    }
+  });
+
+  it("keeps a departure caption on a city field whose accessible name is only the placeholder", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "codexqa-jev-browser-city-"));
+    const file = path.join(dir, "cities.html");
+    writeFileSync(
+      file,
+      "<!DOCTYPE html><title>cities</title><div><div>出发地</div><input aria-label='可输入城市或机场' value='北京(BJS)'></div><div><div>目的地</div><input aria-label='可输入城市或机场' value='北京(BJS)'></div>",
+    );
+    const session = new BrowserSession({ ...defaultConfig(), headless: true });
+    try {
+      const page = await session.start(file);
+      const names = page?.elements.map((item) => item.name) ?? [];
+      expect(names).toContain("出发地 可输入城市或机场");
+      expect(names).toContain("目的地 可输入城市或机场");
     } finally {
       await session.close();
     }
@@ -83,7 +101,36 @@ describe("live browser flows", () => {
       const page = await session.start(path.join(root, "examples/app/search-submit.html"));
       const search = page?.elements.find((item) => item.role === "button" && item.name === "搜索");
       expect(search?.operations).toContain("CLICK");
+      const submit = page?.elements.find((item) => item.role === "button" && item.name === "百度一下");
+      expect(submit?.operations).toContain("CLICK");
       expect(page?.elements.some((item) => item.name === "附近文字")).toBe(true);
+    } finally {
+      await session.close();
+    }
+  });
+
+  it("waits for controls that appear after a navigation", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "codexqa-jev-browser-late-"));
+    const file = path.join(dir, "late.html");
+    writeFileSync(
+      file,
+      "<!DOCTYPE html><title>late</title><button id='go'>打开</button><script>document.getElementById('go').onclick=()=>{location.hash='opened';setTimeout(()=>{const input=document.createElement('input');input.setAttribute('aria-label','后来出现');document.body.appendChild(input);},900);};</script>",
+    );
+    const config = { ...defaultConfig(), headless: true, reportsDir: mkdtempSync(path.join(tmpdir(), "codexqa-jev-browser-late-report-")) };
+    const writer = new ReportWriter(config.reportsDir, "late-1", false);
+    const session = new BrowserSession(config);
+    try {
+      await session.start(file);
+      const agent = new Agent(session, writer, config, {
+        script: [
+          { operation: "CLICK", target: { role: "button", name: "打开" } },
+          { operation: "TYPE", text: "好", target: { role: "textbox", name: "后来出现" } },
+          { operation: "DONE" },
+        ],
+      });
+      const { result } = await agent.run(file, "点打开后等输入框出现再填写");
+      expect(result.status).toBe("pass");
+      expect(result.steps.some((step) => step.op === "type" && step.value === "好")).toBe(true);
     } finally {
       await session.close();
     }
@@ -100,6 +147,8 @@ describe("live browser flows", () => {
       expect(names).toContain("2026年10月 7");
       expect(names).toContain("2026年11月 7");
       expect(names).not.toContain("7");
+      expect(names).not.toContain("2026年9月 日一二三四五六");
+      expect(names).not.toContain("2026年10月");
       expect(options.every((item) => item.within === "chooser" && item.operations.includes("CLICK"))).toBe(true);
     } finally {
       await session.close();

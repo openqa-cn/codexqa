@@ -133,7 +133,52 @@
     if (alt) return alt.slice(0, 80);
     const text = (el.innerText || "").replace(/\s+/g, " ").trim();
     if (text) return text.slice(0, 80);
+    if (el.tagName?.toLowerCase() === "input") {
+      const type = (el.type || "").toLowerCase();
+      if (type === "submit" || type === "button" || type === "reset" || type === "image") {
+        const value = (el.getAttribute("value") || "").replace(/\s+/g, " ").trim();
+        if (value) return value.slice(0, 80);
+      }
+    }
     return "";
+  };
+
+  const captionText = (node) => {
+    if (!node || node.nodeType !== 1) return "";
+    if (node.matches("input,textarea,select,button,a")) return "";
+    if (node.querySelector("input,textarea,select,button,a")) return "";
+    const text = (node.textContent || "").replace(/\s+/g, " ").trim();
+    if (!text || text.length > 8 || /^\d+$/.test(text)) return "";
+    return text;
+  };
+
+  const captionOf = (el) => {
+    const rect = el.getBoundingClientRect();
+    if (rect.width < 2 || rect.height < 2) return "";
+    let scope = el.parentElement;
+    let node = el.parentElement;
+    for (let depth = 0; depth < 4 && node && node !== docOf(el).body; depth += 1, node = node.parentElement) {
+      const box = node.getBoundingClientRect();
+      if (box.width > rect.width + 120 || box.height > 160) break;
+      scope = node;
+    }
+    if (!scope) return "";
+    const value = String(el.value || "").trim();
+    let best = "";
+    let bestTop = Infinity;
+    for (const candidate of scope.querySelectorAll("*")) {
+      if (candidate === el || candidate.contains(el) || el.contains(candidate)) continue;
+      const text = captionText(candidate);
+      if (!text || (value && (text === value || value.includes(text)))) continue;
+      const box = candidate.getBoundingClientRect();
+      if (box.width < 2 || box.height < 2 || box.height > 32) continue;
+      const overlapsX = box.left < rect.right - 4 && box.right > rect.left + 4;
+      const inUpper = overlapsX && box.top >= rect.top - 40 && box.top <= rect.top + 36 && box.bottom <= rect.top + rect.height * 0.7;
+      if (!inUpper || box.top >= bestTop) continue;
+      best = text;
+      bestTop = box.top;
+    }
+    return best;
   };
 
   const withinOf = (el) => {
@@ -191,10 +236,20 @@
 
   const isDayCell = (text) => /^\d{1,2}$/.test(text);
 
+  const isWeekdayHeader = (text) => {
+    const compact = text.replace(/\s+/g, "");
+    return /[日一二三四五六]{5,}/.test(compact) && !/\d{1,2}日/.test(compact);
+  };
+
   const isChoiceLeaf = (el) => {
     if (!isVisible(el) || isDisabled(el)) return false;
     if (el.matches("input,textarea,select,button,a[href]")) return false;
     const text = leafText(el);
+    if (isWeekdayHeader(text)) return false;
+    const compact = text.replace(/\s+/g, "");
+    if (/^20\d{2}年(\d{1,2}月)?$/.test(compact) || /^\d{1,2}月$/.test(compact)) return false;
+    const dayTokens = text.match(/\d{1,2}/g) || [];
+    if (!isDayCell(text) && dayTokens.length > 1) return false;
     if (text.length < 1 || text.length > 20) return false;
     if (!isDayCell(text) && text.length < 2) return false;
     for (const child of el.children) {
@@ -377,7 +432,7 @@
     if (!isVisible(el) || isDisabled(el)) continue;
     const role = chooser ? "option" : card ? "link" : press ? "button" : roleOf(el);
     if (!role) continue;
-    const name = chooser
+    const accessible = chooser
       ? (() => {
           const text = leafText(el).slice(0, 80);
           if (!isDayCell(text)) return text;
@@ -385,6 +440,11 @@
           return month ? `${month} ${text}`.slice(0, 80) : text;
         })()
       : givenName || nameOf(el);
+    const caption =
+      chooser || card || press || !el.matches?.("input,textarea,[contenteditable=''],[contenteditable='true'],[role='textbox'],[role='searchbox']")
+        ? ""
+        : captionOf(el);
+    const name = caption && !accessible.includes(caption) ? `${caption} ${accessible}`.trim().slice(0, 80) : accessible;
     const operations = chooser || card || press ? ["CLICK"] : operationsOf(el, role);
     if (!name && !chooser && !operations.includes("TYPE") && !operations.includes("SELECT")) continue;
     const id = nodeId(el);

@@ -652,11 +652,14 @@ function planHtml(plan?: TaskPlan): string {
   const items = plan.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join("");
   const doneEn = `Done when: ${plan.doneWhen}`;
   const doneZh = `结束：${plan.doneWhen}`;
-  return `<div class="outline">
-    <div class="kicker" ${bilingual("Task breakdown", "任务拆解")}>Task breakdown</div>
+  return `<details class="outline">
+    <summary>
+      <span class="kicker" ${bilingual("Task breakdown", "任务拆解")}>Task breakdown</span>
+      <span class="chevron"></span>
+    </summary>
     <ol>${items}</ol>
     <p ${bilingual(doneEn, doneZh)}>${escapeHtml(doneEn)}</p>
-  </div>`;
+  </details>`;
 }
 
 function repeatsTitle(name: string, goal?: string): boolean {

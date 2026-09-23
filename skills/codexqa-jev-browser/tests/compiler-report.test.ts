@@ -202,6 +202,35 @@ describe("compiler and report", () => {
     expect(renderMarkdown(report)).toContain("jev: 920 ms");
   });
 
+  it("keeps the task breakdown collapsed until opened", () => {
+    const report = emptyReport({
+      runId: "run-plan",
+      mode: "auto",
+      name: "demo",
+      startedAt: isoformat(),
+      cases: [
+        {
+          id: "auto",
+          name: "搜航班",
+          source: "auto",
+          status: "fail",
+          durationMs: 1000,
+          plan: {
+            steps: ["在百度搜索框中输入携程", "点击搜索"],
+            doneWhen: "页面上显示了北京到昆明的航班列表",
+          },
+          steps: [],
+        },
+      ],
+    });
+    const html = renderHtml(report);
+    expect(html).toContain('<details class="outline">');
+    expect(html).not.toContain('<details class="outline" open');
+    expect(html).toContain("在百度搜索框中输入携程");
+    expect(html).toContain("Done when: 页面上显示了北京到昆明的航班列表");
+    expect(html).toContain('data-zh="任务拆解"');
+  });
+
   it("shows suite start and end times", () => {
     const startedAt = "2026-09-22T02:47:37.891Z";
     const finishedAt = "2026-09-22T02:47:48.809Z";

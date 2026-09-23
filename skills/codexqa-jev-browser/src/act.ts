@@ -32,6 +32,57 @@ export async function settle(session: BrowserSession): Promise<void> {
   await waitFrames(session, 50);
 }
 
+const CONTROL_COUNT_SELECTOR = [
+  "input",
+  "textarea",
+  "select",
+  "button",
+  "a[href]",
+  "[role='button']",
+  "[role='textbox']",
+  "[role='searchbox']",
+  "[role='combobox']",
+  "[role='radio']",
+  "[role='checkbox']",
+  "[role='option']",
+  "[role='tab']",
+].join(",");
+
+/** After a navigation, wait until new controls appear and then stop changing. */
+export async function waitForLateControls(session: BrowserSession): Promise<void> {
+  if (!session.page) return;
+  await session.page.waitForLoadState("domcontentloaded").catch(() => undefined);
+  await session.page
+    .evaluate(
+      ({ selector, timeoutMs, intervalMs, unchangedGraceMs }) =>
+        new Promise<void>((resolve) => {
+          const count = () => document.querySelectorAll(selector).length;
+          const started = performance.now();
+          const first = count();
+          let last = first;
+          let stable = 0;
+          const timer = window.setInterval(() => {
+            const next = count();
+            const elapsed = performance.now() - started;
+            if (next !== last) {
+              last = next;
+              stable = 0;
+            } else {
+              stable += 1;
+            }
+            const grewAndSettled = next > first && stable >= 2;
+            const unchangedLongEnough = next === first && elapsed >= unchangedGraceMs && stable >= 2;
+            if (grewAndSettled || unchangedLongEnough || elapsed >= timeoutMs) {
+              window.clearInterval(timer);
+              resolve();
+            }
+          }, intervalMs);
+        }),
+      { selector: CONTROL_COUNT_SELECTOR, timeoutMs: 3500, intervalMs: 200, unchangedGraceMs: 1200 },
+    )
+    .catch(() => undefined);
+}
+
 export async function execute(
   session: BrowserSession,
   _page: PageState,
@@ -61,8 +112,13 @@ export async function execute(
   const handle = await session.findLocator(element.node);
   if (kind === "click") {
     const finishPopup = session.watchPopup();
+    const previous = session.url;
     await handle.click({ timeout: 2500 });
+    if (session.page && session.url === previous) {
+      await session.page.waitForEvent("popup", { timeout: 800 }).catch(() => undefined);
+    }
     await finishPopup();
+    if (session.url !== previous) await waitForLateControls(session);
   } else if (kind === "type") {
     if (!options.text?.trim()) throw new Error("TYPE requires a non-empty text value");
     await handle.click({ timeout: 2500 });

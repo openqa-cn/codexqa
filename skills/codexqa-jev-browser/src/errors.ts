@@ -28,6 +28,13 @@ export class DecisionError extends PilotError {
   }
 }
 
+export class EmptyField extends PilotError {
+  constructor() {
+    super("Text model returned no field value; nothing typed");
+    this.name = "EmptyField";
+  }
+}
+
 export class UnsupportedAction extends PilotError {
   constructor(message: string) {
     super(message);

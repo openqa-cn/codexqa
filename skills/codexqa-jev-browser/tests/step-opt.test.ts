@@ -13,6 +13,10 @@ describe("step timing shortcuts", () => {
     const notes = retrieveKnowledge({ goal: sanyaGoal, url: "https://www.baidu.com/" });
     expect(notes).toContain("携程国内机票");
     expect(notes).toContain("不要点相邻月");
+    expect(notes).toContain("不要再点「机票」");
+    expect(notes).toContain("低价速报");
+    expect(notes).toContain("e.baidu.com");
+    expect(notes).toContain("星期表头");
     expect(notes).toContain("百度搜索");
     expect(notes).not.toContain("官方旗舰");
     const fetchMock = vi.spyOn(modelHttp, "modelFetch").mockResolvedValue(

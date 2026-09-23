@@ -55,6 +55,7 @@ describe("cloak launch", () => {
     expect(args).toContain("--fingerprint-timezone=Asia/Shanghai");
     expect(args).toContain("--lang=zh-CN");
     expect(args).toContain("--window-size=1120,780");
+    expect(args).not.toContain("--no-sandbox");
   });
 });
 
