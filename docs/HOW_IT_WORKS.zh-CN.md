@@ -14,6 +14,7 @@
 | --- | --- | --- |
 | `codexqa-skill-router` | [工作原理](../skills/codexqa-skill-router/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/codexqa-skill-router/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/codexqa-skill-router/SKILL.md) |
 | `codexqa-code-analyzer` | [工作流](../skills/codexqa-code-analyzer/README.zh-CN.md) · [已知边界](../skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.zh-CN.md) · [分析 playbook](../skills/codexqa-code-analyzer/references/playbook.md) | [`SKILL.md`](../skills/codexqa-code-analyzer/SKILL.md) |
+| `codexqa-change-analysis` | [工作流](../skills/codexqa-change-analysis/README.md) · [已知边界](../skills/codexqa-change-analysis/KNOWN_LIMITATIONS.md) · [分析步骤](../skills/codexqa-change-analysis/references/analysis.md) | [`SKILL.md`](../skills/codexqa-change-analysis/SKILL.md) |
 | `codexqa-rootcause-analyzer` | [工作原理](../skills/codexqa-rootcause-analyzer/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/codexqa-rootcause-analyzer/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/codexqa-rootcause-analyzer/SKILL.md) |
 | `codexqa-code-wiki` | [工作流](../skills/codexqa-code-wiki/README.zh-CN.md) · [已知边界](../skills/codexqa-code-wiki/KNOWN_LIMITATIONS.zh-CN.md) · [Wiki playbook](../skills/codexqa-code-wiki/references/playbook.md) | [`SKILL.md`](../skills/codexqa-code-wiki/SKILL.md) |
 | `codexqa-defect-analyzer` | [工作原理](../skills/codexqa-defect-analyzer/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/codexqa-defect-analyzer/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/codexqa-defect-analyzer/SKILL.md) |

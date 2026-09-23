@@ -33,6 +33,11 @@
       "status": "available"
     },
     {
+      "name": "codexqa-change-analysis",
+      "path": "skills/codexqa-change-analysis",
+      "status": "available"
+    },
+    {
       "name": "codexqa-rootcause-analyzer",
       "path": "skills/codexqa-rootcause-analyzer",
       "status": "available"

@@ -4,6 +4,7 @@ Each release has two sections. **Highlights** is what changes for someone using 
 
 ## Unreleased
 
+- **New `codexqa-change-analysis` skill.** One diff at a time: a trusted `index --diff-base --full`, a 7-section English HTML report (affected entries, changed methods, test plan, coverage verdict, sensitive paths), and new runnable test files for uncovered points (add only; existing test files are not edited). Former name: `change-impact-analysis`. General symbol-graph Q&A stays `codexqa-code-analyzer`.
 - `codexqa-code-reviewer`: close review relations on objects, callee control flow, unread bounds, and `rule_id`. Nearby lines no longer merge a different relation. An unread expiry is `BND-001`, not only cache growth.
 - Stop tracking `.cursor/rules` (local push-identity gate), Ruff cache, and internal `seo/` playbooks. `.github/` stays: Actions, release notes, and issue templates only run from the repository.
 - Stop tracking `.editorconfig` (editor-local). `.gitattributes` stays so clones keep LF line endings. `.gitignore` is local-only and is not tracked.

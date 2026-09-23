@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Change impact analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* Do not edit the <style> in this file. Change only text and rows inside body.
+     Diagram: the template ships a <pre class="mermaid"> source plus a loader at the end, for drafting only.
+     Before delivery, render a static inline SVG as references/report.md "Diagrams must be static" describes, and delete the loader.
+     Archive the source only with <script type="text/plain" class="diagram-source">.
+     Do not use an HTML comment — Mermaid edges are -->, which close the comment early and print the source on the page. */
+  :root {
+    /* anthropic / claude-code palette — same tokens as official session-report */
+    --ivory: #FAF9F5;
+    --term-bg: #1a1918;
+    --term-fg: #d1cfc5;
+    --titlebar: #252321;
+    --outline: rgba(255,255,255,0.08);
+    --hover: rgba(255,255,255,0.035);
+    --clay: #D97757;
+    --dim: rgb(136,136,136);
+    --subtle: rgb(80,80,80);
+    --green: rgb(78,186,101);
+    --red: rgb(255,107,128);
+    --blue: rgb(177,185,249);
+    --yellow: rgb(255,193,7);
+    --mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, Monaco, monospace;
+    --sans: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { background: var(--ivory); }
+  body {
+    margin: 0; padding: 48px 24px 80px;
+    font: 14px/1.7 var(--sans);
+    font-variant-numeric: tabular-nums;
+    color: var(--term-fg);
+  }
+
+  /* ——— terminal window chrome ——— */
+  .term {
+    max-width: 1180px; margin: 0 auto;
+    background: var(--term-bg);
+    border-radius: 8px;
+    outline: 1px solid var(--outline);
+    box-shadow: 0 20px 60px rgba(20,20,19,0.22);
+  }
+  .titlebar {
+    background: var(--titlebar);
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid var(--outline);
+    padding: 11px 14px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .titlebar .dot { width: 11px; height: 11px; border-radius: 50%; background: #3a3836; }
+  .titlebar .path { margin-left: 14px; color: var(--dim); font-size: 11px; font-family: var(--mono); }
+  .term-body { padding: 22px 30px 30px; }
+
+  /* ——— command + hero ——— */
+  .cmd { color: var(--dim); margin-bottom: 6px; font-family: var(--mono); font-size: 12px; }
+  .cmd .prompt { color: var(--clay); }
+  .cmd .flag { color: var(--blue); }
+  #meta-line { color: var(--subtle); font-size: 12px; }
+
+  #hero { margin: 14px 0 6px; }
+  #hero-total { font-size: 52px; font-weight: 700; line-height: 1; font-family: var(--mono); }
+  #hero-total .unit { color: var(--clay); font-size: 22px; margin-left: 6px; }
+  #hero-total .label { font-size: 16px; font-weight: 400; color: var(--dim); margin-left: 8px; font-family: var(--sans); }
+  #hero-split { color: var(--dim); margin-top: 10px; }
+  #hero-split b { color: var(--term-fg); font-weight: 500; }
+  #hero-split .ok { color: var(--green); }
+  #hero-split .warn { color: var(--yellow); }
+  #hero-split .bad { color: var(--red); }
+
+  .howto {
+    margin: 14px 0 4px; padding: 10px 14px;
+    border-left: 2px solid var(--clay);
+    color: var(--dim); font-size: 13px;
+  }
+  .howto b { color: var(--term-fg); font-weight: 500; }
+
+  /* ——— sections ——— */
+  section { margin-top: 26px; }
+  .hr { color: var(--subtle); overflow: hidden; white-space: nowrap;
+        user-select: none; margin-bottom: 8px; font-family: var(--mono); }
+  .hr::after { content: '────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────'; }
+  h2 { all: unset; display: block; color: var(--clay); font-weight: 500; }
+  h2::before { content: '▸ '; font-family: var(--mono); }
+  h2 .hint { color: var(--subtle); font-size: 12px; font-weight: 400; margin-left: 10px; }
+  .section-body { margin-top: 10px; }
+
+  /* ——— overall stat grid ——— */
+  #overall-grid { display: grid; gap: 4px 28px;
+                  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .stat { padding: 4px 0; }
+  .stat .label { font-size: 12px; color: var(--dim); }
+  .stat .val { font-size: 22px; font-weight: 500; font-family: var(--mono); }
+  .stat .detail { font-size: 12px; color: var(--subtle); }
+  .stat .val.ok { color: var(--green); }
+  .stat .val.warn { color: var(--yellow); }
+  .stat .val.bad { color: var(--red); }
+
+  /* ——— takeaways ——— */
+  .take { display: grid; grid-template-columns: 9ch 1fr; gap: 18px;
+          padding: 8px 0; align-items: baseline; }
+  .take .fig { text-align: right; font-weight: 700; font-size: 15px; font-family: var(--mono); }
+  .take .txt { color: var(--dim); }
+  .take .txt b { color: var(--term-fg); font-weight: 500; }
+  .take.bad  .fig { color: var(--red); }
+  .take.good .fig { color: var(--green); }
+  .take.info .fig { color: var(--blue); }
+
+  /* ——— callouts ——— */
+  .callout { padding: 8px 0 8px 14px; border-left: 2px solid var(--subtle);
+             color: var(--dim); margin: 8px 0; }
+  .callout b, .callout code { color: var(--term-fg); }
+  .callout.risk { border-left-color: var(--clay); }
+  .callout.ok { border-left-color: var(--green); }
+  .callout .why { display: block; margin-top: 4px; font-size: 12px; color: var(--subtle); }
+
+  /* ——— ivory insets: diagram paper ——— */
+  .diagram {
+    margin: 8px 0 12px; padding: 12px 14px;
+    background: #FAF9F5; color: #1a1918;
+    border-radius: 6px; font-size: 13px; overflow-x: auto;
+  }
+  .diagram .mermaid { margin: 0; }
+  .mermaid-svg svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+  .diagram-meta { margin-top: 10px; color: #87867F; font-size: 12px; }
+  .diagram-meta div { padding: 1px 0; }
+
+  .prose { color: var(--dim); }
+  .prose p { margin: 0 0 10px; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose b, .prose strong { color: var(--term-fg); font-weight: 500; }
+
+  /* ——— badges ——— */
+  .tag {
+    display: inline-block; padding: 0 6px; margin-right: 4px;
+    border: 1px solid var(--subtle); border-radius: 3px;
+    font-size: 11px; color: var(--dim); white-space: nowrap;
+  }
+  .tag.entry  { border-color: var(--green); color: var(--green); }   /* entry */
+  .tag.mid    { border-color: var(--subtle); color: var(--dim); }    /* intermediate */
+  .tag.risk   { border-color: var(--clay); color: var(--clay); }     /* sensitive / risk */
+
+  /* ——— subheads inside a section (new coverage / regression groups) ——— */
+  .subhead { margin: 18px 0 4px; color: var(--term-fg); font-weight: 500; font-size: 13px; }
+  .subhead::before { content: '· '; color: var(--clay); font-family: var(--mono); }
+  .subhead .subhint { color: var(--subtle); font-weight: 400; font-size: 12px; margin-left: 8px; }
+
+  /* ——— tables ——— */
+  .scroll { overflow-x: auto;
+            border-top: 1px solid var(--outline); border-bottom: 1px solid var(--outline); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 10px; vertical-align: top; }
+  td { border-top: 1px solid rgba(255,255,255,0.04); }
+  th { position: sticky; top: 0; background: var(--term-bg); z-index: 1;
+       font-weight: 500; font-size: 12px; color: var(--subtle);
+       user-select: none;
+       border-bottom: 1px solid var(--outline); }
+  td.num, th.num { text-align: right; font-family: var(--mono); }
+  td.mono { font-family: var(--mono); font-size: 12px; }
+  tbody tr:hover td { background: var(--hover); }
+
+  footer { margin-top: 28px; color: var(--subtle); font-size: 12px;
+           display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  code { color: var(--blue); font-family: var(--mono); font-size: 12px; }
+  a { color: var(--clay); }
+  ::selection { background: var(--clay); color: var(--term-bg); }
+
+  @media (max-width: 760px) {
+    body { padding: 20px 12px 48px; }
+    .term-body { padding: 16px 16px 24px; }
+    #hero-total { font-size: 36px; }
+    .take { grid-template-columns: 7ch 1fr; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="term">
+  <div class="titlebar">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span class="path" id="title-path">repo — change impact analysis</span>
+  </div>
+  <div class="term-body">
+
+    <div class="cmd"><span class="prompt">&gt;</span> codexqa-change-analysis <span id="cmd-repo">/path/to/repo</span> <span class="flag" id="cmd-flags">--diff-base &lt;base&gt; --full</span></div>
+    <div id="meta-line">baseline — · change — files / — methods · coverage — · uncovered test points —</div>
+
+    <!-- Hero number = how many entries this change can reach (reader wording, not analysis wording) -->
+    <div id="hero">
+      <div id="hero-total">— <span class="unit">entries</span><span class="label">this change can reach</span></div>
+      <div id="hero-split">change — files / — methods (added —, changed —, deleted —) · reusable cases — · coverage — · uncovered test points —</div>
+    </div>
+
+    <div class="howto" id="howto">
+      <b>How to read:</b> start with Key findings for blast radius and uncovered test points, then Affected entries for which APIs or pages can trigger this change, then the case-file column of the test plan and the coverage verdict — which existing cases can be reused, and which still need to be added, are both there.
+    </div>
+
+    <div id="overall-grid">
+      <div class="stat"><div class="label">Changed files</div><div class="val">—</div><div class="detail">—</div></div>
+      <div class="stat"><div class="label">Changed methods</div><div class="val">—</div><div class="detail">added — / changed — / deleted —</div></div>
+      <div class="stat"><div class="label">Affected entries</div><div class="val">—</div><div class="detail">— APIs + — page routes</div></div>
+      <div class="stat"><div class="label">Reusable cases</div><div class="val">—</div><div class="detail">— of them added this run</div></div>
+      <div class="stat"><div class="label">Uncovered points</div><div class="val">—</div><div class="detail">— with no coverage + — with a weak assertion</div></div>
+      <div class="stat"><div class="label">Coverage verdict</div><div class="val">—</div><div class="detail">already covered / partially covered / not covered</div></div>
+    </div>
+
+    <!-- ====================================================================
+         Key findings — 3 to 5 items. Each item = a fact plus what it means.
+         Write only this change's impact and risk, in business / API language.
+         Do not write analysis criteria or process data (true-entry counts,
+         missing edges, stub ratios, verdict criteria, command names).
+         .bad = uncovered point / contract blast / sensitive path with zero coverage;
+         .good = well covered; .info = nature of the change.
+         .fig is a short label (Gap / Blast / Covered / Nature).
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>Key findings <span class="hint">read these before drilling in</span></h2>
+      <div class="section-body" id="takeaways">
+        <div class="take info"><div class="fig">—</div><div class="txt">No findings yet. After §1–§4, fill with "the test that most needs to be added / who a contract change hits / which line is best covered".</div></div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Risks and unknowns — only risks of this change itself: contract
+         compatibility, uncovered sensitive paths, uncertain boundary behavior,
+         places that need a human. State the impact of each one.
+         Do not write method limits, criterion notes, or a confidence statement.
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>Risks and unknowns <span class="hint">risks of this change itself</span></h2>
+      <div class="section-body prose" id="risks">
+        <p>No risk items yet. State the compatibility impact of contract changes, uncovered sensitive paths, and behavior that needs a human to confirm.</p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Affected entries — an entry is a method with no upstream caller.
+         At least one .diagram. Keep %%{init:...}%%. Change only nodes and edges.
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>Affected entries <span class="hint">which APIs or pages can trigger this change</span></h2>
+      <div class="section-body">
+        <div class="diagram">
+          <pre class="mermaid">%%{init: {'theme':'base','themeVariables':{'background':'#FAF9F5','primaryColor':'#F0EEE6','primaryTextColor':'#141413','primaryBorderColor':'#D1CFC5','lineColor':'#87867F','secondaryColor':'#E8E6DC','tertiaryColor':'#FAF9F5','clusterBkg':'#F0EEE6','clusterBorder':'#D1CFC5','fontFamily':'Georgia,serif'}}}%%
+flowchart TD
+  classDef entry fill:#F0EEE6,stroke:#D97757,stroke-width:2px,color:#141413
+  classDef changed fill:#FFF3D6,stroke:#E0A800,stroke-width:2px,color:#141413
+  classDef ctx fill:#FAF9F5,stroke:#D1CFC5,color:#141413
+
+  E1["entry (file:line)"]:::entry --> C1["changed method"]:::changed
+  C1 --> M1["intermediate (file:line)"]:::ctx</pre>
+          <div class="diagram-meta">
+            <div>Basis: walk callers backward from each changed method until the layer with no upstream</div>
+            <div>Cut off: —</div>
+            <div>What this shows: —</div>
+          </div>
+        </div>
+
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Changed method</th><th>Call chain (real callers)</th><th>Reachable entry (file:line)</th><th>Shape</th><th>Verdict</th></tr>
+            </thead>
+            <tbody id="entry-rows">
+              <tr><td colspan="6">No entries yet. One row per changed method: who calls it (the real call chain, already cross-checked), and which API or page can trigger it.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout risk" id="entry-extra">
+          <b>Extra entries hit:</b> write "none" if there are none. Entries that were not themselves changed but are hit by a contract change (for example a caller that now takes the new default after a signature change) must be listed here.
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Change list — methods only, not a file inventory (each method has file:line).
+         Four columns only: category / method / file:line / what changed.
+         Category is only added / changed / deleted.
+         Nature of the change (signature, internal-only, test code) goes in "what changed".
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>Change list <span class="hint" id="change-count">added — / changed — / deleted —</span></h2>
+      <div class="section-body">
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr><th>Category</th><th>Method</th><th>file:line</th><th>What changed</th></tr>
+            </thead>
+            <tbody id="change-rows">
+              <tr><td colspan="4">No changed methods yet. One row per changed method. The category column uses only <b>added / changed / deleted</b>.
+              "What changed" comes from the patch — if the signature, return value, or default changed, write both sides; if only internal behavior changed, write "internal behavior only".</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Test plan — two groups, required:
+         1) points this change must newly cover = behavior this change introduced or altered
+         2) points to regression-test = existing behavior this change might break
+         One group is a rewrite. Reviewers use the split to tell "what to add" from "what must not break".
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>Test plan <span class="hint">cover the new behavior, then keep the old behavior</span></h2>
+      <div class="section-body">
+        <div class="prose" id="testplan-entries">
+          <p><b>Must-test entries:</b> list the entries (APIs / page routes).</p>
+        </div>
+
+        <div class="subhead">Points this change must newly cover <span class="subhint">behavior this change introduced or altered; disposition is reuse / extend / add, and the case file gives the location</span></div>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>Entry</th><th>Scenario</th><th>Assertion</th><th>Disposition</th><th>Kind</th><th>Case file</th></tr></thead>
+            <tbody id="testplan-new-rows">
+              <tr><td colspan="6">No new-coverage points yet. One row per behavior this change introduced or altered. Cover at least happy path / boundary / error / contract / data.
+              The <b>disposition</b> column is only the bare values reuse / extend / add / uncovered (put the reason in the case-file column, not here). The <b>kind</b> column is the test layer. The <b>case file</b> column is <code>file:line</code> (<code>extend</code> is written "existing … → new … covers").</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="subhead">Points to regression-test <span class="subhint">existing behavior this change might break; same three columns: disposition / kind / case file</span></div>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>Entry / caller</th><th>Why this change can hit it</th><th>Regression assertion</th><th>Disposition</th><th>Kind</th><th>Case file</th></tr></thead>
+            <tbody id="testplan-regression-rows">
+              <tr><td colspan="6">No regression points yet. Name every caller that takes a default or an empty branch, every input a side effect rewrites, and every return value reused after a signature change.
+              Same three columns: disposition is reuse / extend / add / uncovered, kind is the layer, case file is <b>file:line</b>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout ok" id="testplan-artifact">
+          <b>New case files:</b> <code>&lt;L1 file, named for the repo language&gt;</code> (— cases: — passed / — skipped), <code>&lt;L2 file, if any&gt;</code> (— cases: all passed) — <b>— cases, all passed</b>.
+          <!-- Names follow the repo: JS is scripts/change-impact-tests.mjs / -e2e.mjs; Python / Rust / Java use the same idea. See references/generate-cases.md -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Coverage verdict — a sibling of the test plan. Summarize the current cases in three parts:
+         1) how many points existing cases cover; 2) which original gaps the new cases now cover;
+         3) which points still cannot be covered, and why.
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>Coverage verdict <span class="hint">based on the cases as they are now</span></h2>
+      <div class="section-body prose" id="coverage">
+        <p><b>Verdict:</b> write exactly one of already covered / partially covered / not covered, and give the count of points existing cases cover (a count per file).</p>
+        <p><b>Original gaps now covered:</b> name each one (including "weak assertion → strengthened").</p>
+        <p><b>Still cannot cover:</b> name each one and say why. If there are none, write "none".</p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Sensitive paths — a sibling of the test plan. Required when auth / password /
+         payment / stock / user data is hit. Same shape: previous coverage →
+         what the new cases cover → what still cannot be covered, and why.
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>Sensitive paths <span class="hint">high-risk surfaces and user-data isolation</span></h2>
+      <div class="section-body prose" id="sensitive">
+        <p>None yet. For each item: what the sensitive surface is → previous coverage → what is covered now (with the case location) → what still cannot be covered, and why. If there are none, write "none".</p>
+      </div>
+    </section>
+
+
+
+    <footer>
+      <div id="foot-left">codexqa-change-analysis · repo · baseline</div>
+      <div id="foot-right">generated —</div>
+    </footer>
+
+  </div>
+</div>
+
+<!-- Draft fallback: if the CDN is reachable, the diagram renders. Measured: jsdelivr/unpkg/esm.sh/cdnjs may all be unreachable,
+     so before delivery render a static inline SVG as references/report.md describes, and delete this loader. -->
+<script type="module">
+  import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs')
+    .then(m => m.default.initialize({ startOnLoad: true, theme: 'base' }))
+    .catch(() => { /* CDN unreachable: the diagram does not render; body and tables are unaffected */ });
+</script>
+</body>
+</html>

@@ -4,6 +4,14 @@
   "source": "generated from sibling SKILL.md frontmatter",
   "skills": [
     {
+      "name": "codexqa-change-analysis",
+      "directory": "codexqa-change-analysis",
+      "repoPath": "skills/codexqa-change-analysis",
+      "description": "Change-impact analysis for one diff: use CodexQA diff indexing (`index --diff-base` tags nodes and files `add` / `change` / `delete`, then `change-groups` / `symbol-diff` / `file-base`) to write one HTML report (affected entries, changed methods, test plan, coverage verdict, sensitive paths) and add runnable test files in the analyzed repo for uncovered points (add only; do not edit existing test files). Use when the user mentions change impact, change analysis, blast radius, affected entries, added methods, changed methods, test plan, generate or recall tests, link existing tests, entry points, 变更分析, 变更代码分析, 影响面, 影响入口, 测试方案, or 召回测试用例. Requires the codexqa CLI. One change only. Whole-repo analysis with no diff, and general symbol-graph Q&A, are codexqa-code-analyzer, not this skill. Former skill name: change-impact-analysis. license: Apache-2.0 compatibility: > Requires Node.js >= 18 and the `codexqa` CLI (`npm i -g @openqa-cn/codexqa`). Diff indexing and queries need no LLM. Data lives in ~/.codexqa/. Without codexqa, follow Degraded mode. Generating cases requires the analyzed repo to start; the end-to-end layer also needs a browser (L1/L2 in references/generate-cases.md). metadata: author: openqa-cn version: \"1.0.0\" open-standard: agentskills",
+      "compatibility": "",
+      "installHint": "npx skills add openqa-cn/codexqa --skill codexqa-change-analysis"
+    },
+    {
       "name": "codexqa-code-analyzer",
       "directory": "codexqa-code-analyzer",
       "repoPath": "skills/codexqa-code-analyzer",
