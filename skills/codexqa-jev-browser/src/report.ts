@@ -194,6 +194,7 @@ const COPY = {
     input: "in",
     output: "out",
     tokens: "tokens",
+    doneCheck: "Done check",
     fromGoal: "from goal",
     override: "given text",
     decision: "from decision",
@@ -209,6 +210,7 @@ const COPY = {
     input: "输入",
     output: "输出",
     tokens: "token",
+    doneCheck: "结束确认",
     fromGoal: "从目标读取",
     override: "指定文案",
     decision: "决策已给出",
@@ -222,6 +224,9 @@ export function formatStepTimes(step: StepResult, lang: ReportLang = "en"): stri
   if (typeof step.observeMs === "number") parts.push(`${copy.observe} ${formatDuration(step.observeMs)}`);
   if (typeof step.modelMs === "number" || hasUsage(step.modelUsage)) {
     parts.push(formatModelSpend(step.model, step.modelMs ?? 0, step.modelUsage, lang));
+  }
+  if (typeof step.confirmMs === "number" || hasUsage(step.confirmUsage)) {
+    parts.push(`${copy.doneCheck} ${formatModelSpend(step.confirmModel, step.confirmMs ?? 0, step.confirmUsage, lang)}`);
   }
   if (isModelCall(step.textModel) && (typeof step.textMs === "number" || hasUsage(step.textUsage))) {
     parts.push(formatModelSpend(step.textModel, step.textMs ?? 0, step.textUsage, lang));
@@ -341,6 +346,19 @@ function stepTimesHtml(step: StepResult): string {
         "model",
         modelDetail(step.modelInput, step.modelReply, step.modelThought, "en"),
         modelDetail(step.modelInput, step.modelReply, step.modelThought, "zh"),
+      ),
+    );
+  }
+  if (typeof step.confirmMs === "number" || hasUsage(step.confirmUsage)) {
+    const label = modelConsumeLabel(step.confirmModel, "en");
+    chips.push(
+      phaseChip(
+        copy.en.doneCheck,
+        copy.zh.doneCheck,
+        formatDuration(step.confirmMs ?? 0),
+        [label, tokenNote(step.confirmUsage, "en")].filter(Boolean).join(" · "),
+        [modelConsumeLabel(step.confirmModel, "zh"), tokenNote(step.confirmUsage, "zh")].filter(Boolean).join(" · "),
+        "model",
       ),
     );
   }
@@ -539,8 +557,10 @@ function modelBuckets(report: SuiteReport): { label: string; ms: number; usage: 
     buckets.set(label, current);
   };
   for (const item of report.cases) {
+    remember(item.plan?.model, item.plan?.modelMs, item.plan?.modelUsage);
     for (const step of item.steps) {
       remember(step.model, step.modelMs, step.modelUsage);
+      remember(step.confirmModel, step.confirmMs, step.confirmUsage);
       remember(step.textModel, step.textMs, step.textUsage);
     }
   }
@@ -652,9 +672,15 @@ function planHtml(plan?: TaskPlan): string {
   const items = plan.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join("");
   const doneEn = `Done when: ${plan.doneWhen}`;
   const doneZh = `结束：${plan.doneWhen}`;
+  const timing =
+    typeof plan.modelMs === "number"
+      ? `${modelConsumeLabel(plan.model)} ${formatDuration(plan.modelMs)}${formatTokenUsage(plan.modelUsage)}`
+      : "";
+  const timingHtml = timing ? `<span class="plan-time">${escapeHtml(timing)}</span>` : "";
   return `<details class="outline">
     <summary>
       <span class="kicker" ${bilingual("Task breakdown", "任务拆解")}>Task breakdown</span>
+      ${timingHtml}
       <span class="chevron"></span>
     </summary>
     <ol>${items}</ol>

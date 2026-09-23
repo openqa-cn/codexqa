@@ -6,6 +6,7 @@ import {
   OpenAIProvider,
   ScriptedProvider,
   TARGET,
+  typeCandidates,
   bindNamedTargets,
   packForModel,
   parseDecision,
@@ -88,6 +89,7 @@ export function buildJevRequest(
   };
   addTargetQuestion(questions, "click_target", "CLICK", pickPool(packed.click_targets, space.clickTargets), goal);
   addTargetQuestion(questions, "type_target", "TYPE", pickPool(packed.type_targets, space.typeTargets), goal);
+  addTypeTextQuestions(questions, packed.type_targets, space, goal);
   if (Object.keys(space.selectTargets).length) {
     questions.select_target = {
       type: "choice",
@@ -210,9 +212,38 @@ export function parseJevAnswers(answers: Record<string, { choice?: string }>): D
   const operation = String(answers.operation?.choice ?? "");
   const raw: Record<string, unknown> = { operation };
   if (operation === "CLICK") raw.click_target = answers.click_target?.choice;
-  if (operation === "TYPE" || operation === "TYPE_TEXT") raw.type_target = answers.type_target?.choice;
+  if (operation === "TYPE" || operation === "TYPE_TEXT") {
+    raw.type_target = answers.type_target?.choice;
+    const typed = answers[`text_${raw.type_target}`]?.choice;
+    if (typed) raw.text = typed;
+  }
   if (operation === "SELECT") raw.select_target = answers.select_target?.choice;
   return parseDecision(raw);
+}
+
+function addTypeTextQuestions(
+  questions: Record<string, unknown>,
+  indexes: string[],
+  space: ActionSpace,
+  goal: string,
+): void {
+  const candidates = typeCandidates(goal);
+  if (!candidates.length) return;
+  const criteria = Object.fromEntries(candidates.map((item) => [item, item]));
+  for (const index of indexes.slice(0, 8)) {
+    const field = space.typeTargets[index];
+    if (!field) continue;
+    questions[`text_${index}`] = {
+      type: "choice",
+      criteria,
+      instructions: {
+        goal,
+        field: `${field.role} ${field.name || "(unnamed)"}`.trim(),
+        current_value: publicValue(field.name, field.value),
+        rules: "Choose the exact characters to type into this field. Use only an offered value the field still needs. Do not invent text.",
+      },
+    };
+  }
 }
 
 function pickPool<T>(indexes: string[], pool: Record<string, T>): Record<string, T> {
@@ -259,7 +290,7 @@ function addTargetQuestion(
 
 function operationHint(name: string): string {
   if (name === "CLICK") return "Click a visible control.";
-  if (name === "TYPE") return "Type into an editable field. The value comes from the goal, or a small model writes it.";
+  if (name === "TYPE") return "Type into an editable field. The characters are chosen with this same decision.";
   if (name === "SELECT") return "Choose an observed native option.";
   if (name === "SCROLL_DOWN") return "Scroll down to reveal more controls.";
   if (name === "SCROLL_UP") return "Scroll up to reveal more controls.";
@@ -351,6 +382,66 @@ export async function jevAssert(
     input: clipText(JSON.stringify(state)),
     reply: formatJevReply(raw.answers),
     thought: extractThought(raw),
+  };
+}
+
+const DONE_RULES = `Decide whether the done condition is already visible on this page.
+Choose only met or unmet.
+The condition describes the outcome, not a sentence that must appear verbatim.
+Use the URL, title, visible text, and controls.
+The same place, date, or result may appear in another form, including inside the URL.
+A results page for those facts is enough, even without the condition's exact words.
+If the URL or title already contains the places and dates in the condition, choose met.
+Do not demand a separate price list when the page is already the results page for that query.
+Choose unmet only when the page is still an earlier step, or the route, date, or result contradicts the condition.`;
+
+export async function jevConfirmDone(
+  config: PilotConfig,
+  page: Pick<PageState, "url" | "title" | "text" | "elements">,
+  doneWhen: string,
+): Promise<{ met: boolean; model?: string; modelMs: number; modelUsage?: ModelUsage; reply?: string }> {
+  if (!config.model.typesafeApiKey) {
+    throw new DecisionError("TYPESAFE_API_KEY is required for Jev done checks.");
+  }
+  const started = performance.now();
+  const state = {
+    done_when: doneWhen,
+    page: { ...briefPage(page), text: page.text.slice(0, 1500) },
+  };
+  const response = await modelFetch(`${config.model.typesafeBaseUrl.replace(/\/$/, "")}/systemone`, {
+    method: "POST",
+    timeoutMs: config.model.timeoutMs,
+    headers: {
+      Authorization: `Bearer ${config.model.typesafeApiKey}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      model: config.model.typesafeModel || "jev-latest",
+      state,
+      questions: {
+        done: {
+          type: "choice",
+          criteria: {
+            met: "The done condition is already visible on this page.",
+            unmet: "The page is still an earlier step, or it contradicts the condition.",
+          },
+          instructions: { rules: DONE_RULES },
+        },
+      },
+    }),
+  });
+  if (!response.ok) throw new DecisionError(await jevHttpError(response));
+  const raw = (await response.json()) as {
+    answers?: Record<string, { choice?: string }>;
+    usage?: unknown;
+    model?: string;
+  };
+  return {
+    met: raw.answers?.done?.choice === "met",
+    model: raw.model || config.model.typesafeModel || "jev-latest",
+    modelMs: elapsedMs(started),
+    modelUsage: parseModelUsage(raw.usage) ?? undefined,
+    reply: formatJevReply(raw.answers),
   };
 }
 

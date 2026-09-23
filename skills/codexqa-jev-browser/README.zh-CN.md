@@ -27,7 +27,7 @@ CodexQA Jev Browser 把找控件从视觉模型换成页面内编好的索引，
 
 `observe`、`run`、`explore` 和 `--decisions` 停在索引和执行器。现场的 `auto` 和 `generate --goal` 才加上规划器和决策来源。`generate` 把通过的轨迹编译回执行器可以单独回放的用例。
 
-决策已经给出文字时，输入用那段文字。否则由一个较小的对话模型给出该字段要键入的字符，并带上 `knowledge/<app>/` 里命中的笔记。点哪一个控件仍由索引上的节点 id 决定。
+要输入的文字由同一次 Jev 决策从目标里已经写出的短语中选定。点哪一个控件仍由索引上的节点 id 决定。`knowledge/<app>/` 里命中的笔记仍附在这次决策上。
 
 ## 安装
 
@@ -46,8 +46,8 @@ CLI 自己调用 Jev 或兼容 OpenAI 的接口。宿主里的 Cursor / Codex �
 
 | 调用 | 时机 | 密钥 |
 | --- | --- | --- |
-| Jev `/systemone` | 每步的操作与目标，以及这一步是否生效 | `TYPESAFE_API_KEY`。可选：`TYPESAFE_MODEL`（`jev-latest`）、`TYPESAFE_BASE_URL` |
-| Chat completions | 任务规划、确认 `DONE`，以及目标语句里没有的字段文本。未配置 Jev 时也负责整步决策 | `OPENAI_API_KEY`。可选：`OPENAI_BASE_URL`、`OPENAI_MODEL`、`TEXT_MODEL` |
+| Jev `/systemone` | 每步的操作与目标、这一步是否生效，以及任务是否已经结束 | `TYPESAFE_API_KEY`。可选：`TYPESAFE_MODEL`（`jev-latest`）、`TYPESAFE_BASE_URL` |
+| Chat completions | 任务规划。未配置 Jev 时也负责整步决策和结束确认 | `OPENAI_API_KEY`。可选：`OPENAI_BASE_URL`、`OPENAI_MODEL`、`TEXT_MODEL` |
 | 不调用 | `observe`、`run`、`explore`、`auto --decisions`、`generate --decisions` | — |
 
 决策来源的优先级：`--decisions` 脚本，然后是已设置 `TYPESAFE_API_KEY` 时的 Jev，最后是 chat completions。`--model` 和 `--base-url` 覆盖对话模型与网关。`codexqa-jev-browser.config.yaml` 可以用 `${OPENAI_API_KEY}` 这种占位符。CLI 先加载当前目录的 `.env`，再在需要时加载仓库根目录的 `.env`，且不覆盖 shell 里已经存在的变量。不要传 `--api-key`，也不要把原始密钥写进用例文件。

@@ -218,11 +218,12 @@ async function cmdAuto(argv: string[], config: PilotConfig, screenshots: boolean
     model: decisionModelLabel(config),
   });
   const session = openSession(config, writer, { headed });
+  const decisions = flag(argv, "--decisions");
+  const agent = new Agent(session, writer, config, { script: decisions ? loadScript(decisions) : undefined });
   try {
+    if (!decisions) await agent.plan(url, goal);
     await session.start(url);
     report.browser = session.engine;
-    const decisions = flag(argv, "--decisions");
-    const agent = new Agent(session, writer, config, { script: decisions ? loadScript(decisions) : undefined });
     const { result } = await agent.run(url, goal);
     report.cases.push(result);
   } finally {
@@ -266,6 +267,8 @@ async function cmdGenerate(argv: string[], config: PilotConfig, screenshots: boo
     model: decisionModelLabel(config),
   });
   const session = openSession(config, writer, { headed });
+  const decisions = flag(argv, "--decisions");
+  const agent = new Agent(session, writer, config, { script: decisions ? loadScript(decisions) : undefined });
   let result: CaseResult;
   const persist = (current: CaseResult) => {
     const compiled = compileCase(current, url, goal);
@@ -274,10 +277,9 @@ async function cmdGenerate(argv: string[], config: PilotConfig, screenshots: boo
     console.log(`updated ${paths[0]} steps=${compiled.steps.length}`);
   };
   try {
+    if (!decisions) await agent.plan(url, goal);
     await session.start(url);
     report.browser = session.engine;
-    const decisions = flag(argv, "--decisions");
-    const agent = new Agent(session, writer, config, { script: decisions ? loadScript(decisions) : undefined });
     ({ result } = await agent.run(url, goal, "auto", { onStep: persist }));
     report.cases.push(result);
   } finally {

@@ -27,7 +27,7 @@ CodexQA Jev Browser finds controls from an index built inside the page and treat
 
 `observe`, `run`, `explore`, and `--decisions` stop at the index and the actor. Live `auto` and `generate --goal` add the planner and a decision provider. `generate` turns a passing trace back into a case the actor can replay alone.
 
-Typing uses text the decision already chose when it can. Otherwise a small chat model supplies the characters for that field, using any matching note from `knowledge/<app>/`. Which control receives them is still the node id on the index.
+Typing uses characters the same Jev decision chooses from phrases already in the goal. Which control receives them is still the node id on the index. Notes in `knowledge/<app>/` stay on that decision.
 
 ## Install
 
@@ -46,8 +46,8 @@ The CLI calls Jev or an OpenAI-compatible API itself. The host Cursor or Codex s
 
 | Call | When | Key |
 | --- | --- | --- |
-| Jev `/systemone` | Per-step operation and target, and the per-step effect verdict | `TYPESAFE_API_KEY`. Optional: `TYPESAFE_MODEL` (`jev-latest`), `TYPESAFE_BASE_URL` |
-| Chat completions | Task plan, `DONE` confirmation, and field text the goal did not already contain. Also the whole decision when Jev is unset | `OPENAI_API_KEY`. Optional: `OPENAI_BASE_URL`, `OPENAI_MODEL`, `TEXT_MODEL` |
+| Jev `/systemone` | Per-step operation and target, the per-step effect verdict, and whether the task is done | `TYPESAFE_API_KEY`. Optional: `TYPESAFE_MODEL` (`jev-latest`), `TYPESAFE_BASE_URL` |
+| Chat completions | Task plan. Also the whole decision and the done check when Jev is unset | `OPENAI_API_KEY`. Optional: `OPENAI_BASE_URL`, `OPENAI_MODEL`, `TEXT_MODEL` |
 | None | `observe`, `run`, `explore`, `auto --decisions`, `generate --decisions` | — |
 
 Priority for the decision provider: `--decisions` script, then Jev when `TYPESAFE_API_KEY` is set, then chat completions. `--model` and `--base-url` override the chat model and gateway. `codexqa-jev-browser.config.yaml` may use `${OPENAI_API_KEY}`-style placeholders. The CLI loads `cwd/.env`, then the repo-root `.env`, and does not overwrite variables already set in the shell. Do not pass `--api-key` or put a raw key in a case file.

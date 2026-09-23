@@ -2,14 +2,14 @@ import { readFileSync } from "node:fs";
 import { parse as parseYaml } from "yaml";
 import { execute, settle } from "./act.js";
 import type { BrowserSession } from "./browser.js";
-import { DecisionError, EmptyField, StalePage } from "./errors.js";
+import { DecisionError, StalePage } from "./errors.js";
 import { actionMarkLabel, asCandidate, contentKey, controlSnapshot, elementLabel } from "./observe/snapshot.js";
-import { JevProvider, createDecisionProvider, decisionModelLabel, jevAssert } from "./jev.js";
+import { JevProvider, createDecisionProvider, decisionModelLabel, jevAssert, jevConfirmDone } from "./jev.js";
 import { retrieveKnowledge } from "./knowledge.js";
-import { applyHistoryGuards, buildSpace, confirmDone, decide, fieldText, guideGoal, planTask, resolveDecision, ScriptedProvider, selectedIndex, type DecisionProvider } from "./policy.js";
+import { applyHistoryGuards, buildSpace, confirmDone, decide, guideGoal, planTask, resolveDecision, ScriptedProvider, searchQueryFromGoal, selectedIndex, type DecisionProvider } from "./policy.js";
 import { emptyCase, ReportWriter } from "./report.js";
 import { assessActionEffect } from "./verify.js";
-import type { CaseResult, ControlSnapshot, Decision, ModelUsage, PageState, PilotConfig, StepResult } from "./types.js";
+import type { CaseResult, ControlSnapshot, Decision, ModelUsage, PageState, PilotConfig, StepResult, TaskPlan } from "./types.js";
 import { elapsedMs, isSecretControl, publicValue } from "./util.js";
 
 export function loadScript(file: string): Record<string, unknown>[] {
@@ -23,6 +23,7 @@ export class Agent {
   provider: DecisionProvider;
   pendingText: { context: string; text: string; helper: Record<string, unknown> } | null = null;
   private knowledge = "";
+  private prepared?: TaskPlan;
   private predictedContent = "";
 
   constructor(
@@ -34,20 +35,28 @@ export class Agent {
     this.provider = options.provider ?? createDecisionProvider(config, options.script);
   }
 
+  /** Plan before the browser opens the case, so the page does not sit idle. */
+  async plan(url: string, goal: string): Promise<TaskPlan | undefined> {
+    if (this.provider instanceof ScriptedProvider) return undefined;
+    this.knowledge = retrieveKnowledge({ url, goal });
+    this.prepared = await planTask(goal, this.config, this.knowledge);
+    return this.prepared;
+  }
+
   async run(
     url: string,
     goal: string,
     caseId = "auto",
     hooks: { onStep?: (result: CaseResult) => void } = {},
   ): Promise<{ result: CaseResult; history: Record<string, unknown>[] }> {
-    this.knowledge = retrieveKnowledge({ url, goal });
-    const planning = this.provider instanceof ScriptedProvider ? null : planTask(goal, this.config, this.knowledge);
-    const opening = this.session.url && this.session.url !== "about:blank" ? this.session.observe() : this.session.goto(url);
-    const plan = planning ? await planning : undefined;
+    if (!this.knowledge) this.knowledge = retrieveKnowledge({ url, goal });
+    const plan =
+      this.provider instanceof ScriptedProvider ? undefined : (this.prepared ?? (await planTask(goal, this.config, this.knowledge)));
     const guidedGoal = guideGoal(goal, plan, this.knowledge);
-    let page = await opening;
     const history: Record<string, unknown>[] = [];
     const result = emptyCase({ id: caseId, name: goal.slice(0, 80) || caseId, source: "auto", goal, plan });
+    const opening = this.session.url && this.session.url !== "about:blank" ? this.session.observe() : this.session.goto(url);
+    let page = await opening;
     const started = Date.now();
     let unchanged = 0;
     let sameContentSkips = 0;
@@ -116,7 +125,8 @@ export class Agent {
       const modelUsage = decision.modelUsage ?? undefined;
       if (decision.operation === "DONE") {
         const doneWhen = result.plan?.doneWhen;
-        const met = doneWhen ? await confirmDone(page, doneWhen, this.config) : true;
+        const checked = doneWhen ? await this.checkDone(page, doneWhen) : { met: true };
+        const met = checked.met;
         if (!met) {
           status = "fail";
           error = `done condition is not visible: ${doneWhen}`;
@@ -132,6 +142,9 @@ export class Agent {
             modelMs,
             model,
             modelUsage,
+            confirmMs: checked.modelMs,
+            confirmModel: checked.model,
+            confirmUsage: checked.modelUsage,
           }),
         );
         hooks.onStep?.(result);
@@ -308,8 +321,10 @@ export class Agent {
   ): Promise<boolean> {
     const doneWhen = result.plan?.doneWhen;
     if (!doneWhen) return false;
+    let checked: { met: boolean; model?: string; modelMs?: number; modelUsage?: ModelUsage };
     try {
-      if (!(await confirmDone(page, doneWhen, this.config))) return false;
+      checked = await this.checkDone(page, doneWhen);
+      if (!checked.met) return false;
     } catch {
       return false;
     }
@@ -318,10 +333,23 @@ export class Agent {
         status: "pass",
         observeMs: this.session.lastObserveMs,
         observed: controlSnapshot(page),
+        confirmMs: checked.modelMs,
+        confirmModel: checked.model,
+        confirmUsage: checked.modelUsage,
       }),
     );
     hooks.onStep?.(result);
     return true;
+  }
+
+  private async checkDone(
+    page: PageState,
+    doneWhen: string,
+  ): Promise<{ met: boolean; model?: string; modelMs?: number; modelUsage?: ModelUsage }> {
+    if (this.config.model.typesafeApiKey) return jevConfirmDone(this.config, page, doneWhen);
+    const started = performance.now();
+    const met = await confirmDone(page, doneWhen, this.config);
+    return { met, model: this.config.model.model, modelMs: elapsedMs(started) };
   }
 
   private async act(page: PageState, goal: string, decision: Decision, history: Record<string, unknown>[] = []) {
@@ -367,26 +395,26 @@ export class Agent {
         textMs = 0;
         textModel = "decision";
       } else {
-        try {
-          const filled = await fieldText(context, this.config);
-          this.pendingText = { context: key, ...filled };
-          text = filled.text;
-          ({ textMs, textModel, textUsage, textThought } = readTextHelper(filled.helper));
-        } catch (err) {
-          if (!(err instanceof EmptyField) || !element) throw err;
-          return {
-            page,
-            skippedEmpty: true,
-            item: {
-              op: "type",
-              action: elementLabel(element),
-              text: "",
-              page_changed: false,
-              matched: asCandidate(element),
-              operation: decision.operation,
-            },
-          };
+        const fromGoal = searchQueryFromGoal(goal, element);
+        if (fromGoal) {
+          text = fromGoal;
+          textMs = 0;
+          textModel = "goal";
         }
+      }
+      if (kind === "type" && element && text == null) {
+        return {
+          page,
+          skippedEmpty: true,
+          item: {
+            op: "type",
+            action: elementLabel(element),
+            text: "",
+            page_changed: false,
+            matched: asCandidate(element),
+            operation: decision.operation,
+          },
+        };
       }
     }
     const opts = {
@@ -467,6 +495,9 @@ export class Agent {
       screenshotIncluded?: boolean;
       model?: string;
       modelUsage?: ModelUsage;
+      confirmMs?: number;
+      confirmModel?: string;
+      confirmUsage?: ModelUsage;
     } = {},
   ): Promise<StepResult> {
     let screenshot: string | undefined;
@@ -543,6 +574,9 @@ export class Agent {
       assertInput: judged?.input,
       assertReply: judged?.reply,
       assertThought: judged?.thought,
+      confirmMs: extra.confirmMs,
+      confirmModel: extra.confirmModel,
+      confirmUsage: extra.confirmUsage,
     };
   }
 }

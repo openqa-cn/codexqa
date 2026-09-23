@@ -218,6 +218,8 @@ describe("compiler and report", () => {
           plan: {
             steps: ["在百度搜索框中输入携程", "点击搜索"],
             doneWhen: "页面上显示了北京到昆明的航班列表",
+            model: "deepseek-v4.1-flash",
+            modelMs: 1200,
           },
           steps: [],
         },
@@ -229,6 +231,7 @@ describe("compiler and report", () => {
     expect(html).toContain("在百度搜索框中输入携程");
     expect(html).toContain("Done when: 页面上显示了北京到昆明的航班列表");
     expect(html).toContain('data-zh="任务拆解"');
+    expect(html).toContain("Deepseek 1.2s");
   });
 
   it("shows suite start and end times", () => {

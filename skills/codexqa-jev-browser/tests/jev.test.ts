@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildJevRequest, createDecisionProvider, decisionModelLabel, JevProvider, jevAssert, parseJevAnswers } from "../src/jev.js";
+import { buildJevRequest, createDecisionProvider, decisionModelLabel, JevProvider, jevAssert, jevConfirmDone, parseJevAnswers } from "../src/jev.js";
 import { buildSpace, ScriptedProvider } from "../src/policy.js";
 import { defaultConfig } from "../src/config.js";
 import * as modelHttp from "../src/model-http.js";
@@ -66,6 +66,7 @@ describe("jev provider", () => {
     expect(Object.keys(questions.operation.criteria)).toContain("CLICK");
     expect(Object.keys(questions.click_target.criteria)).toEqual(["13", "14", "15"]);
     expect(Object.keys(questions.type_target.criteria)).toEqual(["13"]);
+    expect(Object.keys(questions.text_13.criteria)).toContain("携程");
     expect(JSON.stringify(body.state)).toContain("时政新闻");
   });
 
@@ -157,6 +158,45 @@ describe("jev provider", () => {
     });
     expect(decision.operation).toBe("CLICK");
     expect(decision.clickTarget).toBe("14");
+  });
+
+  it("asks Jev whether the done condition is visible", async () => {
+    vi.spyOn(modelHttp, "modelFetch").mockImplementation(async (url, init) => {
+      expect(String(url)).toContain("/systemone");
+      const body = JSON.parse(String(init?.body)) as { questions: { done: { criteria: Record<string, string> } } };
+      expect(Object.keys(body.questions.done.criteria)).toEqual(["met", "unmet"]);
+      return new Response(
+        JSON.stringify({
+          answers: { done: { choice: "met", confidence: 0.8 } },
+          model: "jev-1.13.0",
+          usage: { input_tokens: 30, output_tokens: 6 },
+        }),
+        { status: 200 },
+      );
+    });
+    const config = defaultConfig();
+    config.model.typesafeApiKey = "apikey_test";
+    config.model.typesafeBaseUrl = "https://typesafe.example/v1";
+    const checked = await jevConfirmDone(
+      config,
+      { url: "https://flights.ctrip.com/online/list/round-bjs-kmg?depdate=2026-10-01_2026-10-07", title: "北京到昆明", text: "", elements: [] },
+      "页面上可见北京到昆明的航班列表",
+    );
+    expect(checked.met).toBe(true);
+    expect(checked.model).toBe("jev-1.13.0");
+    expect(checked.reply).toContain("done: met");
+  });
+
+  it("maps the typed characters chosen for that field", () => {
+    const decision = parseJevAnswers({
+      operation: { choice: "TYPE" },
+      type_target: { choice: "13" },
+      text_13: { choice: "携程" },
+      text_14: { choice: "北京" },
+    });
+    expect(decision.operation).toBe("TYPE");
+    expect(decision.typeTarget).toBe("13");
+    expect(decision.text).toBe("携程");
   });
 
   it("attaches Jev consume time and token usage", async () => {

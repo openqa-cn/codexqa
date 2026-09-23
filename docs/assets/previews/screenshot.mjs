@@ -148,19 +148,51 @@ const shots = [
     png: "testcase-sample.png",
     prepare: LIGHT,
   },
+  {
+    html: "jev-report.html",
+    png: "jev-report.png",
+    fullPage: true,
+    prepare: `
+      document.documentElement.setAttribute('data-theme','light');
+      document.documentElement.setAttribute('data-lang','zh');
+      document.documentElement.lang='zh-CN';
+      document.querySelectorAll('[data-en]').forEach(function(el){
+        el.textContent = el.getAttribute('data-zh') || '';
+      });
+      document.querySelectorAll('[data-set-lang]').forEach(function(b){
+        b.setAttribute('aria-pressed', b.getAttribute('data-set-lang')==='zh' ? 'true' : 'false');
+      });
+      document.querySelectorAll('[data-set-theme]').forEach(function(b){
+        b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
+      });
+      var caseEl=document.querySelector('details.case');
+      if(caseEl) caseEl.open=true;
+      window.scrollTo(0,0);
+    `,
+  },
 ];
 
 function findChrome() {
   if (process.env.PLAYWRIGHT_CHROME && existsSync(process.env.PLAYWRIGHT_CHROME)) {
     return process.env.PLAYWRIGHT_CHROME;
   }
-  const cache = resolve(homedir(), ".cache/ms-playwright");
-  if (!existsSync(cache)) return undefined;
-  for (const dir of readdirSync(cache).sort().reverse()) {
-    if (!dir.startsWith("chromium")) continue;
-    for (const name of ["chrome-linux64/chrome", "chrome-linux/chrome"]) {
-      const candidate = resolve(cache, dir, name);
-      if (existsSync(candidate)) return candidate;
+  const caches = [
+    resolve(homedir(), ".cache/ms-playwright"),
+    resolve(homedir(), "Library/Caches/ms-playwright"),
+  ];
+  for (const cache of caches) {
+    if (!existsSync(cache)) continue;
+    for (const dir of readdirSync(cache).sort().reverse()) {
+      if (!dir.startsWith("chromium")) continue;
+      for (const name of [
+        "chrome-linux64/chrome",
+        "chrome-linux/chrome",
+        "chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+        "chrome-mac/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+      ]) {
+        const candidate = resolve(cache, dir, name);
+        if (existsSync(candidate)) return candidate;
+      }
     }
   }
   return undefined;
@@ -330,10 +362,17 @@ async function capture(chromePath) {
         });
       }
       await sleep(shot.waitMs ? 800 : 500);
+      let clip = { x: 0, y: 0, width: VIEW_W, height: VIEW_H, scale: 1 };
+      if (shot.fullPage) {
+        const metrics = await send("Page.getLayoutMetrics");
+        const height = Math.ceil(metrics.cssContentSize?.height || metrics.contentSize.height);
+        clip = { x: 0, y: 0, width: VIEW_W, height, scale: 1 };
+      }
       const { data } = await send("Page.captureScreenshot", {
         format: "png",
         fromSurface: true,
-        clip: { x: 0, y: 0, width: VIEW_W, height: VIEW_H, scale: 1 },
+        captureBeyondViewport: Boolean(shot.fullPage),
+        clip,
       });
       writeFileSync(pngPath, Buffer.from(data, "base64"));
       await cdp.send("Target.closeTarget", { targetId }).catch(() => {});

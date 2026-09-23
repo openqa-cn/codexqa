@@ -106,6 +106,7 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 <p><strong><a href="skills/codexqa-jev-browser/README.zh-CN.md">codexqa-jev-browser</a></strong></p>
 <p><strong>验证什么</strong> — 浏览器流程有没有走到目标里写明的可见证据。模型返回 DONE 不算通过。</p>
 <p><strong>核心能力</strong> — 用页面索引（角色、名称、允许的操作）驱动 Playwright Chromium。回放 YAML / Markdown / API 用例，或按目标生成用例。每次运行写出 <code>reports/&lt;run-id&gt;/report.html</code>，里面有带标记的截图和步骤结果。</p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/jev-report.html"><img src="docs/assets/previews/jev-report.png" alt="codexqa-jev-browser HTML 回放报告"></a></p>
 </td>
 </tr>
 </table>

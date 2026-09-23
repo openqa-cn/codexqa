@@ -120,6 +120,9 @@ export interface StepResult {
   assertReply?: string;
   assertThought?: string;
   assertVerdict?: "pass" | "fail";
+  confirmMs?: number;
+  confirmModel?: string;
+  confirmUsage?: ModelUsage;
   modelMs?: number;
   textMs?: number;
   textModel?: string;
@@ -146,6 +149,8 @@ export interface TaskPlan {
   steps: string[];
   doneWhen: string;
   model?: string;
+  modelMs?: number;
+  modelUsage?: ModelUsage;
 }
 
 export interface CaseResult {

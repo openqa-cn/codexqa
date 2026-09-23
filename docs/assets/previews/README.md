@@ -1,6 +1,6 @@
 # README preview assets
 
-Sample HTML used as screenshots in the repository README. They are **illustrations**, not recorded agent output. Eight published worker skills each have a page + PNG.
+Sample HTML used as screenshots in the repository README. Most are **illustrations**, not recorded agent output. Each published worker skill has a page + PNG.
 
 | File | Skill | How it was produced |
 |---|---|---|
@@ -13,6 +13,7 @@ Sample HTML used as screenshots in the repository README. They are **illustratio
 | `testcase-report.html` / `.png` | `codexqa-testcase-generator` | `generate_case_report.py --run-dir` (Web / Server / APP aggregate) |
 | `testdata-writeback.html` / `.png` | `codexqa-testdata-generator` | `{placeholder}` replaced with a backend-returned id |
 | `testcase-sample.html` / `.png` | `codexqa-testcase-generator` | Extra: one V56 server-end case table |
+| `jev-report.html` / `.png` | `codexqa-jev-browser` | Real run `20260923-150451` (Baidu search → Ctrip domestic round trip). PNG is the full page with the case open, Chinese, light theme. Step shots and `recording.mp4` sit under `jev-report/` |
 
 Rebuild illustration HTML (except `review-report.html` and `testcase-report.html`):
 
@@ -22,7 +23,7 @@ python3 docs/assets/previews/rebuild_previews.py
 
 GitHub blob and jsDelivr both serve these `.html` files as `text/plain` with `nosniff`, so the browser shows source. README screenshot links therefore open [htmlpreview.github.io](https://htmlpreview.github.io/) (`https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/<file>.html`), which renders `text/html`. Locally, open the `.html` file in this directory.
 
-Capture PNGs at **4:3** (`1280×960` CSS, `2560×1920` at 2×). Needs the Playwright Chromium cache or `PLAYWRIGHT_CHROME`:
+Capture PNGs at **4:3** (`1280×960` CSS, `2560×1920` at 2×). `jev-report.png` is the full page at the same width and scale. Needs the Playwright Chromium cache or `PLAYWRIGHT_CHROME`:
 
 ```bash
 node docs/assets/previews/screenshot.mjs

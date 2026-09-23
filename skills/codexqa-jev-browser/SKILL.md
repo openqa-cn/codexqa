@@ -63,7 +63,7 @@ Open or summarize `reports/<run-id>/report.html` before concluding. It contains 
 
 ## Business knowledge
 
-Per-app notes live in `knowledge/<app>/*.md`. On live `auto` / `generate --goal`, the CLI matches the start URL and the goal against each note's `hosts` and `keywords`, then appends the hits to the planner, the decision goal, and the field-text prompt.
+Per-app notes live in `knowledge/<app>/*.md`. On live `auto` / `generate --goal`, the CLI matches the start URL and the goal against each note's `hosts` and `keywords`, then appends the hits to the planner, the decision goal, and the field-text prompt. A note with `general: true` is included on every run.
 
 Notes are reference for what to type and which visible control to prefer. They do not add operations. Do not copy them into case YAML. Add a new app by adding a note. Do not put that app's fill rules back into `src/policy.ts`.
 

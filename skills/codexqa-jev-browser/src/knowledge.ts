@@ -8,6 +8,7 @@ export interface KnowledgeDoc {
   title: string;
   hosts: string[];
   keywords: string[];
+  general: boolean;
   body: string;
   file: string;
 }
@@ -26,13 +27,18 @@ export function loadKnowledge(root = defaultKnowledgeRoot()): KnowledgeDoc[] {
 export function retrieveKnowledge(input: { url?: string; goal?: string; root?: string; limit?: number } = {}): string {
   const host = hostname(input.url);
   const haystack = `${input.goal ?? ""}\n${input.url ?? ""}`;
-  const ranked = loadKnowledge(input.root)
+  const docs = loadKnowledge(input.root);
+  const general = docs.filter((doc) => doc.general).sort((a, b) => a.app.localeCompare(b.app));
+  const ranked = docs
+    .filter((doc) => !doc.general)
     .map((doc) => ({ doc, score: scoreDoc(doc, host, haystack) }))
     .filter((item) => item.score > 0)
     .sort((a, b) => b.score - a.score || a.doc.app.localeCompare(b.doc.app))
-    .slice(0, input.limit ?? 3);
-  if (!ranked.length) return "";
-  return ranked.map((item) => item.doc.body.trim()).join("\n\n");
+    .slice(0, input.limit ?? 3)
+    .map((item) => item.doc);
+  const selected = [...general, ...ranked];
+  if (!selected.length) return "";
+  return selected.map((doc) => doc.body.trim()).join("\n\n");
 }
 
 function scoreDoc(doc: KnowledgeDoc, host: string, haystack: string): number {
@@ -79,12 +85,14 @@ function readDoc(file: string): KnowledgeDoc | undefined {
   const hosts = stringList(meta.hosts);
   const keywords = stringList(meta.keywords);
   const body = split.body.trim();
-  if (!body || (!hosts.length && !keywords.length)) return undefined;
+  const general = meta.general === true;
+  if (!body || (!general && !hosts.length && !keywords.length)) return undefined;
   return {
     app: String(meta.app ?? path.basename(path.dirname(file))),
     title: String(meta.title ?? ""),
     hosts,
     keywords,
+    general,
     body,
     file,
   };

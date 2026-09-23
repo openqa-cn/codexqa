@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import * as modelHttp from "../src/model-http.js";
 import { retrieveKnowledge } from "../src/knowledge.js";
-import { confirmDone, fieldText, guideGoal, planTask } from "../src/policy.js";
+import { confirmDone, fieldText, guideGoal, planTask, searchQueryFromGoal, typeCandidates } from "../src/policy.js";
 import { assessActionEffect } from "../src/verify.js";
 import { defaultConfig } from "../src/config.js";
 
@@ -9,9 +9,26 @@ const sanyaGoal =
   "从百度搜索「携程旅行网」并打开携程官网。进入国内机票。选择往返。出发地北京，目的地三亚（不是上海、不是深圳）。去程2026-10-01，返程2026-10-07。";
 
 describe("step timing shortcuts", () => {
+  it("reads a search query from the goal only for the search box", () => {
+    const jd = "打开京东，搜索 iPhone 18 Pro Max，进入搜索结果并看到价格。";
+    expect(searchQueryFromGoal(jd, { role: "textbox", name: "搜索" })).toBe("iPhone 18 Pro Max");
+    expect(searchQueryFromGoal("在百度搜索携程，打开携程官网。", { role: "searchbox", name: "" })).toBe("携程");
+    expect(searchQueryFromGoal("搜索「AI 新闻」，进入结果。", { role: "textbox", name: "搜索" })).toBe("AI 新闻");
+    expect(searchQueryFromGoal(jd, { role: "textbox", name: "出发地 可输入城市或机场" })).toBeUndefined();
+    expect(searchQueryFromGoal("出发地填北京，目的地填昆明。", { role: "textbox", name: "搜索" })).toBeUndefined();
+  });
+
+  it("lists typeable phrases from the goal for Jev to choose", () => {
+    const goal = "在百度搜索携程，打开携程官网。出发地填北京，目的地填昆明。去程日期选2026年10月1日。";
+    expect(typeCandidates(goal)).toEqual(["携程", "北京", "昆明", "2026年10月1日"]);
+    const guided = `${goal}\n\nBusiness notes (reference only):\n不要输入「上海」`;
+    expect(typeCandidates(guided)).not.toContain("上海");
+  });
+
   it("attaches matching business notes for the text model", async () => {
     const notes = retrieveKnowledge({ goal: sanyaGoal, url: "https://www.baidu.com/" });
     expect(notes).toContain("携程国内机票");
+    expect(notes).toContain("出现登录弹窗，就停止");
     expect(notes).toContain("不要点相邻月");
     expect(notes).toContain("不要再点「机票」");
     expect(notes).toContain("低价速报");
@@ -107,6 +124,8 @@ describe("step timing shortcuts", () => {
     const plan = await planTask(sanyaGoal, config);
     expect(plan.steps).toHaveLength(4);
     expect(plan.doneWhen).toContain("往返航班列表或报价");
+    expect(plan.model).toBe("glm-5.3-flash");
+    expect(plan.modelMs).toBeGreaterThanOrEqual(0);
     const guided = guideGoal(sanyaGoal, plan);
     expect(guided).toContain("1. 搜索携程并打开官网");
     expect(guided).toContain("Done only when this is visibly true: 页面上能看到北京到三亚");

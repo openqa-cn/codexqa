@@ -206,6 +206,7 @@ Do not say the task ends when a model decides. Name what must be visible.`;
 
 export async function planTask(goal: string, config: PilotConfig, notes = ""): Promise<TaskPlan> {
   if (!config.model.apiKey) throw new DecisionError(missingApiKeyMessage("auto"));
+  const started = performance.now();
   const response = await modelFetch(`${config.model.baseUrl.replace(/\/$/, "")}/chat/completions`, {
     method: "POST",
     timeoutMs: config.model.timeoutMs,
@@ -225,7 +226,11 @@ export async function planTask(goal: string, config: PilotConfig, notes = ""): P
     }),
   });
   if (!response.ok) throw new DecisionError(await providerHttpError("Planner", response));
-  const body = (await response.json()) as { choices?: { message?: { content?: string } }[]; model?: string };
+  const body = (await response.json()) as {
+    choices?: { message?: { content?: string } }[];
+    model?: string;
+    usage?: unknown;
+  };
   const content = body.choices?.[0]?.message?.content ?? "";
   const output = parseModelJson(content);
   const steps = (Array.isArray(output.steps) ? output.steps : [])
@@ -236,7 +241,13 @@ export async function planTask(goal: string, config: PilotConfig, notes = ""): P
   if (steps.length < 2 || !doneWhen) {
     throw new DecisionError("Planner returned no steps or done condition; nothing executed");
   }
-  return { steps, doneWhen, model: body.model || config.model.model };
+  return {
+    steps,
+    doneWhen,
+    model: body.model || config.model.model,
+    modelMs: elapsedMs(started),
+    modelUsage: parseModelUsage(body.usage),
+  };
 }
 
 const CONFIRM_PROMPT = `Decide whether a browser task's done condition is already visible.
@@ -437,6 +448,39 @@ export function parseDecision(raw: Record<string, unknown>): Decision {
 async function providerHttpError(label: string, response: Response): Promise<string> {
   const body = (await response.text()).replace(/\s+/g, " ").trim().slice(0, 240);
   return body ? `${label} returned HTTP ${response.status}: ${body}` : `${label} returned HTTP ${response.status}`;
+}
+
+/** Phrases the goal already asks to type. Jev chooses among these; no separate text model. */
+export function typeCandidates(goal: string): string[] {
+  const source = goal.split(/\n\s*Planned steps:/)[0].split(/\n\s*Business notes/)[0];
+  const found: string[] = [];
+  const add = (value: string) => {
+    const text = value.trim().replace(/^[「“"'《]+|[」”"'》]+$/g, "").replace(/^一下\s*/, "").trim();
+    if (!text || text.length > 80 || text === "搜索" || found.includes(text)) return;
+    found.push(text);
+  };
+  for (const match of source.matchAll(/[「“"']([^」”"']+)[」”"']/g)) add(match[1]);
+  for (const match of source.matchAll(/(?:搜索|输入|填写|填)(?!框|按钮|结果)\s*([^，。；！？\n]{1,80})/g)) {
+    add(match[1].split(/\s*(?:并|然后|进入|打开|不要|断言)/)[0]);
+  }
+  for (const match of source.matchAll(/20\d{2}年\d{1,2}月\d{1,2}日|20\d{2}-\d{2}-\d{2}/g)) add(match[0]);
+  return found.slice(0, 12);
+}
+
+/** Characters already named in the goal for a search box. Other fields still use the text model. */
+export function searchQueryFromGoal(goal: string, field: { role?: string; name?: string }): string | undefined {
+  const name = (field.name ?? "").trim();
+  const isSearch = field.role === "searchbox" || /^(搜索|search)$/i.test(name);
+  if (!isSearch) return undefined;
+  const marked = goal.match(/搜索\s*[「“"']([^」”"']+)[」”"']/);
+  const loose = goal.match(/搜索(?!框|按钮|结果)\s*([^，。；！？\n]+)/);
+  const english = goal.match(/\bsearch(?:\s+for)?\s+([^,.;!?\n]+)/i);
+  const raw = marked?.[1] ?? loose?.[1] ?? english?.[1];
+  if (!raw) return undefined;
+  let query = raw.trim().split(/\s*(?:并|然后|进入|打开|不要|断言)/)[0].trim();
+  query = query.replace(/^一下\s*/, "").replace(/^[「“"'《]+|[」”"'》]+$/g, "").trim();
+  if (!query || query.length > 80 || query === "搜索") return undefined;
+  return query;
 }
 
 const TEXT_PROMPT = `Return one JSON object with key text.
