@@ -2,6 +2,8 @@
 
 [English](README.md) · [工作原理](HOW_IT_WORKS.zh-CN.md) · [已知限制](KNOWN_LIMITATIONS.zh-CN.md)
 
+**Jev Browser** 的独立仓库是 [openqa-cn/codexqa-jev-browser](https://github.com/openqa-cn/codexqa-jev-browser)。同一技能也在 [CodexQA](https://github.com/openqa-cn/codexqa) 目录里。
+
 用 GUI 模型做浏览器自动化时，每一步都要把截图送给视觉模型找控件。识别要付视觉 token，回路要等模型看图，点选落在坐标上。
 
 CodexQA Jev Browser 把找控件从视觉模型换成页面内编好的索引，把通过与否交给页面上看得见的证据。回放、按目标执行、用例生成和站点探索共用这一套索引。浏览器是 Playwright Chromium。本仓库没有和视觉 GUI 模型的对照基准，下面是结构上避开这些成本的做法。
@@ -77,6 +79,8 @@ npx codexqa-jev-browser explore --url examples/app/index.html --out generated/ex
 本目录就是 skill。`SKILL.md` 和 CLI 放在一起。
 
 ```bash
+npx skills add openqa-cn/codexqa-jev-browser
+# 或从 CodexQA 目录安装：
 npx skills add openqa-cn/codexqa --skill codexqa-jev-browser
 ```
 

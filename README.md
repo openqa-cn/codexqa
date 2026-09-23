@@ -104,7 +104,7 @@ GitHub is the skill source; product site: [openqa.cn](https://openqa.cn/?utm_sou
 </tr>
 <tr>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-jev-browser/README.md">codexqa-jev-browser</a></strong></p>
+<p><strong><a href="skills/codexqa-jev-browser/README.md">codexqa-jev-browser</a></strong> · <a href="https://github.com/openqa-cn/codexqa-jev-browser">Jev Browser repo</a></p>
 <p><strong>Verifies</strong> — whether a browser flow reaches the visible evidence named in the goal. A model's DONE is not a pass.</p>
 <p><strong>Does</strong> — drives Playwright Chromium from a page index (role, name, allowed operations). Replays YAML, Markdown, or API cases, or generates a case from a goal. Each run writes <code>reports/&lt;run-id&gt;/report.html</code> with the marked screenshot and the step result.</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/jev-report.html"><img src="docs/assets/previews/jev-report.png" alt="codexqa-jev-browser HTML replay report"></a></p>
@@ -161,7 +161,7 @@ Each skill is one step in the test-and-verify loop. The table says **when to use
 | 📋 | <a href="skills/codexqa-requirement-analyzer/README.md">codexqa-requirement-analyzer</a> | **When** a PRD, story pack, or mixed materials land, before anyone writes code: is it testable, complete, internally consistent?<br>**You get** one assignable P0/P1 gap-and-conflict register. High-priority rows include preconditions, stimulus, expected result, and evidence — the requirement-layer blockers that would make later testing fail. |
 | 🧪 | <a href="skills/codexqa-testcase-generator/README.md">codexqa-testcase-generator</a> | **When** you need a test plan and executable cases for Web / server / APP before submit, or extra regression after a change.<br>**You get** local Markdown plan + cases + aggregated HTML: which scenarios, which priority. Unknowns stay TBD; silent PRD gaps are not invented as fake cases. |
 | 🗃️ | <a href="skills/codexqa-testdata-generator/README.md">codexqa-testdata-generator</a> | **When** cases exist but will not run: missing accounts, catalog rows, orders. A copied fake ID will not pass a real API.<br>**You get** data constructed against the backend, with returned business IDs written into case preconditions. Success means the backend issued an ID, not that a number appeared in chat. |
-| 🌐 | <a href="skills/codexqa-jev-browser/README.md">codexqa-jev-browser</a> | **When** you have a UI case, or only a goal, and need to see whether the page actually shows the expected evidence.<br>**You get** a local HTML report: each step, the control that was used, and a marked screenshot. Replay does not call a decision model. The browser is Playwright Chromium. |
+| 🌐 | <a href="skills/codexqa-jev-browser/README.md">codexqa-jev-browser</a> · <a href="https://github.com/openqa-cn/codexqa-jev-browser">repo</a> | **When** you have a UI case, or only a goal, and need to see whether the page actually shows the expected evidence.<br>**You get** a local HTML report: each step, the control that was used, and a marked screenshot. Replay does not call a decision model. The browser is Playwright Chromium. |
 | 🗺️ | <a href="skills/codexqa-code-wiki/README.md">codexqa-code-wiki</a> | **When** a newcomer or an Agent enters the repo, or you are reviewing whether a change broke the architecture.<br>**You get** an architecture knowledge-graph HTML: module communities, real dependencies, the hub, a reading path. You are checking layering and where to start — not another README. |
 | 📈 | <a href="skills/codexqa-code-analyzer/README.md">codexqa-code-analyzer</a> | **When** you review a PR, set regression scope, or ask “who does this change hit?” A git diff will not show call chains.<br>**You get** blast radius from a local symbol graph: which APIs / methods / call chains moved, which entries fire, which edges have no tests. That list is what you regression-test. |
 | 🧯 | <a href="skills/codexqa-rootcause-analyzer/README.md">codexqa-rootcause-analyzer</a> | **When** a production or local exception, stack, or log still does not tell you which layer actually failed.<br>**You get** a gated English RCA: trigger vs root cause vs confidence, plus one fix-and-verify suggestion. The throw site is not treated as the root cause. |
@@ -319,7 +319,7 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 </tr>
 <tr>
 <td width="50%" valign="top">
-<p><strong><a href="skills/codexqa-jev-browser/README.zh-CN.md">codexqa-jev-browser</a></strong></p>
+<p><strong><a href="skills/codexqa-jev-browser/README.zh-CN.md">codexqa-jev-browser</a></strong> · <a href="https://github.com/openqa-cn/codexqa-jev-browser">Jev Browser 仓库</a></p>
 <p><strong>验证什么</strong> — 浏览器流程有没有走到目标里写明的可见证据。模型返回 DONE 不算通过。</p>
 <p><strong>核心能力</strong> — 用页面索引（角色、名称、允许的操作）驱动 Playwright Chromium。回放 YAML / Markdown / API 用例，或按目标生成用例。每次运行写出 <code>reports/&lt;run-id&gt;/report.html</code>，里面有带标记的截图和步骤结果。</p>
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/jev-report.html"><img src="docs/assets/previews/jev-report.png" alt="codexqa-jev-browser HTML 回放报告"></a></p>
@@ -377,7 +377,7 @@ npx skills add openqa-cn/codexqa --skill codexqa-jev-browser
 | 📋 | <a href="skills/codexqa-requirement-analyzer/README.zh-CN.md">codexqa-requirement-analyzer</a> | **什么时候用** 需求评审、提测前对 PRD / 故事 / 一包材料做完整性检查。代码还没写，先看需求能不能测、有没有打架。<br>**验证结果** 一份可指派的缺口与冲突登记表（P0/P1）。高优先级条目带前置、操作、期望和证据，标出需求层哪些地方会让后续测试做不下去。 |
 | 🧪 | <a href="skills/codexqa-testcase-generator/README.zh-CN.md">codexqa-testcase-generator</a> | **什么时候用** 提测、补回归，或要把 Web / 服务端 / APP 从需求落到可执行用例。<br>**验证结果** 本地测试方案 + 用例 + 聚合 HTML：覆盖哪些场景、优先级怎么排。需求没写清的标 TBD，不会把空缺编成假用例。 |
 | 🗃️ | <a href="skills/codexqa-testdata-generator/README.zh-CN.md">codexqa-testdata-generator</a> | **什么时候用** 用例写好了但跑不起来，缺账号、商品、订单等前置数据；复制一个假 ID 过不了真实接口。<br>**验证结果** 对着后端造数，把返回的业务 ID 回写进用例前置条件。你拿到的是能真正打接口的物料，成功以后端给了 ID 为准。 |
-| 🌐 | <a href="skills/codexqa-jev-browser/README.zh-CN.md">codexqa-jev-browser</a> | **什么时候用** 已经有界面用例，或只有一句目标，要核对页面上是不是真出现了预期证据。<br>**验证结果** 本地 HTML 报告：每一步、用过的控件、带标记的截图。回放不再调用决策模型。浏览器是 Playwright Chromium。 |
+| 🌐 | <a href="skills/codexqa-jev-browser/README.zh-CN.md">codexqa-jev-browser</a> · <a href="https://github.com/openqa-cn/codexqa-jev-browser">仓库</a> | **什么时候用** 已经有界面用例，或只有一句目标，要核对页面上是不是真出现了预期证据。<br>**验证结果** 本地 HTML 报告：每一步、用过的控件、带标记的截图。回放不再调用决策模型。浏览器是 Playwright Chromium。 |
 | 🗺️ | <a href="skills/codexqa-code-wiki/README.zh-CN.md">codexqa-code-wiki</a> | **什么时候用** 新人上手、Agent 进仓、架构评审，或怀疑这次改动把分层改乱了。<br>**验证结果** 架构知识图谱 HTML：模块社区、真实依赖、枢纽、阅读路径。核对的是系统怎么分层、该从哪读、架构有没有被拆散，不是又一份 README。 |
 | 📈 | <a href="skills/codexqa-code-analyzer/README.zh-CN.md">codexqa-code-analyzer</a> | **什么时候用** 评 PR、定回归范围、问「改这几行会打到谁」。只看 git diff 看不到调用链。<br>**验证结果** 变更影响面：命中哪些接口 / 方法 / 调用链、请求从哪进、哪些边还没测试。用来圈回归名单，而不是全文搜索猜。 |
 | 🧯 | <a href="skills/codexqa-rootcause-analyzer/README.zh-CN.md">codexqa-rootcause-analyzer</a> | **什么时候用** 线上或本地异常，堆栈和日志对回仓库后，仍说不清到底卡在哪一层。<br>**验证结果** 带门禁的英文 RCA：触发点、根因、置信度分开写，并给一条可验证的修复方向。避免把抛错的那一行当成根因。 |

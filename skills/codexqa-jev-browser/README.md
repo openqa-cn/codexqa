@@ -2,6 +2,8 @@
 
 [简体中文](README.zh-CN.md) · [How it works](HOW_IT_WORKS.md) · [Known limitations](KNOWN_LIMITATIONS.md)
 
+**Jev Browser** is the standalone project at [openqa-cn/codexqa-jev-browser](https://github.com/openqa-cn/codexqa-jev-browser). The same skill is also in the [CodexQA](https://github.com/openqa-cn/codexqa) catalog.
+
 GUI-model browser automation sends a screenshot to a vision model on every step. Recognition spends vision tokens, the loop waits for the model to read the image, and the click lands on coordinates.
 
 CodexQA Jev Browser finds controls from an index built inside the page and treats visible page evidence as the result. Replay, goal runs, case generation, and site exploration share that index. The browser is Playwright Chromium. This repository has no benchmark against vision GUI models. The rows below are the structural answers to those costs.
@@ -77,6 +79,8 @@ Reports land in `reports/<run-id>/report.html`. `report.json` is the machine-rea
 This directory is the skill. `SKILL.md` sits next to the CLI.
 
 ```bash
+npx skills add openqa-cn/codexqa-jev-browser
+# or, from the CodexQA catalog:
 npx skills add openqa-cn/codexqa --skill codexqa-jev-browser
 ```
 
