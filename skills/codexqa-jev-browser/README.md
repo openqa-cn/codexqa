@@ -62,12 +62,12 @@ flowchart TD
   yaml --> verify["--verify replays through run"]
 
   explorePath --> crawl["State graph; skip logout, delete, and pay"]
-  crawl --> graph["explore-graph.json and compiled cases"]
+  crawl --> exploreOut["explore-graph.json and compiled cases"]
 
   act --> report["report.html, report.json, report.md, marked screenshots, video"]
   side --> report
   done --> report
-  graph --> report
+  exploreOut --> report
 ```
 
 `observe`, `run`, `explore`, and `--decisions` stop at the index and the actor. Live `auto` and `generate --goal` add the planner and a decision provider. `generate` turns a passing trace back into a case the actor can replay alone.

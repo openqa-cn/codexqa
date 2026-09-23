@@ -62,12 +62,12 @@ flowchart TD
   yaml --> verify["--verify 交给 run 回放"]
 
   explorePath --> crawl["状态图；跳过退出、删除、支付"]
-  crawl --> graph["explore-graph.json 与编译出的用例"]
+  crawl --> exploreOut["explore-graph.json 与编译出的用例"]
 
   act --> report["report.html、report.json、report.md、带标记截图、录像"]
   side --> report
   done --> report
-  graph --> report
+  exploreOut --> report
 ```
 
 `observe`、`run`、`explore` 和 `--decisions` 停在索引和执行器。现场的 `auto` 和 `generate --goal` 才加上规划器和决策来源。`generate` 把通过的轨迹编译回执行器可以单独回放的用例。
