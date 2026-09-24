@@ -294,6 +294,11 @@ for id in "${SYMBOL_IDS[@]+"${SYMBOL_IDS[@]}"}"; do
     '. + [{id:$id, dir:$safe, diff:("diffs/"+$safe+".diff.json"), paths:$paths}]' <<<"$SELECTED_JSON")"
 done
 
+if [[ -f "$SCRIPT_DIR/lib/collect-unit-calls.sh" ]]; then
+  bash "$SCRIPT_DIR/lib/collect-unit-calls.sh" --repo "$REPO_ABS" --dir "$OUT_DIR" \
+    || echo "warn: unit calls failed" >&2
+fi
+
 # Re-rank hot-but-thin by edges_in_count (fan-in), not from_count
 if [[ -d "$OUT_DIR/impact" ]] && [[ -f "$OUT_DIR/08-hot-but-thin.json" ]]; then
   EDGE_MAP='{}'
@@ -425,6 +430,14 @@ else
   echo "warn: derive-performance.sh missing; Performance signals skipped" >&2
 fi
 
+if [[ -x "$SCRIPT_DIR/lib/derive-sast.sh" ]]; then
+  if ! "$SCRIPT_DIR/lib/derive-sast.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS"; then
+    echo "warn: derive-sast.sh failed; continuing without 23-sast-signals.json" >&2
+  fi
+else
+  echo "warn: derive-sast.sh missing; SAST signals skipped" >&2
+fi
+
 # Annotation-edge compensation (Spring/Resilience4j callbacks; 0 extra CodexQA)
 if [[ -x "$SCRIPT_DIR/lib/derive-annotation-edges.sh" ]]; then
   if ! "$SCRIPT_DIR/lib/derive-annotation-edges.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS"; then
@@ -432,6 +445,35 @@ if [[ -x "$SCRIPT_DIR/lib/derive-annotation-edges.sh" ]]; then
   fi
 else
   echo "warn: derive-annotation-edges.sh missing; annotation edges skipped" >&2
+fi
+
+# Coverage ledger: hits annotate symbols and do not dequeue them. No extra CodexQA.
+if [[ -f "$SCRIPT_DIR/lib/build-coverage-ledger.py" ]]; then
+  if [[ -x "$SCRIPT_DIR/acr-python" ]]; then
+    LEDGER_PY=("$SCRIPT_DIR/acr-python")
+  else
+    LEDGER_PY=(python3)
+  fi
+  if ! "${LEDGER_PY[@]}" "$SCRIPT_DIR/lib/build-coverage-ledger.py" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS"; then
+    echo "warn: build-coverage-ledger.py failed; continuing without 24-coverage-ledger.json" >&2
+  fi
+else
+  echo "warn: build-coverage-ledger.py missing; coverage ledger skipped" >&2
+fi
+
+# PR digest: three-dot patch vs two-dot drift, plus report lines. No CodexQA.
+if [[ -f "$SCRIPT_DIR/lib/build-review-digest.py" ]]; then
+  if [[ -x "$SCRIPT_DIR/acr-python" ]]; then
+    DIGEST_PY=("$SCRIPT_DIR/acr-python")
+  else
+    DIGEST_PY=(python3)
+  fi
+  if ! "${DIGEST_PY[@]}" "$SCRIPT_DIR/lib/build-review-digest.py" \
+      --dir "$OUT_DIR" --repo "$REPO_ABS" --diff-base "$DIFF_BASE"; then
+    echo "warn: build-review-digest.py failed; continuing without 26-review-digest.json" >&2
+  fi
+else
+  echo "warn: build-review-digest.py missing; review digest skipped" >&2
 fi
 
 # Index quality summary from stats (plan: manifest 含 stub/碰撞提示)
@@ -509,6 +551,13 @@ jq -n \
       "19-annotation-edges.json",
       "20-risk-tier.json",
       "21-performance-signals.json",
+      "24-coverage-ledger.json",
+      "26-review-digest.json",
+      "26-review-digest-detail.json",
+      "27-suspect-queue.json",
+      "28-symbol-bundle.json",
+      "29-judgment-packet.json",
+      "30-conclusion-skeleton.json",
       "commands.log",
       "diffs/",
       "impact/",
@@ -526,7 +575,8 @@ jq -n \
       "Complexity: 11-complexity-signals.json derived locally (no extra CodexQA); see references/dimensions/complexity.md.",
       "Dependencies: 12-dependency-signals.json derived locally (no extra CodexQA, no network CVE); see references/dimensions/dependencies.md.",
       "Privacy: 13-privacy-signals.json derived locally (no extra CodexQA, no legal conclusions); see references/dimensions/privacy.md.",
-      "Resilience: 14-resilience-signals.json — every non-empty swallow/timeout/retry/partial/idempotency hit MUST become a finding or explicit deferred residual (hard gate); see references/dimensions/resilience.md.",
+      "Resilience: 14-resilience-signals.json — every non-empty swallow/timeout/retry/partial/idempotency/exception_unwraps hit MUST become a finding or explicit deferred residual (hard gate). resource_leaks is RES-001 on Correctness, including close_not_in_finally. charset_gaps, null_deref_gaps, and authz_audit_gaps are per-row hard gates on the same file. See references/dimensions/resilience.md.",
+      "Deterministic extras: env_config_gaps (rollout hard gate), uncontrolled_log_sinks (observability hard gate), weak_perf_tests (test_gaps hard gate), unpooled_connections (performance hard gate, not N+1), magic_numbers and unused_accumulators (maintainability hard gates). Semantic candidates error_payload_candidates and opaque_status_candidates are per-row hit or skip, not thin flips.",
       "Change/rollout: 15-rollout-signals.json derived locally (no extra CodexQA, no ops probes); see references/dimensions/rollout.md.",
       "Risk tier: 20-risk-tier.json (T0–T3 blast-radius triage from paths+tags+sensitive+rollout surfaces); see references/dimensions/risk-tier.md.",
       "Observability: 16-observability-signals.json; see references/dimensions/observability.md.",
@@ -534,7 +584,8 @@ jq -n \
       "Maintainability: 18-maintainability-signals.json; see references/dimensions/maintainability.md.",
       "Performance: 21-performance-signals.json (hot-path/N+1/unbounded-alloc; no profiler); see references/dimensions/performance.md.",
       "Annotation callbacks: 19-annotation-edges.json; see collect/derive-annotation-edges.",
-      "If change-groups empty or all change_status=default, re-index with --diff-base."
+      "If change-groups empty or all change_status=default, re-index with --diff-base.",
+      "Review digest: 26-review-digest.json is the judgment read when 29-judgment-packet.json is absent. When 29 exists, read that file only. 30-conclusion-skeleton.json is sealed into the conclusion at render. Do not recompute the split with git or open every signal file for the dimension verdict."
     ]
   }' >"$OUT_DIR/manifest.json"
 

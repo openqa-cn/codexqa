@@ -107,6 +107,16 @@ jq -n \
       degradation_or_breaker: ($b.degradation_or_breaker // []),
       partial_failure_gaps: ($b.partial_failure_gaps // []),
       idempotency_gaps: ($b.idempotency_gaps // []),
+      exception_unwraps: ($b.exception_unwraps // []),
+      resource_leaks: ($b.resource_leaks // []),
+      charset_gaps: ($b.charset_gaps // []),
+      null_deref_gaps: ($b.null_deref_gaps // []),
+      authz_audit_gaps: ($b.authz_audit_gaps // []),
+      disabled_bounds: ($b.disabled_bounds // []),
+      retry_side_effects: ($b.retry_side_effects // []),
+      shared_mutables: ($b.shared_mutables // []),
+      process_defaults: ($b.process_defaults // []),
+      protection_gaps: ($b.protection_gaps // []),
       residual_hardening: ($b.residual_hardening // []),
       surfaces: ($b.surfaces // {}),
       summary: {
@@ -116,6 +126,16 @@ jq -n \
         degrade_breaker_count: (($b.degradation_or_breaker // [])|length),
         partial_failure_count: (($b.partial_failure_gaps // [])|length),
         idempotency_gap_count: (($b.idempotency_gaps // [])|length),
+        exception_unwrap_count: (($b.exception_unwraps // [])|length),
+        resource_leak_count: (($b.resource_leaks // [])|length),
+        charset_gap_count: (($b.charset_gaps // [])|length),
+        null_deref_gap_count: (($b.null_deref_gaps // [])|length),
+        authz_audit_gap_count: (($b.authz_audit_gaps // [])|length),
+        disabled_bound_count: (($b.disabled_bounds // [])|length),
+        retry_side_effect_count: (($b.retry_side_effects // [])|length),
+        shared_mutable_count: (($b.shared_mutables // [])|length),
+        process_default_count: (($b.process_defaults // [])|length),
+        protection_gap_count: (($b.protection_gaps // [])|length),
         residual_hardening_count: (($b.residual_hardening // [])|length),
         files_considered: ($b.files_considered // 0),
         files_scanned: ($b.files_scanned // 0),
@@ -154,6 +174,15 @@ jq -n \
               else []
               end
             )
+            + (
+              if (($b.charset_gaps // [])|length) > 0
+                 or (($b.null_deref_gaps // [])|length) > 0
+                 or (($b.authz_audit_gaps // [])|length) > 0
+                 or (($b.resource_leaks // [])|length) > 0 then
+                ["Hard gate: each charset_gaps, null_deref_gaps, authz_audit_gaps, resource_leaks, disabled_bounds, retry_side_effects, shared_mutables, and process_defaults row needs path:line. A disabling literal is not a residual. A max retry count does not close retry_side_effects. A different rule_id on the same line is a separate finding."]
+              else []
+              end
+            )
             + ["Never invent production SLO/chaos conclusions; residual hardening when thin"]
           )
         else ["resilience body metrics skipped (${ACR_PY:-python3} missing)"]
@@ -162,4 +191,7 @@ jq -n \
     }
   ' >"$OUT"
 
+if [[ -f "$OUT" ]]; then
+  "$SCRIPT_DIR/../acr-python" "$SCRIPT_DIR/derive_triage.py" "$OUT" "${REPO:-}" || echo "warn: derive triage failed for $OUT" >&2
+fi
 echo "Resilience signals written: $OUT"

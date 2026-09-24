@@ -20,6 +20,8 @@ from _line_scan import (  # noqa: E402
     is_heuristic_meta_line,
     is_doc_path,
 )
+from _det_rules import scan_env_config_gaps, scan_opaque_status_candidates  # noqa: E402
+from _identical_copies import expand_mirrored_hits, narrow_scan  # noqa: E402
 
 MAX_FILES = 40
 MAX_LINES = 4000
@@ -313,38 +315,60 @@ def scan_file(rel: str, lines: list[str]) -> dict:
         if ANNOUNCE_CLUE.search(line):
             any_announce = True
 
+    def anchor_lines(rows: list[dict]) -> list[int]:
+        found = []
+        for row in rows:
+            line = row.get("line")
+            if isinstance(line, int) and line > 1 and line not in found:
+                found.append(line)
+        return found
+
+    related = anchor_lines(schema_migrations + compat_window_gaps + feature_flags)
+
+    def absence(kind: str, note: str, extra=None) -> dict:
+        # Never anchor a file-level absence on the package line. A skip of
+        # line 1 does not close this family; the related symbol lines do.
+        row = {
+            "kind": kind,
+            "path": rel,
+            "note": note,
+            "visible_absence": True,
+            "anchors": related[:8],
+        }
+        if related:
+            row["line"] = related[0]
+        if extra:
+            row.update(extra)
+        return row
+
     # Dual-write gap: migration or storage switch without dual-write clues
     if (any_migration or any_storage_switch) and not any_dual:
         if any_storage_switch or any_destructive:
             dual_write_gaps.append(
-                {
-                    "kind": "dual_write_gap",
-                    "path": rel,
-                    "note": "schema/storage change without dual-write/dual-read/backfill clue",
-                    "destructive": any_destructive,
-                    "storage_switch": any_storage_switch,
-                }
+                absence(
+                    "dual_write_gap",
+                    "schema/storage change without dual-write/dual-read/backfill clue",
+                    {"destructive": any_destructive, "storage_switch": any_storage_switch},
+                )
             )
 
     # Breaking announce gap: breaking/destructive without announce
     if (any_breaking or any_destructive) and not any_announce:
         breaking_announcement_gaps.append(
-            {
-                "kind": "breaking_announcement_gap",
-                "path": rel,
-                "note": "breaking/destructive surface without CHANGELOG/migration-guide/NOTICE clue",
-            }
+            absence(
+                "breaking_announcement_gap",
+                "breaking/destructive surface without CHANGELOG/migration-guide/NOTICE clue",
+            )
         )
 
     # Rollback gap: destructive migration without rollback
     if (any_destructive or (any_migration and any_storage_switch)) and not any_rollback:
         rollback_gaps.append(
-            {
-                "kind": "rollback_gap",
-                "path": rel,
-                "note": "destructive/cutover migration without rollback/canary/blue-green clue",
-                "destructive": any_destructive,
-            }
+            absence(
+                "rollback_gap",
+                "destructive/cutover migration without rollback/canary/blue-green clue",
+                {"destructive": any_destructive},
+            )
         )
 
     # Flag gap is handled globally in main via residual + dual path; local flag hits only
@@ -409,10 +433,10 @@ def main() -> None:
     pack_dir, repo, files_json, _lang_json, out_path = sys.argv[1:6]
     _ = pack_dir
     files_obj = load(files_json)
-    all_paths = [p for p in file_paths(files_obj) if is_source(p)][:MAX_FILES]
-
-    if not all_paths and repo and os.path.isdir(repo):
-        all_paths = enumerate_root(repo)[:MAX_FILES]
+    candidates = [p for p in file_paths(files_obj) if is_source(p)]
+    if not candidates and repo and os.path.isdir(repo):
+        candidates = enumerate_root(repo)
+    all_paths, mirrors = narrow_scan(repo, candidates, MAX_FILES)
 
     schema_migrations = []
     dual_write_gaps = []
@@ -420,6 +444,8 @@ def main() -> None:
     compat_window_gaps = []
     breaking_announcement_gaps = []
     rollback_gaps = []
+    env_config_gaps = []
+    opaque_status_candidates = []
     any_migration = False
     any_destructive = False
     any_storage_switch = False
@@ -446,6 +472,8 @@ def main() -> None:
             continue
         files_scanned += 1
         sc = scan_file(rel, lines)
+        env_config_gaps.extend(scan_env_config_gaps(rel, lines))
+        opaque_status_candidates.extend(scan_opaque_status_candidates(rel, lines))
         schema_migrations.extend(sc["schema_migrations"])
         dual_write_gaps.extend(sc["dual_write_gaps"])
         feature_flags.extend(sc["feature_flags"])
@@ -470,16 +498,28 @@ def main() -> None:
     compat_window_gaps = dedupe(compat_window_gaps)
     breaking_announcement_gaps = dedupe(breaking_announcement_gaps)
     rollback_gaps = dedupe(rollback_gaps)
+    env_config_gaps = dedupe(env_config_gaps)
+    opaque_status_candidates = dedupe(opaque_status_candidates)
 
     # Global flag gap for risky cutover without flag (as residual-style gap list item)
     flag_gaps = []
     if (any_migration or any_breaking or any_destructive) and not any_flag:
-        flag_gaps.append(
-            {
-                "kind": "feature_flag_gap",
-                "note": "migration/breaking cutover without feature-flag/toggle/kill-switch clue",
-            }
-        )
+        anchor = None
+        for row in schema_migrations + compat_window_gaps:
+            line = row.get("line")
+            if isinstance(line, int) and line > 1:
+                anchor = row
+                break
+        gap = {
+            "kind": "feature_flag_gap",
+            "visible_absence": True,
+            "note": "migration/breaking cutover without feature-flag/toggle/kill-switch clue",
+        }
+        if anchor:
+            gap["path"] = anchor.get("path")
+            gap["line"] = anchor.get("line")
+            gap["anchors"] = [anchor.get("line")]
+        flag_gaps.append(gap)
 
     residual_rollout = []
     if any_migration and not any_flag and not any_rollback:
@@ -498,6 +538,7 @@ def main() -> None:
         and len(breaking_announcement_gaps) == 0
         and len(rollback_gaps) == 0
         and len(flag_gaps) == 0
+        and len(env_config_gaps) == 0
     )
 
     payload = {
@@ -512,6 +553,8 @@ def main() -> None:
         "breaking_announcement_gaps": breaking_announcement_gaps,
         "rollback_gaps": rollback_gaps,
         "residual_rollout": residual_rollout,
+        "env_config_gaps": env_config_gaps,
+        "opaque_status_candidates": opaque_status_candidates,
         "thresholds": {
             "max_files": MAX_FILES,
             "max_lines": MAX_LINES,
@@ -533,6 +576,7 @@ def main() -> None:
             "primary_store": primary_store,
         },
     }
+    expand_mirrored_hits(payload, mirrors)
     Path(out_path).write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
 
 

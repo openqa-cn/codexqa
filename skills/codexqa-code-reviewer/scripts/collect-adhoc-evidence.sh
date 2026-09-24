@@ -182,6 +182,26 @@ jq --argjson files "$FILES_JSON" '
   || cp "$OUT_DIR/05-changed-symbols.json" "$OUT_DIR/05-changed-symbols.json.tmp"
 mv "$OUT_DIR/05-changed-symbols.json.tmp" "$OUT_DIR/05-changed-symbols.json"
 
+# Full symbol list for the coverage ledger only. 05 stays capped for derive inputs.
+run_json "$OUT_DIR/05-coverage-universe.json" \
+  codexqa query --repo "$REPO_ABS" symbols --kind function,method,class --limit 5000 || true
+if [[ -f "$OUT_DIR/05-coverage-universe.json" ]]; then
+  jq --argjson files "$FILES_JSON" '
+    ($files | map(.path) | unique) as $want
+    | (.nodes // .result.nodes // []) as $n
+    | [
+        $n[]
+        | select(
+            (($want|length)==0)
+            or (((.file // .path // .file_path // "") as $fp | ($want | index($fp)) != null))
+            or (((.file // .path // .file_path // "") | length) == 0)
+          )
+      ] as $f
+    | {kind:"CoverageUniverse", nodes: $f, note:"adhoc symbols for the coverage ledger; not capped at 60"}
+  ' "$OUT_DIR/05-coverage-universe.json" >"$OUT_DIR/05-coverage-universe.json.tmp" \
+    && mv "$OUT_DIR/05-coverage-universe.json.tmp" "$OUT_DIR/05-coverage-universe.json"
+fi
+
 jq -n '{kind:"HotButThinChanged", nodes:[], note:"adhoc — hot-but-thin optional"}' \
   >"$OUT_DIR/08-hot-but-thin.json"
 jq -n '{kind:"Bm25Search", results:[], note:"adhoc — sensitive search skipped"}' \
@@ -219,6 +239,11 @@ for id in "${SYMBOL_IDS[@]+"${SYMBOL_IDS[@]}"}"; do
   echo '[]' >"$OUT_DIR/impact/$safe/paths/index.json"
 done
 
+if [[ -f "$SCRIPT_DIR/lib/collect-unit-calls.sh" ]]; then
+  bash "$SCRIPT_DIR/lib/collect-unit-calls.sh" --repo "$REPO_ABS" --dir "$OUT_DIR" \
+    || echo "warn: unit calls failed" >&2
+fi
+
 # On-disk imports for Design fit
 for rel in "${RELS[@]}"; do
   safe="$(echo "$rel" | tr -c 'A-Za-z0-9._-' '_')"
@@ -253,13 +278,13 @@ printf '%s\n' "${RELS[@]}" | jq -R . | jq -s . >"$OUT_DIR/imports/index.json"
 # Derives (same chain as PR; WARN-only)
 for d in derive-design-fit derive-complexity derive-dependencies derive-privacy \
          derive-resilience derive-rollout derive-risk-tier derive-observability derive-contract \
-         derive-maintainability derive-performance derive-annotation-edges; do
+         derive-maintainability derive-performance derive-sast derive-annotation-edges; do
   if [[ -x "$SCRIPT_DIR/lib/${d}.sh" ]]; then
     mode_arg="adhoc"
     case "$d" in
       derive-design-fit|derive-complexity|derive-dependencies|derive-privacy|\
       derive-resilience|derive-rollout|derive-risk-tier|derive-observability|derive-contract|\
-      derive-maintainability|derive-performance)
+      derive-maintainability|derive-performance|derive-sast)
         # most derives accept pr|full only — use pr semantics on adhoc packs
         mode_arg="pr"
         ;;
@@ -272,6 +297,20 @@ for d in derive-design-fit derive-complexity derive-dependencies derive-privacy 
     fi
   fi
 done
+
+# Coverage ledger: hits annotate symbols and do not dequeue them. No extra CodexQA.
+if [[ -f "$SCRIPT_DIR/lib/build-coverage-ledger.py" ]]; then
+  if [[ -x "$SCRIPT_DIR/acr-python" ]]; then
+    LEDGER_PY=("$SCRIPT_DIR/acr-python")
+  else
+    LEDGER_PY=(python3)
+  fi
+  if ! "${LEDGER_PY[@]}" "$SCRIPT_DIR/lib/build-coverage-ledger.py" --dir "$OUT_DIR" --mode adhoc --repo "$REPO_ABS"; then
+    echo "warn: build-coverage-ledger.py failed; continuing without 24-coverage-ledger.json" >&2
+  fi
+else
+  echo "warn: build-coverage-ledger.py missing; coverage ledger skipped" >&2
+fi
 
 INDEX_QUALITY="$(codexqa_index_quality_from_stats "$OUT_DIR/01-stats.json")"
 FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -320,15 +359,15 @@ jq -n \
       "11-complexity-signals.json","12-dependency-signals.json","13-privacy-signals.json",
       "14-resilience-signals.json","15-rollout-signals.json","16-observability-signals.json",
       "17-contract-signals.json","18-maintainability-signals.json","19-annotation-edges.json",
-      "20-risk-tier.json","21-performance-signals.json",
+      "20-risk-tier.json","21-performance-signals.json","24-coverage-ledger.json",
       "impact/","imports/","commands.log"
     ],
     notes: [
       "adhoc mode: single-file/small-set review without PR diff-base.",
       "When bootstrapped, a mini git repo was created locally for CodexQA index gates only.",
       "from_count is NOT fan-in — prefer edges-in / 19-annotation-edges.json.",
-      "Resilience signal hits must become findings or explicit deferred residuals (hard gate).",
-      "Performance: 21-performance-signals.json (hot-path/N+1/unbounded-alloc; no profiler); hard gate on non-empty signal arrays."
+      "Resilience signal hits must become findings or explicit deferred residuals (hard gate), including exception_unwraps. resource_leaks is RES-001, including close_not_in_finally. charset_gaps, null_deref_gaps, and authz_audit_gaps are per-row hard gates.",
+      "Performance: 21-performance-signals.json (hot-path/N+1/unbounded-alloc; no profiler); hard gate on non-empty signal arrays. unpooled_connections is a hard gate and does not change signals_thin. weak_perf_tests is a test_gaps hard gate. env_config_gaps and uncontrolled_log_sinks are hard gates. magic_numbers and unused_accumulators are maintainability hard gates."
     ]
   }' >"$OUT_DIR/manifest.json"
 

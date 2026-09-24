@@ -34,13 +34,25 @@ Selected path: **PR-gate static signatures** for known pathologies
 2. **Hot path** — Entry/handler path with N+1, sync blocking IO, or loop-heavy alloc?
 3. **Unbounded allocation** — Loop string/collection growth; list query without LIMIT/take/page; cache growth without TTL/evict?
 
+## Detection rules
+
+| rule_id | type | sev | Look for | Do not report |
+|---|---|---|---|---|
+| `PERF-001` | architecture | P2 | Per-item DB/RPC inside a loop, including a call hidden behind a repository or service helper, that could be one batched query. | Prefetch / `select_related` / `IN` query; a bounded tiny list with a documented reason; a cache path that does not hit the DB. |
+
+`PERF-001` is the `n_plus_one_risks` hard gate. File those signal rows and do not judge this id again in the business-logic pass.
+
+`unpooled_connections` (`DriverManager.getConnection` and the same direct-connect shape) is a separate hard gate. File each row even when `signals_thin` is true. Do not fold it into `n_plus_one_risks`.
+
+`n_plus_one_risks` is the hard gate for a DB/RPC call inside a loop. A hit is a known client (`getConnection`, `db.Query` / `Exec`, `SaveChanges`, `mysqli_query`, `.objects.get`) or a persistence-shaped call: verb `find|load|save|persist|update|delete|get` plus an entity name (`Account`, `Balance`, `User`, …) in camelCase or snake_case, or a bare `save(` / `persist(`. `findAccount`, `updateBalance`, and `find_account` count. A SQL literal in the loop body is not required. One finding per site.
+
 ## Soft thresholds
 
 | Signal | Default | Escalate |
 |---|---|---|
 | N+1 signature in changed source | P2 | Entry/hot path intersection → P1 |
 | Hot-path expensive pattern | P1 | — |
-| Unbounded alloc / unpaginated list / cache without bound | P2 | Entry-reachable unpaginated list → may P1 |
+| Unbounded alloc / unpaginated list / cache without bound | P2 | Entry-reachable unpaginated list → may P1. An expiry symbol that the decision never reads is `BND-001` on Correctness, not this row. |
 | Residual / thin | residual | Never automatic P1 |
 
 Confidence default `medium`. Never invent measured latency/QPS. Comments do not waive gaps.
@@ -66,7 +78,8 @@ Confidence default `medium`. Never invent measured latency/QPS. Comments do not 
 
 - Always evaluate Performance into `review-conclusion.json` (findings **or** `ok`/`none`
   + signal summary from `21-`).
-- **Hard gate:** non-empty `n_plus_one_risks` / `hot_path_risks` / `unbounded_allocation` → findings or deferred residuals with `path:line` — never Performance `None` while those arrays have hits.
+- **Hard gate:** family F2 in [rule-construction.md](../rule-construction.md). Non-empty `n_plus_one_risks` / `hot_path_risks` / `unbounded_allocation` → a visible finding only for each row whose `disposition` is `report`, with `path:line`. A row with no `disposition` is unstamped: re-run `scripts/lib/derive_triage.py` before review. Do not treat it as report and do not drop it. `disposition: suspect` is only [prompts/derive-suspect-pass.md](../../prompts/derive-suspect-pass.md). `disposition: drop` is not a finding. Never Performance `None` while report rows remain. `residual_performance` stays residual.
+- **Hard gate:** non-empty `weak_perf_tests` → a `test_gaps` finding (not a performance hotspot). This is one illustration of family F5 in [rule-construction.md](../rule-construction.md): an assertion is true without exercising the claimed cost (a duration threshold ≥ 1000 and no JDBC, HTTP, or other IO in the body). Walk the rest of F5 even when this array is empty. Do not file this row again as N+1.
 - **Report/HTML:** include only when `verdict` is `concern`/`unknown` (omit clean).
   Concern cards **must** include `risk`（具体代码风险说明）.
 - Optional `performance` on `review-conclusion.json`; include in `dimensions_covered`.

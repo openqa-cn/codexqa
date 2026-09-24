@@ -36,13 +36,15 @@ npx skills add openqa-cn/codexqa --skill codexqa-skill-router
 Agent 应：
 
 1. `python3 scripts/discover_skills.py --with-catalog`
-2. 匹配 → 未安装则 `python3 scripts/ensure_skill.py <name> --yes`
-3. 读目标 `SKILL.md` 并继续
+2. `python3 scripts/suggest_route.py --text "<请求>"` → 按 `outcome` 执行
+3. 未安装则 `python3 scripts/ensure_skill.py <name> --yes`
+4. 读目标 `SKILL.md` 并继续
 
 ## 冒烟
 
 ```bash
 python3 scripts/discover_skills.py --self-check
+python3 scripts/suggest_route.py --self-check
 python3 scripts/discover_skills.py --with-catalog --names-only
 python3 scripts/ensure_skill.py codexqa-code-reviewer --dry-run
 ```

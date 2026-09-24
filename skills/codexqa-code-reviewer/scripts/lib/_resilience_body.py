@@ -14,6 +14,20 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _line_scan import advance_block_state, iter_code_lines, window_code_lines, is_heuristic_meta_line  # noqa: E402
+from _identical_copies import expand_mirrored_hits, narrow_scan  # noqa: E402
+from _det_rules import (  # noqa: E402
+    scan_admin_grant_without_audit,
+    scan_charset_gaps,
+    scan_close_on_success,
+    scan_disabled_bounds,
+    scan_exception_unwraps,
+    scan_executor_leaks,
+    scan_null_deref_gaps,
+    scan_process_defaults,
+    scan_retry_side_effects,
+    scan_shared_mutables,
+    scan_unguarded_parses,
+)
 
 MAX_FILES = 40
 MAX_LINES = 4000
@@ -102,11 +116,20 @@ TIMEOUT_CLUE = re.compile(
 # Retry — keyword starts a retry risk check; bound clues stay in RETRY_BOUND only
 RETRY_HINT = re.compile(
     r"(?i)\b(retry|retries|retriable|RetryTemplate|@Retryable|RetryPolicy|"
-    r"attempts?\s*[:=])\b"
+    r"attempts?\s*[:=]|max_?retr(?:y|ies))\b"
 )
 RETRY_BOUND = re.compile(
-    r"(?i)\b(max(Retries|Attempts|Tries)|attempts?\s*[:=]\s*\d+|backoff|jitter|"
-    r"exponential.?backoff|sleep\s*\(|Thread\.sleep|time\.Sleep|await\s+delay|setTimeout)\b"
+    r"(?i)\b(max(Retries|Attempts|Tries)|max_?retr(?:y|ies)|attempts?\s*[:=]\s*\d+)\b"
+)
+BACKOFF_CLUE = re.compile(
+    r"(?i)\b(backoff|jitter|exponential.?backoff|sleep\s*\(|Thread\.sleep|"
+    r"time\.Sleep|await\s+delay|setTimeout)\b"
+)
+BATCH_LOOP = re.compile(
+    r"(?i)\b(for\s*\(|for\s+\w+\s+in\s+|foreach\s*\(|\.forEach\s*\()\b"
+)
+BATCH_WRITE = re.compile(
+    r"(?i)\b(persist|save|insert|update|executeUpdate|execute\s*\(|delete|put|send)\s*\("
 )
 
 # Degradation / circuit — do NOT treat bare "fallback" params (e.g. asInt(..., fallback))
@@ -243,6 +266,7 @@ def scan_file(rel: str, lines: list[str]) -> dict:
     mq = False
     any_remote = False
     any_retry = False
+    batch_write = False
     go_file = is_go_path(rel)
 
     n = len(lines)
@@ -302,18 +326,32 @@ def scan_file(rel: str, lines: list[str]) -> dict:
             any_remote = True
             w = window_code(lines, i)
             if not TIMEOUT_CLUE.search(w):
-                timeout_gaps.append(hit(rel, i + 1, "missing_timeout", line))
+                row = hit(rel, i + 1, "missing_timeout", line)
+                row["close"] = "per_line"
+                timeout_gaps.append(row)
             # Per-call residual: neighborhood lacks degrade/breaker (not whole-file)
             if not DEGRADE_HINT.search(w):
                 residual_sites.append(hit(rel, i + 1, "remote_without_local_degrade", line))
 
         # Retry without bound — skip import …Retryable
-        if not is_import and RETRY_HINT.search(line):
+        if (
+            not is_import
+            and RETRY_HINT.search(line)
+            and not re.search(r"(?i)\b(static|final|const)\b[^=\n]*=", line)
+        ):
             any_retry = True
             idempot_need = True
             w = window_code(lines, i, n=6)
             if not RETRY_BOUND.search(w):
                 retry_risks.append(hit(rel, i + 1, "unbounded_retry", line))
+            elif not BACKOFF_CLUE.search(w):
+                # A max attempt count does not close a retry that has no backoff.
+                retry_risks.append(hit(rel, i + 1, "retry_without_backoff", line))
+
+        if not is_import and BATCH_LOOP.search(line):
+            ahead = "\n".join(lines[i : min(n, i + 12)])
+            if BATCH_WRITE.search(ahead):
+                batch_write = True
 
         # Spin loops (for(;;)/while(true)) without bound clues in neighborhood
         if not is_import and SPIN_LOOP.search(line):
@@ -348,6 +386,7 @@ def scan_file(rel: str, lines: list[str]) -> dict:
         "mq": mq,
         "any_remote": any_remote,
         "any_retry": any_retry,
+        "batch_write": batch_write,
     }
 
 
@@ -390,10 +429,10 @@ def main() -> None:
     pack_dir, repo, files_json, _lang_json, out_path = sys.argv[1:6]
     _ = pack_dir
     files_obj = load(files_json)
-    all_paths = [p for p in file_paths(files_obj) if is_source(p)][:MAX_FILES]
-
-    if not all_paths and repo and os.path.isdir(repo):
-        all_paths = enumerate_root(repo)[:MAX_FILES]
+    candidates = [p for p in file_paths(files_obj) if is_source(p)]
+    if not candidates and repo and os.path.isdir(repo):
+        candidates = enumerate_root(repo)
+    all_paths, mirrors = narrow_scan(repo, candidates, MAX_FILES)
 
     silent = []
     timeout_gaps = []
@@ -401,12 +440,22 @@ def main() -> None:
     degrade = []
     partial = []
     residual_sites = []
+    exception_unwraps = []
+    resource_leaks = []
+    charset_gaps = []
+    null_deref_gaps = []
+    authz_audit_gaps = []
+    disabled_bounds = []
+    retry_side_effects = []
+    shared_mutables = []
+    process_defaults = []
     idempot_need = False
     idempot_clue = False
     pay = False
     mq = False
     any_remote = False
     any_retry = False
+    hot_paths = set()
     files_scanned = 0
 
     for rel in all_paths:
@@ -430,6 +479,19 @@ def main() -> None:
         mq = mq or sc["mq"]
         any_remote = any_remote or sc["any_remote"]
         any_retry = any_retry or sc["any_retry"]
+        if sc.get("pay") or sc.get("any_retry") or sc.get("batch_write"):
+            hot_paths.add(rel)
+        exception_unwraps.extend(scan_exception_unwraps(rel, lines))
+        resource_leaks.extend(scan_executor_leaks(rel, lines))
+        resource_leaks.extend(scan_close_on_success(rel, lines))
+        charset_gaps.extend(scan_charset_gaps(rel, lines))
+        null_deref_gaps.extend(scan_null_deref_gaps(rel, lines))
+        null_deref_gaps.extend(scan_unguarded_parses(rel, lines))
+        authz_audit_gaps.extend(scan_admin_grant_without_audit(rel, lines))
+        disabled_bounds.extend(scan_disabled_bounds(rel, lines))
+        retry_side_effects.extend(scan_retry_side_effects(rel, lines))
+        shared_mutables.extend(scan_shared_mutables(rel, lines))
+        process_defaults.extend(scan_process_defaults(rel, lines))
 
     silent = dedupe(silent)
     timeout_gaps = dedupe(timeout_gaps)
@@ -437,6 +499,15 @@ def main() -> None:
     degrade = dedupe(degrade)
     partial = dedupe(partial)
     residual_sites = dedupe(residual_sites)
+    exception_unwraps = dedupe(exception_unwraps)
+    resource_leaks = dedupe(resource_leaks)
+    charset_gaps = dedupe(charset_gaps)
+    null_deref_gaps = dedupe(null_deref_gaps)
+    authz_audit_gaps = dedupe(authz_audit_gaps)
+    disabled_bounds = dedupe(disabled_bounds)
+    retry_side_effects = dedupe(retry_side_effects)
+    shared_mutables = dedupe(shared_mutables)
+    process_defaults = dedupe(process_defaults)
 
     idempotency_gaps = []
     if (idempot_need or any_retry or mq) and not idempot_clue:
@@ -449,18 +520,32 @@ def main() -> None:
             }
         )
 
-    # Per-remote residual (not whole-file): one @CircuitBreaker elsewhere must not wipe
+    # A remote call with no breaker stays residual only when the file has no
+    # retry, batch write, or money movement. Those hot paths are findings:
+    # the HTML report does not render residuals.
     residual_hardening = []
+    protection_gaps = []
     for site in residual_sites[:15]:
-        residual_hardening.append(
-            {
-                "kind": "no_degrade_or_breaker_clue",
-                "path": site.get("path"),
-                "line": site.get("line"),
-                "snippet": site.get("snippet"),
-                "note": "this remote/IO call neighborhood lacks degrade/breaker clues — residual only (per-call, not file-wide)",
-            }
-        )
+        row = {
+            "path": site.get("path"),
+            "line": site.get("line"),
+            "snippet": site.get("snippet"),
+        }
+        if site.get("path") in hot_paths:
+            row["kind"] = "missing_protection"
+            row["visible_absence"] = True
+            row["note"] = (
+                "remote/IO call on a retry, batch, or money path has no "
+                "degrade or circuit-breaker clue"
+            )
+            protection_gaps.append(row)
+        else:
+            row["kind"] = "no_degrade_or_breaker_clue"
+            row["note"] = (
+                "this remote/IO call neighborhood lacks degrade/breaker clues "
+                "— residual only when the file has no retry, batch, or money write"
+            )
+            residual_hardening.append(row)
 
     signals_thin = (
         len(silent) == 0
@@ -468,6 +553,16 @@ def main() -> None:
         and len(retry_risks) == 0
         and len(partial) == 0
         and len(idempotency_gaps) == 0
+        and len(exception_unwraps) == 0
+        and len(resource_leaks) == 0
+        and len(charset_gaps) == 0
+        and len(null_deref_gaps) == 0
+        and len(authz_audit_gaps) == 0
+        and len(disabled_bounds) == 0
+        and len(retry_side_effects) == 0
+        and len(shared_mutables) == 0
+        and len(process_defaults) == 0
+        and len(protection_gaps) == 0
     )
 
     payload = {
@@ -480,6 +575,16 @@ def main() -> None:
         "degradation_or_breaker": degrade,
         "partial_failure_gaps": partial,
         "idempotency_gaps": idempotency_gaps,
+        "exception_unwraps": exception_unwraps,
+        "resource_leaks": resource_leaks,
+        "charset_gaps": charset_gaps,
+        "null_deref_gaps": null_deref_gaps,
+        "authz_audit_gaps": authz_audit_gaps,
+        "disabled_bounds": disabled_bounds,
+        "retry_side_effects": retry_side_effects,
+        "shared_mutables": shared_mutables,
+        "process_defaults": process_defaults,
+        "protection_gaps": protection_gaps,
         "residual_hardening": residual_hardening,
         "thresholds": {
             "max_files": MAX_FILES,
@@ -495,6 +600,7 @@ def main() -> None:
             "retry": any_retry,
         },
     }
+    expand_mirrored_hits(payload, mirrors)
     Path(out_path).write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
 
 

@@ -68,6 +68,22 @@ if ! jq -e 'type == "object"' "$INPUT" >/dev/null 2>&1; then
   exit 1
 fi
 
+# Fill span hashes, drift skips, and untested names from the skeleton
+# before the closure gates. Packs without 30-conclusion-skeleton.json are unchanged.
+if [[ -f "$DIR/30-conclusion-skeleton.json" ]]; then
+  if ! "$SCRIPT_DIR/acr-python" "$SCRIPT_DIR/lib/seal-conclusion.py" --dir "$DIR" --input "$INPUT"; then
+    echo "error: seal-conclusion.py failed" >&2
+    exit 1
+  fi
+fi
+
+# Closure gates: report lines, test-oracle answers, symbol diff, rule shapes.
+# Packs without signal/symbol files (skill render fixtures) skip the gates.
+if ! "$SCRIPT_DIR/acr-python" "$SCRIPT_DIR/lib/validate-conclusion.py" "$DIR" "$INPUT"; then
+  echo "error: refused to render HTML until review-conclusion.json closes the pack" >&2
+  exit 1
+fi
+
 # Optional pack sidecars: ignore corrupt files rather than aborting render.
 safe_slurp_or_empty() {
   local f="$1"

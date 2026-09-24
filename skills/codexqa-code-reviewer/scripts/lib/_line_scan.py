@@ -9,7 +9,21 @@ C/C++ pointer lines like ``*ptr = x`` are kept (not treated as javadoc).
 """
 from __future__ import annotations
 
+import os
 import re
+
+# Languages the defect pass can read as code. Data, docs, and config stay in
+# the PR digest; they are not queued as residual symbols.
+SOURCE_EXTS = {
+    ".c", ".cc", ".cpp", ".cs", ".cjs", ".go", ".h", ".hpp", ".java",
+    ".js", ".jsx", ".kt", ".kts", ".m", ".mjs", ".mm", ".php", ".py",
+    ".rb", ".rs", ".scala", ".svelte", ".swift", ".ts", ".tsx", ".vue",
+}
+
+
+def is_source_path(path: str) -> bool:
+    ext = os.path.splitext(path.replace("\\", "/").lower())[1]
+    return ext in SOURCE_EXTS
 
 # Javadoc / block continuation: "* text", "*/", "*" — not "*identifier"
 _JAVADOC_STAR = re.compile(r"^\*(?:/|\s|$)")

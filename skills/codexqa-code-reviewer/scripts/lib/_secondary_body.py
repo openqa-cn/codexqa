@@ -14,6 +14,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _line_scan import advance_block_state, window_code_lines, is_heuristic_meta_line  # noqa: E402
+from _identical_copies import expand_mirrored_hits, narrow_scan  # noqa: E402
+from _det_rules import (  # noqa: E402
+    scan_decision_literals,
+    scan_error_payload_candidates,
+    scan_prod_test_coupling,
+    scan_test_oracles,
+    scan_uncontrolled_log_sinks,
+    scan_unused_accumulators,
+)
 
 MAX_FILES = 40
 MAX_LINES = 4000
@@ -60,6 +69,11 @@ XSS_ESCAPE = re.compile(
 )
 TODO_RE = re.compile(r"(?i)\b(TODO|FIXME|HACK|XXX)\b")
 MAGIC_NUM = re.compile(r"(?<![\w.])\b([2-9]\d{2,}|[1-9]\d{3,})\b")
+# Fee rates and short FX quotes. Kept separate so the integer magic cap still
+# returns the same rows it always did; these are appended after that cap.
+RATE_LITERAL = re.compile(
+    r"(?<![\w.])0\.00\d+\b|new\s+BigDecimal\(\s*\"\d\.\d{2,}\"\s*\)"
+)
 
 
 def load(path: str):
@@ -142,6 +156,7 @@ def scan(rel: str, lines: list[str]) -> dict:
     xss = []
     todos = []
     magic = []
+    rate_literals = []
     pub_sigs = 0
     breaking = []
     # TODO/FIXME: still scan comments (debt markers live in comments by design)
@@ -164,7 +179,13 @@ def scan(rel: str, lines: list[str]) -> dict:
         ):
             xss.append(hit(rel, i + 1, "xss_html_sink", line))
         if MAGIC_NUM.search(line) and not re.search(r"(?i)(port|timeout|status|http)", line):
-            magic.append(hit(rel, i + 1, "magic_number", line))
+            row = hit(rel, i + 1, "magic_number", line)
+            row["close"] = "per_line"
+            magic.append(row)
+        if RATE_LITERAL.search(line):
+            row = hit(rel, i + 1, "rate_literal", line)
+            row["close"] = "per_line"
+            rate_literals.append(row)
         if PUB_SIG.search(line):
             pub_sigs += 1
         if BREAKING_HINT.search(line):
@@ -176,16 +197,65 @@ def scan(rel: str, lines: list[str]) -> dict:
         "magic": magic[:15],
         "pub_sigs": pub_sigs,
         "breaking": breaking[:10],
+        "rate_literals": rate_literals[:10],
         "loc": len(lines),
+    }
+
+
+_TYPE_DECL = re.compile(
+    r"\b(?:class|interface|enum|struct)\s+\w+|\btype\s+\w+\s+struct\b"
+)
+_ROLE_PATTERNS = (
+    ("storage", re.compile(r"(?i)\b(jdbc|DriverManager|executeUpdate|repository|dao)\b")),
+    ("remote", re.compile(r"(?i)\b(https?://|HttpURLConnection|grpc\.)\b")),
+    ("crypto", re.compile(r"(?i)\b(MessageDigest|Cipher|Mac\.)\b")),
+    ("notify", re.compile(r"(?i)\b(smtp|sendMail|MimeMessage)\b")),
+    ("test", re.compile(r"(?i)\b(org\.junit|pytest|testing\.T)\b")),
+    ("money", re.compile(r"(?i)\b(fee|amount|balance|currency)\b")),
+)
+
+
+def mixed_responsibility(rel: str, lines: list[str]) -> dict:
+    """Line count is not the only size signal. Many types or many roles still count."""
+    text = "\n".join(lines)
+    roles = [name for name, rx in _ROLE_PATTERNS if rx.search(text)]
+    type_count = len(_TYPE_DECL.findall(text))
+    if type_count < 6 and len(roles) < 4:
+        return {}
+    line = 0
+    for index, row in enumerate(lines, 1):
+        if _TYPE_DECL.search(row) or any(rx.search(row) for _name, rx in _ROLE_PATTERNS):
+            line = index
+            break
+    if line <= 1:
+        return {}
+    return {
+        "path": rel,
+        "loc": len(lines),
+        "line": line,
+        "kind": "mixed_responsibility",
+        "type_count": type_count,
+        "roles": roles,
+        "visible_absence": True,
+        "note": "responsibility mix is independent of the line-count threshold",
     }
 
 
 def collect(repo: str, files_json: str) -> dict:
     files_obj = load(files_json)
-    paths = [p for p in file_paths(files_obj) if is_source(p)][:MAX_FILES]
-    if not paths and repo:
-        paths = enumerate_root(repo)[:MAX_FILES]
+    candidates = [p for p in file_paths(files_obj) if is_source(p)]
+    if not candidates and repo:
+        candidates = enumerate_root(repo)
+    paths, mirrors = narrow_scan(repo, candidates, MAX_FILES)
     missing_obs, xss, todos, magic, breaking = [], [], [], [], []
+    rate_literals = []
+    decision_literals = []
+    test_oracle_inventory = []
+    test_oracle_hits = []
+    prod_test_coupling = []
+    log_sinks = []
+    error_payloads = []
+    unused = []
     pub_sigs = 0
     long_files = []
     scanned = 0
@@ -198,27 +268,49 @@ def collect(repo: str, files_json: str) -> dict:
             continue
         scanned += 1
         sc = scan(rel, lines)
+        log_sinks.extend(scan_uncontrolled_log_sinks(rel, lines))
+        error_payloads.extend(scan_error_payload_candidates(rel, lines))
+        unused.extend(scan_unused_accumulators(rel, lines))
         missing_obs.extend(sc["missing_obs"])
         xss.extend(sc["xss"])
         todos.extend(sc["todos"])
         magic.extend(sc["magic"])
+        rate_literals.extend(sc.get("rate_literals") or [])
+        decision_literals.extend(scan_decision_literals(rel, lines))
+        oracle = scan_test_oracles(rel, lines)
+        test_oracle_inventory.extend(oracle["inventory"])
+        test_oracle_hits.extend(oracle["hits"])
+        prod_test_coupling.extend(scan_prod_test_coupling(rel, lines))
         breaking.extend(sc["breaking"])
         pub_sigs += sc["pub_sigs"]
         if sc["loc"] >= 800:
             long_files.append({"path": rel, "loc": sc["loc"], "kind": "long_file"})
-    return {
+        mixed = mixed_responsibility(rel, lines)
+        if mixed:
+            long_files.append(mixed)
+    result = {
         "body_ok": True,
         "repo_resolved": bool(repo and os.path.isdir(repo)),
         "files_considered": len(paths),
         "files_scanned": scanned,
         "missing_observability": missing_obs[:30],
+        "uncontrolled_log_sinks": log_sinks[:30],
         "xss_html_hits": xss[:30],
         "todo_fixme": todos[:30],
         "magic_numbers": magic[:30],
+        "rate_literals": rate_literals[:20],
+        "decision_literals": decision_literals[:30],
+        "test_oracle_inventory": test_oracle_inventory[:40],
+        "test_oracle_hits": test_oracle_hits[:40],
+        "prod_test_coupling": prod_test_coupling[:20],
+        "unused_accumulators": unused[:20],
         "long_files": long_files[:20],
         "public_sig_lines": pub_sigs,
         "breaking_hints": breaking[:20],
+        "error_payload_candidates": error_payloads[:20],
     }
+    expand_mirrored_hits(result, mirrors)
+    return result
 
 
 def main() -> None:
@@ -226,11 +318,15 @@ def main() -> None:
     repo, files_json, out_path, kind = sys.argv[1:5]
     raw = collect(repo, files_json)
     if kind == "observability":
-        thin = len(raw["missing_observability"]) == 0
+        thin = (
+            len(raw["missing_observability"]) == 0
+            and len(raw.get("uncontrolled_log_sinks") or []) == 0
+        )
         payload = {
             **{k: raw[k] for k in ("body_ok", "repo_resolved", "files_considered", "files_scanned")},
             "signals_thin": thin,
             "missing_observability": raw["missing_observability"],
+            "uncontrolled_log_sinks": raw.get("uncontrolled_log_sinks") or [],
             "thresholds": {"max_files": MAX_FILES, "max_lines": MAX_LINES},
         }
     elif kind == "contract":
@@ -241,25 +337,44 @@ def main() -> None:
             "breaking_hints": raw["breaking_hints"],
             "xss_html_hits": raw["xss_html_hits"],
             "public_sig_lines": raw["public_sig_lines"],
+            "error_payload_candidates": raw.get("error_payload_candidates") or [],
             "thresholds": {"max_files": MAX_FILES, "max_lines": MAX_LINES},
             "notes": [
                 "xss_html_hits → prefer category security/correctness when raising findings",
                 "public_sig_lines is a volume hint; confirm drift via edges-in callers",
+                "error_payload_candidates are semantic (decision=llm), not a hard gate, and do not affect signals_thin",
             ],
         }
     else:  # maintainability
+        unused_rows = raw.get("unused_accumulators") or []
+        rate_rows = raw.get("rate_literals") or []
+        decision_rows = raw.get("decision_literals") or []
+        magic_rows = list(raw["magic_numbers"]) + list(rate_rows) + list(decision_rows)
+        oracle_hits = raw.get("test_oracle_hits") or []
+        coupling = raw.get("prod_test_coupling") or []
         thin = (
             len(raw["todo_fixme"]) == 0
-            and len(raw["magic_numbers"]) == 0
+            and len(magic_rows) == 0
             and len(raw["long_files"]) == 0
+            and len(unused_rows) == 0
+            and len(oracle_hits) == 0
+            and len(coupling) == 0
         )
         payload = {
             **{k: raw[k] for k in ("body_ok", "repo_resolved", "files_considered", "files_scanned")},
             "signals_thin": thin,
             "todo_fixme": raw["todo_fixme"],
-            "magic_numbers": raw["magic_numbers"],
+            "magic_numbers": magic_rows,
+            "unused_accumulators": unused_rows,
+            "test_oracle_inventory": raw.get("test_oracle_inventory") or [],
+            "test_oracle_hits": oracle_hits,
+            "prod_test_coupling": coupling,
             "long_files": raw["long_files"],
             "thresholds": {"max_files": MAX_FILES, "max_lines": MAX_LINES, "long_file_loc": 800},
+            "notes": [
+                "Hard gate: non-empty magic_numbers is one maintainability finding that cites every path:line. rate_literal and decision_literal rows are included. A read name does not drop an inline literal or a disabling sentinel.",
+                "Hard gate: each unused_accumulators row, each test_oracle_hits row, and each prod_test_coupling row is its own finding. test_oracle_inventory is one suspect per test method; every row needs a test_oracle_coverage hit or skip. A coverage miss fails the review.",
+            ],
         }
     Path(out_path).write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
 

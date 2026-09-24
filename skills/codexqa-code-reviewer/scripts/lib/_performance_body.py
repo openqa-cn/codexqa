@@ -13,6 +13,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _line_scan import iter_code_lines, window_code_lines, is_heuristic_meta_line  # noqa: E402
+from _det_rules import scan_unpooled_connections, scan_weak_perf_tests  # noqa: E402
+from _identical_copies import expand_mirrored_hits, narrow_scan  # noqa: E402
 
 MAX_FILES = 40
 MAX_LINES = 4000
@@ -44,13 +46,19 @@ IO_CALL = re.compile(
     r"repository\.|Repository\.|prisma\.|session\.|mongo(Client)?\.|"
     r"\bfetch\s*\(|axios\.|httpClient|HttpClient|RestTemplate|"
     r"WebClient|okhttp|requests\.(get|post)|http\.(Get|Post)|"
-    r"\bdb\.(Query|Exec|Get)|gorm\.|sqlx\.|jdbcTemplate"
+    r"\bdb\.(Query|Exec|Get|QueryRow)|gorm\.|sqlx\.|jdbcTemplate|"
+    r"\b(?:find|load|save|persist|store|insert|update|delete|remove|query|fetch|get)"
+    r"(?:Account|User|Order|Record|Entity|Item|Row|Balance|Customer|Product|Payment|Transfer|ById|ByKey)"
+    r"\w*\s*\(|"
+    r"\b(?:find|load|save|update|delete|insert|get)_(?:account|user|order|record|entity|item|row|balance)\w*\s*\(|"
+    r"\b(?:persist|save|upsert|SaveChanges|mysqli_query)\s*\(|"
+    r"\.objects\.(get|filter|create)\s*\("
     r")"
 )
 BATCH_CLUE = re.compile(
-    r"(?i)\b(Batch|bulk|findAllById|findByIds|IN\s*\(|\.include\s*\(|"
+    r"(?i)\b(bulk|findAllById|findByIds|IN\s*\(|\.include\s*\(|"
     r"eager|prefetch|select_related|join\s*\(|JoinFetch|"
-    r"whereIn|getMany|loadAll)\b"
+    r"whereIn|getMany|loadAll|batch(?:Update|Insert|Write|Execute)\s*\()\b"
 )
 
 HOT_PATH = re.compile(
@@ -384,16 +392,17 @@ def main() -> None:
     pack_dir, repo, files_path, out_path = sys.argv[1:5]
     files_obj = load_json(files_path) or {}
     tags_obj = load_json(os.path.join(pack_dir, "07-tags.json"))
-    paths = [p for p in file_paths(files_obj) if is_source(p)]
-    if not paths and repo:
-        paths = enum_repo_sample(repo)
+    candidates = [p for p in file_paths(files_obj) if is_source(p)]
+    if not candidates and repo:
+        candidates = enum_repo_sample(repo)
+    paths, mirrors = narrow_scan(repo, candidates, MAX_FILES)
 
     entry_paths = entry_paths_from_tags(tags_obj)
     repo_ok = bool(repo and os.path.isdir(repo))
 
-    n1_all, hot_all, unb_all = [], [], []
+    n1_all, hot_all, unb_all, weak_perf, unpooled = [], [], [], [], []
     scanned = 0
-    for rel in paths[:MAX_FILES]:
+    for rel in paths:
         abs_p = os.path.join(repo, rel) if repo_ok else ""
         if not abs_p or not os.path.isfile(abs_p):
             continue
@@ -406,6 +415,8 @@ def main() -> None:
         n1_all.extend(sc["n_plus_one_risks"])
         hot_all.extend(sc["hot_path_risks"])
         unb_all.extend(sc["unbounded_allocation"])
+        weak_perf.extend(scan_weak_perf_tests(rel, lines))
+        unpooled.extend(scan_unpooled_connections(rel, lines))
 
     # dedupe by path:line:kind
     def dedupe(items: list[dict]) -> list[dict]:
@@ -422,6 +433,8 @@ def main() -> None:
     n1_all = dedupe(n1_all)
     hot_all = dedupe(hot_all)
     unb_all = dedupe(unb_all)
+    weak_perf = dedupe(weak_perf)
+    unpooled = dedupe(unpooled)
 
     residual = []
     thin = len(n1_all) == 0 and len(hot_all) == 0 and len(unb_all) == 0
@@ -442,6 +455,8 @@ def main() -> None:
         "n_plus_one_risks": n1_all,
         "hot_path_risks": hot_all,
         "unbounded_allocation": unb_all,
+        "weak_perf_tests": weak_perf,
+        "unpooled_connections": unpooled,
         "residual_performance": residual,
         "thresholds": {
             "max_files": MAX_FILES,
@@ -451,6 +466,7 @@ def main() -> None:
         "files_considered": len(paths),
         "files_scanned": scanned,
     }
+    expand_mirrored_hits(payload, mirrors)
     Path(out_path).write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
 
 

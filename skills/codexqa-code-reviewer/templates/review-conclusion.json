@@ -158,6 +158,7 @@
       "symbol_id": "(JSON audit only — omitted from HTML)",
       "change_status": "add|change|default — HTML maps to 本次新增/本次修改/既有代码…",
       "category": "design | complexity | dependencies | correctness | resilience | security | privacy | contract | rollout | concurrency | regression | test_gaps | observability | maintainability | performance | risk_tier | llm_judgment | …",
+      "rule_id": "optional — synced detection rule when the finding matches one (SEC-001, CONC-001, PAY-001, …)",
       "source": "optional — set \"llm_judgment\" for novel host-agent LLM findings (after dedupe)",
       "risk": "触发路径与影响（中文白话）",
       "risk_en": "Trigger path and impact in plain English",
@@ -217,6 +218,18 @@
   ],
   "residual_risks": [
     "(optional JSON only — not rendered in HTML)"
+  ],
+  "rule_coverage": [
+    {"rule_id": "BIZ-003", "result": "hit|skip", "note": "one line; hit must match a finding rule_id; skip says why this change has no such shape"}
+  ],
+  "test_oracle_coverage": [
+    {"path": "", "line": 0, "result": "hit|skip", "note": "one row per test_oracle_inventory entry; a skip names the F5 shapes that are absent"}
+  ],
+  "semantic_coverage": [
+    {"id": "error_payload|opaque_status", "path": "", "line": 0, "result": "hit|skip", "note": "optional; only when that candidate array is non-empty. A skip is not a finding."}
+  ],
+  "coverage_closure": [
+    {"symbol_id": "", "status": "reviewed|failed", "open_result": "hit|none", "reason": "required when status is failed"}
   ],
   "diagrams": [
     {

@@ -5,6 +5,11 @@ These are **generic** patterns — not project-specific rules. Use
 `review_language_focus` to weight which rows matter; always require evidence
 from `symbol-diff` / source text in the pack (or hot-but-thin → matching diff).
 
+Policy ids for the null and resource rows are `NULL-001` and `RES-001` on
+[correctness.md](correctness.md). Lock-order and shared-mutable rows are
+`CONC-002` / `CONC-003` on [concurrency.md](concurrency.md). File the policy id
+once; do not add a second finding for the same line.
+
 ## Must-read process (all languages)
 
 From `08-hot-but-thin.json` (or full-repo untested hotspots), for every symbol whose
@@ -23,7 +28,7 @@ and reason about the implementation** — do not accept or dismiss by symbol nam
 | Equality contract | `equals` ↔ `hashCode` pair; avoid reference `==` on objects/strings when value equality intended | comparable/`==` vs `Equal` for structs; pointer vs value | `===` vs `==`; value objects | `==` vs `is`; `__eq__` ↔ `__hash__` |
 | XSS / HTML sink | `innerHTML` / `document.write` / unescaped `Markup` / `HtmlUtils` misuse / raw HTML in response without encode/escape | `template.HTML` / `html/template` vs `text/template` for untrusted | `dangerouslySetInnerHTML` / `el.innerHTML` / unsanitized markdown→HTML | `Markup` / Jinja `|safe` / f-string HTML without escape |
 | Resources | try-with-resources / close streams; no leaked `InputStream`/`Reader` | `defer Close()` on files/bodies | `close()` / using Disposable patterns when applicable | `with` / close files |
-| Money / decimal | avoid `new BigDecimal(double)`; prefer `BigDecimal.valueOf` / string | avoid float for money; use `shopspring/decimal` or int cents | avoid IEEE float for currency | `Decimal` not float |
+| Money / decimal | If `llm_report_policy.float_money` is `suppress_obvious`, do not file it again. If `allow`, the model may file it and must say the scanner did not finish or does not cover the shape | same, follow `float_money` policy | same | same |
 | Null unboxing | `Boolean`/`Integer` from `Map.get` used in `if (x)` / arithmetic without null check | nil deref on map miss | optional chaining vs truthiness | `None` in bool/arith |
 | Collection CME | enhance-for / iterator invalidation via `list.remove` during traversal | range+delete pitfalls | mutate array while for-of | mutate list while for-in |
 | Operator precedence | mixed `&&` / `\|\|` without parens in validators/guards | same | same | `and`/`or` precedence |

@@ -18,7 +18,7 @@ compatibility: >
   local --from-repo checkout; optional npx skills add fallback. Target skills
   may need their own runtimes (Node, Python 3.10+, codexqa CLI, etc.).
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # codexqa-skill-router
@@ -58,21 +58,44 @@ Detailed match rules: [references/routing-rules.md](references/routing-rules.md)
 ## 2. Match the user request
 
 Read the user's latest message (and only this-turn attachments they named).
-Compare intent against each entry's `description` (live or bundled). Prefer
-the skill whose description **claims** that job and whose "Not …" boundaries
-exclude the others.
+Discover still supplies the catalog. Routing does **not** score by overlapping
+words in descriptions. Run the decider:
 
-| Outcome | Action |
+```bash
+python3 <this_skill_dir>/scripts/suggest_route.py --text "<user message>"
+```
+
+Use `--text-file` when the message is long. If the script fails, stop and
+report the error — do not fall back to keyword overlap.
+
+| `outcome` | Action |
 |---|---|
-| Clear single winner | Ensure + hand off (sections 3–4) |
-| Two+ plausible winners | Ask once with ranked options + one-line why; wait |
-| No skill fits | Say so; list catalog names; do not invent a skill |
-| User already named a catalog skill | Use that name (still ensure + load `skillMd`) |
-| Multi-step ask | Propose ordered chain; ensure/start the first after confirm |
+| `clear` or `explicit` | Ensure + hand off to `winner` (sections 3–4) |
+| `explicit_conflict` | Do not start the named skill. Show `reason` and `alternatives`. Wait |
+| `ambiguous` | Ask once with at most three `alternatives` and one-line why. Wait |
+| `chain` | Propose `steps` in order. Ensure/start the first only after confirm |
+| `none` | Say no catalog skill claimed it; list catalog names; do not invent one |
 
-Never pick a skill only because a keyword appears if the description says that
-keyword belongs to another skill (classic traps: "review this PR", "影响面",
-"写用例", "造数据", "堆栈").
+A `clear` / `explicit` winner is authoritative. Description text must not
+override it. In particular, `codexqa-defect-analyzer`'s phrase "review a
+diff/MR/PR" is an incremental **scan** scenario. It does not claim 代码评审,
+code review, PR review, or "review this PR".
+
+Task shape, not the shared verb:
+
+- 代码评审 / 代码审查 / 走查 / 单文件或整仓评审 / code review / PR·MR review / 审查意见 / 语义评审 / 双语审查 / 证据包 / 合入建议 / 这段代码有没有问题 → `codexqa-code-reviewer`
+- 缺陷检测 / SAST / 漏洞·密钥·依赖·CVE / 安全基线 / 粘贴或上传代码找漏洞 / `report_scan` / "review this diff for vulnerabilities" → `codexqa-defect-analyzer`. 格式化、自动改风格不归这里
+- Both a review report and a scan list, with no order → `ambiguous` (ask). 先评审再扫描 → `chain`, reviewer then defect
+- 影响面 / 谁在调用 / 入口风险 / 敏感路径 / 测试缺口 / 有没有单测 / 回归哪些 / 相对 main 变了什么 / 建索引 / 错误定位 / 模块归属 → `codexqa-code-analyzer`. Those words inside a 代码评审 stay with the reviewer. 补测试缺口 stays here; 补测试 / 写用例 does not
+- 架构 wiki / 模块地图 / 模块划分 / 从哪开始读 / 阅读导览 / 仓库导览 / 这个模块是干什么 / `wiki inputs` → `codexqa-code-wiki`. Bare 知识图谱 → ask (wiki vs analyzer)
+- 堆栈 / 根因 / 崩溃 / 报错原因 / 线上报错 / 日志里的异常 / 调试输出 / 根因报告 → `codexqa-rootcause-analyzer`. A call chain or "报错在哪" used to explain that failure stays root-cause
+- 需求评审 / 需求缺口 / 需求歧义 / 需求一致性 / 非功能需求 / 需求能不能测 / requirements review → `codexqa-requirement-analyzer`, not a code review
+- 测试方案 / 测试分析 / 写用例 / 方案和用例 / 按 PRD 出测试 / 提测前改用例 / 提测后补用例 / test plan → `codexqa-testcase-generator`. 写单元测试不归这里
+- 造数据 / 用例物料 / 前置账号 / 造一笔订单 / 造数脚本 / 发布成工具 / 回写前置 / OpenAPI 造账号 → `codexqa-testdata-generator`
+
+When the user names a catalog skill whose own boundary rejects that task
+shape, `outcome` is `explicit_conflict`: warn and offer `alternatives`. Do
+not install the rejected fit. Detail: [references/routing-rules.md](references/routing-rules.md).
 
 ## 3. Ensure the winner is installed
 

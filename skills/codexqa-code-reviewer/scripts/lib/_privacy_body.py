@@ -14,6 +14,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _line_scan import iter_code_lines, window_code_lines, is_heuristic_meta_line  # noqa: E402
+from _identical_copies import expand_mirrored_hits, narrow_scan  # noqa: E402
 
 MAX_FILES = 40
 MAX_LINES = 4000
@@ -73,6 +74,23 @@ PHONE_LIT = re.compile(r"(?<!\d)(?:\+?\d{1,3}[-.\s]?)?\d{3,4}[-.\s]?\d{3,4}[-.\s
 ID_LIKE = re.compile(r"(?i)\b(?:id[_-]?card|身份证)\s*[:=]\s*\S+")
 
 # TRACE.info / LOG.warn / logger.info / console.* / System.out — not only log(ger)?
+# Every identifier role on one log/receipt/message. The first hit does not close the rest.
+LOG_FIELD = re.compile(
+    r"(?i)\b("
+    r"card(?:[_-]?(?:no|number))?|pan|"
+    r"account(?:[_-]?(?:no|number|id))?|"
+    r"amount|balance|customer(?:[_-]?name)?|full[_-]?name|real[_-]?name|"
+    r"email|e[_-]?mail|phone|mobile"
+    r")\b"
+)
+MAIL_SINK = re.compile(r"(?i)\b(sendMail|MimeMessage|JavaMail|smtp|Mailer|mail\s*\.\s*send)\b|\.send\s*\(")
+FILE_SINK = re.compile(
+    r"(?i)\b(FileOutputStream|FileWriter|os\.Create|ioutil\.WriteFile|os\.WriteFile|open\s*\([^)]*['\"]w)\b"
+)
+DB_SINK = re.compile(
+    r"(?i)\b(executeUpdate|execute\s*\(|INSERT\s+INTO|UPDATE\s+\w+|DELETE\s+FROM|JdbcTemplate)\b"
+)
+
 LOG_API = re.compile(
     r"(?i)\b("
     r"log(ger)?\.(trace|debug|info|warn|error|fatal)\s*\(|"
@@ -159,11 +177,35 @@ def security_owned(text: str) -> bool:
     return bool(SECURITY_OWNED.search(text))
 
 
+def _field_name(token: str) -> str:
+    text = token.lower().replace("_", "").replace("-", "")
+    for suffix in ("number", "no", "name"):
+        if text.endswith(suffix) and len(text) > len(suffix) + 2:
+            return text[: -len(suffix)]
+    return text
+
+
+def open_sinks(lines: list[str], sink_lines: dict, file_retention: bool) -> list[dict]:
+    """A delete on one sink does not close log, mail, or file retention."""
+    out = []
+    for kind, line in sink_lines.items():
+        if not line:
+            continue
+        if kind == "database" and file_retention:
+            continue
+        same = lines[line - 1] if 0 < line <= len(lines) else ""
+        if kind != "database" and RETENTION_CLUE.search(same):
+            continue
+        out.append({"sink": kind, "line": line})
+    return out
+
+
 def scan_file(rel: str, lines: list[str]) -> dict:
     pii_fields = []
     log_exposure = []
     persist_pii = False
     retention_hit = False
+    sink_lines = {"log": 0, "mail": 0, "file": 0, "database": 0}
     consent_hit = False
     transfer_hit = False
     minimize_hit = False
@@ -202,22 +244,39 @@ def scan_file(rel: str, lines: list[str]) -> dict:
         if LOG_API.search(line):
             window = window_code_lines(lines, i, LOG_NEIGHBOR)
             if security_owned(window):
-                continue
+                window = ""
             has_pii = bool(
                 PII_IDENT.search(window)
                 or EMAIL_LIT.search(window)
                 or PHONE_LIT.search(window)
                 or ID_LIKE.search(window)
             )
-            if has_pii and not REDACT.search(window):
+            fields = []
+            for match in LOG_FIELD.finditer(window):
+                token = _field_name(match.group(1))
+                if token not in fields:
+                    fields.append(token)
+            if window and (has_pii or fields) and not REDACT.search(window):
+                if not sink_lines["log"]:
+                    sink_lines["log"] = i + 1
                 log_exposure.append(
                     {
                         "path": rel,
                         "line": i + 1,
                         "snippet": line.strip()[:160],
                         "kind": "log_exposure",
+                        "fields": fields,
+                        "close": "per_line",
+                        "note": "list every identifier, amount, and name on this statement",
                     }
                 )
+        if MAIL_SINK.search(line) and re.search(r"(?i)mail|email|smtp|html", window_code_lines(lines, i, 3)):
+            if not sink_lines["mail"]:
+                sink_lines["mail"] = i + 1
+        if FILE_SINK.search(line) and not sink_lines["file"]:
+            sink_lines["file"] = i + 1
+        if DB_SINK.search(line) and not sink_lines["database"]:
+            sink_lines["database"] = i + 1
 
     # dedupe pii field identifiers per path
     seen = set()
@@ -237,6 +296,7 @@ def scan_file(rel: str, lines: list[str]) -> dict:
         "consent_hit": consent_hit,
         "transfer_hit": transfer_hit,
         "minimize_hit": minimize_hit,
+        "open_sinks": open_sinks(lines, sink_lines, retention_hit),
     }
 
 
@@ -311,10 +371,10 @@ def main() -> None:
     # argv: dir, repo, files_json, lang_json, out_path
     pack_dir, repo, files_json, _lang_json, out_path = sys.argv[1:6]
     files_obj = load(files_json)
-    all_paths = [p for p in file_paths(files_obj) if is_source(p)][:MAX_FILES]
-
-    if not all_paths and repo and os.path.isdir(repo):
-        all_paths = enumerate_root(repo)[:MAX_FILES]
+    candidates = [p for p in file_paths(files_obj) if is_source(p)]
+    if not candidates and repo and os.path.isdir(repo):
+        candidates = enumerate_root(repo)
+    all_paths, mirrors = narrow_scan(repo, candidates, MAX_FILES)
 
     pii_field_hits = []
     log_exposure = []
@@ -323,6 +383,7 @@ def main() -> None:
     any_consent = False
     any_transfer = False
     any_minimize = False
+    sink_gaps = []
     files_scanned = 0
 
     for rel in all_paths:
@@ -341,6 +402,18 @@ def main() -> None:
         any_consent = any_consent or sc["consent_hit"]
         any_transfer = any_transfer or sc["transfer_hit"]
         any_minimize = any_minimize or sc["minimize_hit"]
+        for sink in sc.get("open_sinks") or []:
+            sink_gaps.append(
+                {
+                    "kind": "retention_or_dsar_gap",
+                    "path": rel,
+                    "line": sink["line"],
+                    "sink": sink["sink"],
+                    "visible_absence": True,
+                    "close": "per_line",
+                    "note": "this sink has no retention or erase clue; another sink's delete does not close it",
+                }
+            )
 
     # dedupe logs
     seen_log = set()
@@ -366,7 +439,7 @@ def main() -> None:
             }
         )
 
-    retention_gaps = []
+    retention_gaps = list(sink_gaps)
     if any_persist and not any_retention:
         retention_gaps.append(
             {
@@ -413,6 +486,7 @@ def main() -> None:
         "files_considered": len(all_paths),
         "files_scanned": files_scanned,
     }
+    expand_mirrored_hits(payload, mirrors)
     Path(out_path).write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
 
 

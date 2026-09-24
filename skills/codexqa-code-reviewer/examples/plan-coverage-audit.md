@@ -1,7 +1,7 @@
 # Plan coverage audit (fine-grained)
 
 - skill_root: `skills/codexqa-code-reviewer`
-- audited_at: 2026-09-21T03:35:38Z
+- audited_at: 2026-09-24T14:22:06Z
 - method: atomic function points × layers (I/S/T)
 - plan: AI Code Reviewer (CodexQA-backed)
 
@@ -61,40 +61,45 @@
 | E4 | 文件存在: references/review-dimensions.md | T | **PASS** | present |
 | E5 | 文件存在: references/dimension-registry.md | T | **PASS** | present |
 | E6 | 文件存在: references/dimensions/design-fit.md | T | **PASS** | present |
-| E7 | 文件存在: references/dimensions/complexity.md | T | **PASS** | present |
-| E8 | 文件存在: references/dimensions/dependencies.md | T | **PASS** | present |
-| E9 | 文件存在: references/dimensions/privacy.md | T | **PASS** | present |
-| E10 | 文件存在: references/dimensions/resilience.md | T | **PASS** | present |
-| E11 | 文件存在: references/dimensions/rollout.md | T | **PASS** | present |
-| E12 | 文件存在: references/dimensions/observability.md | T | **PASS** | present |
-| E13 | 文件存在: references/dimensions/contract.md | T | **PASS** | present |
-| E14 | 文件存在: references/dimensions/maintainability.md | T | **PASS** | present |
-| E15 | 文件存在: references/dimensions/performance.md | T | **PASS** | present |
-| E16 | 文件存在: references/dimensions/llm-judgment.md | T | **PASS** | present |
-| E17 | 文件存在: prompts/llm-judgment-pass.md | T | **PASS** | present |
-| E18 | 文件存在: references/dimensions/correctness-family-checks.md | T | **PASS** | present |
-| E19 | 文件存在: references/mermaid-evidence.md | T | **PASS** | present |
-| E20 | 文件存在: prompts/pr-diff-review.md | T | **PASS** | present |
-| E21 | 文件存在: prompts/full-repo-review.md | T | **PASS** | present |
-| E22 | 文件存在: templates/evidence-manifest.json | T | **PASS** | present |
-| E23 | 文件存在: templates/review-report.md | T | **PASS** | present |
-| E24 | 文件存在: templates/review-conclusion.json | T | **PASS** | present |
-| E25 | 文件存在: scripts/collect-pr-evidence.sh | T | **PASS** | present |
-| E26 | 文件存在: scripts/collect-fullrepo-evidence.sh | T | **PASS** | present |
-| E27 | 文件存在: scripts/validate-evidence.sh | T | **PASS** | present |
-| E28 | 文件存在: scripts/render-review-html.sh | T | **PASS** | present |
-| E29 | 文件存在: scripts/lib/derive-design-fit.sh | T | **PASS** | present |
-| E30 | 文件存在: scripts/lib/derive-complexity.sh | T | **PASS** | present |
-| E31 | 文件存在: scripts/lib/derive-dependencies.sh | T | **PASS** | present |
-| E32 | 文件存在: scripts/lib/derive-privacy.sh | T | **PASS** | present |
-| E33 | 文件存在: scripts/lib/derive-resilience.sh | T | **PASS** | present |
-| E34 | 文件存在: scripts/lib/derive-rollout.sh | T | **PASS** | present |
-| E35 | 文件存在: scripts/lib/derive-observability.sh | T | **PASS** | present |
-| E36 | 文件存在: scripts/lib/derive-contract.sh | T | **PASS** | present |
-| E37 | 文件存在: scripts/lib/derive-maintainability.sh | T | **PASS** | present |
-| E38 | 文件存在: scripts/lib/derive-performance.sh | T | **PASS** | present |
-| E39 | 文件存在: scripts/lib/merge-llm-findings.py | T | **PASS** | present |
-| E40 | 文件存在: examples/pr-review-walkthrough.md | T | **PASS** | present |
+| E7 | 文件存在: references/dimensions/correctness.md | T | **PASS** | present |
+| E8 | 文件存在: references/dimensions/security.md | T | **PASS** | present |
+| E9 | 文件存在: references/dimensions/concurrency.md | T | **PASS** | present |
+| E10 | 文件存在: references/dimensions/complexity.md | T | **PASS** | present |
+| E11 | 文件存在: references/dimensions/dependencies.md | T | **PASS** | present |
+| E12 | 文件存在: references/dimensions/privacy.md | T | **PASS** | present |
+| E13 | 文件存在: references/dimensions/resilience.md | T | **PASS** | present |
+| E14 | 文件存在: references/dimensions/rollout.md | T | **PASS** | present |
+| E15 | 文件存在: references/dimensions/observability.md | T | **PASS** | present |
+| E16 | 文件存在: references/dimensions/contract.md | T | **PASS** | present |
+| E17 | 文件存在: references/dimensions/maintainability.md | T | **PASS** | present |
+| E18 | 文件存在: references/dimensions/performance.md | T | **PASS** | present |
+| E19 | 文件存在: references/dimensions/llm-judgment.md | T | **PASS** | present |
+| E20 | 文件存在: prompts/llm-judgment-pass.md | T | **PASS** | present |
+| E21 | 文件存在: references/dimensions/correctness-family-checks.md | T | **PASS** | present |
+| E22 | 文件存在: references/mermaid-evidence.md | T | **PASS** | present |
+| E23 | 文件存在: prompts/pr-diff-review.md | T | **PASS** | present |
+| E24 | 文件存在: prompts/full-repo-review.md | T | **PASS** | present |
+| E25 | 文件存在: templates/evidence-manifest.json | T | **PASS** | present |
+| E26 | 文件存在: templates/review-report.md | T | **PASS** | present |
+| E27 | 文件存在: templates/review-conclusion.json | T | **PASS** | present |
+| E28 | 文件存在: scripts/collect-pr-evidence.sh | T | **PASS** | present |
+| E29 | 文件存在: scripts/collect-fullrepo-evidence.sh | T | **PASS** | present |
+| E30 | 文件存在: scripts/validate-evidence.sh | T | **PASS** | present |
+| E31 | 文件存在: scripts/render-review-html.sh | T | **PASS** | present |
+| E32 | 文件存在: scripts/lib/derive-design-fit.sh | T | **PASS** | present |
+| E33 | 文件存在: scripts/lib/derive-complexity.sh | T | **PASS** | present |
+| E34 | 文件存在: scripts/lib/derive-dependencies.sh | T | **PASS** | present |
+| E35 | 文件存在: scripts/lib/derive-privacy.sh | T | **PASS** | present |
+| E36 | 文件存在: scripts/lib/derive-resilience.sh | T | **PASS** | present |
+| E37 | 文件存在: scripts/lib/derive-rollout.sh | T | **PASS** | present |
+| E38 | 文件存在: scripts/lib/derive-observability.sh | T | **PASS** | present |
+| E39 | 文件存在: scripts/lib/derive-contract.sh | T | **PASS** | present |
+| E40 | 文件存在: scripts/lib/derive-maintainability.sh | T | **PASS** | present |
+| E41 | 文件存在: scripts/lib/derive-performance.sh | T | **PASS** | present |
+| E42 | 文件存在: scripts/lib/derive-sast.sh | T | **PASS** | present |
+| E43 | 文件存在: scripts/lib/install-sast-tools.sh | T | **PASS** | present |
+| E44 | 文件存在: scripts/lib/merge-llm-findings.py | T | **PASS** | present |
+| E45 | 文件存在: examples/pr-review-walkthrough.md | T | **PASS** | present |
 
 ## F. PR collect-pr-evidence.sh steps (plan §证据包约定)
 
@@ -126,7 +131,7 @@
 | H5 | 默认输出九块覆盖 | I/T | **PASS** | SKILL+template+prompt |
 | H6 | 全仓：热点/分层漂移/入口集中；禁产品打分 | I | **PASS** | full-repo prompt+SKILL |
 | H7 | 高优 finding 附：符号/调用方/入口 path/tested_count | I | **PASS** | Deliver section |
-| H8 | SKILL.md < 500 行 | I | **PASS** | lines=276 |
+| H8 | SKILL.md < 500 行 | I | **PASS** | lines=363 |
 
 ## I. Acceptance criteria
 
@@ -139,10 +144,10 @@
 
 | Verdict | Count |
 |---|---|
-| PASS | 100 |
+| PASS | 105 |
 | PARTIAL | 0 |
 | FAIL | 0 |
-| Total FPs | 100 |
+| Total FPs | 105 |
 
 **Overall: FULL COVERAGE**
 

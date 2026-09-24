@@ -8,10 +8,32 @@ codexqa_die() {
   exit 1
 }
 
+# Apply the shared PATH policy in scripts/lib/sast-tool-path.sh before any lookup.
+# npm global bins come from ~/.npmrc prefix, $npm_config_prefix, and `npm prefix -g`.
+codexqa_prepare_path() {
+  local _preflight_dir
+  _preflight_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  if [[ -f "${_preflight_dir}/sast-tool-path.sh" ]]; then
+    # shellcheck source=sast-tool-path.sh
+    source "${_preflight_dir}/sast-tool-path.sh"
+    sast_refresh_path
+  fi
+}
+
+# Print the absolute path of the installed codexqa CLI.
+# Empty when the path probe does not find one. Do not reinstall when this prints a path.
+codexqa_cli_path() {
+  codexqa_prepare_path
+  command -v codexqa 2>/dev/null || true
+}
+
 # Require CodexQA CLI on PATH. No language-specific analyzer may substitute.
+# Refresh in this shell. Do not call codexqa_cli_path inside $() here: a
+# command substitution would drop the PATH update.
 codexqa_require_cli() {
+  codexqa_prepare_path
   if ! command -v codexqa >/dev/null 2>&1; then
-    codexqa_die "codexqa CLI is mandatory for ALL language repos. Install: npm i -g @openqa-cn/codexqa (Node >= 18). Do not fall back to git-diff-only / grep-only / language-native SAST as the analysis backend."
+    codexqa_die "codexqa CLI is mandatory for ALL language repos. Resolve it with codexqa_cli_path (npmrc prefix and npm prefix -g) before installing. Install only if that prints nothing: npm i -g @openqa-cn/codexqa (Node >= 18). Do not fall back to git-diff-only / grep-only / language-native SAST as the analysis backend."
   fi
   if ! command -v jq >/dev/null 2>&1; then
     codexqa_die "jq is required to process CodexQA JSON evidence"

@@ -35,7 +35,10 @@ dimension verdicts. Never run as the sole review engine when the pack is missing
 1. **Semantic correctness** — Does the changed logic do what `intent`/`scope` claim? Off-by-one, inverted predicates, missing null/empty guards that family checks did not already cover?
 2. **API / contract misuse** — Wrong argument order, ignored return values, unsafe casts, broken invariants vs callers in `edges-in`?
 3. **Cross-cutting gaps** — Resource leaks, TODOs that mask incomplete paths, confusing control flow — only when **not** already owned by Maintainability/Complexity cards with the same `path:line`.
-4. **Dedupe** — For every candidate, ask: would a teammate reading P0/P1/P2 say “same as finding X”? If yes → merge or drop, never duplicate.
+4. **Two channels** — SAST suspects use [sast-suspect-pass.md](../../prompts/sast-suspect-pass.md): only `suspects[]`, slice plus that row’s policy. Business rules use [business-logic-pass.md](../../prompts/business-logic-pass.md): changed-method slices and the non-SAST rule index. Do not mix the channels in one prompt. `disposition: report` is already a card. `disposition: drop` is discarded. `allow` records a scanner gap and does not rescan the class. A business-rule hit on one line does not close that rule inside the business channel.
+5. **Dedupe** — For every candidate, ask: would a teammate reading P0/P1/P2 say “same as finding X”? If yes → merge or drop, never duplicate.
+6. **Semantic candidate rows** — Follow [semantic-candidate-pass.md](../../prompts/semantic-candidate-pass.md). Only `error_payload_candidates` and `opaque_status_candidates`. Do not judge them in the business-logic pass. They are not hard gates and do not change `signals_thin`.
+7. **Residual read** — Follow [residual-read-pass.md](../../prompts/residual-read-pass.md). Every `pending` symbol in `24-coverage-ledger.json` is read once. Hits on that symbol do not dequeue it. The open question names failures the listed rules and hits do not name. `coverage_closure` records `reviewed` or `failed` for each pending symbol.
 
 ## Soft thresholds
 
@@ -43,7 +46,7 @@ dimension verdicts. Never run as the sole review engine when the pack is missing
 |---|---|---|
 | Novel logic/API bug with pack citation | P1 | Entry-reachable / pay/auth → may P0 |
 | Novel smell / readability with concrete risk | P2 | — |
-| Duplicate of heuristic finding (same file±3 lines or same symbol + similar title/risk) | **drop or enrich** | Never second card |
+| Duplicate of heuristic finding (same `rule_id`, or both unlabeled and the same wording) | **drop or enrich** | Nearby lines with a different or missing `rule_id` stay a second card |
 | Thin pack / stubs≥20 | residual / low confidence | Cap blast claims at UNKNOWN |
 
 Confidence default `medium`. Prefer citing `diffs/<id>.diff.json` + on-disk lines under `--repo`.
@@ -62,18 +65,20 @@ final `p0`/`p1`/`p2`:
 4. Write `22-llm-judgment.json` with counts + `dedupe_report`.
 5. Final HTML findings must be the **merged** lists only.
 
-Match keys (any one is enough for duplicate):
+Match keys (a duplicate requires the same relation, then any one key):
 
-- Same `symbol_id` (non-empty) **and** token overlap ≥ 0.5 on `title`+`risk`
-- Same normalized `file`/`location` path **and** line within ±3 **and** same
-  `category` family (or either category is `llm_judgment`)
-- Jaccard token overlap ≥ 0.55 on normalized `title`+`risk` with same path
+- Same `rule_id` on both findings. Different ids never merge, including on the same line. If only one finding has a `rule_id`, line proximity does not merge them.
+- Both findings unlabeled, and the same `symbol_id` (non-empty) with token overlap ≥ 0.5 on `title`+`risk`
+- Both findings unlabeled, or both sharing one `rule_id`, and the same path with lines within ±3 and a compatible category
+- Both unlabeled, or the same `rule_id`, and Jaccard token overlap ≥ 0.55 on `title`+`risk` with the same path
+
+Same pattern class at the same file and a nearby line still merges through the SAST locus check. That check is the relation for scanner classes.
 
 ## Split vs siblings
 
 | Sibling | Owns | This card owns |
 |---|---|---|
-| Correctness / Resilience / Privacy / … | Deterministic signal → finding hard gates | Semantic issues **not** already filed |
+| Correctness / Security / Concurrency / Resilience / … | Detection rules already filed from the owner card | The same rules only when that pass missed the locus |
 | Complexity | Nesting / LOC / YAGNI hotspots | Logic intent bugs inside those methods |
 | codexqa-defect-analyzer skill | SAST + agent scan reports | Pack-scoped CR inside this skill only |
 

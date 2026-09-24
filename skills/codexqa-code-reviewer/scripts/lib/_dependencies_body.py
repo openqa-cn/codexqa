@@ -13,6 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _line_scan import is_heuristic_meta_line  # noqa: E402
+from _identical_copies import expand_mirrored_hits, narrow_scan  # noqa: E402
 
 MAX_FILES = 40
 MAX_LINES = 8000
@@ -497,7 +498,8 @@ def main() -> None:
         manifest_hits.append(hit)
 
     # Source-string floating: SNAPSHOT/latest/git+ inside Java/TS/… (not only manifests)
-    source_paths = [p for p in all_paths if is_source_scan_path(p)][:MAX_FILES]
+    source_candidates = [p for p in all_paths if is_source_scan_path(p)]
+    source_paths, mirrors = narrow_scan(repo, source_candidates, MAX_FILES)
     for rel in source_paths:
         abs_p = os.path.join(repo, rel) if repo else ""
         text = read_bounded(abs_p) if abs_p and os.path.isfile(abs_p) else ""
@@ -507,6 +509,45 @@ def main() -> None:
             h = dict(h)
             h["kind"] = "source_string_floating"
             snapshot_or_floating.append(h)
+
+    eol_imports = []
+    eol_pats = (
+        (re.compile(r"^\s*import\s+org\.apache\.commons\.lang\."),
+         "org.apache.commons.lang", "commons-lang 2.x is end-of-life; use org.apache.commons.lang3"),
+        (re.compile(r"^\s*(?:import|from)\s+imp\b"),
+         "imp", "Python imp was removed; use importlib"),
+        (re.compile(r"^\s*(?:import|from)\s+optparse\b"),
+         "optparse", "optparse is deprecated; use argparse"),
+        (re.compile(r"""require\s*\(\s*['"]request['"]\s*\)"""),
+         "request", "npm package request is deprecated"),
+        (re.compile(r"""^\s*import\s+["']io/ioutil["']"""),
+         "io/ioutil", "Go io/ioutil is deprecated; use io and os"),
+    )
+    for rel in source_paths:
+        abs_p = os.path.join(repo, rel) if repo else ""
+        text = read_bounded(abs_p) if abs_p and os.path.isfile(abs_p) else ""
+        if not text:
+            continue
+        hit_line = None
+        for i, line in enumerate(text.splitlines(), 1):
+            if "commons.lang3" in line:
+                continue
+            for rx, coord, note in eol_pats:
+                if rx.search(line):
+                    hit_line = (i, coord, note)
+                    break
+            if hit_line:
+                break
+        if hit_line:
+            i, coord, note = hit_line
+            eol_imports.append({
+                "path": rel,
+                "line": i,
+                "kind": "eol_import",
+                "coord": coord,
+                "note": note,
+            })
+    eol_imports = eol_imports[:40]
 
     # Dedup floating
     seen = set()
@@ -558,6 +599,7 @@ def main() -> None:
         and len(snapshot_or_floating) == 0
         and len(lock_drift) == 0
         and len(license_hints_out) == 0
+        and len(eol_imports) == 0
     )
     payload = {
         "body_ok": True,
@@ -568,6 +610,7 @@ def main() -> None:
         "snapshot_or_floating": snapshot_or_floating,
         "lock_drift": lock_drift[:20],
         "license_hints": license_hints_out[:20],
+        "eol_imports": eol_imports,
         "bloat": bloat,
         "necessity_flags": necessity_flags,
         "local_audit": local_audit,
@@ -580,6 +623,7 @@ def main() -> None:
         "files_considered": len(changed),
         "review_language_focus": focus,
     }
+    expand_mirrored_hits(payload, mirrors)
     Path(out_path).write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
 
 

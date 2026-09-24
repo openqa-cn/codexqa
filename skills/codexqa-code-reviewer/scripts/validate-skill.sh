@@ -91,6 +91,9 @@ for sh in \
   "$ROOT/scripts/lib/derive-contract.sh" \
   "$ROOT/scripts/lib/derive-maintainability.sh" \
   "$ROOT/scripts/lib/derive-performance.sh" \
+  "$ROOT/scripts/lib/derive-sast.sh" \
+  "$ROOT/scripts/lib/install-sast-tools.sh" \
+  "$ROOT/scripts/lib/sast-tool-path.sh" \
   "$ROOT/scripts/lib/derive-annotation-edges.sh" \
   "$ROOT/scripts/validate-skill.sh"
 do
@@ -312,6 +315,64 @@ if [[ "$REC" -eq 0 ]] && [[ -s "$RENDER_DIR/REVIEW-REPORT.html" ]] \
 else
   fail "render-review-html minimal failed"
   echo "$RO" >&2
+fi
+
+# Closure gate: a report row whose line is absent from the conclusion blocks HTML.
+GATE_DIR="$TMP/render-gate"
+mkdir -p "$GATE_DIR"
+cp "$RENDER_DIR/review-conclusion.json" "$GATE_DIR/review-conclusion.json"
+printf '%s\n' '{"findings":[{"disposition":"report","file":"src/A.java","line":10,"pattern_class":"sqli","rule_id":"SEC-001"}]}' \
+  >"$GATE_DIR/23-sast-signals.json"
+set +e
+GO="$("$ROOT/scripts/render-review-html.sh" --dir "$GATE_DIR" 2>&1)"
+GEC=$?
+set -e
+if [[ "$GEC" -ne 0 ]] && echo "$GO" | grep -q 'src/A.java:10'; then
+  pass "render refuses a report row missing from findings"
+else
+  fail "render should refuse an uncited report row"
+  echo "$GO" >&2
+fi
+"$ROOT/scripts/acr-python" - <<PY
+import json
+from pathlib import Path
+p = Path(r'''$GATE_DIR''') / 'review-conclusion.json'
+doc = json.loads(p.read_text())
+doc['p1'] = [{
+    'title': '查询把外部字符串拼进 SQL',
+    'title_en': 'The query concatenates an external string into SQL',
+    'line': 10,
+    'lines': [10],
+    'location': 'src/A.java:10',
+    'category': 'security',
+    'rule_id': 'SEC-001',
+    'risk': '第 10 行把外部输入拼进 SQL。',
+    'risk_en': 'Line 10 concatenates external input into SQL.',
+    'evidence': '23-sast-signals report 第 10 行。',
+    'evidence_en': '23-sast-signals report line 10.',
+    'fix': '使用占位符。',
+    'fix_en': 'Use a placeholder.',
+}]
+doc['rule_coverage'] = [{
+    'rule_id': 'SEC-001',
+    'result': 'hit',
+    'note': 'line 10',
+    'shapes': [
+        {'result': 'hit', 'lines': [10], 'note': 'concatenated query'},
+        {'result': 'skip', 'lines': [], 'note': 'no path built from a request value in this pack'},
+    ],
+}]
+p.write_text(json.dumps(doc), encoding='utf-8')
+PY
+set +e
+GO="$("$ROOT/scripts/render-review-html.sh" --dir "$GATE_DIR" 2>&1)"
+GEC=$?
+set -e
+if [[ "$GEC" -eq 0 ]] && [[ -s "$GATE_DIR/REVIEW-REPORT.html" ]]; then
+  pass "render allows a report row cited by a finding"
+else
+  fail "render should allow a cited report row"
+  echo "$GO" >&2
 fi
 # Theme contrast: meta values must use --ink/--muted (not hardcoded light-only colors)
 if "$SCRIPT_DIR/acr-python" -c "
@@ -537,6 +598,28 @@ else
   fail "derive-dependencies wrongly marks thin / None-notes when manifests produce signals"
   jq '{signals_thin,manifest_hits,snapshot_or_floating,lock_drift,license_hints,notes}' \
     "$DEP_SMOKE/pack/12-dependency-signals.json" >&2
+fi
+
+DEP_EOL="$TMP/dep-eol-lang"
+mkdir -p "$DEP_EOL/repo" "$DEP_EOL/pack"
+cat >"$DEP_EOL/repo/Pay.java" <<'EOF'
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+class Pay {}
+EOF
+cat >"$DEP_EOL/pack/04-changed-files.json" <<'EOF'
+{"nodes":[{"path":"Pay.java","change_status":"add"}]}
+EOF
+"$ROOT/scripts/lib/derive-dependencies.sh" --dir "$DEP_EOL/pack" --mode pr --repo "$DEP_EOL/repo" >/dev/null
+if jq -e '.signals_thin == false
+  and (.eol_imports|length) == 1
+  and (.eol_imports[0].coord == "org.apache.commons.lang")
+  and (.manifest_hits|length) == 0' \
+  "$DEP_EOL/pack/12-dependency-signals.json" >/dev/null; then
+  pass "derive-dependencies flags commons-lang 2.x import without a pom"
+else
+  fail "derive-dependencies should flag commons-lang 2.x and ignore lang3"
+  jq '{signals_thin,eol_imports,manifest_hits}' "$DEP_EOL/pack/12-dependency-signals.json" >&2
 fi
 
 # Privacy derive: idempotent; independent of 10-/11-/12-; --repo documented
@@ -1577,6 +1660,43 @@ else
     "$PF_THIN/pack/21-performance-signals.json" >&2
 fi
 
+PF_HELP="$TMP/performance-helper-n1"
+mkdir -p "$PF_HELP/repo" "$PF_HELP/pack"
+cat >"$PF_HELP/repo/Batch.java" <<'EOF'
+class Settle {
+  void a(List<String> ids) {
+    for (String id : ids) {
+      findAccount(id);
+    }
+  }
+  void b(List<String> ids) {
+    for (String id : ids) {
+      updateBalance(id);
+    }
+  }
+  void c(List<Row> rows) {
+    for (Row row : rows) {
+      save(row);
+    }
+  }
+}
+EOF
+cat >"$PF_HELP/repo/repo.py" <<'EOF'
+def run(ids):
+    for i in ids:
+        find_account(i)
+EOF
+cat >"$PF_HELP/pack/04-changed-files.json" <<'EOF'
+{"nodes":[{"path":"Batch.java","change_status":"add"},{"path":"repo.py","change_status":"add"}]}
+EOF
+"$ROOT/scripts/lib/derive-performance.sh" --dir "$PF_HELP/pack" --mode pr --repo "$PF_HELP/repo" >/dev/null
+if jq -e '([.n_plus_one_risks[]?]|length) >= 3' "$PF_HELP/pack/21-performance-signals.json" >/dev/null; then
+  pass "derive-performance N+1 sees findAccount/updateBalance/save/find_account in a loop"
+else
+  fail "derive-performance should flag persistence-shaped calls in a loop"
+  jq '{n_plus_one_risks}' "$PF_HELP/pack/21-performance-signals.json" >&2
+fi
+
 if grep -q 'N+1 / hot-path / unbounded alloc →' "$ROOT/references/dimensions/maintainability.md" \
   || grep -q 'performance.md' "$ROOT/references/dimensions/maintainability.md"; then
   pass "maintainability non-goals point to performance dimension"
@@ -2096,6 +2216,512 @@ else
   jq '.p1' "$MERGE_DIR/merged.json" >&2
 fi
 
+# Coverage ledger: hits stay on the symbol and do not dequeue it.
+LEDGER_DIR="$TMP/coverage-ledger"
+mkdir -p "$LEDGER_DIR/impact"
+cat >"$LEDGER_DIR/05-changed-symbols.json" <<'EOF'
+{"kind":"ChangedSymbols","nodes":[
+  {"id":"m1","name":"submit","kind":"method","file_path":"src/Pay.java","start_line":10,"end_line":40,"tested_count":1},
+  {"id":"m2","name":"skip","kind":"method","file_path":"node_modules/lib/X.java","start_line":1,"end_line":5,"tested_count":1}
+]}
+EOF
+cat >"$LEDGER_DIR/23-sast-signals.json" <<'EOF'
+{"kind":"SastSignals","findings":[{"file":"src/Pay.java","line":12,"disposition":"report","pattern_class":"sqli"}]}
+EOF
+"$ROOT/scripts/acr-python" "$ROOT/scripts/lib/build-coverage-ledger.py" --dir "$LEDGER_DIR" --mode pr >/dev/null
+if jq -e '
+  .kind == "CoverageLedger"
+  and ([.symbols[] | select(.symbol_id=="m1" and .status=="pending" and (.hits|length)==1)] | length) == 1
+  and ([.symbols[] | select(.symbol_id=="m2" and .status=="excluded" and .reason=="path_excluded")] | length) == 1
+' "$LEDGER_DIR/24-coverage-ledger.json" >/dev/null; then
+  pass "coverage ledger keeps a hit symbol pending and excludes generated paths"
+else
+  fail "coverage ledger should keep hits queued and exclude node_modules"
+  jq '.symbols' "$LEDGER_DIR/24-coverage-ledger.json" >&2
+fi
+mkdir -p "$LEDGER_DIR/full"
+cat >"$LEDGER_DIR/full/04-hot-symbols.json" <<'EOF'
+{"kind":"HotSymbols","nodes":[
+  {"id":"h1","name":"pay","kind":"method","file_path":"src/Pay.java","start_line":10,"end_line":30,"tested_count":0,"tag_count":0},
+  {"id":"h2","name":"other","kind":"method","file_path":"src/Other.java","start_line":1,"end_line":8,"tested_count":1,"tag_count":0}
+]}
+EOF
+cat >"$LEDGER_DIR/full/20-risk-tier.json" <<'EOF'
+{"kind":"RiskTierSignals","file_tiers":[{"path":"src/Pay.java","tier":"T0"}]}
+EOF
+echo '{"kind":"UntestedHotspots","nodes":[]}' >"$LEDGER_DIR/full/05-untested-hotspots.json"
+"$ROOT/scripts/acr-python" "$ROOT/scripts/lib/build-coverage-ledger.py" --dir "$LEDGER_DIR/full" --mode full >/dev/null
+if jq -e '
+  ([.symbols[] | select(.symbol_id=="h1" and .status=="pending")] | length) == 1
+  and ([.symbols[] | select(.symbol_id=="h2" and .status=="excluded" and .reason=="outside_risk_budget")] | length) == 1
+' "$LEDGER_DIR/full/24-coverage-ledger.json" >/dev/null; then
+  pass "full-repo ledger queues risk paths and excludes the rest of the sample"
+else
+  fail "full-repo ledger risk queue mismatch"
+  jq '.symbols' "$LEDGER_DIR/full/24-coverage-ledger.json" >&2
+fi
+cat >"$LEDGER_DIR/candidates.json" <<'EOF'
+{"p0":[],"p1":[
+  {"title":"inside","line":12,"file":"src/Pay.java","category":"correctness","risk":"inside span","evidence":"read"},
+  {"title":"outside","line":500,"file":"src/Pay.java","category":"correctness","risk":"outside span","evidence":"read"}
+],"p2":[]}
+EOF
+echo '{"p0":[],"p1":[],"p2":[]}' >"$LEDGER_DIR/baseline.json"
+"$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
+  --baseline "$LEDGER_DIR/baseline.json" \
+  --candidates "$LEDGER_DIR/candidates.json" \
+  --ledger "$LEDGER_DIR/24-coverage-ledger.json" \
+  --out "$LEDGER_DIR/merged.json" \
+  --report "$LEDGER_DIR/22-llm-judgment.json" \
+  --mode pr >/dev/null
+if jq -e '(.p1|length)==1 and .p1[0].title=="inside"' "$LEDGER_DIR/merged.json" >/dev/null \
+  && jq -e '.dropped_outside_ledger == 1' "$LEDGER_DIR/22-llm-judgment.json" >/dev/null; then
+  pass "merge --ledger drops candidates outside pending spans"
+else
+  fail "merge --ledger should drop the out-of-span candidate"
+  jq '.' "$LEDGER_DIR/merged.json" >&2
+  jq '.' "$LEDGER_DIR/22-llm-judgment.json" >&2
+fi
+echo '{"p0":[],"p1":[{"title":"sqli","line":12,"lines":[12],"category":"security","risk":"x","evidence":"y"}],"p2":[]}' >"$LEDGER_DIR/conclusion-open.json"
+set +e
+COV_FAIL="$("$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$LEDGER_DIR" "$LEDGER_DIR/conclusion-open.json" 2>&1)"
+COV_FAIL_EC=$?
+set -e
+echo '{"p0":[],"p1":[{"title":"sqli","line":12,"lines":[12],"category":"security","risk":"x","evidence":"y"}],"p2":[],"coverage_closure":[{"symbol_id":"m1","status":"reviewed","open_result":"none","span_check":"unverified"}]}' >"$LEDGER_DIR/conclusion-closed.json"
+if [[ "$COV_FAIL_EC" -ne 0 ]] && echo "$COV_FAIL" | grep -q 'coverage_closure' \
+  && "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$LEDGER_DIR" "$LEDGER_DIR/conclusion-closed.json" >/dev/null; then
+  pass "conclusion gate requires coverage_closure only when a ledger exists"
+else
+  fail "coverage_closure gate mismatch"
+  echo "$COV_FAIL" >&2
+fi
+SCOPE_DIR="$TMP/coverage-file-scope"
+mkdir -p "$SCOPE_DIR/src"
+cat >"$SCOPE_DIR/src/Pay.java" <<'EOF'
+class Pay {
+    static final int LIMIT = 1;
+
+    void submit() {
+        return;
+    }
+}
+EOF
+cat >"$SCOPE_DIR/04-changed-files.json" <<'EOF'
+{"kind":"ChangedFiles","nodes":[{"path":"src/Pay.java"}]}
+EOF
+cat >"$SCOPE_DIR/05-changed-symbols.json" <<'EOF'
+{"kind":"ChangedSymbols","nodes":[
+  {"id":"submit","name":"submit","kind":"method","file_path":"src/Pay.java","start_line":4,"end_line":6,"tested_count":1}
+]}
+EOF
+"$ROOT/scripts/acr-python" "$ROOT/scripts/lib/build-coverage-ledger.py" \
+  --dir "$SCOPE_DIR" --mode pr --repo "$SCOPE_DIR" >/dev/null
+if jq -e '
+  ([.symbols[] | select(.symbol_id=="file-scope:src/Pay.java" and .status=="pending" and (.ranges|length)>=1)] | length) == 1
+' "$SCOPE_DIR/24-coverage-ledger.json" >/dev/null; then
+  pass "coverage ledger queues changed lines outside method spans"
+else
+  fail "file_scope unit missing for a class field"
+  jq '.symbols' "$SCOPE_DIR/24-coverage-ledger.json" >&2
+fi
+SPAN_HASH="$("$ROOT/scripts/acr-python" -c '
+import hashlib
+from pathlib import Path
+lines = Path("'"$SCOPE_DIR"'/src/Pay.java").read_text(encoding="utf-8").splitlines()
+picked = []
+for start, end in ((1, 2), (7, 7)):
+    for number in range(start, end + 1):
+        picked.append(lines[number - 1])
+print(hashlib.sha256("\n".join(picked).encode("utf-8")).hexdigest())
+')"
+echo '{"p0":[],"p1":[],"p2":[],"coverage_closure":[
+  {"symbol_id":"submit","status":"reviewed","open_result":"none","span_hash":"wrong"},
+  {"symbol_id":"file-scope:src/Pay.java","status":"reviewed","open_result":"none","span_hash":"'"$SPAN_HASH"'"}
+]}' >"$SCOPE_DIR/conclusion-bad.json"
+set +e
+BAD_HASH="$("$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$SCOPE_DIR" "$SCOPE_DIR/conclusion-bad.json" 2>&1)"
+BAD_HASH_EC=$?
+set -e
+METHOD_HASH="$("$ROOT/scripts/acr-python" -c '
+import hashlib
+from pathlib import Path
+lines = Path("'"$SCOPE_DIR"'/src/Pay.java").read_text(encoding="utf-8").splitlines()
+picked = [lines[number - 1] for number in range(4, 7)]
+print(hashlib.sha256("\n".join(picked).encode("utf-8")).hexdigest())
+')"
+if jq -e --arg file_hash "$SPAN_HASH" --arg method_hash "$METHOD_HASH" '
+  ([.symbols[] | select(.symbol_id=="file-scope:src/Pay.java") | .span_hash] | .[0]) == $file_hash
+  and ([.symbols[] | select(.symbol_id=="submit") | .span_hash] | .[0]) == $method_hash
+' "$SCOPE_DIR/24-coverage-ledger.json" >/dev/null; then
+  pass "ledger stores the closure span_hash for each pending symbol"
+else
+  fail "ledger span_hash does not match the conclusion gate digest"
+  jq '.symbols[] | {symbol_id, span_hash, span_check}' "$SCOPE_DIR/24-coverage-ledger.json" >&2
+fi
+echo '{"p0":[],"p1":[],"p2":[],"coverage_closure":[
+  {"symbol_id":"submit","status":"reviewed","open_result":"none","span_hash":"'"$METHOD_HASH"'"},
+  {"symbol_id":"file-scope:src/Pay.java","status":"reviewed","open_result":"none","span_hash":"'"$SPAN_HASH"'"}
+]}' >"$SCOPE_DIR/conclusion-good.json"
+if [[ "$BAD_HASH_EC" -ne 0 ]] && echo "$BAD_HASH" | grep -q 'span_hash' \
+  && "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$SCOPE_DIR" "$SCOPE_DIR/conclusion-good.json" >/dev/null; then
+  pass "coverage closure span_hash is checked against the source lines"
+else
+  fail "span_hash gate mismatch"
+  echo "$BAD_HASH" >&2
+fi
+GROUP_DIR="$TMP/coverage-read-group"
+mkdir -p "$GROUP_DIR/src" "$GROUP_DIR/cli"
+printf 'LIMIT = 1\n\ndef pay():\n    return 1\n' >"$GROUP_DIR/src/pay.py"
+cp "$GROUP_DIR/src/pay.py" "$GROUP_DIR/cli/pay.py"
+printf 'a,b\n1,2\n' >"$GROUP_DIR/src/products.csv"
+cat >"$GROUP_DIR/04-changed-files.json" <<'EOF'
+{"kind":"ChangedFiles","nodes":[
+  {"path":"src/pay.py"},
+  {"path":"cli/pay.py"},
+  {"path":"src/products.csv"}
+]}
+EOF
+cat >"$GROUP_DIR/05-changed-symbols.json" <<'EOF'
+{"kind":"ChangedSymbols","nodes":[
+  {"id":"src-pay","name":"pay","kind":"function","file_path":"src/pay.py","start_line":3,"end_line":4,"tested_count":0},
+  {"id":"cli-pay","name":"pay","kind":"function","file_path":"cli/pay.py","start_line":3,"end_line":4,"tested_count":0}
+]}
+EOF
+"$ROOT/scripts/acr-python" "$ROOT/scripts/lib/build-coverage-ledger.py" \
+  --dir "$GROUP_DIR" --mode pr --repo "$GROUP_DIR" >/dev/null
+if jq -e '
+  ([.symbols[] | select(.path=="src/products.csv")] | length) == 0
+  and .summary.non_source_skipped == 1
+  and ([.symbols[] | select(.symbol_id=="src-pay" or .symbol_id=="cli-pay") | .read_group] | unique | length) == 1
+  and ([.read_groups[] | select((.paths|index("src/pay.py")) and (.paths|index("cli/pay.py")))] | length) == 1
+  and ([.symbols[] | select(.kind=="file_scope" and .status=="pending")] | length) == 2
+' "$GROUP_DIR/24-coverage-ledger.json" >/dev/null; then
+  pass "ledger groups identical sources and skips non-source residual files"
+else
+  fail "ledger should share one read group and omit csv from pending symbols"
+  jq '{summary,groups:.read_groups,symbols:[.symbols[]|{id:.symbol_id,path,kind,status,group:.read_group}]}' "$GROUP_DIR/24-coverage-ledger.json" >&2
+fi
+COPY_DIR="$TMP/identical-copies"
+mkdir -p "$COPY_DIR/src" "$COPY_DIR/cli" "$COPY_DIR/pack"
+cat >"$COPY_DIR/src/a.py" <<'EOF'
+def run():
+    try:
+        value = 1
+    except Exception:
+        pass
+    return value
+EOF
+cp "$COPY_DIR/src/a.py" "$COPY_DIR/cli/a.py"
+cat >"$COPY_DIR/src/b.py" <<'EOF'
+def other():
+    try:
+        value = 2
+    except Exception:
+        pass
+    return value
+EOF
+cat >"$COPY_DIR/pack/files.json" <<'EOF'
+{"files":["src/a.py","cli/a.py","src/b.py"]}
+EOF
+echo '{}' >"$COPY_DIR/pack/lang.json"
+"$ROOT/scripts/acr-python" "$ROOT/scripts/lib/_resilience_body.py" \
+  "$COPY_DIR/pack" "$COPY_DIR" "$COPY_DIR/pack/files.json" "$COPY_DIR/pack/lang.json" "$COPY_DIR/pack/body.json" >/dev/null
+if jq -e '
+  ([.silent_swallows[].path] | index("src/a.py")) != null
+  and ([.silent_swallows[].path] | index("cli/a.py")) != null
+  and (([.silent_swallows[] | select(.path=="src/a.py") | .line] | sort) == ([.silent_swallows[] | select(.path=="cli/a.py") | .line] | sort))
+  and ([.silent_swallows[].path] | index("src/b.py")) != null
+  and ([.silent_swallows[] | select(.mirrored_from=="src/a.py")] | length) >= 1
+' "$COPY_DIR/pack/body.json" >/dev/null; then
+  pass "identical copies are scanned once and both paths stay on the hit"
+else
+  fail "identical-copy scan should mirror hits and still scan different files"
+  jq '.silent_swallows' "$COPY_DIR/pack/body.json" >&2
+fi
+BATCH_DIR="$TMP/sast-batches"
+mkdir -p "$BATCH_DIR"
+python3 - <<'PY' "$BATCH_DIR/04-changed-files.json"
+import json, sys
+paths = [{"path": "src/F%02d.java" % i} for i in range(90)]
+json.dump({"kind": "ChangedFiles", "nodes": paths}, open(sys.argv[1], "w"))
+PY
+BATCH_COUNT="$("$ROOT/scripts/acr-python" -c '
+import importlib.util
+from pathlib import Path
+path = Path("'"$ROOT"'/scripts/lib/_sast_body.py")
+spec = importlib.util.spec_from_file_location("sast_body", path)
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+pack = Path("'"$BATCH_DIR"'")
+pr = mod.load_paths(pack, "pr")
+full = mod.load_paths(pack, "full")
+batches = list(mod.file_batches(pr, 40))
+print("%s %s %s" % (len(pr), len(full), len(batches)))
+')"
+if [[ "$BATCH_COUNT" == "90 80 3" ]]; then
+  pass "pr SAST path list keeps every changed file and batches past 40"
+else
+  fail "pr SAST path list should not stop at 40 files: $BATCH_COUNT"
+fi
+if grep -q 'residual-read-pass.md' "$ROOT/prompts/llm-judgment-pass.md" \
+  && grep -q 'residual-read-pass.md' "$ROOT/prompts/pr-diff-review.md" \
+  && grep -q 'residual-read-pass.md' "$ROOT/prompts/full-repo-review.md"; then
+  pass "residual read is wired into the llm judgment prompts"
+else
+  fail "residual-read-pass.md is not wired into the review prompts"
+fi
+
+# Different rule_id on the same line stays two findings. Same rule_id still dedupes.
+MERGE_RULE="$TMP/merge-rule-id"
+mkdir -p "$MERGE_RULE"
+cat >"$MERGE_RULE/baseline.json" <<'EOF'
+{"p0":[],"p1":[{"title":"substring admin","line":10,"file":"src/A.java","category":"security","rule_id":"AUTH-002","risk":"contains ADMIN"}],"p2":[]}
+EOF
+cat >"$MERGE_RULE/candidates.json" <<'EOF'
+{"p0":[],"p1":[{"title":"admin grant has no audit","line":10,"file":"src/A.java","category":"security","rule_id":"TEN-006","risk":"return true writes no audit"}],"p2":[]}
+EOF
+"$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
+  --baseline "$MERGE_RULE/baseline.json" \
+  --candidates "$MERGE_RULE/candidates.json" \
+  --out "$MERGE_RULE/merged.json" \
+  --report "$MERGE_RULE/22.json" \
+  --mode pr >/dev/null
+if jq -e '(.p1|length) == 2' "$MERGE_RULE/merged.json" >/dev/null \
+  && jq -e '.kept_novel == 1 and .deduped_against_heuristics == 0' "$MERGE_RULE/22.json" >/dev/null; then
+  pass "merge-llm-findings keeps a different rule_id on the same line"
+else
+  fail "merge-llm-findings should keep TEN-006 beside AUTH-002"
+  jq '.' "$MERGE_RULE/merged.json" >&2
+  jq '.' "$MERGE_RULE/22.json" >&2
+fi
+
+# Nearby lines are not a relation. An unlabeled card must not swallow a
+# different rule_id a few lines away. The same rule_id still dedupes.
+MERGE_NEAR="$TMP/merge-near"
+mkdir -p "$MERGE_NEAR"
+cat >"$MERGE_NEAR/baseline.json" <<'EOF'
+{"p0":[],"p1":[
+  {"title":"limit uses scale-sensitive equality","line":107,"file":"src/Pay.java","category":"correctness","risk":"scale changes the limit branch"}
+],"p2":[]}
+EOF
+cat >"$MERGE_NEAR/candidates.json" <<'EOF'
+{"p0":[],"p1":[
+  {"title":"fee omitted from the funds check","line":110,"file":"src/Pay.java","category":"correctness","rule_id":"LOGIC-001","risk":"debit total exceeds the compared amount"}
+],"p2":[]}
+EOF
+cat >"$MERGE_NEAR/same-rule-base.json" <<'EOF'
+{"p0":[],"p1":[
+  {"title":"batch has no per-item check","line":178,"file":"src/Pay.java","category":"correctness","rule_id":"BIZ-004","risk":"the loop posts every item"}
+],"p2":[]}
+EOF
+cat >"$MERGE_NEAR/same-rule-cand.json" <<'EOF'
+{"p0":[],"p1":[
+  {"title":"batch continues after a swallowed failure","line":180,"file":"src/Pay.java","category":"correctness","rule_id":"BIZ-004","risk":"the loop posts every item"}
+],"p2":[]}
+EOF
+"$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
+  --baseline "$MERGE_NEAR/baseline.json" \
+  --candidates "$MERGE_NEAR/candidates.json" \
+  --out "$MERGE_NEAR/near.json" \
+  --report "$MERGE_NEAR/near-report.json" \
+  --mode pr >/dev/null
+"$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
+  --baseline "$MERGE_NEAR/same-rule-base.json" \
+  --candidates "$MERGE_NEAR/same-rule-cand.json" \
+  --out "$MERGE_NEAR/same.json" \
+  --report "$MERGE_NEAR/same-report.json" \
+  --mode pr >/dev/null
+if jq -e '(.p1|length)==2' "$MERGE_NEAR/near.json" >/dev/null \
+  && jq -e '.kept_novel==1 and .deduped_against_heuristics==0' "$MERGE_NEAR/near-report.json" >/dev/null \
+  && jq -e '(.p1|length)==1' "$MERGE_NEAR/same.json" >/dev/null \
+  && jq -e '.kept_novel==0 and .deduped_against_heuristics==1' "$MERGE_NEAR/same-report.json" >/dev/null; then
+  pass "merge-llm-findings uses rule_id, not nearby lines, as the relation"
+else
+  fail "merge-llm-findings should keep a different relation within three lines and dedupe the same rule_id"
+  jq '.' "$MERGE_NEAR/near.json" "$MERGE_NEAR/near-report.json" "$MERGE_NEAR/same-report.json" >&2
+fi
+
+BOUND_DIR="$TMP/bound-read"
+mkdir -p "$BOUND_DIR/src" "$BOUND_DIR/pack"
+cat >"$BOUND_DIR/src/Cache.java" <<'EOF'
+class Cache {
+  static final long RATE_TTL_MS = 86400000L;
+  static final int CUTOFF_HOUR = 17;
+  Object get(String key) { return map.get(key); }
+  boolean open(int hour) { return hour <= CUTOFF_HOUR; }
+}
+EOF
+cat >"$BOUND_DIR/pack/signal.json" <<'EOF'
+{"magic_numbers":[
+  {"kind":"magic_number","path":"src/Cache.java","line":2,"snippet":"static final long RATE_TTL_MS = 86400000L;"},
+  {"kind":"magic_number","path":"src/Cache.java","line":3,"snippet":"static final int CUTOFF_HOUR = 17;"}
+]}
+EOF
+"$ROOT/scripts/acr-python" "$ROOT/scripts/lib/derive_triage.py" \
+  "$BOUND_DIR/pack/signal.json" "$BOUND_DIR" >/dev/null
+if jq -e '
+  [.derive_suspects[] | select(.kind=="magic_number")]
+  | (map(select(.line==2) | .bound_read) == [false])
+  and (map(select(.line==3) | .bound_read) == [true])
+' "$BOUND_DIR/pack/signal.json" >/dev/null; then
+  pass "derive_triage marks an unread named bound"
+else
+  fail "derive_triage should set bound_read false when the constant is never read"
+  jq '.derive_suspects' "$BOUND_DIR/pack/signal.json" >&2
+fi
+
+LOCUS="$TMP/locus-gaps"
+mkdir -p "$LOCUS/repo" "$LOCUS/pack"
+cat >"$LOCUS/repo/Gaps.java" <<'EOF'
+import java.util.ArrayList;
+import java.util.List;
+class Gaps {
+  void sign(String raw) { raw.getBytes(); }
+  void okSign(String raw) { raw.getBytes("UTF-8"); }
+  void archive(String accountNo) {
+    try {
+      java.io.FileOutputStream out = new java.io.FileOutputStream(accountNo);
+      out.write(1);
+      out.close();
+    } catch (java.io.IOException e) { }
+  }
+  void okArchive(String accountNo) throws java.io.IOException {
+    try (java.io.FileOutputStream out = new java.io.FileOutputStream(accountNo)) {
+      out.write(1);
+    }
+  }
+  void settle(List<String> batch) {
+    List<String> settledIds = new ArrayList<String>();
+    for (String id : batch) { settledIds.add(id); }
+  }
+  void used(List<String> batch) {
+    List<String> ids = new ArrayList<String>();
+    for (String id : batch) { ids.add(id); }
+    if (ids.size() > 0) { return; }
+  }
+  void callback(String merchantId) {
+    Account merchant = loadAccount(merchantId);
+    merchant.setAvailableBalanceLegacy(null);
+  }
+  void guarded(String id) {
+    Account account = loadAccount(id);
+    if (account == null) { return; }
+    account.getAvailableBalanceLegacy();
+  }
+  boolean check(String roles) {
+    if (roles.contains("ADMIN")) { return true; }
+  }
+  void pay() throws Exception { DriverManager.getConnection("jdbc:mysql://db/x"); }
+}
+class Account {
+  Object getAvailableBalanceLegacy() { return null; }
+  void setAvailableBalanceLegacy(Object v) {}
+  static Account loadAccount(String id) { return null; }
+}
+EOF
+cat >"$LOCUS/repo/Pipeline.java" <<'EOF'
+import org.junit.Test;
+class Pipeline {
+  static final int READ_MS = 0;
+  static final boolean FEATURE = false;
+  static final java.text.SimpleDateFormat STAMP = new java.text.SimpleDateFormat("yyyy");
+  private final java.util.Map<String, String> cache = new java.util.HashMap<String, String>();
+  void arm() {
+    if (FEATURE) { return; }
+    conn.setConnectTimeout(READ_MS);
+    context.WithTimeout(ctx, 0);
+    conn.setConnectTimeout(5);
+    HttpsURLConnection.setDefaultSSLSocketFactory(factory);
+  }
+  void notifyAll(String id) {
+    for (int i = 0; i < 3; i++) {
+      gateway.notifyMerchant(id);
+    }
+  }
+  void notifyOnce(String id, String eventId) {
+    for (int i = 0; i < 3; i++) {
+      if (store.add(eventId)) { break; }
+      gateway.notifyMerchant(id);
+    }
+  }
+  void credit(java.util.Map<String, String> params) {
+    java.math.BigDecimal amount = new java.math.BigDecimal(params.get("amount"));
+    amount.toString();
+  }
+  void creditGuarded(java.util.Map<String, String> params) {
+    String raw = params.get("amount");
+    if (raw == null) { return; }
+    java.math.BigDecimal amount = new java.math.BigDecimal(raw);
+    amount.toString();
+  }
+  void fee(double value) {
+    if (value < 0.5) { return; }
+  }
+  @Test
+  public void boundaryShouldHold() {
+    org.junit.Assert.assertTrue(service.cache.size() >= 1);
+    String[] names = {"a", "b"};
+    if (names[0] == null) { return; }
+  }
+}
+EOF
+cat >"$LOCUS/pack/04-changed-files.json" <<'EOF'
+{"nodes":[{"path":"Gaps.java","change_status":"add"},{"path":"Pipeline.java","change_status":"add"}]}
+EOF
+"$ROOT/scripts/lib/derive-resilience.sh" --dir "$LOCUS/pack" --mode pr --repo "$LOCUS/repo" >/dev/null
+"$ROOT/scripts/lib/derive-performance.sh" --dir "$LOCUS/pack" --mode pr --repo "$LOCUS/repo" >/dev/null
+"$ROOT/scripts/lib/derive-maintainability.sh" --dir "$LOCUS/pack" --mode pr --repo "$LOCUS/repo" >/dev/null
+if jq -e '
+  ([.charset_gaps[]? | select(.kind=="charset_omission")]|length) == 1
+  and ([.resource_leaks[]? | select(.kind=="close_not_in_finally")]|length) == 1
+  and ([.null_deref_gaps[]? | select(.kind=="null_deref_after_load")]|length) == 1
+  and ([.authz_audit_gaps[]? | select(.rule_id=="TEN-006")]|length) == 1
+' "$LOCUS/pack/14-resilience-signals.json" >/dev/null; then
+  pass "derive-resilience adds charset, close-on-success, null deref, and TEN-006 rows"
+else
+  fail "derive-resilience missing additive locus rows"
+  jq '{charset_gaps,resource_leaks,null_deref_gaps,authz_audit_gaps}' "$LOCUS/pack/14-resilience-signals.json" >&2
+fi
+if jq -e '([.unpooled_connections[]? | select(.kind=="unpooled_connection")]|length) == 1' \
+  "$LOCUS/pack/21-performance-signals.json" >/dev/null; then
+  pass "derive-performance flags DriverManager.getConnection without folding N+1 thin"
+else
+  fail "derive-performance should emit unpooled_connections"
+  jq '{unpooled_connections,signals_thin,n_plus_one_risks}' "$LOCUS/pack/21-performance-signals.json" >&2
+fi
+if jq -e '([.unused_accumulators[]? | select(.kind=="unused_accumulator")]|length) == 1
+  and (.signals_thin == false)' \
+  "$LOCUS/pack/18-maintainability-signals.json" >/dev/null; then
+  pass "derive-maintainability flags an add-only collection and ignores a read collection"
+else
+  fail "derive-maintainability should emit one unused_accumulator"
+  jq '{unused_accumulators,signals_thin}' "$LOCUS/pack/18-maintainability-signals.json" >&2
+fi
+if jq -e '
+  ([.disabled_bounds[]? | select(.rule_id=="BND-001")]|length) >= 2
+  and ([.retry_side_effects[]? | select(.kind=="retry_side_effect")]|length) == 1
+  and ([.null_deref_gaps[]? | select(.kind=="unguarded_parse")]|length) == 1
+  and ([.shared_mutables[]? | select(.rule_id=="CONC-003")]|length) >= 1
+  and ([.process_defaults[]? | select(.rule_id=="GLOB-001")]|length) == 1
+' "$LOCUS/pack/14-resilience-signals.json" >/dev/null; then
+  pass "derive-resilience files disabled bounds, retry side effects, parse nulls, shared mutables, and process defaults"
+else
+  fail "derive-resilience missing pipeline-closure rows"
+  jq '{disabled_bounds,retry_side_effects,null_deref_gaps,shared_mutables,process_defaults}' "$LOCUS/pack/14-resilience-signals.json" >&2
+fi
+if jq -e '
+  ([.magic_numbers[]? | select(.kind=="decision_literal")]|length) >= 1
+  and ([.test_oracle_inventory[]?]|length) >= 1
+  and ([.test_oracle_hits[]? | select(.kind=="test_no_join" or .kind=="test_tautology" or .kind=="test_unreachable" or .kind=="test_flag_uncovered")]|length) >= 2
+  and ([.prod_test_coupling[]? | select(.rule_id=="DES-001")]|length) == 1
+' "$LOCUS/pack/18-maintainability-signals.json" >/dev/null; then
+  pass "derive-maintainability files decision literals, test oracles, and production test coupling"
+else
+  fail "derive-maintainability missing decision literals, test oracles, or prod_test_coupling"
+  jq '{decision: [.magic_numbers[]?|select(.kind=="decision_literal")], inventory:.test_oracle_inventory, hits:.test_oracle_hits, coupling:.prod_test_coupling}' \
+    "$LOCUS/pack/18-maintainability-signals.json" >&2
+fi
+
 if grep -q 'llm_judgment' "$ROOT/references/dimension-registry.md" \
   && grep -q 'merge-llm-findings.py' "$ROOT/prompts/llm-judgment-pass.md" \
   && grep -q 'llm-judgment-pass.md' "$ROOT/prompts/pr-diff-review.md" \
@@ -2125,6 +2751,223 @@ if [[ -f "$ROOT/references/dimensions/correctness-family-checks.md" ]] \
 else
   fail "correctness-family-checks.md or prompt must-read missing"
 fi
+
+# Synced defect-analyzer detection rules (policy pack ids) must stay on the registry index.
+RULE_IDS=(
+  SEC-001 NULL-001 RES-001 CONC-001 CONC-002 CONC-003 TXN-001 LOGIC-001 ARCH-001
+  HYG-001 AUTH-001 AUTH-002 BIZ-001 BIZ-002 BIZ-003 BND-001 API-001 ERR-001 PERF-001
+  GLOB-001 DES-001
+   PAY-001 PAY-002 PAY-004 PAY-005 PAY-006 PAY-007 TEN-002 TEN-004 TEN-005 TEN-006
+  BIZ-004 BIZ-005
+)
+missing_rules=()
+for rid in "${RULE_IDS[@]}"; do
+  if ! grep -q "$rid" "$ROOT/references/dimension-registry.md"; then
+    missing_rules+=("$rid")
+  fi
+done
+if [[ ${#missing_rules[@]} -eq 0 ]] \
+  && [[ -f "$ROOT/references/dimensions/security.md" ]] \
+  && [[ -f "$ROOT/references/dimensions/correctness.md" ]] \
+  && [[ -f "$ROOT/references/dimensions/concurrency.md" ]] \
+  && grep -q 'Detection rules' "$ROOT/prompts/pr-diff-review.md" \
+  && grep -q 'rule_id' "$ROOT/templates/review-conclusion.json"; then
+  pass "detection rules synced onto dimension cards + registry index"
+else
+  fail "detection rule sync incomplete: ${missing_rules[*]:-cards or prompt/template}"
+fi
+
+# New or extended detection rules must follow the generic construction algorithm.
+if [[ -f "$ROOT/references/rule-construction.md" ]] \
+  && grep -q 'Family catalog' "$ROOT/references/rule-construction.md" \
+  && grep -q 'one hit does not close' "$ROOT/references/rule-construction.md" \
+  && grep -q 'Declared constraint unused' "$ROOT/references/rule-construction.md" \
+  && grep -q 'State write missing a precondition' "$ROOT/references/rule-construction.md" \
+  && grep -q 'Test claim does not match' "$ROOT/references/rule-construction.md" \
+  && grep -q 'Matching modes' "$ROOT/references/rule-construction.md" \
+  && grep -q 'sanitizers' "$ROOT/references/rule-construction.md" \
+  && grep -q 'rule-construction.md' "$ROOT/SKILL.md" \
+  && grep -q 'rule-construction.md' "$ROOT/references/dimension-registry.md" \
+  && grep -q 'rule-construction.md' "$ROOT/prompts/llm-judgment-pass.md" \
+  && grep -q 'rule-construction.md' "$ROOT/prompts/pr-diff-review.md" \
+  && grep -q 'sast-suspect-pass.md' "$ROOT/prompts/llm-judgment-pass.md" \
+  && grep -q 'business-logic-pass.md' "$ROOT/prompts/llm-judgment-pass.md" \
+  && grep -q 'semantic-candidate-pass.md' "$ROOT/prompts/llm-judgment-pass.md" \
+  && grep -q 'derive-suspect-pass.md' "$ROOT/prompts/llm-judgment-pass.md" \
+  && grep -q 'business-rule-records.md' "$ROOT/prompts/business-logic-pass.md"; then
+  pass "rule construction algorithm is mandatory for new detection rules"
+else
+  fail "rule-construction.md missing or not wired into SKILL, registry, and review prompts"
+fi
+
+if [[ -x "$ROOT/scripts/lib/derive-sast.sh" ]] \
+  && "$ROOT/scripts/lib/derive-sast.sh" --help 2>&1 | grep -qi 'semgrep' \
+  && "$ROOT/scripts/lib/derive-sast.sh" --help 2>&1 | grep -q 'p/java' \
+  && ! grep -q 'config", "auto"' "$ROOT/scripts/lib/_sast_body.py" \
+  && grep -q 'p/security-audit' "$ROOT/scripts/lib/_sast_body.py" \
+  && grep -q 'p/secrets' "$ROOT/scripts/lib/_sast_body.py"; then
+  pass "derive-sast.sh documents Semgrep/Bandit/gosec/gitleaks/osv/ruff/eslint"
+else
+  fail "derive-sast.sh missing fixed Semgrep packs or still uses --config auto"
+fi
+
+# Semgrep outcome is decided without invoking the binary.
+if "$ROOT/scripts/acr-python" -c '
+import importlib.util, sys
+from pathlib import Path
+root = Path(sys.argv[1])
+spec = importlib.util.spec_from_file_location("sast", root / "scripts/lib/_sast_body.py")
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+def st(code, out, err=""):
+    hits, info = mod.classify_semgrep_run(code, out, err)
+    return info["status"], info["rules_loaded"], len(hits), info["stderr"]
+assert st(2, "", "Cannot create auto config when metrics are off")[0:2] == ("error", False)
+assert "metrics" in st(2, "", "Cannot create auto config when metrics are off")[3]
+assert st(0, "")[0:2] == ("error", False)
+assert st(0, "not-json")[0:2] == ("error", False)
+assert st(0, "{\"results\":[],\"errors\":[{\"message\":\"x\"}]}")[0:2] == ("error", False)
+assert st(7, "{\"results\":[],\"errors\":[]}")[0:2] == ("error", False)
+ran = st(0, "{\"results\":[],\"errors\":[],\"paths\":{\"scanned\":[\"A.java\"]}}")
+assert ran[0:2] == ("ran", True) and ran[2] == 0
+hit = st(1, "{\"results\":[{\"path\":\"A.java\",\"start\":{\"line\":3},\"check_id\":\"java.lang.security.audit.sqli\",\"extra\":{\"message\":\"sql concat\",\"severity\":\"ERROR\"}}],\"errors\":[],\"paths\":{\"scanned\":[\"A.java\"]}}")
+assert hit[0:3] == ("ran", True, 1)
+empty_scan = st(0, "{\"results\":[],\"errors\":[],\"paths\":{\"scanned\":[]}}")
+assert empty_scan[0:2] == ("error", False)
+print("ok")
+' "$ROOT"; then
+  pass "semgrep status is ran only when the ruleset JSON loaded with empty errors"
+else
+  fail "semgrep status classification regressed"
+fi
+
+if [[ -x "$ROOT/scripts/lib/install-sast-tools.sh" ]] \
+  && "$ROOT/scripts/lib/install-sast-tools.sh" --help 2>&1 | grep -q 'semgrep>=1.80' \
+  && "$ROOT/scripts/lib/install-sast-tools.sh" --help 2>&1 | grep -q 'npm install -g eslint' \
+  && "$ROOT/scripts/lib/install-sast-tools.sh" --help 2>&1 | grep -q 'gitleaks/v8@latest' \
+  && grep -q 'install-sast-tools.sh' "$ROOT/SKILL.md" \
+  && grep -q 'semgrep>=1.80' "$ROOT/SKILL.md" \
+  && grep -q 'npm install -g eslint' "$ROOT/SKILL.md" \
+  && grep -q 'osv-scanner@latest' "$ROOT/SKILL.md" \
+  && grep -q 'sast_go_bins' "$ROOT/scripts/lib/sast-tool-path.sh" \
+  && grep -q 'go env' "$ROOT/SKILL.md" \
+  && grep -q 'sast-tool-path.sh' "$ROOT/scripts/lib/install-sast-tools.sh" \
+  && grep -q 'sast-tool-path.sh' "$ROOT/scripts/lib/derive-sast.sh" \
+  && grep -q 'sast_refresh_path' "$ROOT/scripts/lib/sast-tool-path.sh"; then
+  pass "missing SAST tools have a mandatory install step and commands"
+else
+  fail "SKILL/install-sast-tools.sh must require install commands for missing SAST tools"
+fi
+
+SAST_FIX="$(mktemp -d)"
+mkdir -p "$SAST_FIX/repo" "$SAST_FIX/pack"
+cat >"$SAST_FIX/repo/pay.py" <<'EOF'
+import pickle, hashlib, requests
+def pay(request):
+    amount = float(request.price)
+    blob = pickle.loads(request.body)
+    digest = hashlib.md5(blob).hexdigest()
+    return requests.get(request.args.get("url"))
+EOF
+echo '{"nodes":[{"path":"pay.py"}]}' >"$SAST_FIX/pack/04-changed-files.json"
+if CODEXQA_SAST_SKIP_INSTALL=1 "$ROOT/scripts/lib/derive-sast.sh" --dir "$SAST_FIX/pack" --mode pr --repo "$SAST_FIX/repo" \
+  && jq -e '
+    .kind=="SastSignals"
+    and (.tools|has("semgrep") and has("bandit") and has("gosec") and has("gitleaks") and has("osv") and has("ruff") and has("eslint"))
+    and ([.findings[].pattern_class] | (index("ssrf") != null) and (index("pickle") != null) and (index("weak_hash") != null) and (index("float_money") != null))
+  ' "$SAST_FIX/pack/23-sast-signals.json" >/dev/null; then
+  pass "derive-sast records tools and owns ssrf/pickle/weak_hash/float_money"
+else
+  fail "derive-sast should record tools and pattern classes"
+  jq '{tools,classes:[.findings[].pattern_class]}' "$SAST_FIX/pack/23-sast-signals.json" >&2 || true
+fi
+rm -rf "$SAST_FIX"
+
+SAST_MERGE="$(mktemp -d)"
+echo '{"p0":[],"p1":[],"p2":[]}' >"$SAST_MERGE/base.json"
+cat >"$SAST_MERGE/cand.json" <<'EOF'
+{"p0":[],"p1":[
+  {"title":"SSRF via request URL","risk":"server-side request forgery","category":"security","source":"llm_judgment","file":"pay.py","line":4},
+  {"title":"missing tenant predicate","risk":"lookup by id without tenant_id","category":"security","source":"llm_judgment","file":"q.py","line":2}
+],"p2":[
+  {"title":"float money on price","risk":"浮点金额","category":"correctness","source":"llm_judgment","file":"pay.py","line":2}
+]}
+EOF
+if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
+  --baseline "$SAST_MERGE/base.json" \
+  --candidates "$SAST_MERGE/cand.json" \
+  --out "$SAST_MERGE/merged.json" \
+  --report "$SAST_MERGE/22.json" \
+  --mode pr >/dev/null \
+  && jq -e '.dropped_sast_owned==2 and .kept_novel==1' "$SAST_MERGE/22.json" >/dev/null \
+  && jq -e '[.p1[].title] | (index("missing tenant predicate") != null) and (index("SSRF via request URL") == null)' "$SAST_MERGE/merged.json" >/dev/null; then
+  pass "merge drops SAST-owned LLM repeats (SSRF, float money) and keeps residual authz"
+else
+  fail "merge should drop SAST-owned pattern classes"
+  jq '.' "$SAST_MERGE/22.json" >&2 || true
+  jq '.' "$SAST_MERGE/merged.json" >&2 || true
+fi
+rm -rf "$SAST_MERGE"
+
+# Per-class policy: a SAST-owned candidate is kept only with a matching
+# suspect_id. A clean scan still drops an obvious repeat. No binary is invoked.
+SAST_POL="$(mktemp -d)"
+echo '{"p0":[],"p1":[],"p2":[]}' >"$SAST_POL/base.json"
+cat >"$SAST_POL/cand.json" <<'EOF'
+{"p0":[],"p1":[
+  {"title":"SQL injection via account number","risk":"sql injection","category":"security","source":"llm_judgment","file":"A.java","line":12},
+  {"title":"missing tenant predicate","risk":"lookup by id without tenant_id","category":"security","source":"llm_judgment","file":"q.py","line":2}
+],"p2":[]}
+EOF
+cat >"$SAST_POL/err.json" <<'EOF'
+{"llm_report_policy":{"sqli":{"action":"allow","reason":"semgrep:error"}}}
+EOF
+cat >"$SAST_POL/clean.json" <<'EOF'
+{"llm_report_policy":{"sqli":{"action":"suppress_obvious","reason":"0 hits"}}}
+EOF
+cat >"$SAST_POL/variant.json" <<'EOF'
+{"p0":[],"p1":[
+  {"title":"SQL built by helper","risk":"sql injection","evidence":"扫描器未覆盖这一写法","category":"security","source":"llm_judgment","file":"A.java","line":40}
+],"p2":[]}
+EOF
+cat >"$SAST_POL/sus-signals.json" <<'EOF'
+{"llm_report_policy":{"sqli":{"action":"dedupe_loci"}},"suspects":[{"suspect_id":"sqli:A.java:40"}]}
+EOF
+cat >"$SAST_POL/sus-cand.json" <<'EOF'
+{"p0":[],"p1":[
+  {"title":"SQL injection via helper","risk":"sql injection","pattern_class":"sqli","suspect_id":"sqli:A.java:40","category":"security","source":"llm_judgment","file":"A.java","line":40}
+],"p2":[]}
+EOF
+if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
+  --baseline "$SAST_POL/base.json" --candidates "$SAST_POL/cand.json" \
+  --sast-signals "$SAST_POL/err.json" --out "$SAST_POL/allow.json" \
+  --report "$SAST_POL/allow-report.json" --mode pr >/dev/null \
+  && jq -e '.dropped_sast_owned==1 and .kept_novel==1' "$SAST_POL/allow-report.json" >/dev/null \
+  && "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
+  --baseline "$SAST_POL/base.json" --candidates "$SAST_POL/cand.json" \
+  --sast-signals "$SAST_POL/clean.json" --out "$SAST_POL/sup.json" \
+  --report "$SAST_POL/sup-report.json" --mode pr >/dev/null \
+  && jq -e '.dropped_sast_owned==1 and .kept_novel==1' "$SAST_POL/sup-report.json" >/dev/null \
+  && "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
+  --baseline "$SAST_POL/base.json" --candidates "$SAST_POL/variant.json" \
+  --sast-signals "$SAST_POL/clean.json" --out "$SAST_POL/var.json" \
+  --report "$SAST_POL/var-report.json" --mode pr >/dev/null \
+  && jq -e '.dropped_sast_owned==1 and .kept_novel==0' "$SAST_POL/var-report.json" >/dev/null \
+  && "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
+  --baseline "$SAST_POL/base.json" --candidates "$SAST_POL/sus-cand.json" \
+  --sast-signals "$SAST_POL/sus-signals.json" --out "$SAST_POL/sus.json" \
+  --report "$SAST_POL/sus-report.json" --mode pr >/dev/null \
+  && jq -e '.dropped_sast_owned==0 and .kept_novel==1' "$SAST_POL/sus-report.json" >/dev/null \
+  && [[ -f "$ROOT/prompts/sast-suspect-pass.md" ]] \
+  && [[ -f "$ROOT/prompts/business-logic-pass.md" ]] \
+  && grep -q 'suspect_id' "$ROOT/prompts/sast-suspect-pass.md" \
+  && grep -q 'disposition' "$ROOT/scripts/lib/_sast_body.py"; then
+  pass "sast triage keeps only a listed suspect and still keeps residual authz"
+else
+  fail "sast llm_report_policy routing regressed"
+  jq '.' "$SAST_POL/allow-report.json" "$SAST_POL/sup-report.json" "$SAST_POL/var-report.json" >&2 || true
+fi
+rm -rf "$SAST_POL"
 
 # Per-edge cross-layer correctness (caller layer vs that edge's target, not file-wide first target)
 XL_DIR="$TMP/cross-layer-pack"
@@ -2181,6 +3024,81 @@ else
   fail "render-review-html should reject invalid JSON with clear error"
   echo "$RO" >&2
 fi
+
+# Review digest separates three-dot PR files from two-dot drift and keeps report lines.
+DIGEST_FIX="$(mktemp -d)"
+mkdir -p "$DIGEST_FIX/repo" "$DIGEST_FIX/pack"
+git -C "$DIGEST_FIX/repo" init -q
+printf 'v0\n' >"$DIGEST_FIX/repo/shared.txt"
+printf 'old\n' >"$DIGEST_FIX/repo/diverge.txt"
+printf 'same\n' >"$DIGEST_FIX/repo/stay.txt"
+git -C "$DIGEST_FIX/repo" add shared.txt diverge.txt stay.txt
+git -C "$DIGEST_FIX/repo" -c user.email=digest@example.com -c user.name=digest commit -q -m base
+BASE_BRANCH="$(git -C "$DIGEST_FIX/repo" rev-parse --abbrev-ref HEAD)"
+git -C "$DIGEST_FIX/repo" branch feature
+printf 'v1\n' >"$DIGEST_FIX/repo/shared.txt"
+printf 'from-main\n' >"$DIGEST_FIX/repo/diverge.txt"
+printf 'only-main\n' >"$DIGEST_FIX/repo/drift.txt"
+git -C "$DIGEST_FIX/repo" add shared.txt diverge.txt drift.txt
+git -C "$DIGEST_FIX/repo" -c user.email=digest@example.com -c user.name=digest commit -q -m main-move
+git -C "$DIGEST_FIX/repo" checkout -q feature
+printf 'v1\n' >"$DIGEST_FIX/repo/shared.txt"
+printf 'from-feature\n' >"$DIGEST_FIX/repo/diverge.txt"
+printf 'pr-only\n' >"$DIGEST_FIX/repo/only.txt"
+git -C "$DIGEST_FIX/repo" add shared.txt diverge.txt only.txt
+git -C "$DIGEST_FIX/repo" -c user.email=digest@example.com -c user.name=digest commit -q -m feature-move
+cat >"$DIGEST_FIX/pack/14-resilience-signals.json" <<'EOF'
+{"kind":"ResilienceSignals","silent_swallows":[{"file":"diverge.txt","line":12,"kind":"silent_swallow","disposition":"report"}],"derive_suspects":[{"derive_suspect_id":"silent_swallow:diverge.txt:1","file":"diverge.txt","line":1,"kind":"silent_swallow","policy":{"look_for":"empty catch","do_not_report":"logged","fix":"log","noncompliant":"pass","compliant":"log"}},{"derive_suspect_id":"silent_swallow:drift.txt:1","file":"drift.txt","line":1,"kind":"silent_swallow","policy":{"look_for":"empty catch","do_not_report":"logged","fix":"log","noncompliant":"pass","compliant":"log"}}]}
+EOF
+cat >"$DIGEST_FIX/pack/23-sast-signals.json" <<'EOF'
+{"kind":"SastSignals","findings":[{"file":"only.txt","line":12,"pattern_class":"xss","disposition":"report"},{"file":"diverge.txt","line":12,"kind":"silent_swallow","disposition":"report"}]}
+EOF
+cat >"$DIGEST_FIX/pack/24-coverage-ledger.json" <<EOF
+{"kind":"CoverageLedger","source_root":"$DIGEST_FIX/repo","symbols":[
+  {"symbol_id":"drift","name":"old","kind":"function","path":"drift.txt","status":"pending","ranges":[[1,1]],"span_hash":"abc"},
+  {"symbol_id":"only","name":"added","kind":"function","path":"only.txt","status":"pending","ranges":[[1,1]]}
+],"summary":{},"notes":[]}
+EOF
+if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/build-review-digest.py" \
+    --dir "$DIGEST_FIX/pack" --repo "$DIGEST_FIX/repo" --diff-base "$BASE_BRANCH" \
+    && jq -e '
+      .kind=="ReviewDigest"
+      and .counts.commits_behind==1
+      and .counts.commits_ahead==1
+      and .history.three_dot_counts.identical_to_base==1
+      and .history.two_dot_counts.missing_on_head==1
+      and (.report.unique_lines==[12])
+      and ([.report.rows[].line]|index(99)==null)
+      and ([.report.rows[]|select(.file=="diverge.txt" and .line==12)]|length==1)
+      and .dimensions.resilience.suspect_count==2
+      and .dimensions.resilience.counts.silent_swallows==1
+      and ((.history|has("three_dot"))|not)
+    ' "$DIGEST_FIX/pack/26-review-digest.json" >/dev/null \
+    && jq -e '
+      (.three_dot.identical_to_base|index("shared.txt"))
+      and (.three_dot.content_differs|index("diverge.txt"))
+      and (.three_dot.only_on_head|index("only.txt"))
+      and (.two_dot_not_in_pr.missing_on_head|index("drift.txt"))
+    ' "$DIGEST_FIX/pack/26-review-digest-detail.json" >/dev/null \
+    && jq -e '
+      ([.symbols[] | select(.symbol_id=="drift" and .status=="excluded" and .reason=="branch_drift")] | length) == 1
+      and ([.symbols[] | select(.symbol_id=="only" and .status=="pending" and .review_scope=="pr_delta")] | length) == 1
+      and ([.symbols[] | select(.symbol_id=="only") | .rule_plan.applicable[] | select(.=="LOGIC-001")] | length) == 1
+      and ([.symbols[] | select(.symbol_id=="only") | .rule_plan.skips[].rule_id | select(.=="PAY-001")] | length) == 1
+    ' "$DIGEST_FIX/pack/24-coverage-ledger.json" >/dev/null \
+    && jq -e '
+      .kind=="SuspectQueue"
+      and ([.packets[].file] | index("diverge.txt")) != null
+      and ([.packets[].file] | index("drift.txt")) == null
+      and ([.packets[] | select(.file=="diverge.txt") | .slice | contains("1|")] | length) >= 1
+      and (.policies|length) >= 1
+    ' "$DIGEST_FIX/pack/27-suspect-queue.json" >/dev/null; then
+  pass "review digest separates three-dot classes from two-dot drift and dedupes report lines"
+else
+  fail "review digest should split PR files from base drift and skip derive_suspects"
+  jq '{counts,three:.history.three_dot,outside:.history.two_dot_not_in_pr,lines:.report.unique_lines,rows:.report.rows}' "$DIGEST_FIX/pack/26-review-digest.json" >&2 || true
+fi
+rm -rf "$DIGEST_FIX"
 
 # help flags (collect / render) — regression for --full / --primary-lang
 if "$ROOT/scripts/collect-pr-evidence.sh" -h 2>&1 | grep -q -- '--full' \

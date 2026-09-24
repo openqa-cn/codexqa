@@ -36,13 +36,15 @@ this skill. Pre-installing workers is still fine and skips the fetch.
 The agent should:
 
 1. `python3 scripts/discover_skills.py --with-catalog`
-2. Match → if not installed, `python3 scripts/ensure_skill.py <name> --yes`
-3. Read that skill's `SKILL.md` and continue
+2. `python3 scripts/suggest_route.py --text "<request>"` → follow `outcome`
+3. If not installed, `python3 scripts/ensure_skill.py <name> --yes`
+4. Read that skill's `SKILL.md` and continue
 
 ## Smoke check
 
 ```bash
 python3 scripts/discover_skills.py --self-check
+python3 scripts/suggest_route.py --self-check
 python3 scripts/discover_skills.py --with-catalog --names-only
 python3 scripts/ensure_skill.py codexqa-code-reviewer --dry-run
 ```

@@ -101,7 +101,7 @@ Layer / Over-engineering / Timing. Each concern subsection needs `risk` or risk-
 
 - **Hard gate (always, even when section omitted from HTML):** non-empty
   `n_plus_one_risks` / `hot_path_risks` / `unbounded_allocation` → each hit
-  must appear as a finding or explicit deferred residual with `path:line`.
+  must appear as a visible finding with `path:line` (family F2 in `references/rule-construction.md`; do not defer the row to `residual_risks`).
 - **风险说明** (`risk`) + N+1 / hot path / unbounded allocation
 - Evidence: `21-performance-signals.json`
 

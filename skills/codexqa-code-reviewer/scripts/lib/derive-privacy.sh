@@ -149,4 +149,7 @@ jq -n \
     }
   ' >"$OUT"
 
+if [[ -f "$OUT" ]]; then
+  "$SCRIPT_DIR/../acr-python" "$SCRIPT_DIR/derive_triage.py" "$OUT" "${REPO:-}" || echo "warn: derive triage failed for $OUT" >&2
+fi
 echo "Privacy signals written: $OUT"

@@ -334,6 +334,9 @@ FILES=(
   references/review-dimensions.md
   references/dimension-registry.md
   references/dimensions/design-fit.md
+  references/dimensions/correctness.md
+  references/dimensions/security.md
+  references/dimensions/concurrency.md
   references/dimensions/complexity.md
   references/dimensions/dependencies.md
   references/dimensions/privacy.md
@@ -366,6 +369,8 @@ FILES=(
   scripts/lib/derive-contract.sh
   scripts/lib/derive-maintainability.sh
   scripts/lib/derive-performance.sh
+  scripts/lib/derive-sast.sh
+  scripts/lib/install-sast-tools.sh
   scripts/lib/merge-llm-findings.py
   examples/pr-review-walkthrough.md
 )

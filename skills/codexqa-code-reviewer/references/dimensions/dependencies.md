@@ -35,7 +35,7 @@ Do **not** re-litigate injection/XSS here. Supply-chain package risk stays `depe
 | Signal | Attention | Elevated |
 |---|---|---|
 | `-SNAPSHOT` **substring** (not suffix-only) / `latest` / exact version token `*` (quoted `"*"` / `'*'` — **not** `contains("*")` on ranges like `1.0.*`) / unpinned `git+https?://` **or** bare `https?://….git`; npm scan **all** of `dependencies`/`devDependencies`/`peerDependencies`/`optionalDependencies` (parse regex must accept peer, not only a scopes constant). **Also** scan changed **source** files for SNAPSHOT/latest/git+ string literals (`kind: source_string_floating`) — not manifests-only | P2 | Release/prod packaging path (any path **segment** such as `…/release/…`, not only prefix/suffix) → P1 |
-| Manifest changed, companion lock **absent from change set** (disk presence does **not** waive — still drift); `pyproject.toml` companions include **both** `poetry.lock` and `uv.lock` | — | P1 |
+| `import org.apache.commons.lang.` (2.x, not `lang3`), Python `imp` / `optparse`, Go `io/ioutil`, or `require("request")` in a changed source file. A pom is not required for the hit | P2 | — |
 | Direct **add** deps **≥ 8** (inclusive) or lock new lines **≥ 200** (inclusive) | P2 | Entry **or** pay surfaces → may raise P1 (OR, not AND) |
 | **npm `package.json` only:** license empty / `UNLICENSED` / `NONE` / values **starting with** `SEE LICENSE IN` (not whole-string equals only); recognize `license` **and** `licenses`. Do **not** apply this field check to pom/gradle/go/etc. | P2 | — |
 | Local audit JSON with high/critical | — | **P1** (not P0); no invented advisory/CVE/NVD URLs |
@@ -98,4 +98,5 @@ Missed threshold/polarity bugs here are correctness findings on the checker, eve
 
 - Blocked pack / missing CodexQA engine.
 - Empty change-groups (PR) → blocked before dimensions.
-- No dependency-manifest hits → explicit None (not a failure).
+- No dependency-manifest hits and empty `eol_imports` → explicit None (not a failure).
+- Non-empty `eol_imports` is a dependency finding even when `manifest_hits` is empty.

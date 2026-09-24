@@ -19,10 +19,9 @@
 description 含糊会导致误路由或被迫澄清。作者应在 frontmatter `description` 写
 清触发语与「不是某某」。
 
-## 路由由模型判断
+## 易混请求由脚本裁决，其余停下问
 
-脚本负责列出与安装候选。近义请求的取舍由宿主模型依据 description 与
-[routing-rules.md](references/routing-rules.md) 完成。
+`suggest_route.py` 在任务形态清楚时选择当前 pack 里的 skill（代码评审与缺陷扫描、影响面与 wiki、需求与用例与造数、堆栈与扫描）。`ambiguous`、`explicit_conflict`、`none` 仍停下来问用户。共用这些动词的新 skill，在补上策略分支和回归用例之前不会被抢走。
 
 ## 不代为满足目标 skill 的前置条件
 
@@ -38,9 +37,9 @@ description 含糊会导致误路由或被迫澄清。作者应在 frontmatter `
 ensure 之后优先直接读返回的 `skillMd` 路径。宿主可能要到新会话才更新 skill
 选择器。
 
-## 无公开宿主 agent 成绩
+## 回归用例，不是在线 agent 成绩
 
-`--self-check` 覆盖内置目录存在性。歧义请求上的路由准确率没有公开 benchmark。
+`suggest_route.py --self-check` 锁住易混表（代码评审 → `codexqa-code-reviewer`，扫描用语 → `codexqa-defect-analyzer`，以及 pack 里其他边界）。它不给「无视 JSON 的宿主模型」打分。
 
 ## 工作流边界
 

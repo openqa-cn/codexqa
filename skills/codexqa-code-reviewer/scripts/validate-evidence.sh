@@ -215,6 +215,9 @@ case "$MODE" in
       WARNINGS+=("14-resilience-signals.json missing — Resilience thin; recollect or run scripts/lib/derive-resilience.sh")
     elif ! jq -e '.kind == "ResilienceSignals"' "$DIR/14-resilience-signals.json" >/dev/null 2>&1; then
       WARNINGS+=("14-resilience-signals.json present but kind != ResilienceSignals — regenerate via derive-resilience.sh")
+    elif ! jq -e 'has("charset_gaps") and has("null_deref_gaps") and has("authz_audit_gaps")' \
+      "$DIR/14-resilience-signals.json" >/dev/null 2>&1; then
+      WARNINGS+=("14-resilience-signals.json is a legacy pack without charset_gaps/null_deref_gaps/authz_audit_gaps — re-run derive-resilience.sh before treating those shapes as absent")
     fi
     if [[ ! -f "$DIR/15-rollout-signals.json" ]]; then
       WARNINGS+=("15-rollout-signals.json missing — Rollout thin; recollect or run scripts/lib/derive-rollout.sh")
@@ -236,6 +239,8 @@ case "$MODE" in
       WARNINGS+=("18-maintainability-signals.json missing — Maintainability thin; recollect or run scripts/lib/derive-maintainability.sh")
     elif ! jq -e '.kind == "MaintainabilitySignals"' "$DIR/18-maintainability-signals.json" >/dev/null 2>&1; then
       WARNINGS+=("18-maintainability-signals.json present but kind != MaintainabilitySignals — regenerate via derive-maintainability.sh")
+    elif ! jq -e 'has("unused_accumulators")' "$DIR/18-maintainability-signals.json" >/dev/null 2>&1; then
+      WARNINGS+=("18-maintainability-signals.json is a legacy pack without unused_accumulators — re-run derive-maintainability.sh before treating that shape as absent")
     fi
     if [[ ! -f "$DIR/20-risk-tier.json" ]]; then
       WARNINGS+=("20-risk-tier.json missing — Risk tier thin; recollect or run scripts/lib/derive-risk-tier.sh")
@@ -246,6 +251,20 @@ case "$MODE" in
       WARNINGS+=("21-performance-signals.json missing — Performance thin; recollect or run scripts/lib/derive-performance.sh")
     elif ! jq -e '.kind == "PerformanceSignals"' "$DIR/21-performance-signals.json" >/dev/null 2>&1; then
       WARNINGS+=("21-performance-signals.json present but kind != PerformanceSignals — regenerate via derive-performance.sh")
+    elif ! jq -e 'has("unpooled_connections")' "$DIR/21-performance-signals.json" >/dev/null 2>&1; then
+      WARNINGS+=("21-performance-signals.json is a legacy pack without unpooled_connections — re-run derive-performance.sh before treating that shape as absent")
+    fi
+    if [[ ! -f "$DIR/23-sast-signals.json" ]]; then
+      WARNINGS+=("23-sast-signals.json missing — SAST thin; recollect or run scripts/lib/derive-sast.sh")
+    elif ! jq -e '.kind == "SastSignals"' "$DIR/23-sast-signals.json" >/dev/null 2>&1; then
+      WARNINGS+=("23-sast-signals.json present but kind != SastSignals — regenerate via derive-sast.sh")
+    elif ! jq -e '(.findings // []) as $f | ($f | length) == 0 or any($f[]; has("disposition"))' "$DIR/23-sast-signals.json" >/dev/null 2>&1; then
+      WARNINGS+=("23-sast-signals.json is a legacy pack without per-hit disposition — re-run derive-sast.sh before treating triage as present")
+    fi
+    if [[ ! -f "$DIR/26-review-digest.json" ]]; then
+      WARNINGS+=("26-review-digest.json missing — PR file split thin; recollect or run scripts/lib/build-review-digest.py")
+    elif ! jq -e '.kind == "ReviewDigest" and ((.history.three_dot | type) == "object" or (.history.three_dot_counts | type) == "object") and (.report.unique_lines | type) == "array"' "$DIR/26-review-digest.json" >/dev/null 2>&1; then
+      WARNINGS+=("26-review-digest.json present but is not a ReviewDigest — regenerate via build-review-digest.py")
     fi
     ;;
   full)
@@ -290,6 +309,9 @@ case "$MODE" in
       WARNINGS+=("14-resilience-signals.json missing — Resilience thin; recollect or run scripts/lib/derive-resilience.sh")
     elif ! jq -e '.kind == "ResilienceSignals"' "$DIR/14-resilience-signals.json" >/dev/null 2>&1; then
       WARNINGS+=("14-resilience-signals.json present but kind != ResilienceSignals — regenerate via derive-resilience.sh")
+    elif ! jq -e 'has("charset_gaps") and has("null_deref_gaps") and has("authz_audit_gaps")' \
+      "$DIR/14-resilience-signals.json" >/dev/null 2>&1; then
+      WARNINGS+=("14-resilience-signals.json is a legacy pack without charset_gaps/null_deref_gaps/authz_audit_gaps — re-run derive-resilience.sh before treating those shapes as absent")
     fi
     if [[ ! -f "$DIR/15-rollout-signals.json" ]]; then
       WARNINGS+=("15-rollout-signals.json missing — Rollout thin; recollect or run scripts/lib/derive-rollout.sh")
@@ -311,6 +333,8 @@ case "$MODE" in
       WARNINGS+=("18-maintainability-signals.json missing — Maintainability thin; recollect or run scripts/lib/derive-maintainability.sh")
     elif ! jq -e '.kind == "MaintainabilitySignals"' "$DIR/18-maintainability-signals.json" >/dev/null 2>&1; then
       WARNINGS+=("18-maintainability-signals.json present but kind != MaintainabilitySignals — regenerate via derive-maintainability.sh")
+    elif ! jq -e 'has("unused_accumulators")' "$DIR/18-maintainability-signals.json" >/dev/null 2>&1; then
+      WARNINGS+=("18-maintainability-signals.json is a legacy pack without unused_accumulators — re-run derive-maintainability.sh before treating that shape as absent")
     fi
     if [[ ! -f "$DIR/20-risk-tier.json" ]]; then
       WARNINGS+=("20-risk-tier.json missing — Risk tier thin; recollect or run scripts/lib/derive-risk-tier.sh")
@@ -321,6 +345,15 @@ case "$MODE" in
       WARNINGS+=("21-performance-signals.json missing — Performance thin; recollect or run scripts/lib/derive-performance.sh")
     elif ! jq -e '.kind == "PerformanceSignals"' "$DIR/21-performance-signals.json" >/dev/null 2>&1; then
       WARNINGS+=("21-performance-signals.json present but kind != PerformanceSignals — regenerate via derive-performance.sh")
+    elif ! jq -e 'has("unpooled_connections")' "$DIR/21-performance-signals.json" >/dev/null 2>&1; then
+      WARNINGS+=("21-performance-signals.json is a legacy pack without unpooled_connections — re-run derive-performance.sh before treating that shape as absent")
+    fi
+    if [[ ! -f "$DIR/23-sast-signals.json" ]]; then
+      WARNINGS+=("23-sast-signals.json missing — SAST thin; recollect or run scripts/lib/derive-sast.sh")
+    elif ! jq -e '.kind == "SastSignals"' "$DIR/23-sast-signals.json" >/dev/null 2>&1; then
+      WARNINGS+=("23-sast-signals.json present but kind != SastSignals — regenerate via derive-sast.sh")
+    elif ! jq -e '(.findings // []) as $f | ($f | length) == 0 or any($f[]; has("disposition"))' "$DIR/23-sast-signals.json" >/dev/null 2>&1; then
+      WARNINGS+=("23-sast-signals.json is a legacy pack without per-hit disposition — re-run derive-sast.sh before treating triage as present")
     fi
     if [[ ! -d "$DIR/impact" ]] || [[ -z "$(find "$DIR/impact" -name 'edges-in.json' 2>/dev/null | head -n 1)" ]]; then
       WARNINGS+=("impact/*/edges-in.json missing — full-repo blast-radius thin; recollect with IMPACT_TOP_N>0")
@@ -345,6 +378,17 @@ case "$MODE" in
     # adhoc intentionally has no diff_base / may have synthetic change-groups
     if [[ ! -f "$DIR/14-resilience-signals.json" ]]; then
       WARNINGS+=("14-resilience-signals.json missing — Resilience thin; run derive-resilience.sh")
+    elif ! jq -e 'has("charset_gaps") and has("null_deref_gaps") and has("authz_audit_gaps")' \
+      "$DIR/14-resilience-signals.json" >/dev/null 2>&1; then
+      WARNINGS+=("14-resilience-signals.json is a legacy pack without charset_gaps/null_deref_gaps/authz_audit_gaps — re-run derive-resilience.sh before treating those shapes as absent")
+    fi
+    if [[ -f "$DIR/18-maintainability-signals.json" ]] \
+      && ! jq -e 'has("unused_accumulators")' "$DIR/18-maintainability-signals.json" >/dev/null 2>&1; then
+      WARNINGS+=("18-maintainability-signals.json is a legacy pack without unused_accumulators — re-run derive-maintainability.sh before treating that shape as absent")
+    fi
+    if [[ -f "$DIR/21-performance-signals.json" ]] \
+      && ! jq -e 'has("unpooled_connections")' "$DIR/21-performance-signals.json" >/dev/null 2>&1; then
+      WARNINGS+=("21-performance-signals.json is a legacy pack without unpooled_connections — re-run derive-performance.sh before treating that shape as absent")
     fi
     if [[ ! -f "$DIR/19-annotation-edges.json" ]]; then
       WARNINGS+=("19-annotation-edges.json missing — annotation edges thin")
@@ -426,12 +470,18 @@ if [[ -f "$DIR/review-conclusion.json" ]]; then
     && jq -e '.kind == "ResilienceSignals"' "$DIR/14-resilience-signals.json" >/dev/null 2>&1; then
     # Hard gate: non-empty actionable resilience hits must not vanish into HTML None
     HIT_N="$(jq '
-      ((.silent_swallows // [])|length)
-      + ((.timeout_gaps // [])|length)
-      + ((.retry_risks // [])|length)
-      + ((.partial_failure_gaps // [])|length)
-      + ((.idempotency_gaps // [])|length)
+      [ .silent_swallows[]?, .timeout_gaps[]?, .retry_risks[]?, .partial_failure_gaps[]?, .idempotency_gaps[]? ]
+      | map(select(.disposition == "report"))
+      | length
     ' "$DIR/14-resilience-signals.json" 2>/dev/null || echo 0)"
+    UNSTAMPED="$(jq '
+      [ .silent_swallows[]?, .timeout_gaps[]?, .retry_risks[]?, .partial_failure_gaps[]?, .idempotency_gaps[]? ]
+      | map(select(has("disposition") | not))
+      | length
+    ' "$DIR/14-resilience-signals.json" 2>/dev/null || echo 0)"
+    if [[ "${UNSTAMPED:-0}" =~ ^[0-9]+$ ]] && [[ "$UNSTAMPED" -gt 0 ]]; then
+      WARNINGS+=("14-resilience-signals.json has $UNSTAMPED unstamped rows — re-run scripts/lib/derive_triage.py before treating them as report or drop")
+    fi
     if [[ "${HIT_N:-0}" =~ ^[0-9]+$ ]] && [[ "$HIT_N" -gt 0 ]]; then
       RES_NONE="$(jq -r '
         (.resilience.verdict // .resilience.summary // .dimensions.resilience // "")
@@ -448,6 +498,12 @@ if [[ -f "$DIR/review-conclusion.json" ]]; then
       fi
     fi
   fi
+fi
+
+if [[ ! -f "$DIR/24-coverage-ledger.json" ]]; then
+  WARNINGS+=("24-coverage-ledger.json missing — symbol coverage ledger thin; recollect or run scripts/lib/build-coverage-ledger.py")
+elif ! jq -e '.kind == "CoverageLedger"' "$DIR/24-coverage-ledger.json" >/dev/null 2>&1; then
+  WARNINGS+=("24-coverage-ledger.json present but kind != CoverageLedger — regenerate via build-coverage-ledger.py")
 fi
 
 echo "validate-evidence: mode=$MODE dir=$DIR"

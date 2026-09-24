@@ -31,11 +31,14 @@ Security or Rollout findings.
 3. **Dependencies / supply chain** — necessity, lock/SNAPSHOT reproducibility, license clues, local-audit posture
    ([dimensions/dependencies.md](dimensions/dependencies.md); signals: `12-dependency-signals.json`)
 4. **Correctness / state** — logic bugs, edge cases, wrong state from `symbol-diff` + callers
+   ([dimensions/correctness.md](dimensions/correctness.md); rules `NULL-001`, `RES-001`, `LOGIC-001`, `BIZ-001`–`005`, `TXN-001`, `PAY-001`–`007`)
    (failure-path *policy* — timeout/retry/swallow — lives in Resilience, not here)
 5. **Error handling / resilience** — timeout, retry, degradation, circuit break, partial failure,
    idempotency & compensation, silent swallow
    ([dimensions/resilience.md](dimensions/resilience.md); signals: `14-resilience-signals.json`)
-6. **Security / sensitive** — auth, token, pay, secret, injection; escalate when graph shows entry reachability
+6. **Security / sensitive** — auth, token, tenant, residual authz; escalate when graph shows entry reachability
+   ([dimensions/security.md](dimensions/security.md); rules `SEC-001`, `AUTH-001`, `AUTH-002`, `TEN-*`, `HYG-001`)
+   Pattern-class hits (SSRF, path traversal, pickle, weak hash, float money, …) come from `23-sast-signals.json` only.
 7. **Privacy / compliance** — PII minimization, log redaction, retention/erase/export, consent & cross-border clues
    ([dimensions/privacy.md](dimensions/privacy.md); signals: `13-privacy-signals.json`)
 8. **API / contract** — signature/behavior drift vs external callers; breaking hints; XSS/HTML sinks
@@ -43,9 +46,11 @@ Security or Rollout findings.
 9. **Change / rollout** — migration, dual-write, feature flags, compat window, breaking announce, rollback
    ([dimensions/rollout.md](dimensions/rollout.md); signals: `15-rollout-signals.json`)
 10. **Concurrency / consistency** — races, locks, visibility when language or domain implies it
-   (retry/MQ idempotency & compensation → Resilience)
+   ([dimensions/concurrency.md](dimensions/concurrency.md); rules `CONC-001`–`003`)
+   (retry/MQ idempotency & compensation → Resilience; payment TOCTOU → Correctness `PAY-001`)
 11. **Regression scope** — concrete caller/module list from impact packs
-12. **Test gaps** — production changed symbols with `tested_count==0` and empty tests-reach
+12. **Test gaps** — production changed symbols with `tested_count==0` and empty tests-reach.
+    Also apply family F5 in [rule-construction.md](rule-construction.md): a test whose claim does not match the behavior it exercises, whose assertion requires the unsafe outcome, whose inputs miss null, zero, negative, or scale variants, whose pass condition is a numeric literal, which never runs the other value of a flag, which cannot reach a branch, which starts threads and does not join them, or which reads private production state. `tested_count==0` does not replace that reading. A call written in a test is not a coverage edge. Nested tests inside the production type still count. One false claim does not close the next. `test_oracle_inventory` is a hard gate: write `test_oracle_coverage` with one `hit` or `skip` per row. `test_oracle_hits` and `prod_test_coupling` rows with `disposition: report` are findings.
 13. **Observability** — logs/metrics/traces on new failure paths
    ([dimensions/observability.md](dimensions/observability.md); signals: `16-observability-signals.json`; silent swallow → Resilience)
 14. **Maintainability** — TODO/FIXME, magic numbers, long files (P2)
@@ -59,6 +64,11 @@ Security or Rollout findings.
 
 Finding `category` values include: `design | complexity | dependencies | correctness | resilience | security | privacy | contract | rollout | concurrency | regression | test_gaps | observability | maintainability | performance | risk_tier | llm_judgment | …`.
 Novel LLM findings should prefer a semantic category and set `source: "llm_judgment"`.
+When a finding matches a synced detection rule, also set optional `rule_id`
+(`SEC-001`, `CONC-001`, …). The rule index is
+[dimension-registry.md](dimension-registry.md). Defect types
+(security, null_safety, resource_leak, concurrency, transaction, logic,
+architecture, hygiene) stay on the owner dimension; they do not add pipeline stages.
 
 ## Primary language (required)
 

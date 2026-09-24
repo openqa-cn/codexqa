@@ -101,11 +101,15 @@ jq -n \
       n_plus_one_risks: ($b.n_plus_one_risks // []),
       hot_path_risks: ($b.hot_path_risks // []),
       unbounded_allocation: ($b.unbounded_allocation // []),
+      weak_perf_tests: ($b.weak_perf_tests // []),
+      unpooled_connections: ($b.unpooled_connections // []),
       residual_performance: ($b.residual_performance // []),
       summary: {
         n_plus_one_count: (($b.n_plus_one_risks // [])|length),
         hot_path_count: (($b.hot_path_risks // [])|length),
         unbounded_allocation_count: (($b.unbounded_allocation // [])|length),
+        weak_perf_test_count: (($b.weak_perf_tests // [])|length),
+        unpooled_connection_count: (($b.unpooled_connections // [])|length),
         residual_count: (($b.residual_performance // [])|length),
         files_considered: ($b.files_considered // 0),
         files_scanned: ($b.files_scanned // 0),
@@ -145,6 +149,12 @@ jq -n \
               else []
               end
             )
+            + (
+              if (($b.unpooled_connections // [])|length) > 0 then
+                ["Hard gate: each unpooled_connections row is its own finding even when signals_thin stays true. Do not fold it into n_plus_one."]
+              else []
+              end
+            )
             + ["Never invent profiler/SLO/p99 conclusions; residual when thin"]
           )
         else ["performance body metrics skipped (${ACR_PY:-python3} missing)"]
@@ -153,4 +163,7 @@ jq -n \
     }
   ' >"$OUT"
 
+if [[ -f "$OUT" ]]; then
+  "$SCRIPT_DIR/../acr-python" "$SCRIPT_DIR/derive_triage.py" "$OUT" "${REPO:-}" || echo "warn: derive triage failed for $OUT" >&2
+fi
 echo "Performance signals written: $OUT"

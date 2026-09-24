@@ -21,6 +21,18 @@ Emit Design fit coverage as **four subsections** (findings and/or explicit `None
 3. **Over-engineering** — Heavy `change_status=add` with empty/near-empty `edges-in`, and/or nested types confirmed unused via **empty `edges-in`** (`dead_nested_symbols`; candidates alone are **not** YAGNI — `from_count==0` is NOT fan-in), large abstractions for speculative future needs.
 4. **Timing** — Is now a good time given `intent`/`scope` and change surface? Do **not** invent product strategy — put uncertainty in `design_fit.timing` / residual.
 
+## Detection rules
+
+Judge `ARCH-001` only in [prompts/business-logic-pass.md](../../prompts/business-logic-pass.md) using [business-rule-records.md](../business-rule-records.md). A line already in `import_cross_layer` is the derive row; do not file it again. An auth skip is `SEC-001`, not a second design finding.
+
+| rule_id | type | sev | Look for | Do not report |
+|---|---|---|---|---|
+| `ARCH-001` | architecture | P2 | New cross-layer imports (UI→DB, handler→raw SQL that skips the repository); circular dependencies. | Intentional adapter/facade with a documented boundary. |
+
+Auth skip on OPTIONS, a debug flag, or an internal header is the authz half of this rule: file it as `SEC-001` on [security.md](security.md) (`category: security`), not as a second design finding. Health/readiness that is explicitly public, and CORS preflight that still authenticates the real method, are not findings. Set `rule_id` when the layering half matches. `import_cross_layer` is the signal; still confirm the import is a real boundary break.
+
+`18-maintainability-signals.json` → `prod_test_coupling` is `DES-001`. A production type that imports a test framework or nests a test is a design finding even when no build file lists the dependency. One row per file. A path under a test directory is not this row.
+
 ## Evidence map
 
 | Signal | Pack source |

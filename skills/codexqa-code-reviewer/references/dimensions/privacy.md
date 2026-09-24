@@ -18,9 +18,9 @@ only — not a legal opinion.
 
 1. **Minimization** — Are new APIs/DTOs/telemetry collecting more PII than needed?
 2. **Logging** — Do logs/metrics print phone/email/id/precise location without redaction?
-3. **Retention / erase / export** — When PII is persisted, are retention/delete/DSAR/export clues visible? Else residual (DPO / privacy scan).
+3. **Retention / erase / export** — Ask once per sink (log, mail, file, database). A delete on one sink does not close the others. On a log or receipt line, list every identifier, amount, and name in `fields`; the first match does not close the rest.
 4. **Consent / cross-border** — Marketing/analytics SDK or third-party/overseas transfer without consent/purpose clues?
-5. **Split vs Security** — password/token/secret/api_key stay `security`, not here.
+5. **Split vs Security** — password, token, and API-key literals stay on Security (`hardcoded_secret` or `HYG-001`). A personal identifier in a human-visible sink is family F1: file Privacy for the lifecycle and still file `HYG-001` for the sink. See the alias table in [rule-construction.md](../rule-construction.md). Do not drop either card because the other already exists.
 
 ## Split vs Security
 

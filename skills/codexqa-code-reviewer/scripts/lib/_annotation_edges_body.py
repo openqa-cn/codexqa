@@ -14,6 +14,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _identical_copies import expand_mirrored_hits, narrow_scan  # noqa: E402
+
 MAX_FILES = 40
 MAX_LINES = 5000
 ROOT_ENUM_LIMIT = 24
@@ -236,6 +239,7 @@ def main() -> None:
     paths = load_paths(pack_dir, warnings)
     if not paths and repo and os.path.isdir(repo):
         paths = enum_repo(repo)
+    paths, mirrors = narrow_scan(repo, paths, MAX_FILES)
 
     edges = []
     files_scanned = 0
@@ -262,6 +266,7 @@ def main() -> None:
             continue
         seen.add(key)
         uniq.append(e)
+    expand_mirrored_hits(uniq, mirrors)
 
     notes = [
         "Synthetic edges for annotation callbacks / Spring entries — compensate empty edges-in.",

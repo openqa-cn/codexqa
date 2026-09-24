@@ -107,6 +107,7 @@ jq -n \
       snapshot_or_floating: ($b.snapshot_or_floating // []),
       lock_drift: ($b.lock_drift // []),
       license_hints: ($b.license_hints // []),
+      eol_imports: ($b.eol_imports // []),
       bloat: ($b.bloat // {}),
       necessity_flags: ($b.necessity_flags // []),
       local_audit: ($b.local_audit // {present:false}),
@@ -145,6 +146,12 @@ jq -n \
               else []
               end
             )
+            + (
+              if ((($b.eol_imports // [])|length) > 0) then
+                ["eol_imports non-empty — commons-lang 2.x import without a pom is still a dependency finding"]
+              else []
+              end
+            )
             + ["CVE IDs are never invented; use local_audit or out-of-band SCA"]
           )
         else ["dependency body metrics skipped (${ACR_PY:-python3} missing)"]
@@ -153,4 +160,7 @@ jq -n \
     }
   ' >"$OUT"
 
+if [[ -f "$OUT" ]]; then
+  "$SCRIPT_DIR/../acr-python" "$SCRIPT_DIR/derive_triage.py" "$OUT" "${REPO:-}" || echo "warn: derive triage failed for $OUT" >&2
+fi
 echo "Dependency signals written: $OUT"

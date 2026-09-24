@@ -9,6 +9,7 @@
       "assertions": [
         "Output names codexqa-code-reviewer as the chosen skill",
         "Output does not choose codexqa-defect-analyzer as the primary skill",
+        "Output shows suggest_route.py and a clear or explicit winner",
         "Output shows discover_skills.py --with-catalog or bundled catalog usage",
         "Output shows ensure_skill.py was run or the skill was already installed then opened",
         "Output references codexqa-code-reviewer/SKILL.md"
@@ -22,6 +23,7 @@
       "assertions": [
         "Output names codexqa-testcase-generator as the chosen skill",
         "Output does not choose codexqa-requirement-analyzer as the primary skill",
+        "Output shows suggest_route.py and a clear or explicit winner",
         "Output shows catalog/discover --with-catalog evidence",
         "Output shows ensure or installed hand-off to codexqa-testcase-generator/SKILL.md"
       ]
@@ -34,8 +36,56 @@
       "assertions": [
         "Output names codexqa-rootcause-analyzer as the chosen skill",
         "Output does not choose codexqa-defect-analyzer as the primary skill",
+        "Output shows suggest_route.py and a clear or explicit winner",
         "Output shows catalog/discover --with-catalog evidence",
         "Output references codexqa-rootcause-analyzer/SKILL.md or its stop conditions"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "对上面这段 Java 进行代码评审，要审查意见。不要缺陷扫描清单。路由即可：跑 discover 和 suggest_route，宣布选中的 skill。不要 collect。",
+      "expected_output": "suggest_route outcome clear winner codexqa-code-reviewer. Does not select codexqa-defect-analyzer.",
+      "files": [],
+      "assertions": [
+        "Output names codexqa-code-reviewer as the chosen skill",
+        "Output does not choose codexqa-defect-analyzer as the primary skill",
+        "Output shows suggest_route.py",
+        "Output outcome is clear or the winner is codexqa-code-reviewer"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "对这个 diff 做 SAST 缺陷扫描，只要 report_scan，不要代码评审报告。路由即可，宣布选中的 skill，不要跑扫描。",
+      "expected_output": "suggest_route outcome clear winner codexqa-defect-analyzer. Does not select codexqa-code-reviewer.",
+      "files": [],
+      "assertions": [
+        "Output names codexqa-defect-analyzer as the chosen skill",
+        "Output does not choose codexqa-code-reviewer as the primary skill",
+        "Output shows suggest_route.py"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "只查这个改动的影响面和测试缺口，不要审查报告，也不要漏洞扫描。路由并宣布 skill，不要建索引。",
+      "expected_output": "suggest_route outcome clear winner codexqa-code-analyzer.",
+      "files": [],
+      "assertions": [
+        "Output names codexqa-code-analyzer as the chosen skill",
+        "Output does not choose codexqa-code-reviewer as the primary skill",
+        "Output does not choose codexqa-defect-analyzer as the primary skill",
+        "Output shows suggest_route.py"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "评审这份需求文档，出缺口和冲突，不要写用例，也不要审代码。路由并宣布 skill。",
+      "expected_output": "suggest_route outcome clear winner codexqa-requirement-analyzer.",
+      "files": [],
+      "assertions": [
+        "Output names codexqa-requirement-analyzer as the chosen skill",
+        "Output does not choose codexqa-code-reviewer as the primary skill",
+        "Output does not choose codexqa-testcase-generator as the primary skill",
+        "Output shows suggest_route.py"
       ]
     }
   ]

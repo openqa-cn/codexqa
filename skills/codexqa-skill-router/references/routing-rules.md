@@ -11,38 +11,44 @@ Always run:
 python3 <codexqa-skill-router>/scripts/discover_skills.py --with-catalog
 ```
 
-Treat each `description` as the skill's claim of work and its exclusion list.
-Prefer `source: "live"` entries when both live and bundled exist for the same
-name. Bundled-only rows (`installed: false`) are for **matching**; you must
-run `ensure_skill.py` before reading `SKILL.md`.
+Treat each `description` as the skill's claim of work and its exclusion list
+**after** a winner is chosen. Prefer `source: "live"` entries when both live
+and bundled exist for the same name. Bundled-only rows (`installed: false`)
+are for **matching**; you must run `ensure_skill.py` before reading `SKILL.md`.
+Choosing the winner is section 2, not a keyword overlap against descriptions.
 
-## 2. Scoring heuristic (agent judgment)
+## 2. Decide with suggest_route.py
 
-For each catalog skill, score roughly:
+Descriptions overlap on review / PR / diff / 评审 / 影响面 / HTML / 知识图谱.
+Those words are not a score. After discovery, run:
 
-1. **Positive triggers** — phrases in the description match the request.
-2. **Task shape** — input type (PRD vs repo vs stack vs cases vs OpenAPI) and
-   desired artifact (gap register, cases, `report_scan.*`, `REVIEW-REPORT.html`,
-   RCA report, testdata write-back, symbol-graph Q&A).
-3. **Negative boundaries** — if the description says "Not X (that is Y)", and
-   the user wants X, prefer Y.
+```bash
+python3 <codexqa-skill-router>/scripts/suggest_route.py --text "<user message>"
+```
 
-Pick the highest score. If top two are close, ask.
-
-### Near-miss cheat sheet (current pack; still verify via discovery)
+Follow `outcome` from the JSON (`clear`, `explicit`, `explicit_conflict`,
+`ambiguous`, `chain`, `none`). A `clear` or `explicit` `winner` wins over any
+description sentence, including defect-analyzer's "review a diff/MR/PR/commit".
+That sentence means an incremental **scan**, not a code review.
 
 | User says something like… | Prefer | Not |
 |---|---|---|
-| Scan diff/repo/paste for SAST + Agent LLM Detection → `report_scan.*` | `codexqa-defect-analyzer` | `codexqa-code-reviewer`, `codexqa-code-analyzer` |
-| CodexQA evidence pack + Agent LLM judgment → bilingual REVIEW-REPORT.html | `codexqa-code-reviewer` | `codexqa-defect-analyzer` |
-| Index repo, callers, regression scope, test gaps, `--diff-base` | `codexqa-code-analyzer` | full HTML CR / SAST report / architecture wiki |
-| Architecture wiki / module map / `wiki inputs` (no model) | `codexqa-code-wiki` | change impact or SAST report |
-| Stack / log / crash → root cause | `codexqa-rootcause-analyzer` | structure-only or scan report |
-| PRD quality / gap / conflict register | `codexqa-requirement-analyzer` | writing cases |
-| Test plan / cases / Plan·Exec / 提测后增量 | `codexqa-testcase-generator` | live backend data |
-| Construct backend IDs / write back preconditions | `codexqa-testdata-generator` | authoring cases from PRD |
+| 代码评审 / 走查 / 单文件或整仓评审 / code review / PR·MR review / 审查意见 / 语义评审 / 双语审查 / 证据包 / 合入建议 / 这段代码有没有问题 | `codexqa-code-reviewer` | `codexqa-defect-analyzer` |
+| 缺陷检测 / SAST / 漏洞·密钥·依赖·CVE / 安全基线 / 粘贴或上传找漏洞 / `report_scan` / review this diff **for vulnerabilities** | `codexqa-defect-analyzer` | `codexqa-code-reviewer` |
+| 影响面 / 谁在调用 / 入口风险 / 敏感路径 / 测试缺口 / 有没有单测 / 回归哪些 / 相对 main 变了什么 / 建索引 / 错误定位 / 模块归属, and no review report | `codexqa-code-analyzer` | reviewer, wiki, defect scan |
+| Same impact words inside 代码评审 | `codexqa-code-reviewer` | `codexqa-code-analyzer` |
+| 架构 wiki / 模块地图 / 模块划分 / 从哪开始读 / 阅读导览 / 这个模块是干什么 / `wiki inputs` | `codexqa-code-wiki` | impact query or SAST report |
+| Bare 知识图谱 / knowledge graph | ask (wiki vs analyzer) | picking either silently |
+| 堆栈 / 根因 / 崩溃 / 报错原因 / 线上报错 / 日志里的异常 / 调试输出 / 根因报告, including a call chain used as evidence | `codexqa-rootcause-analyzer` | structure-only or scan report |
+| 需求评审 / 需求缺口 / 需求歧义 / 一致性 / 非功能需求 / 能不能测 / requirements review | `codexqa-requirement-analyzer` | code review, case writing |
+| 测试方案 / 测试分析 / 写用例 / 方案和用例 / 按 PRD 出测试 / 提测前改用例 / 提测后补用例 / test plan | `codexqa-testcase-generator` | requirement register, live data, unit-test coding |
+| 造数据 / 用例物料 / 前置账号 / 造一笔业务数据 / 造数脚本 / 回写前置 / OpenAPI account or script | `codexqa-testdata-generator` | authoring cases from a PRD |
+| 格式化、自动改代码风格、给函数写单元测试 | ask / none | forcing a pack skill |
+| Both review report and scan list, no order | ask | starting either |
+| 先评审再扫描, or 先写方案再造数 | `chain` in that order | collapsing to one skill |
 
-This table is a hint only. Bundled + live descriptions win over this table.
+`python3 …/suggest_route.py --self-check` is the regression set for this table.
+If a fixture and this table disagree, fix both in the same change.
 
 ## 3. Ambiguity prompts
 
@@ -73,9 +79,9 @@ the worker.
 
 ## 5. Explicit name and chains
 
-- If the user names a catalog skill, route there even if another skill also
-  fits, unless the named skill's description clearly rejects the task — then
-  warn and offer the better fit.
+- If `suggest_route.py` returns `explicit`, route to that named skill.
+- If it returns `explicit_conflict`, the named skill's boundary rejects the
+  task shape. Warn, offer `alternatives`, and wait. Do not start the named skill.
 - For chains, keep a short plan (skill order + stop between steps). Ensure and
   complete one skill's handoff before opening the next `SKILL.md`.
 
@@ -83,5 +89,10 @@ the worker.
 
 - **New skill in a full checkout:** add `skills/<name>/SKILL.md`, run
   `scripts/refresh_catalog.py`, commit the updated `references/catalog.json`.
+  If it shares a verb with a skill already in `suggest_route.py` (review,
+  scan, 评审, 影响面, wiki, 用例, 根因), add a policy branch and a fixture,
+  then re-run `suggest_route.py --self-check`.
 - **Already installed sibling:** live discovery picks it up with no catalog
   edit (still refresh catalog before release so solo-router installs can match).
+  Until it has a policy branch, `suggest_route.py` leaves it to `none` /
+  `ambiguous` rather than stealing it with a shared word.

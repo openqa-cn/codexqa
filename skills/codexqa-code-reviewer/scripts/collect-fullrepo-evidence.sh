@@ -268,6 +268,11 @@ for id in "${HOTSPOT_IDS[@]+"${HOTSPOT_IDS[@]}"}"; do
 done
 echo "$SELECTED_JSON" >"$OUT_DIR/impact/index.json"
 
+if [[ -f "$SCRIPT_DIR/lib/collect-unit-calls.sh" ]]; then
+  bash "$SCRIPT_DIR/lib/collect-unit-calls.sh" --repo "$REPO_ABS" --dir "$OUT_DIR" \
+    || echo "warn: unit calls failed" >&2
+fi
+
 # Re-rank hotspots by edges_in_count (true-ish fan-in), then from_count as tie-break only
 jq --argjson lim "$HOTSPOT_LIMIT" --slurpfile idx "$OUT_DIR/impact/index.json" '
   ($idx[0] // []) as $ix
@@ -454,12 +459,34 @@ else
   echo "warn: derive-performance.sh missing; Performance signals skipped" >&2
 fi
 
+if [[ -x "$SCRIPT_DIR/lib/derive-sast.sh" ]]; then
+  if ! "$SCRIPT_DIR/lib/derive-sast.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS"; then
+    echo "warn: derive-sast.sh failed; continuing without 23-sast-signals.json" >&2
+  fi
+else
+  echo "warn: derive-sast.sh missing; SAST signals skipped" >&2
+fi
+
 if [[ -x "$SCRIPT_DIR/lib/derive-annotation-edges.sh" ]]; then
   if ! "$SCRIPT_DIR/lib/derive-annotation-edges.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS"; then
     echo "warn: derive-annotation-edges.sh failed; continuing without 19-annotation-edges.json" >&2
   fi
 else
   echo "warn: derive-annotation-edges.sh missing; annotation edges skipped" >&2
+fi
+
+# Coverage ledger: hits annotate symbols and do not dequeue them. No extra CodexQA.
+if [[ -f "$SCRIPT_DIR/lib/build-coverage-ledger.py" ]]; then
+  if [[ -x "$SCRIPT_DIR/acr-python" ]]; then
+    LEDGER_PY=("$SCRIPT_DIR/acr-python")
+  else
+    LEDGER_PY=(python3)
+  fi
+  if ! "${LEDGER_PY[@]}" "$SCRIPT_DIR/lib/build-coverage-ledger.py" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS"; then
+    echo "warn: build-coverage-ledger.py failed; continuing without 24-coverage-ledger.json" >&2
+  fi
+else
+  echo "warn: build-coverage-ledger.py missing; coverage ledger skipped" >&2
 fi
 
 INDEX_QUALITY="$(codexqa_index_quality_from_stats "$OUT_DIR/01-stats.json")"
@@ -525,6 +552,7 @@ jq -n \
       "19-annotation-edges.json",
       "20-risk-tier.json",
       "21-performance-signals.json",
+      "24-coverage-ledger.json",
       "commands.log",
       "imports/",
       "entries/",
@@ -541,13 +569,13 @@ jq -n \
       "Complexity: 11-complexity-signals.json; see references/dimensions/complexity.md.",
       "Dependencies: 12-dependency-signals.json; see references/dimensions/dependencies.md.",
       "Privacy: 13-privacy-signals.json; see references/dimensions/privacy.md.",
-      "Resilience: 14-resilience-signals.json; see references/dimensions/resilience.md.",
+      "Resilience: 14-resilience-signals.json (includes exception_unwraps hard gate; resource_leaks is RES-001, including close_not_in_finally; charset_gaps, null_deref_gaps, authz_audit_gaps are per-row hard gates); see references/dimensions/resilience.md.",
       "Change/rollout: 15-rollout-signals.json; see references/dimensions/rollout.md.",
       "Risk tier: 20-risk-tier.json (T0–T3); see references/dimensions/risk-tier.md.",
       "Observability: 16-observability-signals.json; see references/dimensions/observability.md.",
       "Contract: 17-contract-signals.json; see references/dimensions/contract.md.",
       "Maintainability: 18-maintainability-signals.json; see references/dimensions/maintainability.md.",
-      "Performance: 21-performance-signals.json; see references/dimensions/performance.md.",
+      "Performance: 21-performance-signals.json; weak_perf_tests is a test_gaps hard gate. unpooled_connections is a hard gate and does not change signals_thin. env_config_gaps and uncontrolled_log_sinks are hard gates on rollout and observability. magic_numbers and unused_accumulators are maintainability hard gates.",
       "Annotation callbacks: 19-annotation-edges.json when present (Spring/Resilience4j synthetic callers).",
       "Lower confidence when stats show high stubs/collisions.",
       "Entry concentration: use 07-tags.json tagged samples when present."

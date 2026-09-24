@@ -14,14 +14,15 @@
 
 1. TODO/FIXME/HACK density in changed sources?
 2. Magic numbers without named constants (non-port/timeout/status)?
-3. Very long files (≥800 LOC in scanned window)?
+3. Very long files (≥800 LOC in scanned window), or a file that mixes several types or several roles (`mixed_responsibility`) even when it is under that line count?
 
 ## Soft thresholds
 
 | Signal | Default |
 |---|---|
 | Many TODO/FIXME in change set | P2 |
-| Magic number clusters | P2 |
+| Magic number clusters | P2 hard gate: one finding cites every `magic_numbers` `path:line` |
+| `unused_accumulators` (collection only add/put, never read) | P2 hard gate: one finding per row |
 | Long file ≥800 LOC | P2 |
 
 Keep short; do not re-litigate Complexity nesting/YAGNI here — xref `11-complexity-signals.json`.

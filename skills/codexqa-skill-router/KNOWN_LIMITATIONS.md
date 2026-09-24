@@ -21,10 +21,13 @@ full checkout) before release.
 Vague skill descriptions cause mis-routes or forced clarification. Authors
 should put triggers and "Not …" peers in frontmatter `description`.
 
-## Routing is model-judged
+## Near-misses are scripted; leftovers are asked
 
-Scripts list and install candidates. Choosing among near-misses is done by the
-host model using descriptions and [routing-rules.md](references/routing-rules.md).
+`suggest_route.py` chooses among the current pack when the task shape is
+clear (code review vs defect scan, impact query vs wiki, requirements vs
+cases vs test data, stack vs scan). `ambiguous`, `explicit_conflict`, and
+`none` still stop for the user. A brand-new skill that shares those verbs
+stays unmatched until it has a policy branch and a fixture.
 
 ## Does not satisfy target skill prerequisites
 
@@ -41,10 +44,11 @@ router misuse — not covered by target-skill gates.
 After ensure, prefer reading the returned `skillMd` path directly. The agent
 host may not re-index its skill picker until a new session.
 
-## No published host-agent score
+## Fixture coverage, not a live-agent score
 
-Self-check covers catalog presence. There is no public benchmark for routing
-accuracy across ambiguous prompts.
+`suggest_route.py --self-check` locks the near-miss table (代码评审 →
+`codexqa-code-reviewer`, scan language → `codexqa-defect-analyzer`, and the
+other pack boundaries). It does not score a host model that ignores the JSON.
 
 ## Workflow boundary
 

@@ -109,6 +109,8 @@ jq -n \
       breaking_announcement_gaps: ($b.breaking_announcement_gaps // []),
       rollback_gaps: ($b.rollback_gaps // []),
       residual_rollout: ($b.residual_rollout // []),
+      env_config_gaps: ($b.env_config_gaps // []),
+      opaque_status_candidates: ($b.opaque_status_candidates // []),
       surfaces: ($b.surfaces // {}),
       summary: {
         schema_migration_count: (($b.schema_migrations // [])|length),
@@ -119,6 +121,8 @@ jq -n \
         breaking_announcement_gap_count: (($b.breaking_announcement_gaps // [])|length),
         rollback_gap_count: (($b.rollback_gaps // [])|length),
         residual_rollout_count: (($b.residual_rollout // [])|length),
+        env_config_gap_count: (($b.env_config_gaps // [])|length),
+        opaque_status_candidate_count: (($b.opaque_status_candidates // [])|length),
         files_considered: ($b.files_considered // 0),
         files_scanned: ($b.files_scanned // 0),
         body_ok: (if ($b|has("body_ok")) then $b.body_ok else false end),
@@ -166,4 +170,7 @@ jq -n \
     }
   ' >"$OUT"
 
+if [[ -f "$OUT" ]]; then
+  "$SCRIPT_DIR/../acr-python" "$SCRIPT_DIR/derive_triage.py" "$OUT" "${REPO:-}" || echo "warn: derive triage failed for $OUT" >&2
+fi
 echo "Rollout signals written: $OUT"
