@@ -46,6 +46,11 @@
       "name": "codexqa-code-wiki",
       "path": "skills/codexqa-code-wiki",
       "status": "available"
+    },
+    {
+      "name": "codexqa-jev-browser",
+      "path": "skills/codexqa-jev-browser",
+      "status": "available"
     }
   ]
 }

@@ -6,12 +6,12 @@
 
 **Shipping fast is table stakes. CodexQA runs fully local, installs ready to use, and tells you if the code is good.**
 
-After AI coding, the hard part is **verifying quality before you merge**: bugs in what just landed, blast radius on old features, complete test cases, the change knowledge graph (which APIs, methods, and call chains moved), whether architecture broke, security risk, requirement fit, and test data you can actually run. **CodexQA** is built for that **test-and-verify stage** — 8 Agent Skills (+ a router), 360° coverage, so you not only write fast, you **see fast whether it is good**, and the development loop actually closes.
+After AI coding, the hard part is **verifying quality before you merge**: bugs in what just landed, blast radius on old features, complete test cases, the change knowledge graph (which APIs, methods, and call chains moved), whether architecture broke, security risk, requirement fit, test data you can actually run, and whether a browser flow shows the evidence it claims. **CodexQA** is built for that **test-and-verify stage** — 9 Agent Skills (+ a router), 360° coverage, so you not only write fast, you **see fast whether it is good**, and the development loop actually closes.
 
 Cursor · Claude Code · Codex · OpenClaw. Fully local. Install and use — no account, no gateway, no QA-platform move.
 
 <p>
-  <strong>8</strong> skills &nbsp;·&nbsp;
+  <strong>9</strong> skills &nbsp;·&nbsp;
   <strong>0</strong> accounts &nbsp;·&nbsp;
   <strong>7/7</strong> blind recall &nbsp;·&nbsp;
   <strong>0</strong> decoy FPs &nbsp;·&nbsp;
@@ -102,6 +102,14 @@ GitHub is the skill source; product site: [openqa.cn](https://openqa.cn/?utm_sou
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testdata-writeback.html"><img src="docs/assets/previews/testdata-writeback.png" alt="codexqa-testdata-generator write-back of backend IDs"></a></p>
 </td>
 </tr>
+<tr>
+<td width="50%" valign="top">
+<p><strong><a href="skills/codexqa-jev-browser/README.md">codexqa-jev-browser</a></strong> · <a href="https://github.com/openqa-cn/jev-browser">Jev Browser repo</a></p>
+<p><strong>Verifies</strong> — whether a browser flow reaches the visible evidence named in the goal. A model's DONE is not a pass.</p>
+<p><strong>Does</strong> — drives Playwright Chromium from a page index (role, name, allowed operations). Replays YAML, Markdown, or API cases, or generates a case from a goal. Each run writes <code>reports/&lt;run-id&gt;/report.html</code> with the marked screenshot and the step result.</p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/jev-report.html"><img src="docs/assets/previews/jev-report.png" alt="codexqa-jev-browser HTML execution report"></a></p>
+</td>
+</tr>
 </table>
 
 <a id="evidence-and-limitations"></a>
@@ -140,6 +148,7 @@ npx skills add openqa-cn/codexqa --skill codexqa-rootcause-analyzer
 npx skills add openqa-cn/codexqa --skill codexqa-requirement-analyzer
 npx skills add openqa-cn/codexqa --skill codexqa-testcase-generator
 npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
+npx skills add openqa-cn/codexqa --skill codexqa-jev-browser
 ```
 
 ## Capabilities
@@ -148,10 +157,11 @@ Each skill is one step in the test-and-verify loop. The table says **when to use
 
 | | Skill | When to use it, and what verification result you get |
 | --- | --- | --- |
-| 🧭 | <a href="skills/codexqa-skill-router/README.md">codexqa-skill-router</a> | **When** you are not sure whether you need a defect scan, impact map, cases, or test data — or the worker is not installed yet.<br>**You get** the matching skill, installed on demand if missing, then a handoff. Verification starts by picking the right tool; you do not memorize eight entry points. |
+| 🧭 | <a href="skills/codexqa-skill-router/README.md">codexqa-skill-router</a> | **When** you are not sure whether you need a defect scan, impact map, cases, or test data — or the worker is not installed yet.<br>**You get** the matching skill, installed on demand if missing, then a handoff. Verification starts by picking the right tool; you do not memorize nine entry points. |
 | 📋 | <a href="skills/codexqa-requirement-analyzer/README.md">codexqa-requirement-analyzer</a> | **When** a PRD, story pack, or mixed materials land, before anyone writes code: is it testable, complete, internally consistent?<br>**You get** one assignable P0/P1 gap-and-conflict register. High-priority rows include preconditions, stimulus, expected result, and evidence — the requirement-layer blockers that would make later testing fail. |
 | 🧪 | <a href="skills/codexqa-testcase-generator/README.md">codexqa-testcase-generator</a> | **When** you need a test plan and executable cases for Web / server / APP before submit, or extra regression after a change.<br>**You get** local Markdown plan + cases + aggregated HTML: which scenarios, which priority. Unknowns stay TBD; silent PRD gaps are not invented as fake cases. |
 | 🗃️ | <a href="skills/codexqa-testdata-generator/README.md">codexqa-testdata-generator</a> | **When** cases exist but will not run: missing accounts, catalog rows, orders. A copied fake ID will not pass a real API.<br>**You get** data constructed against the backend, with returned business IDs written into case preconditions. Success means the backend issued an ID, not that a number appeared in chat. |
+| 🌐 | <a href="skills/codexqa-jev-browser/README.md">codexqa-jev-browser</a> · <a href="https://github.com/openqa-cn/jev-browser">repo</a> | **When** you have a UI case, or only a goal, and need to see whether the page actually shows the expected evidence.<br>**You get** a local HTML report: each step, the control that was used, and a marked screenshot. Replay does not call a decision model. The browser is Playwright Chromium. |
 | 🗺️ | <a href="skills/codexqa-code-wiki/README.md">codexqa-code-wiki</a> | **When** a newcomer or an Agent enters the repo, or you are reviewing whether a change broke the architecture.<br>**You get** an architecture knowledge-graph HTML: module communities, real dependencies, the hub, a reading path. You are checking layering and where to start — not another README. |
 | 📈 | <a href="skills/codexqa-code-analyzer/README.md">codexqa-code-analyzer</a> | **When** you review a PR, set regression scope, or ask “who does this change hit?” A git diff will not show call chains.<br>**You get** blast radius from a local symbol graph: which APIs / methods / call chains moved, which entries fire, which edges have no tests. That list is what you regression-test. |
 | 🧯 | <a href="skills/codexqa-rootcause-analyzer/README.md">codexqa-rootcause-analyzer</a> | **When** a production or local exception, stack, or log still does not tell you which layer actually failed.<br>**You get** a gated English RCA: trigger vs root cause vs confidence, plus one fix-and-verify suggestion. The throw site is not treated as the root cause. |
@@ -164,10 +174,10 @@ Narrow contracts, stop conditions, local files. The Agent you already use is the
 
 | | Who | Typical job: tools, skills, and what you take away |
 | --- | --- | --- |
-| 🏢 | **Enterprise** | **Tools** The Cursor / Claude Code / Codex / OpenClaw you already run. One `npx skills add` puts verification next to the coding agent — no account, no gateway, no move of QA onto another SaaS.<br>**Skills** [codexqa-skill-router](skills/codexqa-skill-router/README.md) to route; PRs through [codexqa-code-analyzer](skills/codexqa-code-analyzer/README.md) + [codexqa-defect-analyzer](skills/codexqa-defect-analyzer/README.md) + [codexqa-code-reviewer](skills/codexqa-code-reviewer/README.md); pre-submit through [codexqa-requirement-analyzer](skills/codexqa-requirement-analyzer/README.md) → [codexqa-testcase-generator](skills/codexqa-testcase-generator/README.md) → [codexqa-testdata-generator](skills/codexqa-testdata-generator/README.md); architecture with [codexqa-code-wiki](skills/codexqa-code-wiki/README.md); incidents with [codexqa-rootcause-analyzer](skills/codexqa-rootcause-analyzer/README.md).<br>**You get** blast radius (APIs / methods / call chains, regression list, test gaps), P0–P3 defect-and-security HTML, a bilingual `REVIEW-REPORT.html` for reviewers, a requirement gap register, Web/server/APP cases, real backend IDs in preconditions, an architecture knowledge graph, and a gated RCA. Files stay local; findings still need a human. |
+| 🏢 | **Enterprise** | **Tools** The Cursor / Claude Code / Codex / OpenClaw you already run. One `npx skills add` puts verification next to the coding agent — no account, no gateway, no move of QA onto another SaaS.<br>**Skills** [codexqa-skill-router](skills/codexqa-skill-router/README.md) to route; PRs through [codexqa-code-analyzer](skills/codexqa-code-analyzer/README.md) + [codexqa-defect-analyzer](skills/codexqa-defect-analyzer/README.md) + [codexqa-code-reviewer](skills/codexqa-code-reviewer/README.md); pre-submit through [codexqa-requirement-analyzer](skills/codexqa-requirement-analyzer/README.md) → [codexqa-testcase-generator](skills/codexqa-testcase-generator/README.md) → [codexqa-testdata-generator](skills/codexqa-testdata-generator/README.md), then UI replay with [codexqa-jev-browser](skills/codexqa-jev-browser/README.md); architecture with [codexqa-code-wiki](skills/codexqa-code-wiki/README.md); incidents with [codexqa-rootcause-analyzer](skills/codexqa-rootcause-analyzer/README.md).<br>**You get** blast radius (APIs / methods / call chains, regression list, test gaps), P0–P3 defect-and-security HTML, a bilingual `REVIEW-REPORT.html` for reviewers, a requirement gap register, Web/server/APP cases, real backend IDs in preconditions, an architecture knowledge graph, and a gated RCA. Files stay local; findings still need a human. |
 | 👤 | **Individual** | **Tools** Your own Cursor or Codex session. Install [codexqa-skill-router](skills/codexqa-skill-router/README.md); workers can be fetched when you need them.<br>**Skills** Before you merge your PR: [codexqa-defect-analyzer](skills/codexqa-defect-analyzer/README.md) for bugs and secrets, [codexqa-code-analyzer](skills/codexqa-code-analyzer/README.md) for who is hit, [codexqa-code-reviewer](skills/codexqa-code-reviewer/README.md) for an openable review page. Unfamiliar repo → [codexqa-code-wiki](skills/codexqa-code-wiki/README.md); your own PRD/cases → the generators.<br>**You get** HTML you can open: whether there are obvious defects, whether the blast radius is clear, whether the review is sendable. No extra test platform. |
 | 🎓 | **Education** | **Tools** Any Agent Skills IDE plus the in-repo [inventory-service](examples/inventory-service/README.md) fixture (7 semantic defects, 4 decoys, a reproducible answer key).<br>**Skills** [codexqa-defect-analyzer](skills/codexqa-defect-analyzer/README.md) to teach what a graded scan report looks like; [codexqa-code-wiki](skills/codexqa-code-wiki/README.md) / [codexqa-code-analyzer](skills/codexqa-code-analyzer/README.md) for hubs and change call chains; [codexqa-requirement-analyzer](skills/codexqa-requirement-analyzer/README.md) and [codexqa-testcase-generator](skills/codexqa-testcase-generator/README.md) for “can this requirement be tested, and where do cases come from?”<br>**You get** openable reports plus an answer key — “checkable output,” not a chat comment. Recorded recall numbers live on the fixture README; they are one run, not a multi-model board. |
-| 🤖 | **AI development** | **Tools** The Agent runtime you already ship (Cursor · Claude Code · Codex · OpenClaw) plus this Agent Skills pack — not a mega-prompt.<br>**Skills** [codexqa-skill-router](skills/codexqa-skill-router/README.md) as the entry; the eight workers behind a narrow handoff: requirement gaps, cases, test data, architecture graph, blast radius, RCA, defect scan, graph-evidence review.<br>**You get** Markdown / HTML on disk (register, cases, scan page, `REVIEW-REPORT.html`, RCA), with stop conditions. When you wire verification into an Agent product, you ship skills, not an uncheckable conversation. |
+| 🤖 | **AI development** | **Tools** The Agent runtime you already ship (Cursor · Claude Code · Codex · OpenClaw) plus this Agent Skills pack — not a mega-prompt.<br>**Skills** [codexqa-skill-router](skills/codexqa-skill-router/README.md) as the entry; the nine workers behind a narrow handoff: requirement gaps, cases, test data, browser UI replay, architecture graph, blast radius, RCA, defect scan, graph-evidence review.<br>**You get** Markdown / HTML on disk (register, cases, scan page, `REVIEW-REPORT.html`, RCA), with stop conditions. When you wire verification into an Agent product, you ship skills, not an uncheckable conversation. |
 
 Not a hosted test cloud. Not a replacement for your test suite, SAST license, or maintainer judgment.
 
@@ -210,12 +220,12 @@ Full history: [CHANGELOG.md](CHANGELOG.md) · [Releases](https://github.com/open
 
 **写得快已经不够。CodexQA 完全本地执行、开箱安装即用，立刻知道写得好不好。**
 
-AI Coding 之后，最大的痛点是**快速验证代码质量**：刚写的代码有没有 bug、会不会打到老功能、完整测试用例怎么建、变更知识图谱打了哪些接口 / 方法 / 调用链、架构有没有被破坏、有没有安全风险、是否满足业务需求、对应测试数据怎么尽快造出来。**CodexQA 聚焦代码测试验证阶段**，用多维度 Skill 做 360° 覆盖，让你不但写得快，更能快速感知写得好不好，把开发闭环从「写完」走到「验完」。
+AI Coding 之后，最大的痛点是**快速验证代码质量**：刚写的代码有没有 bug、会不会打到老功能、完整测试用例怎么建、变更知识图谱打了哪些接口 / 方法 / 调用链、架构有没有被破坏、有没有安全风险、是否满足业务需求、对应测试数据怎么尽快造出来、浏览器流程有没有走到说好的可见证据。**CodexQA 聚焦代码测试验证阶段**，用多维度 Skill 做 360° 覆盖，让你不但写得快，更能快速感知写得好不好，把开发闭环从「写完」走到「验完」。
 
 Cursor · Claude Code · Codex · OpenClaw。完全本地执行，开箱安装即用；不用账号、不用网关、不用迁 QA 平台。
 
 <p>
-  <strong>8</strong> 个 skill &nbsp;·&nbsp;
+  <strong>9</strong> 个 skill &nbsp;·&nbsp;
   <strong>0</strong> 个账号 &nbsp;·&nbsp;
   <strong>7/7</strong> 盲测召回 &nbsp;·&nbsp;
   <strong>0</strong> 次诱饵误报 &nbsp;·&nbsp;
@@ -307,6 +317,14 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 <p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testdata-writeback.html"><img src="docs/assets/previews/testdata-writeback.png" alt="codexqa-testdata-generator 后端 ID 回写"></a></p>
 </td>
 </tr>
+<tr>
+<td width="50%" valign="top">
+<p><strong><a href="skills/codexqa-jev-browser/README.zh-CN.md">codexqa-jev-browser</a></strong> · <a href="https://github.com/openqa-cn/jev-browser">Jev Browser 仓库</a></p>
+<p><strong>验证什么</strong> — 浏览器流程有没有走到目标里写明的可见证据。模型返回 DONE 不算通过。</p>
+<p><strong>核心能力</strong> — 用页面索引（角色、名称、允许的操作）驱动 Playwright Chromium。回放 YAML / Markdown / API 用例，或按目标生成用例。每次运行写出 <code>reports/&lt;run-id&gt;/report.html</code>，里面有带标记的截图和步骤结果。</p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/jev-report.html"><img src="docs/assets/previews/jev-report.png" alt="codexqa-jev-browser HTML 执行报告"></a></p>
+</td>
+</tr>
 </table>
 
 <a id="证据与边界"></a>
@@ -346,6 +364,7 @@ npx skills add openqa-cn/codexqa --skill codexqa-rootcause-analyzer
 npx skills add openqa-cn/codexqa --skill codexqa-requirement-analyzer
 npx skills add openqa-cn/codexqa --skill codexqa-testcase-generator
 npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
+npx skills add openqa-cn/codexqa --skill codexqa-jev-browser
 ```
 
 <h2 id="核心能力">核心能力</h2>
@@ -354,10 +373,11 @@ npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
 
 | | Skill | 什么时候用，以及验证环节你拿到什么 |
 | --- | --- | --- |
-| 🧭 | <a href="skills/codexqa-skill-router/README.zh-CN.md">codexqa-skill-router</a> | **什么时候用** 不确定该走缺陷扫描、影响面、用例还是造数；或者干活 skill 还没装。<br>**验证结果** 按你的话匹配到对应 skill，没有就按需装上再交接。你不用自己记八套入口，验证工作从「选对工具」开始。 |
+| 🧭 | <a href="skills/codexqa-skill-router/README.zh-CN.md">codexqa-skill-router</a> | **什么时候用** 不确定该走缺陷扫描、影响面、用例还是造数；或者干活 skill 还没装。<br>**验证结果** 按你的话匹配到对应 skill，没有就按需装上再交接。你不用自己记九套入口，验证工作从「选对工具」开始。 |
 | 📋 | <a href="skills/codexqa-requirement-analyzer/README.zh-CN.md">codexqa-requirement-analyzer</a> | **什么时候用** 需求评审、提测前对 PRD / 故事 / 一包材料做完整性检查。代码还没写，先看需求能不能测、有没有打架。<br>**验证结果** 一份可指派的缺口与冲突登记表（P0/P1）。高优先级条目带前置、操作、期望和证据，标出需求层哪些地方会让后续测试做不下去。 |
 | 🧪 | <a href="skills/codexqa-testcase-generator/README.zh-CN.md">codexqa-testcase-generator</a> | **什么时候用** 提测、补回归，或要把 Web / 服务端 / APP 从需求落到可执行用例。<br>**验证结果** 本地测试方案 + 用例 + 聚合 HTML：覆盖哪些场景、优先级怎么排。需求没写清的标 TBD，不会把空缺编成假用例。 |
 | 🗃️ | <a href="skills/codexqa-testdata-generator/README.zh-CN.md">codexqa-testdata-generator</a> | **什么时候用** 用例写好了但跑不起来，缺账号、商品、订单等前置数据；复制一个假 ID 过不了真实接口。<br>**验证结果** 对着后端造数，把返回的业务 ID 回写进用例前置条件。你拿到的是能真正打接口的物料，成功以后端给了 ID 为准。 |
+| 🌐 | <a href="skills/codexqa-jev-browser/README.zh-CN.md">codexqa-jev-browser</a> · <a href="https://github.com/openqa-cn/jev-browser">仓库</a> | **什么时候用** 已经有界面用例，或只有一句目标，要核对页面上是不是真出现了预期证据。<br>**验证结果** 本地 HTML 报告：每一步、用过的控件、带标记的截图。回放不再调用决策模型。浏览器是 Playwright Chromium。 |
 | 🗺️ | <a href="skills/codexqa-code-wiki/README.zh-CN.md">codexqa-code-wiki</a> | **什么时候用** 新人上手、Agent 进仓、架构评审，或怀疑这次改动把分层改乱了。<br>**验证结果** 架构知识图谱 HTML：模块社区、真实依赖、枢纽、阅读路径。核对的是系统怎么分层、该从哪读、架构有没有被拆散，不是又一份 README。 |
 | 📈 | <a href="skills/codexqa-code-analyzer/README.zh-CN.md">codexqa-code-analyzer</a> | **什么时候用** 评 PR、定回归范围、问「改这几行会打到谁」。只看 git diff 看不到调用链。<br>**验证结果** 变更影响面：命中哪些接口 / 方法 / 调用链、请求从哪进、哪些边还没测试。用来圈回归名单，而不是全文搜索猜。 |
 | 🧯 | <a href="skills/codexqa-rootcause-analyzer/README.zh-CN.md">codexqa-rootcause-analyzer</a> | **什么时候用** 线上或本地异常，堆栈和日志对回仓库后，仍说不清到底卡在哪一层。<br>**验证结果** 带门禁的英文 RCA：触发点、根因、置信度分开写，并给一条可验证的修复方向。避免把抛错的那一行当成根因。 |
@@ -370,10 +390,10 @@ npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
 
 | | 谁 | 典型用法：用什么、走哪些 skill、拿到什么 |
 | --- | --- | --- |
-| 🏢 | **企业** | **用什么** 现有的 Cursor / Claude Code / Codex / OpenClaw。一次 `npx skills add` 把验证接到 Coding Agent 旁边，不用账号、不用网关、不必把 QA 迁到另一套 SaaS。<br>**常用 skill** [codexqa-skill-router](skills/codexqa-skill-router/README.zh-CN.md) 按话路由；合 PR 走 [codexqa-code-analyzer](skills/codexqa-code-analyzer/README.zh-CN.md) + [codexqa-defect-analyzer](skills/codexqa-defect-analyzer/README.zh-CN.md) + [codexqa-code-reviewer](skills/codexqa-code-reviewer/README.zh-CN.md)；提测走 [codexqa-requirement-analyzer](skills/codexqa-requirement-analyzer/README.zh-CN.md) → [codexqa-testcase-generator](skills/codexqa-testcase-generator/README.zh-CN.md) → [codexqa-testdata-generator](skills/codexqa-testdata-generator/README.zh-CN.md)；架构评审用 [codexqa-code-wiki](skills/codexqa-code-wiki/README.zh-CN.md)；线上异常用 [codexqa-rootcause-analyzer](skills/codexqa-rootcause-analyzer/README.zh-CN.md)。<br>**拿到什么** 变更影响面（接口 / 方法 / 调用链、回归名单、测试缺口）、P0–P3 缺陷与安全扫描 HTML、可发给评审人的双语 `REVIEW-REPORT.html`、需求缺口登记表、Web/服务端/APP 用例、后端真实 ID 前置数据、架构知识图谱、带门禁的 RCA。产物落本地，发现项仍需人工确认。 |
+| 🏢 | **企业** | **用什么** 现有的 Cursor / Claude Code / Codex / OpenClaw。一次 `npx skills add` 把验证接到 Coding Agent 旁边，不用账号、不用网关、不必把 QA 迁到另一套 SaaS。<br>**常用 skill** [codexqa-skill-router](skills/codexqa-skill-router/README.zh-CN.md) 按话路由；合 PR 走 [codexqa-code-analyzer](skills/codexqa-code-analyzer/README.zh-CN.md) + [codexqa-defect-analyzer](skills/codexqa-defect-analyzer/README.zh-CN.md) + [codexqa-code-reviewer](skills/codexqa-code-reviewer/README.zh-CN.md)；提测走 [codexqa-requirement-analyzer](skills/codexqa-requirement-analyzer/README.zh-CN.md) → [codexqa-testcase-generator](skills/codexqa-testcase-generator/README.zh-CN.md) → [codexqa-testdata-generator](skills/codexqa-testdata-generator/README.zh-CN.md)，界面回放用 [codexqa-jev-browser](skills/codexqa-jev-browser/README.zh-CN.md)；架构评审用 [codexqa-code-wiki](skills/codexqa-code-wiki/README.zh-CN.md)；线上异常用 [codexqa-rootcause-analyzer](skills/codexqa-rootcause-analyzer/README.zh-CN.md)。<br>**拿到什么** 变更影响面（接口 / 方法 / 调用链、回归名单、测试缺口）、P0–P3 缺陷与安全扫描 HTML、可发给评审人的双语 `REVIEW-REPORT.html`、需求缺口登记表、Web/服务端/APP 用例、后端真实 ID 前置数据、架构知识图谱、带门禁的 RCA。产物落本地，发现项仍需人工确认。 |
 | 👤 | **个人** | **用什么** 自己的 Cursor 或 Codex 会话。装 [codexqa-skill-router](skills/codexqa-skill-router/README.zh-CN.md) 即可，需要时再拉干活 skill。<br>**常用 skill** 合自己的 PR 前：[codexqa-defect-analyzer](skills/codexqa-defect-analyzer/README.zh-CN.md) 扫 bug 和密钥，[codexqa-code-analyzer](skills/codexqa-code-analyzer/README.zh-CN.md) 看会打到谁，[codexqa-code-reviewer](skills/codexqa-code-reviewer/README.zh-CN.md) 出一份能打开的评审页。进陌生仓库用 [codexqa-code-wiki](skills/codexqa-code-wiki/README.zh-CN.md)；自己写需求/用例再用生成器和造数。<br>**拿到什么** 打开就能看的 HTML：有没有明显缺陷、影响面清不清楚、评审意见能不能发出去。不用再上一套测试平台。 |
 | 🎓 | **教育** | **用什么** 任意支持 Agent Skills 的 IDE，加上仓库里的 [inventory-service](examples/inventory-service/README.md) 样例（7 个语义缺陷、4 个诱饵，答案键可复现）。<br>**常用 skill** 用 [codexqa-defect-analyzer](skills/codexqa-defect-analyzer/README.zh-CN.md) 教「扫描报告长什么样、发现项怎么分级」；用 [codexqa-code-wiki](skills/codexqa-code-wiki/README.zh-CN.md) / [codexqa-code-analyzer](skills/codexqa-code-analyzer/README.zh-CN.md) 对照模块枢纽和变更调用链；用 [codexqa-requirement-analyzer](skills/codexqa-requirement-analyzer/README.zh-CN.md) 与 [codexqa-testcase-generator](skills/codexqa-testcase-generator/README.zh-CN.md) 教需求能不能测、用例从哪来。<br>**拿到什么** 可打开的报告和学生可以对照的答案键，讲的是「可核查产物」而不是聊天里一段评语。一次记录运行的召回数字见样例 README，不是多模型榜。 |
-| 🤖 | **AI 开发** | **用什么** 你已经在跑的 Agent 运行时（Cursor · Claude Code · Codex · OpenClaw）+ Agent Skills 包，不是再写一个超级 prompt。<br>**常用 skill** [codexqa-skill-router](skills/codexqa-skill-router/README.zh-CN.md) 做入口，其余八个干活 skill 按契约交接：需求缺口、用例、造数、架构图谱、影响面、RCA、缺陷扫描、图证据评审。<br>**拿到什么** 磁盘上的 Markdown / HTML（登记表、用例、扫描页、`REVIEW-REPORT.html`、RCA），输入窄、有停点。把验证环节接进 Agent 产品时，交的是 skill 而不是一段不可复核的对话。 |
+| 🤖 | **AI 开发** | **用什么** 你已经在跑的 Agent 运行时（Cursor · Claude Code · Codex · OpenClaw）+ Agent Skills 包，不是再写一个超级 prompt。<br>**常用 skill** [codexqa-skill-router](skills/codexqa-skill-router/README.zh-CN.md) 做入口，其余九个干活 skill 按契约交接：需求缺口、用例、造数、浏览器界面回放、架构图谱、影响面、RCA、缺陷扫描、图证据评审。<br>**拿到什么** 磁盘上的 Markdown / HTML（登记表、用例、扫描页、`REVIEW-REPORT.html`、RCA），输入窄、有停点。把验证环节接进 Agent 产品时，交的是 skill 而不是一段不可复核的对话。 |
 
 不是托管测试云。也不替代你的测试套件、SAST 授权或维护者判断。
 

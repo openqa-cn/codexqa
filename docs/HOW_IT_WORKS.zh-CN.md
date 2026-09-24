@@ -21,6 +21,7 @@
 | `codexqa-requirement-analyzer` | [工作原理](../skills/codexqa-requirement-analyzer/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/codexqa-requirement-analyzer/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/codexqa-requirement-analyzer/SKILL.md) |
 | `codexqa-testdata-generator` | [工作原理](../skills/codexqa-testdata-generator/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/codexqa-testdata-generator/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/codexqa-testdata-generator/SKILL.md) |
 | `codexqa-testcase-generator` | [工作原理](../skills/codexqa-testcase-generator/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/codexqa-testcase-generator/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/codexqa-testcase-generator/SKILL.md) |
+| `codexqa-jev-browser` | [工作原理](../skills/codexqa-jev-browser/HOW_IT_WORKS.zh-CN.md) · [已知边界](../skills/codexqa-jev-browser/KNOWN_LIMITATIONS.zh-CN.md) | [`SKILL.md`](../skills/codexqa-jev-browser/SKILL.md) |
 
 各 skill 要交什么（仓库 / PRD / 用例与 API）：[FAQ](FAQ.zh-CN.md#每个-skill-要我交什么)。产物长什么样：[README 预览](../README.zh-CN.md#所有技能SKILL概览)。
 

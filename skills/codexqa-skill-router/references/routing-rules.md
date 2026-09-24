@@ -43,6 +43,7 @@ That sentence means an incremental **scan**, not a code review.
 | 需求评审 / 需求缺口 / 需求歧义 / 一致性 / 非功能需求 / 能不能测 / requirements review | `codexqa-requirement-analyzer` | code review, case writing |
 | 测试方案 / 测试分析 / 写用例 / 方案和用例 / 按 PRD 出测试 / 提测前改用例 / 提测后补用例 / test plan | `codexqa-testcase-generator` | requirement register, live data, unit-test coding |
 | 造数据 / 用例物料 / 前置账号 / 造一笔业务数据 / 造数脚本 / 回写前置 / OpenAPI account or script | `codexqa-testdata-generator` | authoring cases from a PRD |
+| Jev browser / 浏览器回放 / generate browser UI cases / explore a site | `codexqa-jev-browser` | writing a test plan from a PRD |
 | 格式化、自动改代码风格、给函数写单元测试 | ask / none | forcing a pack skill |
 | Both review report and scan list, no order | ask | starting either |
 | 先评审再扫描, or 先写方案再造数 | `chain` in that order | collapsing to one skill |

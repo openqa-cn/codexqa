@@ -83,6 +83,7 @@ RCA = "codexqa-rootcause-analyzer"
 REQUIREMENT = "codexqa-requirement-analyzer"
 TESTCASE = "codexqa-testcase-generator"
 TESTDATA = "codexqa-testdata-generator"
+JEV = "codexqa-jev-browser"
 
 # Longer aliases first so "codexqa-code-reviewer" occupies its span before
 # the shorter "code-reviewer" is tested.
@@ -95,6 +96,7 @@ ALIASES = (
     (REQUIREMENT, ("codexqa-requirement-analyzer", "requirements-analyzer", "requirement-analyzer")),
     (TESTCASE, ("codexqa-testcase-generator", "testcase-generation", "testcase-generator")),
     (TESTDATA, ("codexqa-testdata-generator", "testdata-generation", "testdata-generator")),
+    (JEV, ("codexqa-jev-browser", "jev-browser", "jev browser")),
 )
 
 NEG_BEFORE = re.compile(
@@ -244,6 +246,7 @@ def score_request(text: str) -> Dict[str, Dict[str, Any]]:
             REQUIREMENT,
             TESTCASE,
             TESTDATA,
+            JEV,
         )
     }
 
@@ -595,6 +598,19 @@ def score_request(text: str) -> Dict[str, Dict[str, Any]]:
     if re.search(r"scaffold", text, re.I) and re.search(r"openapi|domain|领域", text, re.I):
         add(TESTDATA, 5, "scaffold-domain")
 
+    jev_phrases = (
+        "jev browser",
+        "jev-browser",
+        "codexqa-jev-browser",
+        "浏览器回放",
+        "浏览器自动化",
+        "explore a site",
+        "browser ui cases",
+        "generate browser ui",
+    )
+    if any_present(text, jev_phrases) or re.search(r"\bjev\b", text, re.I):
+        add(JEV, 5, "browser")
+
     _resolve_overlaps(text, scores)
     return scores
 
@@ -741,6 +757,9 @@ def _resolve_overlaps(text: str, scores: Dict[str, Dict[str, Any]]) -> None:
         if not code_review:
             _zero(scores, REVIEWER, "requirement-review")
 
+    if scores[JEV]["score"] > 0 and scores[TESTCASE]["score"] > 0:
+        _zero(scores, TESTCASE, "browser-not-prd-plan")
+
 
 def positive_skills(scores: Dict[str, Dict[str, Any]]) -> List[str]:
     ranked = [name for name, row in scores.items() if row["score"] > 0]
@@ -838,6 +857,7 @@ def _reason_for(winner: str, scores: Dict[str, Dict[str, Any]]) -> str:
         REQUIREMENT: "requirement quality / gap register, not code review",
         TESTCASE: "test plan or cases, not requirement gap analysis",
         TESTDATA: "construct or write back test data",
+        JEV: "Jev browser replay or site exploration, not a PRD test plan",
     }
     return "%s (%s)" % (notes.get(winner, winner), hits)
 
@@ -852,6 +872,7 @@ def _first_hit(text: str, skill: str) -> int:
         REQUIREMENT: ("需求", "gap register", "requirement"),
         TESTCASE: ("测试方案", "测试用例", "写用例", "test plan", "用例"),
         TESTDATA: ("造数据", "测试数据", "前置", "openapi", "test data"),
+        JEV: ("jev", "浏览器回放", "explore a site"),
     }
     return earliest(text, phrases.get(skill, ()))
 
@@ -987,6 +1008,8 @@ FIXTURES: Tuple[Dict[str, Any], ...] = (
     {"text": "scaffold a new domain from this OpenAPI directory", "outcome": "clear", "winner": TESTDATA},
     {"text": "造一笔订单作为前置", "outcome": "clear", "winner": TESTDATA},
     {"text": "write back test data into the case preconditions", "outcome": "clear", "winner": TESTDATA},
+    {"text": "用 Jev browser 回放这个站点", "outcome": "explicit", "winner": JEV},
+    {"text": "explore a site and generate browser UI cases", "outcome": "clear", "winner": JEV},
     {"text": "格式化一下这段代码", "outcome": "none", "winner": None},
     {"text": "帮我写个单元测试", "outcome": "none", "winner": None},
     {"text": "帮我看看", "outcome": "none", "winner": None},
