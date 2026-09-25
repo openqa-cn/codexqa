@@ -464,6 +464,16 @@ def suspect_points(suspects: dict | None) -> list[tuple[str, int]]:
     return points
 
 
+def _same_brief_path(suspect_file: str, method_path: str) -> bool:
+    if not suspect_file or not method_path:
+        return False
+    return (
+        suspect_file == method_path
+        or method_path.endswith("/" + suspect_file)
+        or suspect_file.endswith("/" + method_path)
+    )
+
+
 def same_path(suspect_file: str, paths: list[str]) -> bool:
     if not paths or not suspect_file:
         return True
@@ -2354,13 +2364,25 @@ def write_model_brief(pack: Path, packet: dict) -> None:
         path = str(suspect.get("file") or "")
         if not isinstance(line, int):
             continue
-        if any(
-            str(method.get("path") or "") == path
-            and method["start_line"] <= line <= method["end_line"]
-            and method.get("source")
-            for method in methods
-        ):
-            suspect["source"] = ""
+        cover = next(
+            (
+                method for method in methods
+                if _same_brief_path(path, str(method.get("path") or ""))
+                and method["start_line"] <= line <= method["end_line"]
+                and method.get("source")
+            ),
+            None,
+        )
+        if cover is None:
+            continue
+        suspect["source_ref"] = {
+            "where": "methods",
+            "name": cover.get("name"),
+            "path": cover.get("path"),
+            "start_line": cover["start_line"],
+            "end_line": cover["end_line"],
+        }
+        suspect["source"] = ""
 
     rules_in = packet.get("rules") if isinstance(packet.get("rules"), dict) else {}
     rules = {}
@@ -2407,6 +2429,10 @@ def write_model_brief(pack: Path, packet: dict) -> None:
     if groups:
         for method in methods:
             method["source"] = ""
+        for suspect in open_suspects:
+            ref = suspect.get("source_ref")
+            if isinstance(ref, dict) and ref.get("where") == "methods":
+                ref["where"] = "judgment-work"
     perf = {}
     dimensions = packet.get("dimensions") if isinstance(packet.get("dimensions"), dict) else {}
     perf_card = dimensions.get("performance") if isinstance(dimensions.get("performance"), dict) else {}
@@ -2426,7 +2452,13 @@ def write_model_brief(pack: Path, packet: dict) -> None:
             "closed_report rows are already cards. "
             "Seed hits are omitted. Do not re-judge them. "
             "A one-line getter is omitted. "
-            "Leave English fields empty. Do not draft review-conclusion.json."
+            "Leave English fields empty. Do not draft review-conclusion.json. "
+            "open_suspects[].source is empty on purpose when source_ref is set. "
+            "If source_ref.where is methods, the body is the methods entry with "
+            "the same name, path, start_line, and end_line: read that entry's source. "
+            "If source_ref.where is judgment-work, the body is in the listed group file. "
+            "Empty source plus source_ref means the body was moved there. "
+            "Do not treat it as missing source and do not open the repository file."
         ),
         "scale": {
             "primary_language": language.get("primary_language"),
