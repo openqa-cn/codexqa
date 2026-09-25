@@ -92,11 +92,12 @@ Keep `source` and `codexqa_cli_path` in this shell. `$(codexqa_cli_path)` drops 
 ```text
 Task progress:
 - [ ] 1. Preflight gate in this shell (source + codexqa_cli_path). Steps 1b–6 stay blocked until this has run once.
+- [ ] 1a. Resolve the PR checkout locally (`scripts/resolve-pr-checkout.sh`). Do not `git fetch` or `git clone` before it returns.
 - [ ] 1b. Install every missing SAST tool (mandatory — do not scan with status=missing)
 - [ ] 2. Collect evidence pack → OUT_DIR
 - [ ] 3. Validate (auto unless --skip-validate)
 - [ ] 4. Lock primary_language / review_language_focus
-- [ ] 5. Review from `29-judgment-packet.json` only (do not reopen `01`–`28`, diffs, or git)
+- [ ] 5. Review from `29-judgment-packet.json` only. `rules` is the applicable business-rule text. Do not open steps 1–14, the channel prompts, `business-rule-records.md`, or `seal-conclusion.py`.
 - [ ] 5b. Agent LLM judgment pass + dedupe merge (`merge-llm-findings.py`)
 - [ ] 6. Write findings in review-conclusion.json + render (`seal-conclusion.py` fills the skeleton)
 ```
@@ -105,6 +106,11 @@ Task progress:
 # Step 1 — required before every command below. See Preflight gate.
 source scripts/lib/codexqa-preflight.sh
 codexqa_cli_path
+
+# Step 1a — GitHub PR only. Local commits win. The script fetches at most one URL,
+# and an empty HTTP reply gets one HTTP/1.1 downgrade, then stop. Do not fetch again.
+./scripts/resolve-pr-checkout.sh --pr <url-or-owner/repo#N> --search-root <workspace>
+# Use the printed repo and diff_base. status=local means do not fetch.
 
 # Step 1b — only after codexqa_cli_path has printed a path.
 # Mandatory when any of semgrep / bandit / gosec / gitleaks / osv-scanner / ruff / eslint is missing.
@@ -159,7 +165,7 @@ Full-repo deliverables: hotspot modules (ranked by **edges-in**, not `from_count
 entry concentration, hardening backlog P0/P1/P2. Never invent PR `change_status`.
 No product scorecard / 产品评测打分.
 
-Adhoc: bootstraps a mini git repo when `--repo` is omitted so CodexQA index gates pass; validate with `--mode adhoc`.
+Adhoc: bootstraps a mini git repo when `--repo` is omitted so CodexQA index gates pass. An empty root commit is the diff base, then `build-review-digest.py` writes `26`–`30` while the source is still on disk. Validate with `--mode adhoc`. Judgment still reads only `29-judgment-packet.json`.
 
 ## Capability → pack map
 
@@ -167,7 +173,7 @@ Adhoc: bootstraps a mini git repo when `--repo` is omitted so CodexQA index gate
 |---|---|
 | Change localization | `03-change-groups` / `05-changed-symbols` / `diffs/*.diff.json` |
 | PR review digest | `26-review-digest.json` (commits behind/ahead, three-dot file classes vs two-dot drift, deduped `disposition: report` lines). Superseded by `29-judgment-packet.json` when that file exists. |
-| Judgment packet | `29-judgment-packet.json` (the only file the judgment pass opens: dimension cards, pr_delta report rows, suspect slices, one inlined copy of each read group). `30-conclusion-skeleton.json` is sealed into the conclusion at render. |
+| Judgment packet | `29-judgment-packet.json` (the only file the judgment pass opens when `judgment-work/` is absent: dimension cards, pr_delta report rows, suspect refs, one inlined copy of each read group). A single file is split into method groups under `judgment-work/group-*.json`; those groups are judged concurrently. Short methods share a group until 12 methods or 10 suspect lines. A method longer than 60 lines is cut into 40-line windows. A method with more than 10 suspect lines is also cut into line windows. Each group file contains its own rules; that pass does not open `shared.json` or another group's file. A group's `plan_required` is true only for a method of at least 50 lines. A suspect with `slice_ref` points at that window and does not repeat the source. `identical_to_base` matches the base tip and is not a defect. A csv/markdown/txt keyword hit does not force T0. Confirmed magic numbers seal as conventions, not P1. `30-conclusion-skeleton.json` is sealed into the conclusion at render. |
 | Design fit | `10-design-fit-signals.json` (path + package/import layers, `import_cross_layer`, `dead_nested_symbols` confirmed via empty edges-in; full: `imports/` + on-disk fallback) |
 | Complexity | `11-complexity-signals.json` (method LOC / decisions / nesting / YAGNI hints) |
 | Dependencies | `12-dependency-signals.json` (manifest/lock SNAPSHOT, lock drift, license clues, local audit) |
@@ -229,7 +235,8 @@ PR: `REPO` + `DIFF_BASE`. Full-repo: `REPO` only. Prefer absolute repo paths.
 ### 2. Collect
 
 Blocked until the Preflight gate has run once in this shell. Shared helpers: `scripts/lib/codexqa-preflight.sh`.
-Options: `--full`, `--primary-lang <Lang>`, `--skip-index`, `--skip-validate`, `--out DIR`.
+Options: `--full`, `--github-pr owner/repo#N`, `--primary-lang <Lang>`, `--skip-index`, `--skip-validate`, `--out DIR`.
+A changed `--diff-base` misses the index cache and forces `--full`. An incremental index that parses 0 files while the three-dot diff or the GitHub PR file list is non-empty is re-run with `--full`.
 PR collect writes `26-review-digest.json` after the signal files. Judgment reads that digest for commits behind/ahead, file-class counts, report rows, and dimension cards. Full path lists stay in `26-review-digest-detail.json`. Do not recompute the split with git or open every signal file for the dimension verdict. Residual reading opens each `24-coverage-ledger.json` `read_groups` entry once and still writes one closure row per pending symbol. Non-source files are not residual symbols. Byte-identical copies are scanned once; findings keep every path. Files whose bytes differ are both scanned.
 
 ### 3. Validate
@@ -274,23 +281,25 @@ Fails: missing CodexQA provenance; empty change-groups; all `change_status=defau
    [templates/review-conclusion.json](templates/review-conclusion.json)
 3. **Required:** `./scripts/render-review-html.sh --dir <OUT_DIR>` → **`REVIEW-REPORT.html`**
    and **`review-comments.json`** (same defect id, no score).
-   Render runs `scripts/lib/validate-conclusion.py` first and refuses the HTML
-   when any gate fails:
+   Render runs `scripts/lib/seal-conclusion.py` before
+   `scripts/lib/validate-conclusion.py`. The seal fills report-row cards,
+   `span_hash`, `test_gaps`, rule shapes, default oracle skips, and unconfirmed
+   per-line skips from the pack. The model writes `judgment.json` only.
+   The gate still refuses HTML when any check fails after that fill:
    - Every behavioral `disposition: report` row is the primary `line` of a finding,
      or an `also_lines` entry with `same_fix: true`. A line number written only in
-     prose does not close the row. One finding cannot close two `rule_id` or
-     `pattern_class` values. Magic numbers, long files, and stale imports close
+     prose does not close the row. One finding cannot close two `rule_id`,
+     `pattern_class`, or `kind` values. Magic numbers, long files, and stale imports close
      in `conventions`, not in P0/P1/P2. A sentence that says another card covers
      a defect must name a line that a finding lists.
    - Each `test_oracle_inventory` row has `oracle.unsafe_pass`,
-     `oracle.boundary_missed`, and `oracle.branch_uncovered`. Skip is legal
-     only when all three are false. A locally true assertion does not skip
-     the other two.
+     `oracle.boundary_missed`, and `oracle.branch_uncovered`, plus that row's
+     extra questions. Skip is legal only when every flag is false.
    - Production symbols with `tested_count == 0` are in `test_gaps` or an
      explicit waiver list. A rule whose look-for has several shapes lists
      every shape; the first hit does not close the rest.
 
-Cover: 页头四块（能否合入、最高严重级别、行为缺陷数与证据行数、必测三条路径）、一张卡一个失败场景、规范项（不计缺陷）、回归必测清单、测试缺口、敏感路径。有问题的维度和调用链默认折叠，排在发现项之后。`ok`/`none` 维度不进报告。
+Cover: 页头四块（能否合入、最高严重级别、行为缺陷数与证据行数、必测三条路径）、一张卡一个失败场景、规范项（不计缺陷）、回归必测清单、测试缺口、敏感路径。有问题的维度和调用链默认折叠，排在发现项之后。`ok`/`none` 维度不进报告。`seal-conclusion.py` 在渲染前用信号文件补上结论里空着的维度（风险分档、架构契合、复杂度、依赖、韧性、隐私、变更发布、性能、模型语义评审），所以判定稿不写维度长文时，HTML 仍会展示有信号的维度。
 **不渲染：** 建议修复顺序、残留风险与假设、独立影响面示意。
 `render-review-html.sh` 会过滤干净维度；仍须在 `review-conclusion.json` 写全评估结果与
 `dimensions_covered`。Final findings must already be **dedupe-merged** (no duplicate
@@ -301,6 +310,15 @@ High-severity findings cite: symbol id/file/lines, callers or entry path,
 Human-facing prose (dimension `hotspots`, finding risk/evidence, summary) must
 explain risks in plain language — see [references/review-dimensions.md](references/review-dimensions.md)
 **Reader prose**.
+
+**Card voice** (scanner cards in `scripts/lib/seal-conclusion.py`, model cards in
+[prompts/llm-judgment-pass.md](prompts/llm-judgment-pass.md)):
+
+- `title`: SARIF `shortDescription`，规则名，例如 `SQL 注入`。不写规则编号，不写 `这一行不是…`。
+- `risk`: Semgrep / SARIF `message`。`在第 N 行检测到 \`代码\`。` 接一条影响。不写 `不会` / `不是` / `而不是`。
+- `fix`: SARIF `fix` / Sonar recommendation。`将第 N 行 \`代码\` 改为：` 接安全写法。不写 `不用` / `不要` / `而不是`。
+- `call_chain`: `谁会走到这一行`. No recorded caller stays `未记录调用方`, not `没有入边` and not a dead function.
+- PR cards only. A file outside the three-dot diff is a branch-drift skip, not `既有代码`.
 
 **Bilingual HTML:** Write primary prose in Chinese (`summary`, `intent`, `scope`,
 dimension `risk`/`yagni`/`evidence`, finding `title`/`risk`/`evidence`/`fix`,

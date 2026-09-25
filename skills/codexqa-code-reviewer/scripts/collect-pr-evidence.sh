@@ -17,10 +17,13 @@ SKIP_SEARCH_INDEX=0
 SKIP_VALIDATE=0
 FORCE_FULL=0
 PRIMARY_LANG=""
+GITHUB_PR="${GITHUB_PR:-}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/codexqa-preflight.sh
 source "$SCRIPT_DIR/lib/codexqa-preflight.sh"
+# shellcheck source=lib/index-diff-base.sh
+source "$SCRIPT_DIR/lib/index-diff-base.sh"
 COMMANDS=()
 
 usage() {
@@ -43,6 +46,8 @@ Options:
   --path-entry-limit N Max entry candidates per symbol for path (default: 3)
   --skip-index         Skip codexqa index (reuse existing CodexQA diff index only)
   --full               Pass --full to codexqa index (force full reparse + diff-base tags)
+  --github-pr SPEC     owner/repo#number. File list from the GitHub API when git
+                       cannot see the three-dot diff (shallow history, fetch failed).
   --skip-search-index  Do not run search-index / sensitive search
   --skip-validate      Do not run validate-evidence.sh at end
   -h, --help           Show help
@@ -62,6 +67,7 @@ while [[ $# -gt 0 ]]; do
     --primary-lang) PRIMARY_LANG="${2:-}"; shift 2 ;;
     --skip-index) SKIP_INDEX=1; shift ;;
     --full) FORCE_FULL=1; shift ;;
+    --github-pr) GITHUB_PR="${2:-}"; shift 2 ;;
     --skip-search-index) SKIP_SEARCH_INDEX=1; shift ;;
     --skip-validate) SKIP_VALIDATE=1; shift ;;
     -h|--help) usage; exit 0 ;;
@@ -115,11 +121,46 @@ CODEXQA_VERSION="$(codexqa_version_string)"
 STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 if [[ "$SKIP_INDEX" -eq 0 ]]; then
-  if [[ "$FORCE_FULL" -eq 1 ]]; then
-    run codexqa index "$REPO_ABS" --full --diff-base "$DIFF_BASE"
-  else
-    run codexqa index "$REPO_ABS" --diff-base "$DIFF_BASE"
+  DIFF_BASE_SHA="$(index_diff_base_sha "$REPO_ABS" "$DIFF_BASE")"
+  DIFF_BASE_STAMP="$(index_diff_base_stamp_path "$REPO_ABS")"
+  GIT_CHANGED="$(index_diff_base_git_count "$REPO_ABS" "$DIFF_BASE")"
+  GH_LIST="$OUT_DIR/github-pr-files.txt"
+  GH_CHANGED=0
+  if [[ -n "$GITHUB_PR" ]]; then
+    if index_diff_base_github_files "$GITHUB_PR" "$GH_LIST"; then
+      GH_CHANGED="$(index_diff_base_file_count "$GH_LIST")"
+      echo "+ github pr files $GITHUB_PR count=$GH_CHANGED" | tee -a "$LOG"
+    else
+      echo "warn: GitHub PR file list unavailable for $GITHUB_PR" | tee -a "$LOG" >&2
+    fi
   fi
+  EXPECTED_CHANGED="$GIT_CHANGED"
+  if [[ "$EXPECTED_CHANGED" -eq 0 && "$GH_CHANGED" -gt 0 ]]; then
+    EXPECTED_CHANGED="$GH_CHANGED"
+  fi
+  if index_diff_base_cache_miss "$DIFF_BASE_STAMP" "$DIFF_BASE_SHA"; then
+    echo "+ diff-base cache miss ($DIFF_BASE_SHA); full index" | tee -a "$LOG"
+    FORCE_FULL=1
+  fi
+  INDEX_LOG="$OUT_DIR/index.log"
+  if [[ "$FORCE_FULL" -eq 1 ]]; then
+    echo "+ codexqa index $REPO_ABS --full --diff-base $DIFF_BASE" | tee -a "$LOG"
+    COMMANDS+=("codexqa index $REPO_ABS --full --diff-base $DIFF_BASE")
+    codexqa index "$REPO_ABS" --full --diff-base "$DIFF_BASE" 2>&1 | tee "$INDEX_LOG" | tee -a "$LOG"
+  else
+    echo "+ codexqa index $REPO_ABS --diff-base $DIFF_BASE" | tee -a "$LOG"
+    COMMANDS+=("codexqa index $REPO_ABS --diff-base $DIFF_BASE")
+    codexqa index "$REPO_ABS" --diff-base "$DIFF_BASE" 2>&1 | tee "$INDEX_LOG" | tee -a "$LOG"
+    INDEX_PARSED="$(index_diff_base_parse_index_log "$INDEX_LOG")"
+    INDEX_MODE="$(printf '%s\n' "$INDEX_PARSED" | awk 'NR==1')"
+    INDEX_FILES="$(printf '%s\n' "$INDEX_PARSED" | awk 'NR==2')"
+    if index_diff_base_ignored_diff "$INDEX_MODE" "$INDEX_FILES" "$EXPECTED_CHANGED" "$DIFF_BASE_STAMP"; then
+      echo "+ incremental index parsed 0 files but diff has $EXPECTED_CHANGED; full index" | tee -a "$LOG"
+      COMMANDS+=("codexqa index $REPO_ABS --full --diff-base $DIFF_BASE")
+      codexqa index "$REPO_ABS" --full --diff-base "$DIFF_BASE" 2>&1 | tee "$INDEX_LOG" | tee -a "$LOG"
+    fi
+  fi
+  index_diff_base_write_stamp "$DIFF_BASE_STAMP" "$DIFF_BASE" "$DIFF_BASE_SHA" "$EXPECTED_CHANGED"
 else
   echo "+ (skipped) codexqa index --diff-base $DIFF_BASE" | tee -a "$LOG"
   COMMANDS+=("(skipped) codexqa index --diff-base $DIFF_BASE")

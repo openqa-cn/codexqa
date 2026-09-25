@@ -68,20 +68,26 @@ if ! jq -e 'type == "object"' "$INPUT" >/dev/null 2>&1; then
   exit 1
 fi
 
-# Fill span hashes, drift skips, and untested names from the skeleton
-# before the closure gates. Packs without 30-conclusion-skeleton.json are unchanged.
-if [[ -f "$DIR/30-conclusion-skeleton.json" ]]; then
-  if ! "$SCRIPT_DIR/acr-python" "$SCRIPT_DIR/lib/seal-conclusion.py" --dir "$DIR" --input "$INPUT"; then
-    echo "error: seal-conclusion.py failed" >&2
-    exit 1
-  fi
+# Ledger fields are filled before the gates. A failure retries the fill once.
+seal_conclusion() {
+  "$SCRIPT_DIR/acr-python" "$SCRIPT_DIR/lib/seal-conclusion.py" --dir "$DIR" --input "$INPUT"
+}
+if ! seal_conclusion; then
+  echo "error: seal-conclusion.py failed" >&2
+  exit 1
 fi
 
 # Closure gates: report lines, test-oracle answers, symbol diff, rule shapes.
 # Packs without signal/symbol files (skill render fixtures) skip the gates.
 if ! "$SCRIPT_DIR/acr-python" "$SCRIPT_DIR/lib/validate-conclusion.py" "$DIR" "$INPUT"; then
-  echo "error: refused to render HTML until review-conclusion.json closes the pack" >&2
-  exit 1
+  if ! seal_conclusion; then
+    echo "error: seal-conclusion.py failed" >&2
+    exit 1
+  fi
+  if ! "$SCRIPT_DIR/acr-python" "$SCRIPT_DIR/lib/validate-conclusion.py" "$DIR" "$INPUT"; then
+    echo "error: refused to render HTML until review-conclusion.json closes the pack" >&2
+    exit 1
+  fi
 fi
 
 # Optional pack sidecars: ignore corrupt files rather than aborting render.
@@ -274,7 +280,8 @@ jq -c '
   def label_en($zh):
     ({
       "位置":"Location","变更":"Change","分类":"Category","风险":"Risk","依据":"Evidence",
-      "入口":"Entry","修复建议":"Fix","修法":"Fix","调用链路":"Call chain","结论":"Verdict",
+      "入口":"Entry","修复建议":"Recommendation","修法":"Recommendation","调用链路":"Call chain","结论":"Verdict",
+      "规则":"Rule","问题描述":"Message","代码片段":"Snippet",
       "谁":"Who","输入":"Input","行":"Line","账户":"Account","另见":"Also",
       "风险说明":"Risk","总评":"Overall","依据汇总":"Evidence summary","信号文件":"Signals file",
       "过度设计":"Over-engineering","必要性":"Necessity","可复现性":"Reproducibility",
@@ -284,8 +291,9 @@ jq -c '
       "重试":"Retries","降级/熔断":"Degradation / breaker","部分失败":"Partial failure",
       "幂等与补偿":"Idempotency","迁移":"Migrations","双写/扩缩":"Dual-write",
       "配置开关":"Feature flags","兼容窗口":"Compat window","破坏性公告":"Breaking announce",
-      "回滚路径":"Rollback","档位":"Tier","行业别名":"Industry tier","审查深度":"Evidence floor",
-      "热点路径":"Hot path","无界分配":"Unbounded allocation","N+1":"N+1"
+      "回滚路径":"Rollback",      "档位":"Tier","行业别名":"Industry tier","审查深度":"Evidence floor",
+      "热点路径":"Hot path","无界分配":"Unbounded allocation","N+1":"N+1",
+      "新颖问题数":"Novel findings","去重合并数":"Deduped","enrich 数":"Enriched","审阅焦点":"Focus"
     }[$zh] // $zh);
   def field_k($zh):
     "<span class=\"field-k\" data-zh=\"" + ($zh|esc) + "\" data-en=\"" + (label_en($zh)|esc) + "\">" + ($zh|esc) + "</span>";
@@ -398,7 +406,7 @@ jq -c '
           + (if nonempty($title) then
                 "<div class=\"chain-title\" data-zh=\"" + ($title|esc) + "\" data-en=\"" + (($cc.title_en // $title)|esc) + "\">" + ($title|esc) + "</div>"
               else "" end)
-          + ($paths | map(path_html(.; $focus)) | join(""))
+          + ($paths | map(path_html(if type == "string" then [.] else . end; $focus)) | join(""))
           + "</div>"
         end
     else ""
@@ -422,13 +430,18 @@ jq -c '
         + "</div>"
     end;
   def finding_chain($item):
-    if ($item.call_chain != null) then call_chain_html($item.call_chain)
+    (if ($item.call_chain != null) then call_chain_html($item.call_chain)
     else
       chain_from_callers(
         $item.callers // [];
         (if nonempty($item.location) then ($item.location | tostring | split("（")[0] | split(",")[0] | gsub("^\\s+|\\s+$"; "")) else "缺陷点" end)
       )
-    end;
+    end) as $drawn
+    | if nonempty($drawn) then $drawn
+      else
+        "<div class=\"call-chain\"><div class=\"chain-title\" data-zh=\"未记录调用方\" data-en=\"No caller recorded\">未记录调用方</div>"
+        + "<p data-zh=\"图里没有记下指向这一行的调用边。这不是僵尸函数。这一行可能是注释、导入，或由命令行直接进入；索引不完整时，真实调用边也会缺。\" data-en=\"The graph did not record a caller into this line. That does not make it a dead function. The line may be a comment, an import, or a command-line entry; a thin index also drops real caller edges.\">图里没有记下指向这一行的调用边。这不是僵尸函数。这一行可能是注释、导入，或由命令行直接进入；索引不完整时，真实调用边也会缺。</p></div>"
+      end;
   # Machine change_status → bilingual human label (keep raw values in JSON).
   def change_label($s; $mode):
     (($s // "") | tostring | ascii_downcase) as $c
@@ -442,28 +455,41 @@ jq -c '
       else ($s | tostring | esc)
       end;
   def line_sentence($item):
-    (if ($item.line | type) == "number" then ("第 " + ($item.line | tostring) + " 行") else "" end) as $zh
-    | (if ($item.line | type) == "number" then ("line " + ($item.line | tostring)) else "" end) as $en
-    | (if nonempty($item.location) then
-        {zh: (if $zh == "" then ($item.location | tostring) else $zh + " · " + ($item.location | tostring) end),
-         en: (if $en == "" then (($item.location_en // $item.location) | tostring) else $en + " · " + (($item.location_en // $item.location) | tostring) end)}
-      else {zh: $zh, en: (if $en == "" then $zh else $en end)} end);
+    (if (($item.file // "") | tostring | length) > 0 then ($item.file | tostring)
+     elif (($item.path // "") | tostring | length) > 0 then ($item.path | tostring)
+     elif (($item.location // "") | tostring | test(":")) then ($item.location | tostring | split(":")[0])
+     elif (($item.location // "") | tostring | length) > 0 then ($item.location | tostring)
+     else "" end) as $file
+    | (if ($item.line | type) == "number" then ($item.line | tostring) else "" end) as $ln
+    | if ($file != "" and $ln != "") then {zh: ($file + ":" + $ln), en: ($file + ":" + $ln)}
+      elif $file != "" then {zh: $file, en: $file}
+      elif $ln != "" then {zh: ("第 " + $ln + " 行"), en: ("line " + $ln)}
+      else {zh: "", en: ""} end;
   def also_sentence($item):
     if ($item.same_fix == true and ((($item.also_lines // []) | length) > 0)) then
       (($item.also_lines // []) | map(tostring) | join("、")) as $nums
       | {zh: ("另见第 " + $nums + " 行"), en: ("also lines " + $nums)}
     else {zh: "", en: ""} end;
-  def scenario_html($item):
-    if (nonempty($item.actor) or nonempty($item.input) or nonempty($item.outcome)) then
-      field_bi("谁"; ""; $item.actor; $item.actor_en)
-      + field_bi("输入"; ""; $item.input; $item.input_en)
-      + (line_sentence($item) as $ln | field_bi("行"; "is-path"; $ln.zh; $ln.en))
-      + field_bi("账户"; ""; $item.outcome; $item.outcome_en)
+  def detect_badge($item):
+    if ($item.source == "llm_judgment") then
+      "<span class=\"detect llm\" data-zh=\"LLM检出\" data-en=\"LLM\">LLM检出</span>"
     else
-      field_bi("位置"; "is-path"; $item.location; $item.location_en)
-      + field_bi("风险"; ""; $item.risk; $item.risk_en)
-      + field_bi("依据"; ""; $item.evidence; $item.evidence_en)
+      "<span class=\"detect sast\" data-zh=\"SAST检出\" data-en=\"SAST\">SAST检出</span>"
     end;
+  def rule_of($item):
+    (($item.rule_id // $item.pattern_class // $item.kind // "") | tostring);
+  def scenario_html($item):
+    (rule_of($item)) as $rule
+    | (line_sentence($item) as $ln
+      | field_bi("规则"; "is-cat"; $rule; $rule)
+      + field_bi("位置"; "is-path"; $ln.zh; $ln.en)
+      + field_bi("问题描述"; ""; $item.risk; $item.risk_en)
+      + field_bi("代码片段"; "is-path"; $item.existing_code; ($item.existing_code_en // $item.existing_code))
+      + (if (nonempty($item.actor) or nonempty($item.input) or nonempty($item.outcome)) then
+          field_bi("谁"; ""; $item.actor; $item.actor_en)
+          + field_bi("输入"; ""; $item.input; $item.input_en)
+          + field_bi("账户"; ""; $item.outcome; $item.outcome_en)
+        else "" end));
   def fold_html($item; $mode):
     ("<div class=\"field\">" + field_k("变更") + "<div class=\"field-v is-cat\">" + change_label($item.change_status; $mode) + "</div></div>") as $change
     | ("<div class=\"field\">" + field_k("分类") + "<div class=\"field-v is-cat\">" + category_bi($item.category) + "</div></div>") as $cat
@@ -489,12 +515,13 @@ jq -c '
         | "<article class=\"finding case \($sev)\" id=\"" + ($id|esc) + "\" data-pri=\"" + ($sev|ascii_upcase) + "\">"
         + "<header class=\"finding-head case-head\" role=\"button\" tabindex=\"0\" aria-expanded=\"false\">"
         + "<span class=\"sev \($sev)\">\($sev | ascii_upcase)</span>"
+        + detect_badge(.)
         + "<span class=\"defect-id\">" + ($id|esc) + "</span>"
         + "<h3 data-zh=\"" + ($tz|esc) + "\" data-en=\"" + ($te|esc) + "\">" + ($tz|esc) + "</h3>"
         + "<span class=\"chev\" aria-hidden=\"true\"></span></header>"
         + "<div class=\"finding-body case-body\">"
         + scenario_html(.)
-        + field_bi("修法"; ""; .fix; .fix_en)
+        + field_bi("修复建议"; ""; .fix; .fix_en)
         + field_bi("另见"; ""; $also.zh; $also.en)
         + fold_html(.; $mode)
         + "</div></article>"
@@ -803,6 +830,50 @@ jq -c '
             + "</section>\n"
         end
       ),
+      observability_html: (
+        if ($r.observability == null or (dim_issue($r.observability.verdict) | not)) then ""
+        else
+          ($r.observability) as $o
+          | "<section>" + h2bi("可观测性"; "Observability")
+            + ("<div class=\"field\">" + field_k("结论") + "<div class=\"field-v is-cat\">" + verdict_bi($o.verdict) + "</div></div>")
+            + field_bi("风险说明"; ""; $o.risk; $o.risk_en)
+            + field_bi("缺少观测"; ""; $o.missing; $o.missing_en)
+            + field_bi("日志出口"; ""; $o.sinks; $o.sinks_en)
+            + field_bi("依据"; ""; $o.evidence; $o.evidence_en)
+            + field("信号文件"; "is-path"; $o.signals_file)
+            + "</section>\n"
+        end
+      ),
+      contract_html: (
+        if ($r.contract == null or (dim_issue($r.contract.verdict) | not)) then ""
+        else
+          ($r.contract) as $c
+          | "<section>" + h2bi("契约"; "Contract")
+            + ("<div class=\"field\">" + field_k("结论") + "<div class=\"field-v is-cat\">" + verdict_bi($c.verdict) + "</div></div>")
+            + field_bi("风险说明"; ""; $c.risk; $c.risk_en)
+            + field_bi("破坏性提示"; ""; $c.breaking; $c.breaking_en)
+            + field_bi("错误结果"; ""; $c.errors; $c.errors_en)
+            + field_bi("HTML 汇入"; ""; $c.html; $c.html_en)
+            + field_bi("依据"; ""; $c.evidence; $c.evidence_en)
+            + field("信号文件"; "is-path"; $c.signals_file)
+            + "</section>\n"
+        end
+      ),
+      maintainability_html: (
+        if ($r.maintainability == null or (dim_issue($r.maintainability.verdict) | not)) then ""
+        else
+          ($r.maintainability) as $m
+          | "<section>" + h2bi("可维护性"; "Maintainability")
+            + ("<div class=\"field\">" + field_k("结论") + "<div class=\"field-v is-cat\">" + verdict_bi($m.verdict) + "</div></div>")
+            + field_bi("风险说明"; ""; $m.risk; $m.risk_en)
+            + field_bi("待办"; ""; $m.todos; $m.todos_en)
+            + field_bi("字面量"; ""; $m.numbers; $m.numbers_en)
+            + field_bi("测试"; ""; $m.tests; $m.tests_en)
+            + field_bi("依据"; ""; $m.evidence; $m.evidence_en)
+            + field("信号文件"; "is-path"; $m.signals_file)
+            + "</section>\n"
+        end
+      ),
       llm_judgment_html: (
         if ($r.llm_judgment == null or (dim_issue($r.llm_judgment.verdict) | not)) then ""
         else
@@ -880,7 +951,8 @@ jq -n -r --slurpfile p "$FRAG" --arg css "$CSS" --arg js "$JS" '
   + (if (
       (($p.risk_tier_html // "") + ($p.design_fit_html // "") + ($p.complexity_html // "")
         + ($p.dependencies_html // "") + ($p.resilience_html // "") + ($p.privacy_html // "")
-        + ($p.rollout_html // "") + ($p.performance_html // "") + ($p.llm_judgment_html // "")) | length
+        + ($p.rollout_html // "") + ($p.observability_html // "") + ($p.contract_html // "")
+        + ($p.maintainability_html // "") + ($p.performance_html // "") + ($p.llm_judgment_html // "")) | length
     ) > 0 then
       "<details class=\"fold dim-fold\"><summary data-zh=\"维度与调用链\" data-en=\"Dimensions and call chains\">维度与调用链</summary>\n"
       + ($p.risk_tier_html // "")
@@ -890,6 +962,9 @@ jq -n -r --slurpfile p "$FRAG" --arg css "$CSS" --arg js "$JS" '
       + ($p.resilience_html // "")
       + ($p.privacy_html // "")
       + ($p.rollout_html // "")
+      + ($p.observability_html // "")
+      + ($p.contract_html // "")
+      + ($p.maintainability_html // "")
       + ($p.performance_html // "")
       + ($p.llm_judgment_html // "")
       + "</details>\n"

@@ -459,12 +459,16 @@ def span_text(lines: list[str], ranges: list) -> str:
 
 
 def pr_paths_from_detail(detail: dict) -> set[str] | None:
-    """Paths the PR commits touch. None when git history was unavailable."""
+    """Paths still different from the base tip, or only on the PR.
+
+    identical_to_base matches the current base tip and is not reviewable.
+    None when git history was unavailable.
+    """
     three = detail.get("three_dot")
     if not isinstance(three, dict):
         return None
     paths: set[str] = set()
-    for key in ("identical_to_base", "content_differs", "only_on_head"):
+    for key in ("content_differs", "only_on_head"):
         values = three.get(key) or []
         if not isinstance(values, list):
             return None

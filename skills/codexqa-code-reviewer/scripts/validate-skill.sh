@@ -73,6 +73,7 @@ fi
 
 # shellcheck disable=SC2043
 for sh in \
+  "$ROOT/scripts/resolve-pr-checkout.sh" \
   "$ROOT/scripts/collect-pr-evidence.sh" \
   "$ROOT/scripts/collect-fullrepo-evidence.sh" \
   "$ROOT/scripts/collect-adhoc-evidence.sh" \
@@ -95,6 +96,7 @@ for sh in \
   "$ROOT/scripts/lib/install-sast-tools.sh" \
   "$ROOT/scripts/lib/sast-tool-path.sh" \
   "$ROOT/scripts/lib/derive-annotation-edges.sh" \
+  "$ROOT/scripts/lib/index-diff-base.sh" \
   "$ROOT/scripts/validate-skill.sh"
 do
   if [[ -f "$sh" ]]; then
@@ -327,10 +329,10 @@ set +e
 GO="$("$ROOT/scripts/render-review-html.sh" --dir "$GATE_DIR" 2>&1)"
 GEC=$?
 set -e
-if [[ "$GEC" -ne 0 ]] && echo "$GO" | grep -q 'src/A.java:10'; then
-  pass "render refuses a report row missing from findings"
+if [[ "$GEC" -eq 0 ]] && jq -e '[.p0,.p1,.p2] | add | any(.line==10 and .rule_id=="SEC-001")' "$GATE_DIR/review-conclusion.json" >/dev/null; then
+  pass "render seals an uncited report row onto a card"
 else
-  fail "render should refuse an uncited report row"
+  fail "render should seal an uncited report row before writing HTML"
   echo "$GO" >&2
 fi
 "$ROOT/scripts/acr-python" - <<PY
@@ -375,6 +377,159 @@ else
   echo "$GO" >&2
 fi
 
+# Script closes two relations on one line, hashes, and default oracle skips.
+CLOSE_DIR="$TMP/close-ledger"
+mkdir -p "$CLOSE_DIR/src"
+printf 'select a from t\n' >"$CLOSE_DIR/src/A.java"
+python3 - <<PY
+import hashlib, json
+from pathlib import Path
+root = Path(r'''$CLOSE_DIR''')
+text = (root/"src"/"A.java").read_text()
+lines = text.splitlines()
+span = "\n".join(lines)
+digest = hashlib.sha256(span.encode()).hexdigest()
+(root/"23-sast-signals.json").write_text(json.dumps({"findings":[
+    {"disposition":"report","file":"src/A.java","line":1,"pattern_class":"sqli","severity":"P0"},
+    {"disposition":"report","file":"src/A.java","line":4,"pattern_class":"sqli","severity":"P0"},
+    {"disposition":"report","file":"src/A.java","line":1,"kind":"missing_protection","severity":"P1"},
+]}), encoding="utf-8")
+(root/"18-maintainability-signals.json").write_text(json.dumps({
+    "test_oracle_inventory":[
+      {"path":"src/ATest.java","line":3,"kind":"test_oracle","questions":["locks_private","locks_dependency","threshold_pass","observability_asserted"]},
+      {"path":"src/ATest.java","line":9,"kind":"test_oracle","questions":["locks_private"]}
+    ],
+    "test_oracle_hits":[{"path":"src/ATest.java","line":9,"kind":"test_oracle","disposition":"report","questions":["locks_private"]}],
+    "derive_suspects":[{"close":"per_line","disposition":"suspect","kind":"missing_timeout","line":8,"path":"src/A.java","derive_suspect_id":"missing_timeout:src/A.java:8"}],
+}), encoding="utf-8")
+(root/"24-coverage-ledger.json").write_text(json.dumps({
+    "source_root": str(root),
+    "symbols":[{"symbol_id":"m","path":"src/A.java","status":"pending","start_line":1,"end_line":9,"ranges":[[1,9]]}],
+}), encoding="utf-8")
+(root/"05-changed-symbols.json").write_text(json.dumps({
+    "nodes":[{"name":"charge","kind":"method","tested_count":0,"start_line":1}],
+}), encoding="utf-8")
+(root/"judgment.json").write_text(json.dumps({
+    "findings":[{"title":"补偿加错账户","line":2,"category":"correctness","severity":"p0","kind":"compensation","file":"src/A.java"}],
+    "suspect_hits":[],
+    "test_oracle":[{"line":9,"oracle":{"unsafe_pass":True,"boundary_missed":False,"branch_uncovered":False,"locks_private":False}}],
+}), encoding="utf-8")
+(root/"review-conclusion.json").write_text(json.dumps({"p0":[],"p1":[],"p2":[]}), encoding="utf-8")
+Path_digest = digest
+(root/"expect-hash.txt").write_text(digest, encoding="utf-8")
+PY
+if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/seal-conclusion.py" --dir "$CLOSE_DIR" --input "$CLOSE_DIR/review-conclusion.json" \
+  && "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$CLOSE_DIR" "$CLOSE_DIR/review-conclusion.json" >/dev/null \
+  && jq -e '
+      ([.p0,.p1,.p2]|add|map(select(.pattern_class=="sqli" and .same_fix==true and .file=="src/A.java" and .existing_code=="select a from t" and ((.also_lines|index(4))!=null)))|length)==1
+      and ([.p0,.p1,.p2]|add|map(select(.kind=="missing_protection"))|length)==1
+      and ([.coverage_closure[]|select(.symbol_id=="m")|.span_hash]|.[0])==$hash
+      and ([.test_oracle_coverage[]|select(.line==3 and .result=="skip")]|length)==1
+      and ([.test_oracle_coverage[]|select(.line==9 and .result=="hit")]|length)==1
+      and ([.test_gaps[].symbols[]?]|index("charge"))!=null
+      and ([.line_skips[]|select(.line==8)]|length)==1
+    ' --arg hash "$(cat "$CLOSE_DIR/expect-hash.txt")" "$CLOSE_DIR/review-conclusion.json" >/dev/null; then
+  pass "seal fills report cards, hash, oracle skips, and suspect skips"
+else
+  fail "seal should close two relations, the hash, and default oracle skips"
+  jq '{cards:[.p0,.p1,.p2]|add|map({line,kind,pattern_class,rule_id}),closure:.coverage_closure,oracle:.test_oracle_coverage,gaps:.test_gaps,skips:.line_skips}' \
+    "$CLOSE_DIR/review-conclusion.json" >&2 || true
+fi
+
+# Re-seal, higher severity, a shared line number, and a half-written oracle.
+ROBUST_DIR="$TMP/seal-robust"
+mkdir -p "$ROBUST_DIR"
+python3 - <<PY
+import json
+from pathlib import Path
+root = Path(r'''$ROBUST_DIR''')
+(root/"23-sast-signals.json").write_text(json.dumps({"findings":[
+    {"disposition":"report","file":"src/A.java","line":2,"pattern_class":"sqli","severity":"P2"},
+    {"disposition":"report","file":"src/A.java","line":9,"pattern_class":"sqli","severity":"P0"},
+    {"disposition":"report","file":"src/Old.java","line":4,"pattern_class":"sqli","severity":"P0"},
+    {"disposition":"report","file":"src/Pay.java","line":4,"kind":"missing_limit","severity":"P0"},
+]}), encoding="utf-8")
+(root/"18-maintainability-signals.json").write_text(json.dumps({"test_oracle_inventory":[
+    {"path":"T.java","line":3,"questions":["locks_private"]}
+]}), encoding="utf-8")
+(root/"30-conclusion-skeleton.json").write_text(json.dumps({
+    "branch_drift_lines": [],
+    "line_skips":[{"kind":"sqli","line":4,"note":"outside patch"}],
+}), encoding="utf-8")
+(root/"judgment.json").write_text(json.dumps({
+    "findings":[{"title":"补偿加错账户","line":3,"severity":"p0","kind":"compensation","file":"src/A.java"}],
+}), encoding="utf-8")
+(root/"review-conclusion.json").write_text(json.dumps({
+    "p0":[],"p1":[],"p2":[],
+    "test_oracle_coverage":[{"path":"T.java","line":3,"result":"skip","oracle":{"unsafe_pass":False}}],
+}), encoding="utf-8")
+PY
+if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/seal-conclusion.py" --dir "$ROBUST_DIR" --input "$ROBUST_DIR/review-conclusion.json" \
+  && "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/seal-conclusion.py" --dir "$ROBUST_DIR" --input "$ROBUST_DIR/review-conclusion.json" \
+  && "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$ROBUST_DIR" "$ROBUST_DIR/review-conclusion.json" >/dev/null \
+  && jq -e '
+      ([.p0,.p1,.p2]|add|map(select(.kind=="compensation"))|length)==1
+      and ([.p0[]|select(.pattern_class=="sqli")]|length)==1
+      and ([.p2[]|select(.pattern_class=="sqli")]|length)==0
+      and ([.p0[]|select(.kind=="missing_limit")]|length)==1
+      and ([.p0,.p1,.p2]|add|map(select(.file=="src/Old.java"))|length)==0
+      and ([.line_skips[]|select(.kind=="branch_drift" and .path=="src/Old.java" and .line==4)]|length)==1
+      and (.test_oracle_coverage[0].oracle|keys|sort)==["boundary_missed","branch_uncovered","locks_private","unsafe_pass"]
+    ' "$ROBUST_DIR/review-conclusion.json" >/dev/null; then
+  pass "reseal keeps one card, the higher severity, and the other file"
+else
+  fail "reseal, severity, or a shared line number changed the ledger"
+  jq '{p0,p2,skips:.line_skips,oracle:.test_oracle_coverage}' "$ROBUST_DIR/review-conclusion.json" >&2 || true
+fi
+
+# Independent groups split for a concurrent pass. English and callers are filled.
+SPLIT_DIR="$TMP/split-groups"
+mkdir -p "$SPLIT_DIR"
+"$ROOT/scripts/acr-python" - <<PY
+import importlib.util, json
+from pathlib import Path
+root = Path(r'''$SPLIT_DIR''')
+packet = {
+    "read_groups": [
+        {"id": "g0", "paths": ["src/A.java"], "independent": True, "text": "a"},
+        {"id": "g1", "paths": ["src/B.java"], "independent": True, "text": "b"},
+    ],
+    "suspects": {"packets": [{"derive_suspect_id": "t:src/A.java:1"}]},
+    "semantic_candidates": [],
+    "neighbor_groups": [{"file": "src/A.java", "paths": ["src/Caller.java"]}],
+    "plan_required": False,
+    "risk_tier": {},
+}
+(root/"29-judgment-packet.json").write_text(json.dumps(packet), encoding="utf-8")
+(root/"judgment-groups").mkdir()
+(root/"judgment-groups"/"group-0.json").write_text(json.dumps({
+    "findings": [{"title": "甲组漏记", "line": 2, "severity": "p1", "kind": "compensation", "file": "src/A.java", "risk": "少了一笔", "fix": "补上"}],
+}), encoding="utf-8")
+(root/"judgment-groups"/"group-1.json").write_text(json.dumps({
+    "findings": [{"title": "乙组漏记", "line": 3, "severity": "p1", "kind": "compensation", "file": "src/B.java"}],
+}), encoding="utf-8")
+(root/"review-conclusion.json").write_text(json.dumps({"p0":[],"p1":[],"p2":[]}), encoding="utf-8")
+spec = importlib.util.spec_from_file_location("packet", Path(r'''$ROOT''')/"scripts/lib/build-judgment-packet.py")
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+n = mod.split_work(root, packet)
+assert n == 2
+assert (root/"judgment-work"/"group-0.json").is_file()
+assert (root/"judgment-work"/"shared.json").is_file()
+PY
+if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/seal-conclusion.py" --dir "$SPLIT_DIR" --input "$SPLIT_DIR/review-conclusion.json" \
+  && jq -e '
+      ([.p1[]|select(.title=="甲组漏记")]|length)==1
+      and ([.p1[]|select(.title=="乙组漏记")]|length)==1
+      and .p1[0].title_en == .p1[0].title
+      and (([.p1[]|select(.file=="src/A.java")|.callers[0]]|.[0])=="src/Caller.java")
+    ' "$SPLIT_DIR/review-conclusion.json" >/dev/null; then
+  pass "independent groups split, and seal merges fragments"
+else
+  fail "independent groups should split and merge without a second essay"
+  jq '.p1' "$SPLIT_DIR/review-conclusion.json" >&2 || true
+fi
+
 # One card cannot close two pattern classes. Same rule and same fix can.
 SCENE_DIR="$TMP/scene-cards"
 mkdir -p "$SCENE_DIR"
@@ -385,7 +540,7 @@ printf '%s\n' '{"p0":[{"title":"密钥和关掉 TLS","line":10,"same_fix":true,"
 set +e
 SCENE_FAIL="$("$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$SCENE_DIR" "$SCENE_DIR/merged.json" 2>&1)"
 set -e
-if echo "$SCENE_FAIL" | grep -q 'closes two relations'; then
+if echo "$SCENE_FAIL" | grep -Eq 'closes two relations|missing from finding line lists'; then
   pass "one card cannot close two pattern classes"
 else
   fail "merged secret and TLS card should fail the line ledger"
@@ -429,6 +584,422 @@ if echo "$DEFER_FAIL" | grep -q 'deferral without a real card line'; then
 else
   fail "deferral without a listed line should fail the ledger"
   echo "$DEFER_FAIL" >&2
+fi
+
+# Snippet gate: absent existing_code stays valid; a mismatch fails when source exists.
+SNIP_DIR="$TMP/snippet-gate"
+mkdir -p "$SNIP_DIR/src"
+printf 'other()\ncredit(payee, amount)\n' >"$SNIP_DIR/src/Pay.java"
+printf '%s\n' "{\"source_root\":\"$SNIP_DIR\",\"symbols\":[]}" >"$SNIP_DIR/24-coverage-ledger.json"
+printf '%s\n' '{"p0":[{"title":"旧结论","line":1,"location":"src/Pay.java"}],"p1":[],"p2":[]}' >"$SNIP_DIR/old.json"
+printf '%s\n' '{"p0":[{"title":"对得上","line":2,"location":"src/Pay.java","existing_code":"credit( payee, amount )"}],"p1":[],"p2":[]}' >"$SNIP_DIR/ok.json"
+printf '%s\n' '{"p0":[{"title":"对不上","line":1,"location":"src/Pay.java","existing_code":"debit(payer)"}],"p1":[],"p2":[]}' >"$SNIP_DIR/bad.json"
+printf '%s\n' '{"p0":[{"title":"行号错了","line":1,"location":"src/Pay.java","existing_code":"credit(payee, amount)"}],"p1":[],"p2":[]}' >"$SNIP_DIR/wrong-line.json"
+set +e
+SNIP_BAD="$("$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$SNIP_DIR" "$SNIP_DIR/bad.json" 2>&1)"
+SNIP_LINE="$("$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$SNIP_DIR" "$SNIP_DIR/wrong-line.json" 2>&1)"
+set -e
+if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$SNIP_DIR" "$SNIP_DIR/old.json" >/dev/null \
+  && "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$SNIP_DIR" "$SNIP_DIR/ok.json" >/dev/null \
+  && echo "$SNIP_BAD" | grep -q 'existing_code is not in the file diff or source' \
+  && echo "$SNIP_LINE" | grep -q 'existing_code is not in the file diff or source'; then
+  pass "existing_code is checked only when present"
+else
+  fail "snippet gate should keep old conclusions and reject a missing snippet"
+  echo "$SNIP_BAD" >&2
+  echo "$SNIP_LINE" >&2
+fi
+
+# Snippet check opens file before path or location. A shared line in another file must not win.
+ORDER_DIR="$TMP/snippet-order"
+mkdir -p "$ORDER_DIR/cli/assets/scripts" "$ORDER_DIR/stack/scripts"
+printf '%s\n' 'for word in doc:' >"$ORDER_DIR/cli/assets/scripts/core.py"
+printf '%s\n' 'scroll()' >"$ORDER_DIR/stack/scripts/design-audit.mjs"
+printf '%s\n' "{\"source_root\":\"$ORDER_DIR\",\"symbols\":[]}" >"$ORDER_DIR/24-coverage-ledger.json"
+printf '%s\n' '{"p0":[{"title":"循环拼接","line":1,"file":"cli/assets/scripts/core.py","path":"stack/scripts/design-audit.mjs","location":"stack/scripts/design-audit.mjs","existing_code":"for word in doc:"}],"p1":[],"p2":[]}' >"$ORDER_DIR/ok.json"
+if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$ORDER_DIR" "$ORDER_DIR/ok.json" >/dev/null; then
+  pass "snippet check reads the file field before other paths"
+else
+  fail "snippet check should open file before path or location"
+fi
+
+# Same rule in two files is two cards, each with that file's own line.
+SPLIT_CARD="$TMP/seal-per-file"
+mkdir -p "$SPLIT_CARD/cli" "$SPLIT_CARD/stack"
+printf '%s\n' 'for word in doc:' >"$SPLIT_CARD/cli/core.py"
+printf '%s\n' 'for (const f of findings) {' >"$SPLIT_CARD/stack/design-audit.mjs"
+python3 - <<PY
+import json
+from pathlib import Path
+root = Path(r'''$SPLIT_CARD''')
+(root/"23-sast-signals.json").write_text(json.dumps({"findings":[
+    {"disposition":"report","file":"cli/core.py","line":1,"kind":"string_concat_in_loop","severity":"P2"},
+    {"disposition":"report","file":"stack/design-audit.mjs","line":1,"kind":"string_concat_in_loop","severity":"P2"},
+]}), encoding="utf-8")
+(root/"24-coverage-ledger.json").write_text(json.dumps({"source_root": str(root), "symbols":[]}), encoding="utf-8")
+(root/"review-conclusion.json").write_text(json.dumps({"p0":[],"p1":[],"p2":[]}), encoding="utf-8")
+PY
+if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/seal-conclusion.py" --dir "$SPLIT_CARD" --input "$SPLIT_CARD/review-conclusion.json" \
+  && jq -e '
+      ([.p2[]|select(.kind=="string_concat_in_loop")]|length)==2
+      and ([.p2[]|select(.file=="cli/core.py" and .existing_code=="for word in doc:")]|length)==1
+      and ([.p2[]|select(.file=="stack/design-audit.mjs" and .existing_code=="for (const f of findings) {")]|length)==1
+    ' "$SPLIT_CARD/review-conclusion.json" >/dev/null; then
+  pass "report rows become one card per rule and file"
+else
+  fail "one relation in two files should be two cards with that file's line"
+  jq '{p2}' "$SPLIT_CARD/review-conclusion.json" >&2 || true
+fi
+
+# Dedupe drops an unanchored snippet only when a diff is passed. Correctness stays.
+MERGE_DIFF="$TMP/merge-diff"
+mkdir -p "$MERGE_DIFF"
+printf '%s\n' '{"p0":[],"p1":[],"p2":[]}' >"$MERGE_DIFF/base.json"
+printf '%s\n' '{"p0":[],"p1":[{"title":"helper builds SQL","category":"security","file":"src/A.java","line":4,"existing_code":"rawSql()"}],"p2":[]}' >"$MERGE_DIFF/cand.json"
+printf '%s\n' '{"src/A.java":"stmt.execute(sql)"}' >"$MERGE_DIFF/diffs.json"
+"$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
+  --baseline "$MERGE_DIFF/base.json" --candidates "$MERGE_DIFF/cand.json" \
+  --out "$MERGE_DIFF/nodiff.json" --report "$MERGE_DIFF/nodiff-report.json" --mode pr >/dev/null
+"$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
+  --baseline "$MERGE_DIFF/base.json" --candidates "$MERGE_DIFF/cand.json" \
+  --diffs "$MERGE_DIFF/diffs.json" \
+  --out "$MERGE_DIFF/dropped.json" --report "$MERGE_DIFF/dropped-report.json" --mode pr >/dev/null
+printf '%s\n' '{"p0":[],"p1":[{"title":"limit uses equals","category":"correctness","file":"src/A.java","line":4,"existing_code":"rawSql()"}],"p2":[]}' >"$MERGE_DIFF/safe.json"
+"$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
+  --baseline "$MERGE_DIFF/base.json" --candidates "$MERGE_DIFF/safe.json" \
+  --diffs "$MERGE_DIFF/diffs.json" \
+  --out "$MERGE_DIFF/kept.json" --report "$MERGE_DIFF/kept-report.json" --mode pr >/dev/null
+if jq -e '(.p1|length)==1' "$MERGE_DIFF/nodiff.json" >/dev/null \
+  && jq -e '(.p1|length)==0' "$MERGE_DIFF/dropped.json" >/dev/null \
+  && jq -e '.dropped_unanchored==1' "$MERGE_DIFF/dropped-report.json" >/dev/null \
+  && jq -e '(.p1|length)==1' "$MERGE_DIFF/kept.json" >/dev/null; then
+  pass "unanchored snippet is dropped only with a diff, and correctness stays"
+else
+  fail "diff snippet drop should ignore old candidates and protected categories"
+  jq '.' "$MERGE_DIFF/nodiff.json" "$MERGE_DIFF/dropped-report.json" "$MERGE_DIFF/kept.json" >&2
+fi
+
+# Judgment packet adds neighbors and plan_required without splitting identical copies.
+PKT_DIR="$TMP/packet-fields"
+mkdir -p "$PKT_DIR/repo" "$PKT_DIR/pack"
+printf 'same\n' >"$PKT_DIR/repo/a.java"
+cp "$PKT_DIR/repo/a.java" "$PKT_DIR/repo/b.java"
+printf 'caller\n' >"$PKT_DIR/repo/Caller.java"
+set +e
+"$ROOT/scripts/acr-python" - <<PY
+import json
+import sys
+from pathlib import Path
+import importlib.util
+root = Path(r'''$ROOT''')
+sys.path.insert(0, str(root/"scripts/lib"))
+spec = importlib.util.spec_from_file_location("ledger", root/"scripts/lib/build-coverage-ledger.py")
+ledger = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(ledger)
+repo = Path(r'''$PKT_DIR''')/"repo"
+symbols = [
+    {"symbol_id":"a","path":"a.java","status":"pending","start_line":1,"end_line":1},
+    {"symbol_id":"b","path":"b.java","status":"pending","start_line":1,"end_line":1},
+]
+groups = ledger.assign_read_groups(symbols, str(repo))
+assert len(groups)==1 and set(groups[0]["paths"])=={"a.java","b.java"}, groups
+pack = Path(r'''$PKT_DIR''')/"pack"
+bundle = {
+    "pending": [
+        {"symbol_id":"a","path":"a.java","start_line":1,"end_line":60,"read_group":groups[0]["id"]},
+        {"symbol_id":"c","path":"Caller.java","start_line":1,"end_line":1,"read_group":"other"},
+    ],
+    "read_groups": [
+        groups[0],
+        {"id":"other","paths":["Caller.java"],"symbol_ids":["c"]},
+    ],
+    "impacts": [{
+        "symbol_id":"a","file":"a.java","review_scope":"pr_delta",
+        "callers":[{"from_file":"Caller.java"}],
+    }],
+}
+(pack/"28-symbol-bundle.json").write_text(json.dumps(bundle), encoding="utf-8")
+(pack/"24-coverage-ledger.json").write_text("{}", encoding="utf-8")
+spec2 = importlib.util.spec_from_file_location("packet", root/"scripts/lib/build-judgment-packet.py")
+packet = importlib.util.module_from_spec(spec2)
+spec2.loader.exec_module(packet)
+doc, _ = packet.build(pack, repo)
+assert doc["plan_required"] is True, doc["plan_required"]
+assert len(doc["read_groups"])==2
+assert set(doc["read_groups"][0]["paths"])=={"a.java","b.java"}
+assert doc["neighbor_groups"] and doc["neighbor_groups"][0]["paths"]==["Caller.java"]
+flags = {g["id"]: g["independent"] for g in doc["read_groups"]}
+assert flags[groups[0]["id"]] is False and flags["other"] is False, flags
+small = dict(bundle)
+small["pending"] = [{"symbol_id":"a","path":"a.java","start_line":1,"end_line":10,"read_group":groups[0]["id"]}]
+small["read_groups"] = [groups[0]]
+small["impacts"] = []
+(pack/"28-symbol-bundle.json").write_text(json.dumps(small), encoding="utf-8")
+doc2, _ = packet.build(pack, repo)
+assert doc2["plan_required"] is False
+assert doc2["neighbor_groups"]==[]
+assert doc2["read_groups"][0]["independent"] is True
+overlap = packet.plan_required([
+    {"path":"a.java","start_line":1,"end_line":30},
+    {"path":"a.java","start_line":10,"end_line":40},
+])
+assert overlap is False, overlap
+policies = packet.load_rule_policies(root)
+assert policies["LOGIC-001"]["look_for"].startswith("An off-by-one")
+assert "do_not_report" in policies["LOGIC-001"]
+assert "BIZ-001" in policies and "look_for" in policies["BIZ-001"]
+selected = packet.rules_for(["LOGIC-001", "NO-SUCH"], policies)
+assert set(selected) == {"LOGIC-001"}
+assert selected["LOGIC-001"]["do_not_report"] == policies["LOGIC-001"]["do_not_report"]
+bundle["pending"][0]["applicable"] = ["LOGIC-001"]
+bundle["pending"][1]["applicable"] = ["BIZ-001"]
+(pack/"28-symbol-bundle.json").write_text(json.dumps(bundle), encoding="utf-8")
+doc3, _ = packet.build(pack, repo)
+assert set(doc3["rules"]) == {"LOGIC-001", "BIZ-001"}, doc3["rules"].keys()
+assert "payment" in doc3["rules"]["BIZ-001"]["look_for"].lower() or "debit" in doc3["rules"]["BIZ-001"]["look_for"].lower()
+added = packet.parse_added_lines("+++ b/core.py\n@@ -10,0 +10,3 @@\n+a\n+b\n+c\n")
+assert added["core.py"] == {10, 11, 12}, added
+kept = packet.focus_ranges("method", [(100, 120)], {10, 11, 12}, 200)
+assert kept == []
+touched = packet.focus_ranges("method", [(1, 40)], {10}, 200)
+assert touched == [(1, 40)]
+window = packet.focus_ranges("file_scope", [(1, 200)], {20}, 200)
+assert window == [(12, 28)], window
+print("packet fields ok")
+PY
+PKT_EC=$?
+set -e
+if [[ "$PKT_EC" -eq 0 ]]; then
+  pass "judgment packet adds neighbors and plan_required without splitting copies"
+else
+  fail "judgment packet fields should keep identical-copy groups"
+fi
+
+# One long file splits by method. Only a 50-line method gets a checklist.
+# A suspect inside that method points at the slice and drops its own source.
+METHOD_SPLIT="$TMP/method-split"
+mkdir -p "$METHOD_SPLIT/repo" "$METHOD_SPLIT/pack"
+python3 - <<PY
+from pathlib import Path
+p = Path(r'''$METHOD_SPLIT''') / "repo" / "Pay.java"
+lines = [f"line {i}" for i in range(1, 452)]
+lines[9] = "debit(amount)"
+p.write_text("\n".join(lines) + "\n", encoding="utf-8")
+PY
+"$ROOT/scripts/acr-python" - <<PY
+import importlib.util
+from pathlib import Path
+root = Path(r'''$ROOT''')
+spec = importlib.util.spec_from_file_location("packet", root/"scripts/lib/build-judgment-packet.py")
+packet = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(packet)
+repo = Path(r'''$METHOD_SPLIT''')/"repo"
+pack = Path(r'''$METHOD_SPLIT''')/"pack"
+pending = [
+    {"symbol_id":"submit","name":"submit","kind":"method","path":"Pay.java","start_line":1,"end_line":60,"ranges":[[1,60]],"applicable":["PAY-001"]},
+    {"symbol_id":"fee","name":"fee","kind":"method","path":"Pay.java","start_line":61,"end_line":70,"ranges":[[61,70]],"applicable":["LOGIC-001"]},
+    {"symbol_id":"getId","name":"getId","kind":"method","path":"Pay.java","start_line":71,"end_line":72,"ranges":[[71,72]]},
+    {"symbol_id":"file-scope:Pay.java","name":"file_scope","kind":"file_scope","path":"Pay.java","start_line":1,"end_line":120,"ranges":[[1,120]]},
+]
+bundle = {
+    "pending": pending,
+    "read_groups": [{"id":"blob:pay","paths":["Pay.java"],"symbol_ids":[row["symbol_id"] for row in pending]}],
+    "impacts": [],
+}
+(pack/"28-symbol-bundle.json").write_text(__import__("json").dumps(bundle), encoding="utf-8")
+(pack/"24-coverage-ledger.json").write_text("{}", encoding="utf-8")
+(pack/"27-suspect-queue.json").write_text(__import__("json").dumps({
+    "policies": {"missing_timeout": {"look_for":"deadline","do_not_report":"set","fix":"set","noncompliant":"call","compliant":"call timeout"}},
+    "packets": [{
+        "derive_suspect_id":"missing_timeout:Pay.java:10",
+        "file":"Pay.java","line":10,"kind":"missing_timeout",
+        "slice":"10|debit(amount)",
+    }],
+    "sast_packets": [],
+}), encoding="utf-8")
+doc, _ = packet.build(pack, repo)
+groups = doc["read_groups"]
+assert len(groups) >= 2, groups
+assert all(g.get("method_split") and g.get("independent") for g in groups), groups
+plans = [g for g in groups if g.get("plan_required")]
+assert len(plans) == 1 and "submit" in plans[0]["symbol_ids"], plans
+assert all("submit" not in g["symbol_ids"] or g.get("plan_required") for g in groups)
+small = [g for g in groups if "fee" in g["symbol_ids"]]
+assert small and small[0].get("plan_required") is False, small
+scope = [s for g in groups for s in g.get("slices") or [] if s.get("covered_by_methods")]
+assert scope and "text" not in scope[0], scope
+hit = doc["suspects"]["packets"][0]
+assert hit["slice_ref"]["symbol_id"] == "submit", hit
+assert "slice" not in hit, hit
+assert doc["plan_required"] is True
+n = packet.split_work(pack, doc)
+assert n == len(groups) and n >= 2
+work = pack/"judgment-work"
+large = None
+for path in sorted(work.glob("group-*.json")):
+    body = __import__("json").loads(path.read_text(encoding="utf-8"))
+    ids = body["read_groups"][0]["symbol_ids"]
+    if "submit" in ids:
+        large = body
+        assert body["plan_required"] is True
+        assert body["suspects"]["packets"][0]["slice_ref"]["symbol_id"] == "submit"
+        assert "slice" not in body["suspects"]["packets"][0]
+        assert "Do not open shared.json" in body["read_this"]
+        assert "PAY-001" in body["rules"]
+    if "fee" in ids:
+        assert body["plan_required"] is False
+assert large is not None
+shared = __import__("json").loads((work/"shared.json").read_text(encoding="utf-8"))
+assert shared["plan_required"] is False
+assert "slice" not in shared["suspects"]["packets"][0]
+print("method split ok")
+PY
+if [[ $? -eq 0 ]]; then
+  pass "single file splits by method, plans only the large method, suspects point at slices"
+else
+  fail "method split should fan out groups without copying suspect source"
+fi
+
+# Heavy groups split again: 10 suspect lines per short-method group, and a
+# method over 60 lines becomes 40-line windows. A 79-line method becomes two
+# windows. Each suspect id is owned once. The group file carries its own rules.
+HEAVY_SPLIT="$TMP/heavy-split"
+mkdir -p "$HEAVY_SPLIT/repo" "$HEAVY_SPLIT/pack"
+python3 - <<PY
+from pathlib import Path
+p = Path(r'''$HEAVY_SPLIT''') / "repo" / "Pay.java"
+lines = [f"line {i}" for i in range(1, 452)]
+lines[9] = "synchronized (accountLock) {"
+lines[89] = "synchronized (recordLock) {"
+lines[199] = "synchronized (recordLock) {"
+lines[200] = "synchronized (accountLock) {"
+p.write_text("\n".join(lines) + "\n", encoding="utf-8")
+PY
+"$ROOT/scripts/acr-python" - <<PY
+import importlib.util
+import json
+from pathlib import Path
+root = Path(r'''$ROOT''')
+spec = importlib.util.spec_from_file_location("packet", root/"scripts/lib/build-judgment-packet.py")
+packet = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(packet)
+repo = Path(r'''$HEAVY_SPLIT''')/"repo"
+pack = Path(r'''$HEAVY_SPLIT''')/"pack"
+pending = [
+    {"symbol_id":"wide","name":"wide","kind":"method","path":"Pay.java","start_line":1,"end_line":100,"ranges":[[1,100]],"applicable":["PAY-001"]},
+    {"symbol_id":"other","name":"other","kind":"method","path":"Pay.java","start_line":190,"end_line":210,"ranges":[[190,210]]},
+    {"symbol_id":"submit79","name":"submit79","kind":"method","path":"Pay.java","start_line":360,"end_line":438,"ranges":[[360,438]],"applicable":["PAY-001"]},
+]
+for n in range(11):
+    line = 121 + n
+    pending.append({
+        "symbol_id": f"m{n}", "name": f"m{n}", "kind": "method", "path": "Pay.java",
+        "start_line": line, "end_line": line, "ranges": [[line, line]],
+    })
+pending.append({"symbol_id":"file-scope:Pay.java","name":"file_scope","kind":"file_scope","path":"Pay.java","start_line":1,"end_line":220,"ranges":[[1,220]]})
+packets = [
+    {"derive_suspect_id":"wide-early","file":"Pay.java","line":10,"kind":"missing_timeout","slice":"10|x"},
+    {"derive_suspect_id":"wide-late","file":"Pay.java","line":90,"kind":"missing_timeout","slice":"90|x"},
+]
+for n in range(11):
+    packets.append({
+        "derive_suspect_id": f"m{n}-hit", "file": "Pay.java", "line": 121 + n,
+        "kind": "missing_timeout", "slice": "x",
+    })
+bundle = {
+    "pending": pending,
+    "read_groups": [{"id":"blob:pay","paths":["Pay.java"],"symbol_ids":[row["symbol_id"] for row in pending]}],
+    "impacts": [],
+}
+(pack/"28-symbol-bundle.json").write_text(json.dumps(bundle), encoding="utf-8")
+(pack/"24-coverage-ledger.json").write_text("{}", encoding="utf-8")
+(pack/"27-suspect-queue.json").write_text(json.dumps({
+    "policies": {"missing_timeout": {"look_for":"deadline","do_not_report":"set","fix":"set","noncompliant":"call","compliant":"call timeout"}},
+    "packets": packets,
+    "sast_packets": [],
+}), encoding="utf-8")
+doc, _ = packet.build(pack, repo)
+groups = doc["read_groups"]
+windows = [g for g in groups if "wide" in g["symbol_ids"]]
+assert len(windows) == 3, [ (g["id"], g["slices"][0].get("start_line"), g["slices"][0].get("end_line")) for g in windows ]
+spans = sorted((g["slices"][0]["start_line"], g["slices"][0]["end_line"]) for g in windows)
+assert spans == [(1, 40), (41, 80), (81, 100)], spans
+assert all(g.get("plan_required") is False for g in windows)
+early = next(g for g in windows if g["slices"][0]["end_line"] == 40)
+assert "90|" not in early["slices"][0]["text"]
+assert "accountLock" in early["slices"][0]["text"]
+late = next(g for g in windows if g["slices"][0]["start_line"] == 81)
+assert "recordLock" in late["slices"][0]["text"]
+submit79 = [g for g in groups if "submit79" in g["symbol_ids"]]
+assert len(submit79) == 2, [(g["slices"][0].get("start_line"), g["slices"][0].get("end_line")) for g in submit79]
+assert sorted((g["slices"][0]["start_line"], g["slices"][0]["end_line"]) for g in submit79) == [(360, 399), (400, 438)]
+small = [g for g in groups if any(str(s).startswith("m") for s in g["symbol_ids"])]
+assert len(small) == 2, [g["symbol_ids"] for g in small]
+assert all(g.get("plan_required") is False for g in small)
+n = packet.split_work(pack, doc)
+assert n == len(groups) and n >= 4
+owned = {}
+for path in (pack/"judgment-work").glob("group-*.json"):
+    body = json.loads(path.read_text(encoding="utf-8"))
+    assert "Do not open shared.json" in body["read_this"]
+    assert isinstance(body["rules"], dict)
+    ids = body["required_suspect_ids"]
+    assert len(ids) <= 10, (path.name, ids)
+    for sid in ids:
+        assert sid not in owned, sid
+        owned[sid] = path.name
+assert owned["wide-early"] != owned["wide-late"]
+assert set(owned) == {row["derive_suspect_id"] for row in packets}
+notes = doc["cross_method"]
+assert len(notes) == 1 and notes[0]["kind"] == "lock_order", notes
+assert "wide" in notes[0]["symbol_ids"] and "other" in notes[0]["symbol_ids"]
+print("heavy split ok", n, "groups")
+PY
+if [[ $? -eq 0 ]]; then
+  pass "heavy groups split by suspect cap and line windows, each suspect owned once"
+else
+  fail "heavy group split should cap suspects and window long methods"
+fi
+
+# Adhoc-shaped git: empty root then the file commit. A long file is sliced by symbol.
+ADHOC_GIT="$TMP/adhoc-digest"
+mkdir -p "$ADHOC_GIT/repo" "$ADHOC_GIT/pack"
+git -C "$ADHOC_GIT/repo" init -q
+git -C "$ADHOC_GIT/repo" -c user.email=adhoc@example.com -c user.name=adhoc commit -q --allow-empty -m root
+ADHOC_BASE="$(git -C "$ADHOC_GIT/repo" rev-parse HEAD)"
+python3 - <<PY
+from pathlib import Path
+p = Path(r'''$ADHOC_GIT''') / "repo" / "Foo.java"
+lines = [f"line {i}" for i in range(1, 451)]
+lines[429] = "LATE_MARKER"
+p.write_text("\n".join(lines) + "\n", encoding="utf-8")
+PY
+git -C "$ADHOC_GIT/repo" add Foo.java
+git -C "$ADHOC_GIT/repo" -c user.email=adhoc@example.com -c user.name=adhoc commit -q -m seed
+cat >"$ADHOC_GIT/pack/24-coverage-ledger.json" <<EOF
+{"kind":"CoverageLedger","source_root":"$ADHOC_GIT/repo","symbols":[
+  {"symbol_id":"late","name":"late","kind":"method","path":"Foo.java","status":"pending","start_line":420,"end_line":430,"ranges":[[420,430]]}
+],"read_groups":[{"id":"g","paths":["Foo.java"],"symbol_ids":["late"]}],"summary":{}}
+EOF
+if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/build-review-digest.py" \
+    --dir "$ADHOC_GIT/pack" --repo "$ADHOC_GIT/repo" --diff-base "$ADHOC_BASE" \
+  && jq -e '
+    (.read_groups | length) == 1
+    and .read_groups[0].text == ""
+    and (.read_groups[0].slices[0].text | contains("LATE_MARKER"))
+    and .read_groups[0].truncated == false
+  ' "$ADHOC_GIT/pack/29-judgment-packet.json" >/dev/null \
+  && jq -e '.history.three_dot_counts.only_on_head == 1' "$ADHOC_GIT/pack/26-review-digest.json" >/dev/null \
+  && jq -e '[.symbols[] | select(.symbol_id=="late" and .status=="pending" and .review_scope=="pr_delta")] | length == 1' \
+      "$ADHOC_GIT/pack/24-coverage-ledger.json" >/dev/null \
+  && grep -q 'build-review-digest.py' "$ROOT/scripts/collect-adhoc-evidence.sh" \
+  && grep -q 'allow-empty' "$ROOT/scripts/collect-adhoc-evidence.sh"; then
+  pass "adhoc digest keeps files on head and inlines symbol slices"
+else
+  fail "adhoc digest should classify only_on_head and slice past line 400"
+  jq '.read_groups[0] | {text, truncated, slice:(.slices[0].text // "" | .[0:80])}' \
+    "$ADHOC_GIT/pack/29-judgment-packet.json" >&2 || true
+  jq '.history.three_dot_counts' "$ADHOC_GIT/pack/26-review-digest.json" >&2 || true
 fi
 # Header is four blocks; conventions are not defects; comments share ids.
 HEAD_DIR="$TMP/scene-header"
@@ -2394,12 +2965,12 @@ else
   jq '.' "$LEDGER_DIR/merged.json" >&2
   jq '.' "$LEDGER_DIR/22-llm-judgment.json" >&2
 fi
-echo '{"p0":[],"p1":[{"title":"sqli","line":12,"lines":[12],"category":"security","risk":"x","evidence":"y"}],"p2":[]}' >"$LEDGER_DIR/conclusion-open.json"
+echo '{"p0":[],"p1":[{"title":"sqli","line":12,"lines":[12],"category":"security","pattern_class":"sqli","risk":"x","evidence":"y"}],"p2":[]}' >"$LEDGER_DIR/conclusion-open.json"
 set +e
 COV_FAIL="$("$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$LEDGER_DIR" "$LEDGER_DIR/conclusion-open.json" 2>&1)"
 COV_FAIL_EC=$?
 set -e
-echo '{"p0":[],"p1":[{"title":"sqli","line":12,"lines":[12],"category":"security","risk":"x","evidence":"y"}],"p2":[],"coverage_closure":[{"symbol_id":"m1","status":"reviewed","open_result":"none","span_check":"unverified"}]}' >"$LEDGER_DIR/conclusion-closed.json"
+echo '{"p0":[],"p1":[{"title":"sqli","line":12,"lines":[12],"category":"security","pattern_class":"sqli","risk":"x","evidence":"y"}],"p2":[],"coverage_closure":[{"symbol_id":"m1","status":"reviewed","open_result":"none","span_check":"unverified"}]}' >"$LEDGER_DIR/conclusion-closed.json"
 if [[ "$COV_FAIL_EC" -ne 0 ]] && echo "$COV_FAIL" | grep -q 'coverage_closure' \
   && "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$LEDGER_DIR" "$LEDGER_DIR/conclusion-closed.json" >/dev/null; then
   pass "conclusion gate requires coverage_closure only when a ledger exists"
@@ -3212,12 +3783,151 @@ else
 fi
 rm -rf "$DIGEST_FIX"
 
+# identical_to_base is not reviewable; magic numbers seal as conventions; csv keywords do not force T0.
+SCOPE_FIX="$(mktemp -d)"
+mkdir -p "$SCOPE_FIX/pack"
+cat >"$SCOPE_FIX/pack/18-maintainability-signals.json" <<'EOF'
+{"kind":"MaintainabilitySignals","derive_suspects":[
+  {"close":"per_line","kind":"magic_number","path":"search.py","line":48,"derive_suspect_id":"magic_number:search.py:48","snippet":"if len(value_str) > 300"},
+  {"close":"per_line","kind":"decision_literal","path":"core.py","line":120,"derive_suspect_id":"decision_literal:core.py:120","snippet":"return [w for w in text.split() if len(w) > 2]"},
+  {"close":"per_line","kind":"decision_literal","path":"pay.py","line":9,"derive_suspect_id":"decision_literal:pay.py:9","snippet":"if (fee < 0.5)"}
+]}
+EOF
+printf '%s\n' '{"p0":[],"p1":[],"p2":[],"summary":"scope"}' >"$SCOPE_FIX/pack/review-conclusion.json"
+printf '%s\n' '{"suspect_hits":["magic_number:search.py:48","decision_literal:core.py:120","decision_literal:pay.py:9"]}' >"$SCOPE_FIX/pack/judgment.json"
+printf '%s\n' '{}' >"$SCOPE_FIX/pack/30-conclusion-skeleton.json"
+if "$ROOT/scripts/acr-python" - <<PY
+import json, sys
+from pathlib import Path
+import importlib.util
+root = Path(r'''$ROOT''')
+spec = importlib.util.spec_from_file_location("packet", root/"scripts/lib/build-judgment-packet.py")
+packet = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(packet)
+paths = packet.pr_paths({"three_dot": {
+    "identical_to_base": ["shared.txt"],
+    "content_differs": ["diverge.txt"],
+    "only_on_head": ["only.txt"],
+}})
+assert paths == {"diverge.txt", "only.txt"}, paths
+spec2 = importlib.util.spec_from_file_location("seal", root/"scripts/lib/seal-conclusion.py")
+seal = importlib.util.module_from_spec(spec2)
+spec2.loader.exec_module(seal)
+pack = Path(r'''$SCOPE_FIX''')/"pack"
+conclusion = json.loads((pack/"review-conclusion.json").read_text())
+judgment = json.loads((pack/"judgment.json").read_text())
+sealed = seal.seal(conclusion, {}, seal.load_validate(), pack, judgment)
+kinds = {item.get("kind") for item in sealed.get("p1") or []}
+conv = {item.get("kind") for item in sealed.get("conventions") or []}
+assert "magic_number" not in kinds and "magic_number" in conv, (kinds, conv)
+assert any((item.get("file") or item.get("path")) == "pay.py" for item in sealed.get("p1") or []), sealed.get("p1")
+assert not any((item.get("file") or item.get("path")) == "core.py" for item in sealed.get("p1") or [])
+print("scope ok")
+PY
+then
+  pass "identical_to_base stays out of review scope and magic numbers seal as conventions"
+else
+  fail "scope split or convention seal regressed"
+fi
+rm -rf "$SCOPE_FIX"
+
+RT_CSV="$TMP/risk-tier-csv-keyword"
+mkdir -p "$RT_CSV/pack"
+cat >"$RT_CSV/pack/04-changed-files.json" <<'EOF'
+{"nodes":[{"path":"cli/assets/data/stacks/nuxtjs.csv","change_status":"change"},{"path":"Gsap-Skill/skills/llms.txt","change_status":"add"}]}
+EOF
+cat >"$RT_CSV/pack/06-sensitive-hits.json" <<'EOF'
+{"kind":"SensitivePack","search":{"results":[
+  {"path":"cli/assets/data/stacks/nuxtjs.csv","text":"token, auth, palette"},
+  {"path":"Gsap-Skill/skills/llms.txt","text":"pay attention to the auth notes"}
+]},"symbol_name_queries":[]}
+EOF
+printf '%s\n' '{"kind":"TagsPack","keys":[],"tagged":[]}' >"$RT_CSV/pack/07-tags.json"
+printf '%s\n' '{"kind":"RolloutSignals","surfaces":{"money":true,"migration":false,"destructive":false,"feature_flag":false,"breaking":false,"storage_switch":false}}' >"$RT_CSV/pack/15-rollout-signals.json"
+"$ROOT/scripts/lib/derive-risk-tier.sh" --dir "$RT_CSV/pack" --mode pr >/dev/null
+if jq -e '.tier != "T0" and ((.drivers.sensitive_hits // [])|length) == 0' "$RT_CSV/pack/20-risk-tier.json" >/dev/null; then
+  pass "csv and prose keyword hits do not force T0"
+else
+  fail "catalog keyword hits must not force T0"
+  jq '{tier,drivers}' "$RT_CSV/pack/20-risk-tier.json" >&2
+fi
+
+# Local PR commits skip fetch. A second identical fetch is refused.
+RESOLVE_DIR="$(mktemp -d)"
+git -C "$RESOLVE_DIR" init -q repo
+git -C "$RESOLVE_DIR/repo" -c user.email=resolve@example.com -c user.name=resolve commit -q --allow-empty -m base
+RESOLVE_BASE="$(git -C "$RESOLVE_DIR/repo" rev-parse HEAD)"
+echo marker >"$RESOLVE_DIR/repo/marker.txt"
+git -C "$RESOLVE_DIR/repo" add marker.txt
+git -C "$RESOLVE_DIR/repo" -c user.email=resolve@example.com -c user.name=resolve commit -q -m head
+RESOLVE_HEAD="$(git -C "$RESOLVE_DIR/repo" rev-parse HEAD)"
+echo dirty >>"$RESOLVE_DIR/repo/marker.txt"
+RESOLVE_BIN="$(mktemp -d)"
+cat >"$RESOLVE_BIN/git" <<'EOF'
+#!/usr/bin/env bash
+if [[ "$*" == *fetch* ]]; then
+  echo "fetch was called" >>"${RESOLVE_FETCH_LOG:?}"
+  exit 99
+fi
+exec /usr/bin/git "$@"
+EOF
+chmod +x "$RESOLVE_BIN/git"
+RESOLVE_FETCH_LOG="$RESOLVE_DIR/fetches"
+export RESOLVE_FETCH_LOG
+if PATH="$RESOLVE_BIN:$PATH" "$ROOT/scripts/resolve-pr-checkout.sh" \
+    --pr example/repo#1 \
+    --head-sha "$RESOLVE_HEAD" \
+    --base-sha "$RESOLVE_BASE" \
+    --base-ref main \
+    --search-root "$RESOLVE_DIR" >"$RESOLVE_DIR/out.json" \
+  && jq -e --arg head "$RESOLVE_HEAD" --arg base "$RESOLVE_BASE" \
+    '.status=="local" and .fetches==0 and .head_sha==$head and .base_sha==$base and .diff_base==$base and (.repo|length)>0' \
+    "$RESOLVE_DIR/out.json" >/dev/null \
+  && [[ ! -s "$RESOLVE_FETCH_LOG" ]] \
+  && [[ "$(jq -r .repo "$RESOLVE_DIR/out.json")" != "$RESOLVE_DIR/repo" ]]; then
+  pass "resolve-pr-checkout uses local commits and does not fetch"
+else
+  fail "resolve-pr-checkout should reuse local SHAs without fetch"
+  cat "$RESOLVE_DIR/out.json" >&2 || true
+fi
+rm -rf "$RESOLVE_DIR" "$RESOLVE_BIN"
+
 # help flags (collect / render) — regression for --full / --primary-lang
 if "$ROOT/scripts/collect-pr-evidence.sh" -h 2>&1 | grep -q -- '--full' \
-  && "$ROOT/scripts/collect-pr-evidence.sh" -h 2>&1 | grep -q -- '--primary-lang'; then
+  && "$ROOT/scripts/collect-pr-evidence.sh" -h 2>&1 | grep -q -- '--primary-lang' \
+  && "$ROOT/scripts/collect-pr-evidence.sh" -h 2>&1 | grep -q -- '--github-pr'; then
   pass "collect-pr-evidence exposes --full and --primary-lang"
 else
   fail "collect-pr-evidence help missing --full/--primary-lang"
+fi
+
+# Diff-base stamp miss and an empty incremental parse with a real diff force --full.
+# shellcheck source=lib/index-diff-base.sh
+source "$ROOT/scripts/lib/index-diff-base.sh"
+STAMP_DIR="$TMP/index-diff-base"
+mkdir -p "$STAMP_DIR"
+STAMP="$STAMP_DIR/index-diff-base"
+if index_diff_base_cache_miss "$STAMP" "abc" \
+  && index_diff_base_write_stamp "$STAMP" "origin/main" "abc" 0 \
+  && ! index_diff_base_cache_miss "$STAMP" "abc" \
+  && index_diff_base_cache_miss "$STAMP" "def" \
+  && index_diff_base_ignored_diff "incremental (no changes)" 0 213 "$STAMP" \
+  && index_diff_base_write_stamp "$STAMP" "origin/main" "abc" 213 \
+  && ! index_diff_base_ignored_diff "incremental (no changes)" 0 213 "$STAMP" \
+  && ! index_diff_base_ignored_diff "full" 0 213 "$STAMP" \
+  && ! index_diff_base_ignored_diff "incremental (no changes)" 0 0 "$STAMP"; then
+  pass "diff-base change and empty incremental parse force a full index"
+else
+  fail "diff-base cache miss rules are wrong"
+fi
+printf '%s\n' 'mode:     incremental (no changes)' 'files:    0 total / 0 parsed / 0 source-only / 0 filtered' >"$STAMP_DIR/index.log"
+PARSED="$(index_diff_base_parse_index_log "$STAMP_DIR/index.log")"
+if [[ "$(printf '%s\n' "$PARSED" | awk 'NR==1')" == "incremental (no changes)" \
+  && "$(printf '%s\n' "$PARSED" | awk 'NR==2')" == "0" ]]; then
+  pass "index log exposes incremental mode and parsed count"
+else
+  fail "index log parser missed incremental zero-file output"
+  printf '%s\n' "$PARSED" >&2
 fi
 
 # --- create-skill compliance (structure / discoverability) ---

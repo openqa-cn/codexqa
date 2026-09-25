@@ -36,6 +36,14 @@ PATH_IN_LOC = re.compile(
 
 SEVERITY_KEYS = ("p0", "p1", "p2")
 
+# Behavioral, concurrency, memory, and unused-parameter claims stay even when
+# the quoted snippet is not in the diff. A wrong drop there is expensive.
+PROTECTED_CATEGORIES = {"concurrency", "correctness"}
+PROTECTED_TEXT = re.compile(
+    r"unused parameter|未使用参数|越界|use-after-free|buffer overflow|null deref|空指针|内存",
+    re.I,
+)
+
 # Deterministic SAST pattern classes. Without a per-class policy from
 # 23-sast-signals.json, a candidate in one of these classes is dropped
 # (historical behavior). With a policy file, an owned candidate is kept
@@ -392,6 +400,45 @@ def line_in_spans(line: int | None, spans: list[tuple[int, int]]) -> bool:
     return any(start <= line <= end for start, end in spans)
 
 
+def squash_ws(text: str) -> str:
+    return re.sub(r"\s+", "", text)
+
+
+def protected_candidate(finding: dict) -> bool:
+    category = str(finding.get("category") or "").strip().lower()
+    if category in PROTECTED_CATEGORIES:
+        return True
+    rule = str(finding.get("rule_id") or "")
+    if rule.startswith(("CONC-", "NULL-")):
+        return True
+    blob = " ".join(str(finding.get(key) or "") for key in ("title", "title_en", "risk", "risk_en", "category"))
+    return bool(PROTECTED_TEXT.search(blob))
+
+
+def diff_for_path(path: str, diffs: dict[str, str] | None) -> str | None:
+    if not diffs or not path:
+        return None
+    folded = path.replace("\\", "/").lower()
+    for key, text in diffs.items():
+        other = str(key).replace("\\", "/").lower()
+        if other == folded or other.endswith("/" + folded) or folded.endswith("/" + other):
+            return text
+    return None
+
+
+def snippet_missing_from_diff(candidate: dict, diffs: dict[str, str] | None) -> bool:
+    """True only when a diff for this file exists and the snippet is absent."""
+    if not diffs:
+        return False
+    snippet = str(candidate.get("existing_code") or "").strip()
+    if not snippet or protected_candidate(candidate):
+        return False
+    text = diff_for_path(extract_path(candidate), diffs)
+    if text is None:
+        return False
+    return squash_ws(snippet) not in squash_ws(text)
+
+
 def merge(
     baseline: dict,
     candidates: dict,
@@ -400,6 +447,7 @@ def merge(
     sast_policy: dict | None = None,
     suspect_ids: set[str] | None = None,
     spans: list[tuple[int, int]] | None = None,
+    diffs: dict[str, str] | None = None,
 ) -> tuple[dict, dict]:
     base = ensure_lists(baseline)
     # Work on deep-ish copies of baseline findings so enrichment is visible
@@ -415,6 +463,7 @@ def merge(
     enriched = 0
     dropped_sast = 0
     dropped_ledger = 0
+    dropped_unanchored = 0
 
     cand_lists = ensure_lists(candidates)
     for sev in SEVERITY_KEYS:
@@ -460,6 +509,19 @@ def merge(
                         "matched_title": bf.get("title"),
                         "matched_index": bi,
                         "reason": "same_file_line_class",
+                    }
+                )
+                continue
+
+            if snippet_missing_from_diff(c, diffs):
+                dropped_unanchored += 1
+                report_rows.append(
+                    {
+                        "decision": "not_in_diff",
+                        "severity": sev,
+                        "title": c.get("title"),
+                        "line": extract_line(c),
+                        "reason": "existing_code is not in the file diff",
                     }
                 )
                 continue
@@ -525,6 +587,7 @@ def merge(
         "deduped_against_heuristics": deduped,
         "dropped_sast_owned": dropped_sast,
         "dropped_outside_ledger": dropped_ledger,
+        "dropped_unanchored": dropped_unanchored,
         "enriched_existing": enriched if enrich else 0,
         "baseline_total": sum(len(base[s]) for s in SEVERITY_KEYS),
         "merged_total": sum(len(merged[s]) for s in SEVERITY_KEYS),
@@ -546,6 +609,7 @@ def main() -> None:
     ap.add_argument("--mode", default="pr", help="pr|full|adhoc (stamped on report)")
     ap.add_argument("--sast-signals", default="", help="Optional 23-sast-signals.json; uses llm_report_policy")
     ap.add_argument("--ledger", default="", help="Optional 24-coverage-ledger.json; drop candidates outside pending spans")
+    ap.add_argument("--diffs", default="", help="Optional JSON object of path to diff text")
     ap.add_argument("--no-enrich", action="store_true", help="Do not append evidence on duplicates")
     args = ap.parse_args()
 
@@ -563,6 +627,10 @@ def main() -> None:
                 suspect_ids.add(str(row["suspect_id"]))
         if isinstance(signals.get("triage"), dict):
             triage = signals["triage"]
+    diffs = None
+    if args.diffs:
+        loaded = load_json(args.diffs)
+        diffs = {str(key): str(value) for key, value in loaded.items() if isinstance(value, str)}
     merged, summary = merge(
         baseline,
         candidates,
@@ -570,6 +638,7 @@ def main() -> None:
         sast_policy=sast_policy,
         suspect_ids=suspect_ids,
         spans=ledger_spans(args.ledger),
+        diffs=diffs,
     )
     summary["mode"] = args.mode
     if triage is not None:

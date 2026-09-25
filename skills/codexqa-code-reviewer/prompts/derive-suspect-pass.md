@@ -25,7 +25,7 @@ Otherwise false positive.
 
 A row with `close: per_line` is its own decision. A nearby finding, including a float or limit card, does not close the next line. A hit lists that line. A skip says why that line is not the defect. A file-level absence whose line is 1, or whose slice is only a package declaration, does not close the family; judge the `anchors` lines (deprecated field, flag, delete, log sink) instead.
 
-For `magic_number`, `rate_literal`, and `decision_literal`, use `bound_read` when the packet has it.
+For `magic_number`, `rate_literal`, and `decision_literal`, use `bound_read` when the packet has it. A display truncation, animation duration, formula coefficient, or minimum token length is a false positive. A true `decision_literal` sets a fee, timeout, or account limit. Confirmed magic numbers are conventions, not P0/P1/P2 findings.
 `false` means the named symbol is not read on any other line: the constraint
 is declared and the decision does not use it. That is a true positive. A
 named constant with `bound_read: true` matches do-not-report only when its

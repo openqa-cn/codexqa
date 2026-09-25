@@ -72,7 +72,7 @@ Match keys (a duplicate requires the same relation, then any one key):
 - Both findings unlabeled, or both sharing one `rule_id`, and the same path with lines within ±3 and a compatible category
 - Both unlabeled, or the same `rule_id`, and Jaccard token overlap ≥ 0.55 on `title`+`risk` with the same path
 
-Different `pattern_class` or different `rule_id` never merge, including on nearby lines. `getFxRate()` inflating a credit and `BigDecimal.equals` skipping a limit stay two cards. The same relation restated on another line is one card: the merge writes that line into `also_lines` and sets `same_fix: true`. Same pattern class at the same file and a nearby line still merges through the SAST locus check. That check is the relation for scanner classes.
+Do not file a claim that one line of the diff literally contradicts. `existing_code`, when present, must appear in that file's diff. Different `pattern_class` or different `rule_id` never merge, including on nearby lines. `getFxRate()` inflating a credit and `BigDecimal.equals` skipping a limit stay two cards. The same relation restated on another line is one card: the merge writes that line into `also_lines` and sets `same_fix: true`. Same pattern class at the same file and a nearby line still merges through the SAST locus check. That check is the relation for scanner classes.
 
 ## Split vs siblings
 

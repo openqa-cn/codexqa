@@ -315,6 +315,15 @@ def _sensitive_snippet_is_usage(text: str) -> bool:
     return False
 
 
+# Catalog and prose hits ("token" in a palette CSV, "auth" in llms.txt) are
+# not an auth or payment implementation. They must not force T0.
+_NON_CODE_EXT = re.compile(r"(?i)\.(csv|md|markdown|txt|rst|adoc|json|yml|yaml|svg|png|gif|webp|lock)$")
+
+
+def _non_code_path(path: str) -> bool:
+    return bool(_NON_CODE_EXT.search((path or "").replace("\\", "/")))
+
+
 def sensitive_hits(sens_obj, changed_paths: list[str]) -> list[dict]:
     """Plan: 06-sensitive ∩ changed paths (auth/token/pay/secret) → T0.
 
@@ -338,7 +347,7 @@ def sensitive_hits(sens_obj, changed_paths: list[str]) -> list[dict]:
             continue
         p = str(r.get("path") or r.get("file") or "")
         text = str(r.get("text") or r.get("snippet") or r.get("content") or "")
-        if not _path_intersects(p, changed_paths):
+        if not _path_intersects(p, changed_paths) or _non_code_path(p):
             continue
         # Path basename alone (e.g. …/auth/…) still counts via classify_path;
         # search text must look like real usage, not pattern/docs meta.
@@ -354,9 +363,16 @@ def sensitive_hits(sens_obj, changed_paths: list[str]) -> list[dict]:
             name = str(q.get("name") or "")
             qpath = str(q.get("path") or q.get("file") or "")
             # Require path intersection; bare name queries alone do not force T0
-            if SENSITIVE_HINT.search(name) and qpath and _path_intersects(qpath, changed_paths):
+            if (
+                SENSITIVE_HINT.search(name)
+                and qpath
+                and not _non_code_path(qpath)
+                and _path_intersects(qpath, changed_paths)
+            ):
                 hits.append({"path": qpath or name, "reason": "sensitive_symbol_query"})
         for cp in changed_paths:
+            if _non_code_path(cp):
+                continue
             if SENSITIVE_HINT.search(cp):
                 hits.append({"path": cp, "reason": "sensitive_changed_path"})
     return hits[:40]

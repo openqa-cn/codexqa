@@ -189,7 +189,7 @@ def is_heuristic_meta_line(stripped: str) -> bool:
     return False
 
 
-DOC_EXTS = {".md", ".markdown", ".txt", ".rst", ".adoc"}
+DOC_EXTS = {".md", ".markdown", ".txt", ".rst", ".adoc", ".csv"}
 
 
 def is_doc_path(rel: str) -> bool:

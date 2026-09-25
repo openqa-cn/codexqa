@@ -27,10 +27,7 @@ every pending symbol still gets its own `coverage_closure` row.
 
 ## How to judge
 
-Use only [references/business-rule-records.md](../references/business-rule-records.md).
-For each changed method, apply each record below as its own question. Read
-that record’s `look_for`, `do_not_report`, `fix`, `noncompliant`, and
-`compliant`. Do not replace them with a paraphrase of the whole dimension card.
+When the judgment packet has `rules`, use `rules[id].look_for` and `rules[id].do_not_report` for each applicable id. That is the record. Do not open [references/business-rule-records.md](../references/business-rule-records.md). A skipped id is already decided: copy `skip_notes`. When the packet has no `rules` object, use that file for each changed method. Apply each applicable record as its own question. Do not replace it with a paraphrase of the whole dimension card.
 
 - `LOGIC-001`
 - `BND-001`

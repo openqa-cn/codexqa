@@ -25,8 +25,10 @@ usage() {
 Usage: collect-adhoc-evidence.sh --file <path> [--file <path>...] [--repo DIR] [--out DIR]
 
 Single-file / multi-file adhoc review without a full PR diff-base.
-When --repo is omitted, copies files into a temporary mini git repo, commits once,
-indexes with CodexQA, and builds a pack (mode=adhoc) with changed-files + derives.
+When --repo is omitted, copies files into a temporary mini git repo, commits an
+empty root and then the files, indexes with CodexQA, and builds a pack
+(mode=adhoc). The empty root is the diff base so the files are only_on_head.
+26–30 are written before the mini repo is removed.
 
 Options:
   --file PATH          Source file to review (repeatable; required at least once)
@@ -71,6 +73,7 @@ done
 
 MINI_CLEANUP=""
 BOOTSTRAPPED=0
+ADHOC_DIFF_BASE=""
 
 if [[ -n "$REPO" ]]; then
   REPO_ABS="$(codexqa_resolve_repo "$REPO")"
@@ -105,6 +108,10 @@ else
   git -C "$MINI" init -q
   git -C "$MINI" config user.email "adhoc@codexqa-code-reviewer.local"
   git -C "$MINI" config user.name "codexqa-code-reviewer-adhoc"
+  # Empty root first. The file commit then has a parent, so --diff-base can
+  # merge-base and the files land in only_on_head instead of branch drift.
+  git -C "$MINI" commit -q --allow-empty -m "adhoc root"
+  ADHOC_DIFF_BASE="$(git -C "$MINI" rev-parse HEAD)"
   git -C "$MINI" add -A
   git -C "$MINI" commit -q -m "adhoc seed"
 fi
@@ -312,6 +319,27 @@ else
   echo "warn: build-coverage-ledger.py missing; coverage ledger skipped" >&2
 fi
 
+# Same digest as a PR: 26–30, including inlined source in 29. The mini repo
+# must still be on disk here; deleting it first leaves the packet without text.
+if [[ -z "$ADHOC_DIFF_BASE" ]] && git -C "$REPO_ABS" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  ADHOC_DIFF_BASE="$(git -C "$REPO_ABS" rev-list --max-parents=0 HEAD 2>/dev/null | head -n 1 || true)"
+fi
+if [[ -n "$ADHOC_DIFF_BASE" && -f "$SCRIPT_DIR/lib/build-review-digest.py" ]]; then
+  if [[ -x "$SCRIPT_DIR/acr-python" ]]; then
+    DIGEST_PY=("$SCRIPT_DIR/acr-python")
+  else
+    DIGEST_PY=(python3)
+  fi
+  if ! "${DIGEST_PY[@]}" "$SCRIPT_DIR/lib/build-review-digest.py" \
+      --dir "$OUT_DIR" --repo "$REPO_ABS" --diff-base "$ADHOC_DIFF_BASE"; then
+    echo "warn: build-review-digest.py failed; continuing without 26-review-digest.json" >&2
+  fi
+elif [[ -z "$ADHOC_DIFF_BASE" ]]; then
+  echo "warn: no diff base for adhoc digest; 26-review-digest.json skipped" >&2
+else
+  echo "warn: build-review-digest.py missing; review digest skipped" >&2
+fi
+
 INDEX_QUALITY="$(codexqa_index_quality_from_stats "$OUT_DIR/01-stats.json")"
 FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 COMMANDS_JSON="$(printf '%s\n' "${COMMANDS[@]}" | jq -R . | jq -s .)"
@@ -329,6 +357,7 @@ jq -n \
   --argjson index_quality "$INDEX_QUALITY" \
   --argjson adhoc_files "$RELS_JSON" \
   --argjson bootstrapped "$BOOTSTRAPPED" \
+  --arg diff_base "${ADHOC_DIFF_BASE}" \
   --argjson lang_stats "$(jq '.lang_stats // .result.lang_stats // {}' "$OUT_DIR/02-summary.json" 2>/dev/null || echo '{}')" \
   --argjson language_profile "$(cat "$OUT_DIR/09-language-profile.json")" \
   '{
@@ -339,7 +368,7 @@ jq -n \
     skill: "codexqa-code-reviewer",
     run_id: $run_id,
     repo: $repo,
-    diff_base: null,
+    diff_base: (if $diff_base == "" then null else $diff_base end),
     adhoc: true,
     adhoc_bootstrapped_mini_repo: ($bootstrapped == 1),
     adhoc_files: $adhoc_files,
@@ -360,10 +389,12 @@ jq -n \
       "14-resilience-signals.json","15-rollout-signals.json","16-observability-signals.json",
       "17-contract-signals.json","18-maintainability-signals.json","19-annotation-edges.json",
       "20-risk-tier.json","21-performance-signals.json","24-coverage-ledger.json",
+      "26-review-digest.json","26-review-digest-detail.json","27-suspect-queue.json",
+      "28-symbol-bundle.json","29-judgment-packet.json","30-conclusion-skeleton.json",
       "impact/","imports/","commands.log"
     ],
     notes: [
-      "adhoc mode: single-file/small-set review without PR diff-base.",
+      "adhoc mode: review reads 29-judgment-packet.json. The empty root commit is diff_base so the files are only_on_head.",
       "When bootstrapped, a mini git repo was created locally for CodexQA index gates only.",
       "from_count is NOT fan-in — prefer edges-in / 19-annotation-edges.json.",
       "Resilience signal hits must become findings or explicit deferred residuals (hard gate), including exception_unwraps. resource_leaks is RES-001, including close_not_in_finally. charset_gaps, null_deref_gaps, and authz_audit_gaps are per-row hard gates.",

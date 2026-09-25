@@ -1,0 +1,31 @@
+{
+  "findings": [
+    {
+      "title": "循环里重试了一次写入，而且这次调用没有幂等键",
+      "title_en": "A loop retried a write, and that call has no idempotency key",
+      "line": 80,
+      "risk": "同一次写入会再执行一遍。",
+      "risk_en": "The same write runs again.",
+      "fix": "把第 80 行 `credit(payee, amount)` 改成按原账户和原金额冲正。",
+      "fix_en": "Change line 80 `credit(payee, amount)` to a reversal of the original account and amount.",
+      "category": "correctness",
+      "severity": "p0"
+    }
+  ],
+  "suspect_hits": ["missing_timeout:src/Pay.java:40"],
+  "test_oracle": [
+    {
+      "line": 12,
+      "oracle": {
+        "unsafe_pass": false,
+        "boundary_missed": true,
+        "branch_uncovered": false,
+        "locks_private": false,
+        "locks_dependency": false,
+        "threshold_pass": false,
+        "observability_asserted": false
+      },
+      "note": "边界值没有进断言。"
+    }
+  ]
+}

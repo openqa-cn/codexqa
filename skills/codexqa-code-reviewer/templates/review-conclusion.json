@@ -159,6 +159,7 @@
       "input": "网关返回失败，本地仍按成功入账",
       "input_en": "Gateway returns failure and the local credit still succeeds",
       "line": 120,
+      "existing_code": "credit(payee, amount)",
       "outcome": "收款方余额增加，付款方未扣回",
       "outcome_en": "Payee balance increases and the payer is not debited back",
       "same_fix": false,

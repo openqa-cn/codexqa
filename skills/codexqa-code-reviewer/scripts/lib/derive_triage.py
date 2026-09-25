@@ -89,14 +89,14 @@ _POLICY = {
     },
     "magic_number": {
         "look_for": "A raw numeric literal encodes a business bound, or a named bound is never read at the decision.",
-        "do_not_report": "The literal is a port. A named constant with bound_read true is excluded only when its value is not 0, -1, false, or an unbounded sentinel. An inline literal that decides a result stays a finding. A test number is excluded only when it does not define the pass condition.",
+        "do_not_report": "The literal is a port, a display truncation, an animation duration, a formula coefficient, or a minimum token length. A named constant with bound_read true is excluded only when its value is not 0, -1, false, or an unbounded sentinel. An inline literal that decides a fee, timeout, or account limit stays a finding. A test number is excluded only when it does not define the pass condition.",
         "fix": "Read a configured bound at the decision, or replace a disabling sentinel.",
         "noncompliant": "if (hour <= 17) or setTimeout(0) or return cached when TTL is never read",
         "compliant": "if (hour <= cutoff) where cutoff is loaded from configuration",
     },
     "decision_literal": {
-        "look_for": "An inline literal decides a timeout, rate, limit, or comparison.",
-        "do_not_report": "The value is loaded from the environment or a config service. A port is not a decision. A named constant that is read and is not 0, -1, false, or an unbounded sentinel.",
+        "look_for": "An inline literal decides a timeout, fee, rate, or account limit.",
+        "do_not_report": "The value is loaded from the environment or a config service. A port, display truncation, animation duration, formula coefficient, or minimum token length is not a decision. A named constant that is read and is not 0, -1, false, or an unbounded sentinel.",
         "fix": "Name the bound and load it from configuration, or reject the disabling sentinel.",
         "noncompliant": "if (fee < 0.5) or setReadTimeout(0)",
         "compliant": "if (fee < minFee) where minFee comes from configuration",

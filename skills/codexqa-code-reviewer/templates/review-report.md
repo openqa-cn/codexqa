@@ -131,6 +131,7 @@ _None_ or items:
 
 - id (`D-001`; renderer assigns one when omitted; the same id is used in `review-comments.json`):
 - actor / input / line / outcome:
+- existing_code (short snippet that appears in that file's diff; omit on old conclusions):
 - also_lines + same_fix (only when the fix is identical):
 - Fix (one sentence):
 - Call chain, change status, category, entry (collapsed in HTML):

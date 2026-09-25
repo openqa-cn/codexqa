@@ -165,19 +165,28 @@ def norm_path(value: str) -> str:
     return value.replace("\\", "/").strip().lstrip("./")
 
 
-def finding_paths(finding: dict) -> set[str]:
-    found: set[str] = set()
-    for key in ("file", "path"):
-        raw = finding.get(key)
-        if isinstance(raw, str) and raw.strip():
-            found.add(norm_path(raw))
+def finding_paths(finding: dict) -> list[str]:
+    """Cited file first. Snippet checks must not open another path ahead of it."""
+    ordered: list[str] = []
+
+    def add(raw: str) -> None:
+        path = norm_path(raw)
+        if path and path not in ordered:
+            ordered.append(path)
+
+    file_name = finding.get("file")
+    if isinstance(file_name, str):
+        add(file_name)
+    extra = finding.get("path")
+    if isinstance(extra, str):
+        add(extra)
     location = finding.get("location")
     if isinstance(location, str) and location.strip():
         token = location.split("（")[0].split(",")[0].strip()
         token = re.split(r":\d+\b", token)[0].strip()
         if "/" in token or re.search(r"\.[A-Za-z0-9]+$", token):
-            found.add(norm_path(token))
-    return found
+            add(token)
+    return ordered
 
 
 def paths_compatible(finding: dict, row: dict) -> bool:
@@ -213,15 +222,18 @@ def finding_relation(finding: dict) -> str:
     klass = str(finding.get("pattern_class") or "").strip()
     if klass:
         return "class:" + klass
+    kind = str(finding.get("kind") or "").strip()
+    if kind and kind not in CONVENTION_KINDS:
+        return "kind:" + kind
     return ""
 
 
 def relations_match(finding: dict, row: dict) -> bool:
     left = finding_relation(finding)
     right = row_relation(row)
-    if not left or not right:
+    if not right:
         return True
-    return left == right
+    return bool(left) and left == right
 
 
 def is_convention_row(row: dict) -> bool:
@@ -240,14 +252,109 @@ def convention_lines(conclusion: dict) -> set[int]:
     return found
 
 
-def drift_skipped_lines(conclusion: dict) -> set[int]:
-    found: set[int] = set()
-    for row in conclusion.get("line_skips") or []:
-        if not isinstance(row, dict) or str(row.get("kind") or "") != "branch_drift":
+def row_is_drift(row: dict, conclusion: dict) -> bool:
+    """A branch-drift skip closes that path only. A skip without a path keeps the old line-wide behavior."""
+    line = row.get("line")
+    if not isinstance(line, int):
+        return False
+    path = norm_path(str(row.get("path") or row.get("file") or ""))
+    for skip in conclusion.get("line_skips") or []:
+        if not isinstance(skip, dict) or str(skip.get("kind") or "") != "branch_drift":
             continue
-        if isinstance(row.get("line"), int):
-            found.add(row["line"])
-    return found
+        if skip.get("line") != line:
+            continue
+        skip_path = norm_path(str(skip.get("path") or skip.get("file") or ""))
+        if not skip_path or skip_path == path:
+            return True
+    return False
+
+
+def squash_ws(text: str) -> str:
+    """Code identity ignores spacing. A space inside a call is still that call."""
+    return re.sub(r"\s+", "", text)
+
+
+def snippet_of(finding: dict) -> str:
+    raw = finding.get("existing_code")
+    if not isinstance(raw, str):
+        return ""
+    return raw.strip()
+
+
+def source_lines(pack: Path, finding: dict) -> list[str]:
+    paths = finding_paths(finding)
+    ledger = load(pack / "24-coverage-ledger.json")
+    root = str(ledger.get("source_root") or "") if isinstance(ledger, dict) else ""
+    if not root or not paths:
+        return []
+    for rel in paths:
+        full = Path(root) / rel
+        if not full.is_file():
+            continue
+        try:
+            return full.read_text(encoding="utf-8", errors="ignore").splitlines()
+        except OSError:
+            continue
+    return []
+
+
+def cited_window(lines: list[str], finding: dict, snippet: str) -> str:
+    """The cited line, plus the following lines when the snippet wraps."""
+    number = finding.get("line")
+    if not isinstance(number, int) or number < 1:
+        return "\n".join(lines)
+    extra = snippet.count("\n")
+    start = number - 1
+    end = min(len(lines), start + 1 + extra)
+    if start >= len(lines):
+        return ""
+    return "\n".join(lines[start:end])
+
+
+def diff_text_for(pack: Path, finding: dict) -> str:
+    paths = finding_paths(finding)
+    chunks: list[str] = []
+    diffs = pack / "diffs"
+    if not diffs.is_dir():
+        return ""
+    for path in sorted(diffs.glob("*.diff.json")):
+        doc = load(path)
+        if not isinstance(doc, dict):
+            continue
+        result = doc.get("result") if isinstance(doc.get("result"), dict) else doc
+        if not isinstance(result, dict):
+            continue
+        file_path = norm_path(str(result.get("file_path") or ""))
+        if paths and file_path and not any(
+            file_path == item or file_path.endswith("/" + item) or item.endswith("/" + file_path)
+            for item in paths
+        ):
+            continue
+        diff = result.get("diff")
+        if isinstance(diff, str) and diff.strip():
+            chunks.append(diff)
+    return "\n".join(chunks)
+
+
+def check_snippets(pack: Path, conclusion: dict, errors: list[str]) -> None:
+    """A snippet must sit on the cited line, or in that file's diff when source is absent."""
+    for finding in findings_of(conclusion):
+        snippet = snippet_of(finding)
+        if not snippet:
+            continue
+        lines = source_lines(pack, finding)
+        if lines:
+            haystack = cited_window(lines, finding, snippet)
+        else:
+            haystack = diff_text_for(pack, finding)
+        if not haystack.strip():
+            continue
+        if squash_ws(snippet) not in squash_ws(haystack):
+            title = str(finding.get("title") or finding.get("id") or "finding")
+            errors.append(
+                "existing_code is not in the file diff or source: "
+                + title[:80]
+            )
 
 
 def finding_closes(finding: dict, row: dict) -> bool:
@@ -363,7 +470,6 @@ def check_ledger(pack: Path, conclusion: dict, errors: list[str]) -> None:
         return
     findings = findings_of(conclusion)
     conventions = convention_lines(conclusion)
-    drift = drift_skipped_lines(conclusion)
     missing = []
     convention_missing = []
     closed_by: list[tuple[dict, list[str]]] = [(finding, []) for finding in findings]
@@ -379,7 +485,7 @@ def check_ledger(pack: Path, conclusion: dict, errors: list[str]) -> None:
                 if finding_closes(finding, row):
                     errors.append(f"convention row is filed as a defect: {label}")
             continue
-        if line in drift:
+        if row_is_drift(row, conclusion):
             continue
         closers = [finding for finding in findings if finding_closes(finding, row)]
         if not closers:
@@ -661,7 +767,7 @@ def check_family_lines(pack: Path, conclusion: dict, errors: list[str]) -> None:
                 )
                 continue
             note = skips.get((kind, number)) or skips.get(("", number)) or ""
-            if number not in cited and not note:
+            if number not in cited and number not in convention_lines(conclusion) and not note:
                 errors.append(
                     f"{kind} line {number} needs a finding line or a line_skips note; "
                     "a nearby finding does not close it"
@@ -774,6 +880,51 @@ def check_coverage_ledger(pack: Path, conclusion: dict, errors: list[str]) -> No
         errors.append("finding lines outside coverage ledger: " + ", ".join(outside[:40]))
 
 
+def check_required_suspects(pack: Path, errors: list[str]) -> None:
+    """A required suspect id needs a hit or an explicit skip. Omission is not a skip."""
+    required: list[str] = []
+    work = pack / "judgment-work"
+    if work.is_dir():
+        for path in sorted(work.glob("group-*.json")):
+            doc = load(path)
+            if not isinstance(doc, dict):
+                continue
+            for item in doc.get("required_suspect_ids") or []:
+                text = str(item)
+                if text and text not in required:
+                    required.append(text)
+    if not required:
+        return
+    hits: set[str] = set()
+    skips: set[str] = set()
+
+    def take(doc: dict) -> None:
+        for item in doc.get("suspect_hits") or []:
+            hits.add(str(item))
+        for item in doc.get("suspect_skips") or []:
+            if isinstance(item, str) and item:
+                skips.add(item)
+            elif isinstance(item, dict):
+                sid = str(item.get("id") or item.get("derive_suspect_id") or item.get("suspect_id") or "")
+                if sid:
+                    skips.add(sid)
+
+    judgment = load(pack / "judgment.json")
+    if isinstance(judgment, dict):
+        take(judgment)
+    folder = pack / "judgment-groups"
+    if folder.is_dir():
+        for path in sorted(folder.glob("*.json")):
+            doc = load(path)
+            if isinstance(doc, dict):
+                take(doc)
+    missing = [sid for sid in required if sid not in hits and sid not in skips]
+    if missing:
+        errors.append(
+            "required suspects unanswered: " + ", ".join(missing[:20])
+        )
+
+
 def pack_has_gate_inputs(pack: Path) -> bool:
     if (pack / "24-coverage-ledger.json").is_file():
         return True
@@ -797,12 +948,14 @@ def main() -> int:
     skill_root = Path(__file__).resolve().parents[2]
     errors: list[str] = []
     check_ledger(pack, conclusion, errors)
+    check_snippets(pack, conclusion, errors)
     check_oracle(pack, conclusion, errors)
     check_family_lines(pack, conclusion, errors)
     check_absence_cards(pack, conclusion, errors)
     check_symbol_diff(pack, conclusion, errors)
     check_shapes(pack, conclusion, skill_root, errors)
     check_coverage_ledger(pack, conclusion, errors)
+    check_required_suspects(pack, errors)
     if errors:
         print("error: review conclusion failed closure gates:", file=sys.stderr)
         for error in errors:
