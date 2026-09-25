@@ -2,7 +2,7 @@
 
 [English](ROADMAP.md)
 
-codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。当前价值更具体、范围也更克制：八个本地优先的验证 skill，把需求、架构、代码变更、审查、用例、测试数据、代码风险扫描和异常诊断拆成独立、可核查的工作流，另有 [`codexqa-skill-router`](../skills/codexqa-skill-router/README.zh-CN.md) 自动选型并可按需拉取干活 skill。本仓库当前提供 [`codexqa-skill-router`](../skills/codexqa-skill-router/README.zh-CN.md)、[`codexqa-code-wiki`](../skills/codexqa-code-wiki/README.zh-CN.md)、[`codexqa-code-analyzer`](../skills/codexqa-code-analyzer/README.zh-CN.md)、[`codexqa-rootcause-analyzer`](../skills/codexqa-rootcause-analyzer/README.zh-CN.md)、[`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.zh-CN.md)、[`codexqa-code-reviewer`](../skills/codexqa-code-reviewer/README.zh-CN.md)、[`codexqa-requirement-analyzer`](../skills/codexqa-requirement-analyzer/README.zh-CN.md)、[`codexqa-testcase-generator`](../skills/codexqa-testcase-generator/README.zh-CN.md) 和 [`codexqa-testdata-generator`](../skills/codexqa-testdata-generator/README.zh-CN.md)。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由这些工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
+codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。当前价值更具体、范围也更克制：十个本地优先的验证 skill，把需求、架构、代码变更、变更影响报告、审查、用例、测试数据、浏览器界面回放、代码风险扫描和异常诊断拆成独立、可核查的工作流，另有 [`codexqa-skill-router`](../skills/codexqa-skill-router/README.zh-CN.md) 自动选型并可按需拉取干活 skill。本仓库当前提供 [`codexqa-skill-router`](../skills/codexqa-skill-router/README.zh-CN.md)、[`codexqa-code-wiki`](../skills/codexqa-code-wiki/README.zh-CN.md)、[`codexqa-code-analyzer`](../skills/codexqa-code-analyzer/README.zh-CN.md)、[`codexqa-change-analysis`](../skills/codexqa-change-analysis/README.md)、[`codexqa-rootcause-analyzer`](../skills/codexqa-rootcause-analyzer/README.zh-CN.md)、[`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.zh-CN.md)、[`codexqa-code-reviewer`](../skills/codexqa-code-reviewer/README.zh-CN.md)、[`codexqa-requirement-analyzer`](../skills/codexqa-requirement-analyzer/README.zh-CN.md)、[`codexqa-testcase-generator`](../skills/codexqa-testcase-generator/README.zh-CN.md)、[`codexqa-testdata-generator`](../skills/codexqa-testdata-generator/README.zh-CN.md) 和 [`codexqa-jev-browser`](../skills/codexqa-jev-browser/README.zh-CN.md)。除非特别说明，下表中标记为**已提供**或**部分提供**的能力都由这些工作流提供；其余条目是规划方向，不代表已经包含在当前仓库中。
 
 ## 能力地图
 
@@ -14,8 +14,8 @@ codexqa 的产品方向覆盖 AI 软件工程全生命周期的质量验证。�
 | 需求评审 | **已提供** | 对需求文档做缺口/冲突分析（`codexqa-requirement-analyzer`）；实现是否符合需求仍是计划中 |
 | 规格评审 | **计划中** | 检查技术规格的完整性、一致性和可测试性 |
 | AI Code Review | **已提供** | CodexQA 证据包 + 启发式维度 + Agent LLM judgment（去重）→ 双语 `REVIEW-REPORT.html`（`codexqa-code-reviewer`）；本地有 fixture validate+render 冒烟 |
-| 变更影响分析 | **已提供** | `codexqa-code-analyzer` 在单个已索引仓库内从变更符号追到调用方及 HTTP / RPC / MQ / 定时任务入口；跨仓影响分析仍在规划 |
-| 测试缺口分析 | **已提供** | `codexqa-code-analyzer` 核验符号级 `tests` 边，报告没有图关系测试罩住的已变更生产符号 |
+| 变更影响分析 | **已提供** | `codexqa-code-analyzer` 在单个已索引仓库内从变更符号追到调用方及 HTTP / RPC / MQ / 定时任务入口；`codexqa-change-analysis` 把一次 diff 做成 HTML 报告（影响入口、变更清单、测试方案、覆盖结论、敏感路径）；跨仓影响分析仍在规划 |
+| 测试缺口分析 | **已提供** | `codexqa-code-analyzer` 核验符号级 `tests` 边，报告没有图关系测试罩住的已变更生产符号；`codexqa-change-analysis` 针对一次 diff 召回已有测试，并为未覆盖的点新增测试文件 |
 | 测试执行编排 | **计划中** | 在验证工作流中运行现有测试框架并采集结果 |
 | 代码覆盖率分析 | **计划中** | 运行时覆盖率信号和需求到测试的覆盖分析；符号级测试缺口已由 `codexqa-code-analyzer` 提供 |
 | UI 端到端测试 | **计划中** | 浏览器和 UI 工作流生成、执行与结果集成 |

@@ -8,12 +8,13 @@ This page covers installation and the published skills. Most answers below are a
 
 codexqa is a public, local-first [Agent Skills](https://agentskills.io/specification) pack for Cursor, Claude Code, Codex, and OpenClaw. AI makes producing code faster; codexqa focuses on the verification work that does not automatically get cheaper: clarifying requirements, understanding change impact, reviewing implementation evidence, designing cases, and preparing test data.
 
-The eight worker skills cover different parts of the delivery lifecycle, plus [`codexqa-skill-router`](../skills/codexqa-skill-router/README.md) as the auto-select entry when the request does not name a skill. Each worker has a separate input contract so the agent knows whether it should read documents, index a local checkout, scan for code risk, write cases, call a data backend, diagnose an exception, collect a CodexQA review pack, or export an architecture wiki:
+The ten worker skills cover different parts of the delivery lifecycle, plus [`codexqa-skill-router`](../skills/codexqa-skill-router/README.md) as the auto-select entry when the request does not name a skill. Each worker has a separate input contract so the agent knows whether it should read documents, index a local checkout, report on one diff, scan for code risk, write cases, call a data backend, drive a browser, diagnose an exception, collect a CodexQA review pack, or export an architecture wiki:
 
 | Skill | Role |
 | --- | --- |
 | [`codexqa-skill-router`](../skills/codexqa-skill-router/README.md) | Discover live siblings + bundled catalog; on-demand install; hand off to the matched skill |
 | [`codexqa-code-analyzer`](../skills/codexqa-code-analyzer/README.md) | Index a local repository, then trace change impact, regression scope, test gaps, entries, and errors through its symbol graph |
+| [`codexqa-change-analysis`](../skills/codexqa-change-analysis/README.md) | Diff-index one change, then write one HTML report (affected entries, change list, test plan, coverage verdict, sensitive paths) and add runnable test files for uncovered points |
 | [`codexqa-code-wiki`](../skills/codexqa-code-wiki/README.md) | Index a local repository, export community digests with `wiki inputs` (no model), and write an architecture knowledge-graph HTML report |
 | [`codexqa-rootcause-analyzer`](../skills/codexqa-rootcause-analyzer/README.md) | Exception RCA from stacks/logs on top of the CodexQA CLI; gated English root-cause report |
 | [`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.md) | SAST/lint/secrets/SCA + Agent LLM Detection → `report_scan.*` (P0–P3, deduped) |
@@ -21,14 +22,15 @@ The eight worker skills cover different parts of the delivery lifecycle, plus [`
 | [`codexqa-requirement-analyzer`](../skills/codexqa-requirement-analyzer/README.md) | Quality-and-risk analysis of requirement documents; one gap register |
 | [`codexqa-testcase-generator`](../skills/codexqa-testcase-generator/README.md) | Generate test plans and manual cases (Plan / Exec / Incremental) from local requirements; dual-write Markdown plus aggregated HTML report |
 | [`codexqa-testdata-generator`](../skills/codexqa-testdata-generator/README.md) | Construct reusable test data and backfill `{placeholder}`s in those cases |
+| [`codexqa-jev-browser`](../skills/codexqa-jev-browser/README.md) | Replay YAML / Markdown / API cases or run a goal in Playwright Chromium; local HTML report with each step and a marked screenshot |
 
-`npx skills add … --skill <name>` copies one directory. Install the skill you need; they do not replace each other. Prefer `codexqa-skill-router` when unsure — a solo router install can fetch workers on demand. Detection accuracy for `codexqa-defect-analyzer` has not been independently benchmarked. `codexqa-code-analyzer`, `codexqa-code-wiki`, `codexqa-rootcause-analyzer`, `codexqa-defect-analyzer`, `codexqa-testcase-generator`, `codexqa-code-reviewer`, `codexqa-requirement-analyzer`, and `codexqa-skill-router` have no published host-agent score.
+`npx skills add … --skill <name>` copies one directory. Install the skill you need; they do not replace each other. Prefer `codexqa-skill-router` when unsure — a solo router install can fetch workers on demand. Detection accuracy for `codexqa-defect-analyzer` has not been independently benchmarked. `codexqa-code-analyzer`, `codexqa-change-analysis`, `codexqa-code-wiki`, `codexqa-rootcause-analyzer`, `codexqa-defect-analyzer`, `codexqa-testcase-generator`, `codexqa-code-reviewer`, `codexqa-requirement-analyzer`, `codexqa-jev-browser`, and `codexqa-skill-router` have no published host-agent score.
 
 What a finished report or case looks like: [sample pages and screenshots](../README.md#overview-of-all-skills).
 
 ## Were the skill names renamed?
 
-Yes. Every published skill now uses a `codexqa-*` directory and frontmatter `name`. Install with the new names, for example `npx skills add openqa-cn/codexqa --skill codexqa-defect-analyzer`. Former names map as: `ai-code-reviewer`→`codexqa-code-reviewer`, `code-analyzer`→`codexqa-code-analyzer`, `code-wiki`→`codexqa-code-wiki`, `defect-detection`→`codexqa-defect-analyzer`, `requirements-analyzer`→`codexqa-requirement-analyzer`, `root-cause-diagnosis`→`codexqa-rootcause-analyzer`, `skill-router`→`codexqa-skill-router`, `testdata-generation`→`codexqa-testdata-generator`, `testcase-generation`→`codexqa-testcase-generator`.
+Yes. Every published skill now uses a `codexqa-*` directory and frontmatter `name`. Install with the new names, for example `npx skills add openqa-cn/codexqa --skill codexqa-defect-analyzer`. Former names map as: `ai-code-reviewer`→`codexqa-code-reviewer`, `change-impact-analysis`→`codexqa-change-analysis`, `code-analyzer`→`codexqa-code-analyzer`, `code-wiki`→`codexqa-code-wiki`, `defect-detection`→`codexqa-defect-analyzer`, `requirements-analyzer`→`codexqa-requirement-analyzer`, `root-cause-diagnosis`→`codexqa-rootcause-analyzer`, `skill-router`→`codexqa-skill-router`, `testdata-generation`→`codexqa-testdata-generator`, `testcase-generation`→`codexqa-testcase-generator`.
 
 ## Why not just use a linter or one code-review prompt?
 
@@ -41,23 +43,26 @@ Match the request, not the wording:
 - Unsure which skill / auto-route a vague QA request → `codexqa-skill-router`
 - Scan a diff / repo / paste for SAST and semantic code-risk findings → `codexqa-defect-analyzer`
 - Trace changed symbols, callers, regression scope, test gaps, and reachable entries in a local repository → `codexqa-code-analyzer`
+- One HTML change-impact report for a diff, plus new test files for what it leaves uncovered → `codexqa-change-analysis`
 - Map modules, real dependencies, and a reading path without calling a model → `codexqa-code-wiki`
 - Diagnose exception root cause from stacks / logs / dumps → `codexqa-rootcause-analyzer`
 - CodexQA graph-evidence pack and bilingual HTML review report → `codexqa-code-reviewer`
 - Review whether the PRD itself is complete and consistent → `codexqa-requirement-analyzer`
 - Write or update a manual case library (and optional aggregated HTML report) → `codexqa-testcase-generator`
 - Build data that fills case `{placeholder}`s → `codexqa-testdata-generator`
+- Replay a UI case or run a goal in a real browser → `codexqa-jev-browser`
 
-“Review this PR” is not enough to choose: `codexqa-code-wiki` maps communities and reading order; `codexqa-code-analyzer` maps changed symbols, callers, entries, and test gaps; `codexqa-defect-analyzer` runs SAST + agent semantic scan into `report_scan.*`; `codexqa-code-reviewer` collects a CodexQA pack and renders `REVIEW-REPORT.html`; `codexqa-rootcause-analyzer` needs exception evidence for RCA. A request can span skills: use `codexqa-code-wiki` to learn the map, `codexqa-code-analyzer` to bound the impact, then `codexqa-code-reviewer` for graph-evidence HTML review. Generate cases first; placeholders can only be backfilled after the `.md` files exist.
+“Review this PR” is not enough to choose: `codexqa-code-wiki` maps communities and reading order; `codexqa-code-analyzer` maps changed symbols, callers, entries, and test gaps; `codexqa-change-analysis` turns one diff into an HTML impact report and new tests; `codexqa-defect-analyzer` runs SAST + agent semantic scan into `report_scan.*`; `codexqa-code-reviewer` collects a CodexQA pack and renders `REVIEW-REPORT.html`; `codexqa-rootcause-analyzer` needs exception evidence for RCA. A request can span skills: use `codexqa-code-wiki` to learn the map, `codexqa-code-analyzer` to bound the impact, then `codexqa-code-reviewer` for graph-evidence HTML review. Generate cases first; placeholders can only be backfilled after the `.md` files exist.
 
 ## What do I have to give each skill?
 
-They do not share one input. Two skills take Git, but not the same way:
+They do not share one input. Several skills take Git, but not the same way:
 
 | Skill | You bring | Not used as input |
 |---|---|---|
 | `codexqa-skill-router` | A request to route (optionally consent to on-demand install); Python 3.10+ | Doing the worker task itself — it only selects, may fetch, then follows another skill |
 | `codexqa-code-analyzer` | A local repository; for change review, the baseline ref | Requirements or a clone task. It indexes the checkout already on disk and queries its symbol graph |
+| `codexqa-change-analysis` | A local repository and one baseline ref (for example `origin/main`); the repo must start to run generated tests | Whole-repo analysis with no diff (use `codexqa-code-analyzer`). It adds test files and does not edit existing ones |
 | `codexqa-code-wiki` | A local repository with an existing index | A change set, requirements, or a clone task. It exports `wiki inputs` and writes an architecture report |
 | `codexqa-rootcause-analyzer` | Exception evidence (stack / log / dump) plus git URL, local dir, file, or open workspace | A PRD or P0/P1/P2 review request. It diagnoses exceptions, not requirement gaps or graph-evidence HTML review |
 | `codexqa-defect-analyzer` | Diff / repo / upload / paste for a code-risk scan | Exception stacks as the primary goal (use `codexqa-rootcause-analyzer`) or graph-evidence HTML review (use `codexqa-code-reviewer`) |
@@ -65,12 +70,13 @@ They do not share one input. Two skills take Git, but not the same way:
 | `codexqa-requirement-analyzer` | Requirement documents (PRD, stories, API notes, optional role reports) | Application source. It does not write cases |
 | `codexqa-testcase-generator` | Local PRD / design files, paste, or HTTPS document URLs given this turn (optional knowledge dir / Git URL) | Application source as the primary input. Code fetch is Incremental-only when the user gives a PR/git URL and a case baseline already exists |
 | `codexqa-testdata-generator` | A construct request, written cases, and/or OpenAPI / `planId` / `serviceId` | Application source. It calls a backend (or the local mock) and reports IDs the backend returned |
+| `codexqa-jev-browser` | A YAML / Markdown / API case, or a goal plus a URL; `npm install` in the skill directory | CSS / XPath / coordinates. It only acts on controls from its own page index |
 
 Sample prompts: [root README · Quick start](../README.md#quick-start).
 
 ## Do I need an npm account or a codexqa account?
 
-No. `npx skills add` runs a community installer that fetches skill files from GitHub. Local providers do not require a codexqa account. `codexqa-code-analyzer`, `codexqa-code-wiki`, `codexqa-rootcause-analyzer`, and `codexqa-defect-analyzer` additionally install the separately distributed npm package `@openqa-cn/codexqa`, but no npm account is required. Your agent or remote providers may have their own account requirements.
+No. `npx skills add` runs a community installer that fetches skill files from GitHub. Local providers do not require a codexqa account. `codexqa-code-analyzer`, `codexqa-change-analysis`, `codexqa-code-wiki`, `codexqa-rootcause-analyzer`, and `codexqa-defect-analyzer` additionally install the separately distributed npm package `@openqa-cn/codexqa`, but no npm account is required. Your agent or remote providers may have their own account requirements.
 
 ## What is the relationship between the codexqa-code-analyzer / codexqa-code-wiki Skills and the codexqa CLI?
 

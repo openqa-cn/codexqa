@@ -10,10 +10,13 @@ It is **not** a substitute for
 [`codexqa-defect-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-defect-analyzer/README.md),
 [`codexqa-code-reviewer`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-code-reviewer/README.md),
 [`codexqa-code-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-code-analyzer/README.md),
+[`codexqa-change-analysis`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-change-analysis/README.md),
+[`codexqa-code-wiki`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-code-wiki/README.md),
 [`codexqa-rootcause-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-rootcause-analyzer/README.md),
 [`codexqa-requirement-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-requirement-analyzer/README.md),
-[`codexqa-testcase-generator`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-testcase-generator/README.md), or
-[`codexqa-testdata-generator`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-testdata-generator/README.md).
+[`codexqa-testcase-generator`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-testcase-generator/README.md),
+[`codexqa-testdata-generator`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-testdata-generator/README.md), or
+[`codexqa-jev-browser`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-jev-browser/README.md).
 Those remain the workers; this skill **discovers, matches, ensures install, and follows** them.
 
 ## Install
