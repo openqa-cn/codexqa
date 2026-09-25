@@ -372,7 +372,7 @@ def main() -> None:
             "long_files": raw["long_files"],
             "thresholds": {"max_files": MAX_FILES, "max_lines": MAX_LINES, "long_file_loc": 800},
             "notes": [
-                "Hard gate: non-empty magic_numbers is one maintainability finding that cites every path:line. rate_literal and decision_literal rows are included. A read name does not drop an inline literal or a disabling sentinel.",
+                "Conventions, not defects: magic_numbers, long_files, and eol imports go in conventions[] and do not increment P0/P1/P2. One convention item may cite every line of that kind. A decision_literal or URL that changes a branch or an account result is its own defect card. A read name does not drop an inline literal or a disabling sentinel.",
                 "Hard gate: each unused_accumulators row, each test_oracle_hits row, and each prod_test_coupling row is its own finding. test_oracle_inventory is one suspect per test method; every row needs a test_oracle_coverage hit or skip. A coverage miss fails the review.",
             ],
         }

@@ -374,6 +374,118 @@ else
   fail "render should allow a cited report row"
   echo "$GO" >&2
 fi
+
+# One card cannot close two pattern classes. Same rule and same fix can.
+SCENE_DIR="$TMP/scene-cards"
+mkdir -p "$SCENE_DIR"
+printf '%s\n' '{"findings":[{"disposition":"report","file":"src/A.java","line":10,"pattern_class":"hardcoded_secret"},{"disposition":"report","file":"src/A.java","line":20,"pattern_class":"insecure_tls"}]}' \
+  >"$SCENE_DIR/23-sast-signals.json"
+printf '%s\n' '{"p0":[{"title":"密钥和关掉 TLS","line":10,"same_fix":true,"also_lines":[20],"location":"src/A.java"}],"p1":[],"p2":[]}' \
+  >"$SCENE_DIR/merged.json"
+set +e
+SCENE_FAIL="$("$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$SCENE_DIR" "$SCENE_DIR/merged.json" 2>&1)"
+set -e
+if echo "$SCENE_FAIL" | grep -q 'closes two relations'; then
+  pass "one card cannot close two pattern classes"
+else
+  fail "merged secret and TLS card should fail the line ledger"
+  echo "$SCENE_FAIL" >&2
+fi
+printf '%s\n' '{"p0":[{"title":"仓库里写了密钥","line":10,"location":"src/A.java","pattern_class":"hardcoded_secret"},{"title":"关掉了 TLS","line":20,"location":"src/A.java","pattern_class":"insecure_tls"}],"p1":[],"p2":[]}' \
+  >"$SCENE_DIR/split.json"
+if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$SCENE_DIR" "$SCENE_DIR/split.json" >/dev/null; then
+  pass "two failure scenarios are two cards"
+else
+  fail "split secret and TLS cards should pass"
+fi
+printf '%s\n' '{"findings":[{"disposition":"report","file":"src/Pay.java","line":10,"rule_id":"FX-900"},{"disposition":"report","file":"src/Pay.java","line":12,"rule_id":"FX-900"}]}' \
+  >"$SCENE_DIR/23-sast-signals.json"
+printf '%s\n' '{"p0":[{"title":"汇率放大了入账","line":10,"rule_id":"FX-900","same_fix":true,"also_lines":[12],"location":"src/Pay.java"}],"p1":[],"p2":[],"rule_coverage":[{"rule_id":"FX-900","result":"hit","note":"same fix"}]}' \
+  >"$SCENE_DIR/same-fix.json"
+if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$SCENE_DIR" "$SCENE_DIR/same-fix.json" >/dev/null; then
+  pass "same rule and same fix may share also_lines"
+else
+  fail "same_fix also_lines should close both rows of one rule"
+fi
+printf '%s\n' '{"eol_imports":[{"kind":"eol_import","path":"src/Old.java","line":9,"disposition":"report"}]}' \
+  >"$SCENE_DIR/18-maintainability-signals.json"
+rm -f "$SCENE_DIR/23-sast-signals.json"
+printf '%s\n' '{"p0":[],"p1":[],"p2":[],"conventions":[{"kind":"eol_import","line":9,"lines":[9]}]}' \
+  >"$SCENE_DIR/convention.json"
+if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$SCENE_DIR" "$SCENE_DIR/convention.json" >/dev/null; then
+  pass "stale import closes in conventions, not P2"
+else
+  fail "eol_import in conventions should pass with an empty P2 list"
+fi
+printf '%s\n' '{"findings":[{"disposition":"report","file":"src/A.java","line":10,"pattern_class":"sqli","rule_id":"SEC-009"}]}' \
+  >"$SCENE_DIR/23-sast-signals.json"
+printf '%s\n' '{"p0":[{"title":"另记","line":10,"rule_id":"SEC-009","location":"src/A.java","risk":"已由别的卡覆盖。"}],"p1":[],"p2":[],"rule_coverage":[{"rule_id":"SEC-009","result":"hit","note":"line 10"}]}' \
+  >"$SCENE_DIR/defer.json"
+set +e
+DEFER_FAIL="$("$ROOT/scripts/acr-python" "$ROOT/scripts/lib/validate-conclusion.py" "$SCENE_DIR" "$SCENE_DIR/defer.json" 2>&1)"
+set -e
+if echo "$DEFER_FAIL" | grep -q 'deferral without a real card line'; then
+  pass "a deferral must name a line a card actually lists"
+else
+  fail "deferral without a listed line should fail the ledger"
+  echo "$DEFER_FAIL" >&2
+fi
+# Header is four blocks; conventions are not defects; comments share ids.
+HEAD_DIR="$TMP/scene-header"
+mkdir -p "$HEAD_DIR"
+cp "$ROOT/evals/fixtures/conclusion/minimal.json" "$HEAD_DIR/review-conclusion.json"
+"$ROOT/scripts/acr-python" - <<PY
+import json
+from pathlib import Path
+p = Path(r'''$HEAD_DIR''') / "review-conclusion.json"
+doc = json.loads(p.read_text())
+doc["p0"] = [{
+    "title": "网关失败后钱加到了收款方",
+    "actor": "收款回调",
+    "input": "网关返回失败",
+    "line": 120,
+    "outcome": "收款方余额增加",
+    "same_fix": True,
+    "also_lines": [128],
+    "fix": "失败回调改为冲正。",
+    "location": "src/Pay.java:120",
+}]
+doc["p2"] = []
+doc["conventions"] = [{"kind": "magic_number", "title": "费率用了裸数字", "line": 8, "lines": [8]}]
+doc["regression_tests"] = [
+    {"target": "网关失败时收款方余额不变"},
+    {"target": "重复回调只入账一次"},
+    {"target": "限额比较用同一精度"},
+    {"target": "第四条不进页头"},
+]
+doc["complexity"] = {"verdict": "concern", "risk": "维度折叠在发现项之后"}
+p.write_text(json.dumps(doc), encoding="utf-8")
+PY
+set +e
+HO="$("$ROOT/scripts/render-review-html.sh" --dir "$HEAD_DIR" 2>&1)"
+HEC=$?
+set -e
+HEAD_HTML="$HEAD_DIR/REVIEW-REPORT.html"
+if [[ "$HEC" -eq 0 ]] \
+  && grep -q '能否合入' "$HEAD_HTML" \
+  && grep -q '不能合入' "$HEAD_HTML" \
+  && grep -q '最高严重级别' "$HEAD_HTML" \
+  && grep -q '必测路径' "$HEAD_HTML" \
+  && grep -q '证据行' "$HEAD_HTML" \
+  && grep -q '另见第 128 行' "$HEAD_HTML" \
+  && grep -q 'id="D-001"' "$HEAD_HTML" \
+  && grep -q '维度与调用链' "$HEAD_HTML" \
+  && grep -q '第四条不进页头' "$HEAD_HTML" \
+  && ! grep -q '第四条不进页头' <<<"$(sed -n '/must-list/,/\/ol>/p' "$HEAD_HTML")" \
+  && grep -q 'P2=0' "$HEAD_HTML" \
+  && grep -q '"id": "D-001"' "$HEAD_DIR/review-comments.json" \
+  && grep -q '无关紧要' "$HEAD_DIR/review-comments.json" \
+  && ! grep -q '"score"' "$HEAD_DIR/review-comments.json"; then
+  pass "report header, scenario card, and shared comment id"
+else
+  fail "scenario report header or comments did not match"
+  echo "$HO" >&2
+fi
 # Theme contrast: meta values must use --ink/--muted (not hardcoded light-only colors)
 if "$SCRIPT_DIR/acr-python" -c "
 from pathlib import Path

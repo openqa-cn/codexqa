@@ -151,8 +151,18 @@
   "p0": [],
   "p1": [
     {
-      "title": "发现标题（中文）",
-      "title_en": "Finding title (English)",
+      "id": "D-001",
+      "title": "网关失败后钱加到了收款方",
+      "title_en": "After the gateway failed, the money was credited to the payee",
+      "actor": "收款回调",
+      "actor_en": "Payee callback",
+      "input": "网关返回失败，本地仍按成功入账",
+      "input_en": "Gateway returns failure and the local credit still succeeds",
+      "line": 120,
+      "outcome": "收款方余额增加，付款方未扣回",
+      "outcome_en": "Payee balance increases and the payer is not debited back",
+      "same_fix": false,
+      "also_lines": [],
       "location": "文件/符号（中文标点可）",
       "location_en": "File / symbol (ASCII punctuation preferred)",
       "symbol_id": "(JSON audit only — omitted from HTML)",
@@ -175,8 +185,19 @@
       "entry_en": "English mirror when entry is prose",
       "tested_count": "(JSON audit only — omitted from HTML)",
       "confidence": "(JSON audit only — omitted from HTML) high|medium|low|UNKNOWN",
-      "fix": "修复建议（中文）",
-      "fix_en": "Recommended fix (English)"
+      "fix": "失败回调不得给收款方加余额，改为冲正。",
+      "fix_en": "Do not credit the payee on a failed callback; reverse it."
+    }
+  ],
+  "conventions": [
+    {
+      "kind": "magic_number | long_file | eol_import",
+      "title": "规范项标题（不计缺陷）",
+      "title_en": "Convention title (not a defect)",
+      "path": "src/Pay.java",
+      "line": 40,
+      "lines": [40, 41],
+      "note": "一条规范可以列出多行"
     }
   ],
   "p2": [

@@ -192,9 +192,12 @@ remaining shapes with the same `rule_id`.
 
 **Relation:** a hard-gate array entry is a defect the report must show.
 
-**Shapes:** one finding per array element (`path` + `line`). Grouping is
-allowed only inside one call site when every line of that site is cited in
-that finding’s evidence.
+**Shapes:** one finding per failure scenario (`path` + primary `line`).
+Merge only when the root cause and the fix are the same, and list the other
+lines in `also_lines` with `same_fix: true` (“另见第 N 行”). A different
+trigger or a different account outcome is a second card. `getFxRate()`
+inflating a credit and `BigDecimal.equals` skipping a limit are not one
+finding. Citing extra line numbers in prose does not close those rows.
 
 **Closure:** `residual_risks` cannot satisfy this family.
 

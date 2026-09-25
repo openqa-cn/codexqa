@@ -270,6 +270,10 @@ def is_duplicate(candidate: dict, baseline: dict) -> bool:
     overlap = jaccard(c_tok, b_tok)
     if not same_relation(candidate, baseline):
         return False
+    c_cls = sast_owned_class(candidate) or str(candidate.get("pattern_class") or "").strip()
+    b_cls = sast_owned_class(baseline) or str(baseline.get("pattern_class") or "").strip()
+    if c_cls and b_cls and c_cls != b_cls:
+        return False
     # A rate/timeout/test row is not the same defect as a scanner class on a nearby line.
     if candidate.get("derive_suspect_id") and sast_owned_class(baseline):
         return False
@@ -282,10 +286,14 @@ def is_duplicate(candidate: dict, baseline: dict) -> bool:
     # are unlabeled restatements of one issue.
     if c_path and b_path and c_path == b_path and families_compatible(c_cat, b_cat):
         if c_line is not None and b_line is not None and abs(c_line - b_line) <= 3:
-            # Same line merges. A different line stays unless that line is already listed.
-            if c_line != b_line and c_line not in listed_lines(baseline):
-                return False
-            return True
+            # Same line merges. The same rule_id on a nearby line is one defect:
+            # the caller records the other line in also_lines. A different
+            # relation stays a second card.
+            if c_line == b_line or c_line in listed_lines(baseline):
+                return True
+            if relation_ids(candidate) and relation_ids(candidate) == relation_ids(baseline):
+                return True
+            return False
         if c_line is None and b_line is None and overlap >= 0.55:
             return True
 
@@ -321,20 +329,29 @@ def listed_lines(finding: dict) -> set[int]:
     found: set[int] = set()
     if isinstance(finding.get("line"), int):
         found.add(finding["line"])
-    raw = finding.get("lines")
-    if isinstance(raw, list):
-        found.update(n for n in raw if isinstance(n, int))
+    for key in ("lines", "also_lines"):
+        raw = finding.get(key)
+        if isinstance(raw, list):
+            found.update(n for n in raw if isinstance(n, int))
     return found
 
 
 def union_lines(finding: dict, candidate: dict) -> None:
-    """A nearby card must keep the other line. Dropping it is a missed defect."""
-    merged = list(finding.get("lines") or [])
-    for number in listed_lines(finding) | listed_lines(candidate):
-        if number not in merged:
-            merged.append(number)
-    if merged:
-        finding["lines"] = merged
+    """A restatement keeps the other line on this card. It is not a second card."""
+    extra = extract_line(candidate)
+    primary = finding.get("line") if isinstance(finding.get("line"), int) else extract_line(finding)
+    if not isinstance(extra, int):
+        return
+    if not isinstance(primary, int):
+        finding["line"] = extra
+        return
+    if extra == primary:
+        return
+    also = [n for n in (finding.get("also_lines") or []) if isinstance(n, int)]
+    if extra not in also:
+        also.append(extra)
+    finding["also_lines"] = also
+    finding["same_fix"] = True
 
 
 def enrich_evidence(finding: dict, candidate: dict) -> None:

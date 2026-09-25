@@ -2,8 +2,9 @@
 """Fill mechanical conclusion fields from 30-conclusion-skeleton.json.
 
 Span hashes, drift line skips, and the untested-symbol name list are not
-retyped by the model. Branch-drift report lines are cited on one finding
-so the closure gate holds. pr_delta report lines stay the model's job.
+retyped by the model. Branch-drift report lines are recorded as
+line_skips (kind branch_drift), not as a defect card. pr_delta report
+lines stay the model's job.
 """
 from __future__ import annotations
 
@@ -29,21 +30,6 @@ def load_json(path: Path):
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
-
-
-def cite_text(lines: list[int]) -> str:
-    parts: list[str] = []
-    buf: list[str] = []
-    for number in lines:
-        trial = "、".join(buf + [str(number)])
-        if buf and len(trial) > 160:
-            parts.append("行：" + "、".join(buf) + "。")
-            buf = [str(number)]
-        else:
-            buf.append(str(number))
-    if buf:
-        parts.append("行：" + "、".join(buf) + "。")
-    return "".join(parts)
 
 
 def gap_names(conclusion: dict) -> set[str]:
@@ -134,32 +120,21 @@ def seal(conclusion: dict, skeleton: dict, validate) -> dict:
     drift = [int(n) for n in (skeleton.get("branch_drift_lines") or []) if isinstance(n, int)]
     missing_lines = [n for n in drift if n not in cited]
     if missing_lines:
-        text = (
+        note = (
             "这些行在三方 diff 之外，是分支落后主干带来的扫描命中，不是本次提交新写的逻辑。"
-            + cite_text(missing_lines)
+            "变基后再看三方 diff。不要按这些行去改主干上已经更新的文件。"
         )
-        en = (
-            "These lines sit outside the three-dot diff. They are scanner hits on the stale branch, not logic this pull request added. "
-            + cite_text(missing_lines)
-        )
-        p2 = list(merged.get("p2") or [])
-        p2.append({
-            "title": "分支漂移上的扫描行已登记",
-            "title_en": "Scanner lines on branch drift are recorded",
-            "location": "three-dot patch 之外的报告行",
-            "location_en": "Report lines outside the three-dot patch",
-            "category": "maintainability",
-            "change_status": "default",
-            "risk": text,
-            "risk_en": en,
-            "evidence": text,
-            "evidence_en": en,
-            "fix": "变基后再看三方 diff。不要按这些行去改主干上已经更新的文件。",
-            "fix_en": "Rebase, then review the three-dot diff. Do not patch current main because of these lines.",
-            "confidence": "medium",
-        })
-        merged["p2"] = p2
-        merged["p2_count"] = len(p2)
+        for number in missing_lines:
+            key = ("branch_drift", number)
+            if key in have:
+                continue
+            have.add(key)
+            skips.append({
+                "kind": "branch_drift",
+                "line": number,
+                "note": note,
+            })
+        merged["line_skips"] = skips
     return merged
 
 

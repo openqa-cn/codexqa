@@ -229,6 +229,15 @@ h3 { font-size: 1rem; margin: 16px 0 8px; color: var(--ink); }
 .stat.p1 .n { color: var(--p1); }
 .stat.p2 .n { color: var(--p2); }
 .stat.risk .n { color: var(--med); font-size: clamp(1rem, 2.4vw, 1.55rem); }
+.stat.must { text-align: left; }
+.stat.must .n { font-size: 1rem; }
+.must-list { margin: 8px 0 0; padding-left: 1.1em; text-align: left; font-size: 12px; line-height: 1.45; }
+.defect-id { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: .04em; }
+.fold { margin-top: 12px; }
+.fold > summary { cursor: pointer; font-weight: 650; padding: 8px 0; }
+.dim-fold { padding: 12px 16px; background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; }
+.convention-list { margin: 0; padding-left: 1.2em; }
+.convention-list li { margin: 6px 0; }
 .lede { margin: 16px 0 0; overflow-wrap: anywhere; }
 .findings-hint { margin: 0 0 14px; }
 .findings-stack { display: grid; gap: 12px; }

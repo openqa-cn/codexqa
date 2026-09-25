@@ -21,9 +21,9 @@
 | Signal | Default |
 |---|---|
 | Many TODO/FIXME in change set | P2 |
-| Magic number clusters | P2 hard gate: one finding cites every `magic_numbers` `path:line` |
+| Magic number clusters | Convention, not a defect: one `conventions` item may cite every `magic_numbers` `path:line`. Status codes and URL literals that change a branch or an account result stay separate defect cards. |
 | `unused_accumulators` (collection only add/put, never read) | P2 hard gate: one finding per row |
-| Long file ≥800 LOC | P2 |
+| Long file ≥800 LOC | Convention (`conventions`), not a P0/P1/P2 defect |
 
 Keep short; do not re-litigate Complexity nesting/YAGNI here — xref `11-complexity-signals.json`.
 

@@ -107,8 +107,11 @@ Layer / Over-engineering / Timing. Each concern subsection needs `risk` or risk-
 
 ## 2. Findings (severity descending)
 
-HTML 卡片字段：位置、变更、分类、风险、**调用链路**（纯 HTML 节点图，不依赖 Mermaid）、依据、入口、修复建议。
-**不展示：** 符号 id、tested_count、置信度、独立「影响面示意」整节（图谱并入卡片）。
+一张卡一个失败场景。标题写后果，不写规则名。正文四句：谁（`actor`）、什么输入（`input`）、哪一行（`line`）、账户变成什么样（`outcome`）。修法（`fix`）单独一句。同一根因且同一种修法才合并，把其余行放进 `also_lines` 并设 `same_fix: true`（页面写「另见第 N 行」）。触发条件或账务结果不同就拆开。`getFxRate()` 放大入账和 `BigDecimal.equals` 放过限额是两张卡。
+
+调用链路、变更状态、分类、入口默认折叠。**不展示：** 符号 id、tested_count、置信度、独立「影响面示意」整节。
+
+魔法数、超长文件、过期 import 写入 `conventions`，不进入 P0/P1/P2。状态码和 URL 若改变分支或账务结果，仍是单独的缺陷卡。
 
 `call_chain` 推荐写法（edges-in / 生产路径证据）：
 ```json
@@ -124,16 +127,13 @@ HTML 卡片字段：位置、变更、分类、风险、**调用链路**（纯 H
 
 _None_ or items:
 
-#### Finding title
+#### 网关失败后钱加到了收款方
 
-- Location:
-- Change status (`add` / `change` / `default` — renderer maps to Chinese):
-- Category:
-- Risk (trigger path, impact — plain language):
-- Call chain (`call_chain` — HTML graph):
-- Evidence (human basis):
-- Entry:
-- Fix (`fix` → HTML「修复建议」):
+- id (`D-001`; renderer assigns one when omitted; the same id is used in `review-comments.json`):
+- actor / input / line / outcome:
+- also_lines + same_fix (only when the fix is identical):
+- Fix (one sentence):
+- Call chain, change status, category, entry (collapsed in HTML):
 
 ### [P1 - Should fix this iteration]
 

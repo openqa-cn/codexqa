@@ -273,10 +273,15 @@ Fails: missing CodexQA provenance; empty change-groups; all `change_status=defau
 2. **Required:** `<OUT_DIR>/review-conclusion.json` from
    [templates/review-conclusion.json](templates/review-conclusion.json)
 3. **Required:** `./scripts/render-review-html.sh --dir <OUT_DIR>` → **`REVIEW-REPORT.html`**
+   and **`review-comments.json`** (same defect id, no score).
    Render runs `scripts/lib/validate-conclusion.py` first and refuses the HTML
    when any gate fails:
-   - Every `disposition: report` row's line is on some finding. A sentence that
-     says another card covers a defect must name a line that a finding lists.
+   - Every behavioral `disposition: report` row is the primary `line` of a finding,
+     or an `also_lines` entry with `same_fix: true`. A line number written only in
+     prose does not close the row. One finding cannot close two `rule_id` or
+     `pattern_class` values. Magic numbers, long files, and stale imports close
+     in `conventions`, not in P0/P1/P2. A sentence that says another card covers
+     a defect must name a line that a finding lists.
    - Each `test_oracle_inventory` row has `oracle.unsafe_pass`,
      `oracle.boundary_missed`, and `oracle.branch_uncovered`. Skip is legal
      only when all three are false. A locally true assertion does not skip
@@ -285,9 +290,7 @@ Fails: missing CodexQA provenance; empty change-groups; all `change_status=defau
      explicit waiver list. A rule whose look-for has several shapes lists
      every shape; the first hit does not close the rest.
 
-Cover: 变更摘要、主开发语言、**有问题的维度**（Design / Complexity / Dependencies /
-Resilience / Privacy / Rollout / Performance / Agent LLM judgment 等 — `ok`/`none` 不进报告）、总风险、P0/P1/P2、
-回归必测清单、测试缺口、敏感路径、卡片内调用链路。
+Cover: 页头四块（能否合入、最高严重级别、行为缺陷数与证据行数、必测三条路径）、一张卡一个失败场景、规范项（不计缺陷）、回归必测清单、测试缺口、敏感路径。有问题的维度和调用链默认折叠，排在发现项之后。`ok`/`none` 维度不进报告。
 **不渲染：** 建议修复顺序、残留风险与假设、独立影响面示意。
 `render-review-html.sh` 会过滤干净维度；仍须在 `review-conclusion.json` 写全评估结果与
 `dimensions_covered`。Final findings must already be **dedupe-merged** (no duplicate

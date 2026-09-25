@@ -134,12 +134,25 @@ jq \
     if ($x | type) == "array" then [$x[] | tostring]
     elif $x == null then []
     else [($x | tostring)] end;
+  def pad3($n):
+    ($n | tostring) as $s
+    | if ($s | length) >= 3 then $s
+      elif ($s | length) == 2 then "0" + $s
+      else "00" + $s end;
+  def stamp($items; $start):
+    [range(0; ($items | length)) as $i
+      | $items[$i]
+      | if nonempty(.id) then .
+        else . + {id: ("D-" + pad3($start + $i + 1))} end];
   . as $c0
   | (($m[0] // {}) | if type == "object" then . else {} end) as $m0
   | (($lp[0] // {}) | if type == "object" then . else {} end) as $lp0
-  | (as_finding_list($c0.p0)) as $p0
-  | (as_finding_list($c0.p1)) as $p1
-  | (as_finding_list($c0.p2)) as $p2
+  | (as_finding_list($c0.p0)) as $raw0
+  | (as_finding_list($c0.p1)) as $raw1
+  | (as_finding_list($c0.p2)) as $raw2
+  | (stamp($raw0; 0)) as $p0
+  | (stamp($raw1; ($raw0 | length))) as $p1
+  | (stamp($raw2; (($raw0 | length) + ($raw1 | length)))) as $p2
   | $c0 + {
       evidence_dir: pick($c0.evidence_dir; $DIR),
       repo: pick($c0.repo; $m0.repo // ""),
@@ -155,9 +168,10 @@ jq \
       p0: $p0,
       p1: $p1,
       p2: $p2,
-      p0_count: ($c0.p0_count // ($p0 | length)),
-      p1_count: ($c0.p1_count // ($p1 | length)),
-      p2_count: ($c0.p2_count // ($p2 | length)),
+      p0_count: ($p0 | length),
+      p1_count: ($p1 | length),
+      p2_count: ($p2 | length),
+      conventions: (as_array($c0.conventions)),
       regression_tests: as_array($c0.regression_tests),
       test_gaps: as_array($c0.test_gaps),
       fix_order: as_string_list($c0.fix_order),
@@ -165,6 +179,78 @@ jq \
       diagrams: as_array($c0.diagrams)
     }
   ' "$INPUT" >"$MERGED"
+
+COMMENTS_OUT="$(dirname "$OUT")/review-comments.json"
+jq '
+  def nonempty($x): ($x != null and ($x | tostring) != "");
+  def path_of($f):
+    if nonempty($f.file) then ($f.file | tostring)
+    elif nonempty($f.path) then ($f.path | tostring)
+    elif nonempty($f.location) then ($f.location | tostring | split(":")[0])
+    else "" end;
+  def body_of($f):
+    if (nonempty($f.actor) or nonempty($f.input) or nonempty($f.outcome)) then
+      [
+        (if nonempty($f.actor) then $f.actor else empty end),
+        (if nonempty($f.input) then $f.input else empty end),
+        (if ($f.line | type) == "number" then ("第 " + ($f.line | tostring) + " 行") else empty end),
+        (if nonempty($f.outcome) then $f.outcome else empty end),
+        (if nonempty($f.fix) then $f.fix else empty end)
+      ] | join("。")
+    else
+      [($f.title // ""), ($f.risk // ""), ($f.fix // "")]
+      | map(select(nonempty(.)))
+      | join("。")
+    end;
+  def body_en($f):
+    if (nonempty($f.actor_en) or nonempty($f.input_en) or nonempty($f.outcome_en)) then
+      [
+        (if nonempty($f.actor_en) then $f.actor_en else empty end),
+        (if nonempty($f.input_en) then $f.input_en else empty end),
+        (if ($f.line | type) == "number" then ("line " + ($f.line | tostring)) else empty end),
+        (if nonempty($f.outcome_en) then $f.outcome_en else empty end),
+        (if nonempty($f.fix_en) then $f.fix_en else empty end)
+      ] | join(". ")
+    else
+      [($f.title_en // $f.title // ""), ($f.risk_en // $f.risk // ""), ($f.fix_en // $f.fix // "")]
+      | map(select(nonempty(.)))
+      | join(". ")
+    end;
+  def one($f; $sev):
+    {
+      id: ($f.id // ""),
+      path: path_of($f),
+      line: (if ($f.line | type) == "number" then $f.line else null end),
+      level: (if $sev == "p0" then "必须改" else "建议" end),
+      level_en: (if $sev == "p0" then "must fix" else "suggestion" end),
+      body: body_of($f),
+      body_en: body_en($f)
+    };
+  def pad3($n):
+    ($n | tostring) as $s
+    | if ($s | length) >= 3 then $s
+      elif ($s | length) == 2 then "0" + $s
+      else "00" + $s end;
+  {
+    comments: (
+      [(.p0 // [])[] | one(.; "p0")]
+      + [(.p1 // [])[] | one(.; "p1")]
+      + [(.p2 // [])[] | one(.; "p2")]
+      + [range(0; ((.conventions // []) | length)) as $i
+          | (.conventions[$i]) as $c
+          | {
+              id: (if nonempty($c.id) then ($c.id | tostring) else ("C-" + pad3($i + 1)) end),
+              path: path_of($c),
+              line: (if ($c.line | type) == "number" then $c.line else null end),
+              level: "无关紧要",
+              level_en: "nit",
+              body: (($c.title // $c.note // "") | tostring),
+              body_en: (($c.title_en // $c.note // "") | tostring)
+            }
+        ]
+    )
+  }
+' "$MERGED" >"$COMMENTS_OUT"
 
 # Build escaped HTML fragments object.
 jq -c '
@@ -188,7 +274,8 @@ jq -c '
   def label_en($zh):
     ({
       "位置":"Location","变更":"Change","分类":"Category","风险":"Risk","依据":"Evidence",
-      "入口":"Entry","修复建议":"Fix","调用链路":"Call chain","结论":"Verdict",
+      "入口":"Entry","修复建议":"Fix","修法":"Fix","调用链路":"Call chain","结论":"Verdict",
+      "谁":"Who","输入":"Input","行":"Line","账户":"Account","另见":"Also",
       "风险说明":"Risk","总评":"Overall","依据汇总":"Evidence summary","信号文件":"Signals file",
       "过度设计":"Over-engineering","必要性":"Necessity","可复现性":"Reproducibility",
       "许可证线索":"License clues","漏洞态势":"Vuln posture","最小化":"Minimization",
@@ -354,6 +441,39 @@ jq -c '
          end)
       else ($s | tostring | esc)
       end;
+  def line_sentence($item):
+    (if ($item.line | type) == "number" then ("第 " + ($item.line | tostring) + " 行") else "" end) as $zh
+    | (if ($item.line | type) == "number" then ("line " + ($item.line | tostring)) else "" end) as $en
+    | (if nonempty($item.location) then
+        {zh: (if $zh == "" then ($item.location | tostring) else $zh + " · " + ($item.location | tostring) end),
+         en: (if $en == "" then (($item.location_en // $item.location) | tostring) else $en + " · " + (($item.location_en // $item.location) | tostring) end)}
+      else {zh: $zh, en: (if $en == "" then $zh else $en end)} end);
+  def also_sentence($item):
+    if ($item.same_fix == true and ((($item.also_lines // []) | length) > 0)) then
+      (($item.also_lines // []) | map(tostring) | join("、")) as $nums
+      | {zh: ("另见第 " + $nums + " 行"), en: ("also lines " + $nums)}
+    else {zh: "", en: ""} end;
+  def scenario_html($item):
+    if (nonempty($item.actor) or nonempty($item.input) or nonempty($item.outcome)) then
+      field_bi("谁"; ""; $item.actor; $item.actor_en)
+      + field_bi("输入"; ""; $item.input; $item.input_en)
+      + (line_sentence($item) as $ln | field_bi("行"; "is-path"; $ln.zh; $ln.en))
+      + field_bi("账户"; ""; $item.outcome; $item.outcome_en)
+    else
+      field_bi("位置"; "is-path"; $item.location; $item.location_en)
+      + field_bi("风险"; ""; $item.risk; $item.risk_en)
+      + field_bi("依据"; ""; $item.evidence; $item.evidence_en)
+    end;
+  def fold_html($item; $mode):
+    ("<div class=\"field\">" + field_k("变更") + "<div class=\"field-v is-cat\">" + change_label($item.change_status; $mode) + "</div></div>") as $change
+    | ("<div class=\"field\">" + field_k("分类") + "<div class=\"field-v is-cat\">" + category_bi($item.category) + "</div></div>") as $cat
+    | field_html("调用链路"; finding_chain($item)) as $chain
+    | field_bi("入口"; ""; $item.entry; $item.entry_en) as $entry
+    | field_bi("依据"; ""; $item.evidence; $item.evidence_en) as $evidence
+    | "<details class=\"fold\"><summary data-zh=\"调用链与分类\" data-en=\"Call chain and category\">调用链与分类</summary>"
+      + $change + $cat + $entry + $chain
+      + (if (nonempty($item.actor) or nonempty($item.input) or nonempty($item.outcome)) then $evidence else "" end)
+      + "</details>";
   def finding_cards($sev; $items; $mode):
     if ($items | length) == 0 then
       "<article class=\"finding case empty is-empty open\" data-pri=\"" + ($sev|ascii_upcase) + "\">"
@@ -364,21 +484,20 @@ jq -c '
       ($items | map(
         ((.title // "Finding") | tostring) as $tz
         | ((.title_en // .title // "Finding") | tostring) as $te
-        | "<article class=\"finding case \($sev)\" data-pri=\"" + ($sev|ascii_upcase) + "\">"
+        | ((.id // "") | tostring) as $id
+        | also_sentence(.) as $also
+        | "<article class=\"finding case \($sev)\" id=\"" + ($id|esc) + "\" data-pri=\"" + ($sev|ascii_upcase) + "\">"
         + "<header class=\"finding-head case-head\" role=\"button\" tabindex=\"0\" aria-expanded=\"false\">"
         + "<span class=\"sev \($sev)\">\($sev | ascii_upcase)</span>"
+        + "<span class=\"defect-id\">" + ($id|esc) + "</span>"
         + "<h3 data-zh=\"" + ($tz|esc) + "\" data-en=\"" + ($te|esc) + "\">" + ($tz|esc) + "</h3>"
         + "<span class=\"chev\" aria-hidden=\"true\"></span></header>"
-        + "<div class=\"finding-body case-body\">" +
-        field_bi("位置"; "is-path"; .location; .location_en) +
-        ("<div class=\"field\">" + field_k("变更") + "<div class=\"field-v is-cat\">" + change_label(.change_status; $mode) + "</div></div>") +
-        ("<div class=\"field\">" + field_k("分类") + "<div class=\"field-v is-cat\">" + category_bi(.category) + "</div></div>") +
-        field_bi("风险"; ""; .risk; .risk_en) +
-        field_html("调用链路"; finding_chain(.)) +
-        field_bi("依据"; ""; .evidence; .evidence_en) +
-        field_bi("入口"; ""; .entry; .entry_en) +
-        field_bi("修复建议"; ""; .fix; .fix_en) +
-        "</div></article>"
+        + "<div class=\"finding-body case-body\">"
+        + scenario_html(.)
+        + field_bi("修法"; ""; .fix; .fix_en)
+        + field_bi("另见"; ""; $also.zh; $also.en)
+        + fold_html(.; $mode)
+        + "</div></article>"
       ) | join(""))
     end;
   . as $r
@@ -418,9 +537,64 @@ jq -c '
       sensitive_zh: (($r.sensitive // "None") | tostring),
       sensitive_en: (($r.sensitive_en // $r.sensitive // "None") | tostring),
       generated_at: (($r.generated_at // "") | esc),
-      p0_count: ($r.p0_count // 0),
-      p1_count: ($r.p1_count // 0),
-      p2_count: ($r.p2_count // 0),
+      p0_count: (($r.p0 // []) | length),
+      p1_count: (($r.p1 // []) | length),
+      p2_count: (($r.p2 // []) | length),
+      evidence_line_count: (
+        [($r.p0 // [])[], ($r.p1 // [])[], ($r.p2 // [])[]
+          | (if (.line | type) == "number" then .line else empty end),
+            (if .same_fix == true then (.also_lines // [])[] | select(type == "number") else empty end)
+        ] | unique | length
+      ),
+      merge_zh: (
+        if ((($r.p0 // []) | length) > 0) then "不能合入"
+        elif ((($r.p1 // []) | length) > 0) then "先修再合"
+        else "无阻断项" end
+      ),
+      merge_en: (
+        if ((($r.p0 // []) | length) > 0) then "Do not merge"
+        elif ((($r.p1 // []) | length) > 0) then "Fix, then merge"
+        else "No blocker" end
+      ),
+      highest_zh: (
+        if ((($r.p0 // []) | length) > 0) then "P0"
+        elif ((($r.p1 // []) | length) > 0) then "P1"
+        elif ((($r.p2 // []) | length) > 0) then "P2"
+        else "无" end
+      ),
+      highest_en: (
+        if ((($r.p0 // []) | length) > 0) then "P0"
+        elif ((($r.p1 // []) | length) > 0) then "P1"
+        elif ((($r.p2 // []) | length) > 0) then "P2"
+        else "None" end
+      ),
+      must_html: (
+        ($r.regression_tests // [])[0:3]
+        | if length == 0 then "<li class=\"muted\" data-zh=\"无\" data-en=\"None\">无</li>"
+          else map(
+            "<li data-zh=\"" + ((.target // "")|esc) + "\" data-en=\"" + ((.target_en // .target // "")|esc) + "\">"
+            + ((.target // "")|esc) + "</li>"
+          ) | join("")
+          end
+      ),
+      conventions_html: (
+        ($r.conventions // [])
+        | if length == 0 then ""
+          else
+            "<section id=\"conventions\">" + h2bi("规范"; "Conventions")
+            + pbi("muted"; "魔法数、超长文件、过期 import。不计入行为缺陷。"; "Magic numbers, long files, and stale imports. Not counted as behavioral defects.")
+            + "<ul class=\"convention-list\">"
+            + (map(
+                "<li><span class=\"defect-id\">" + ((.kind // "convention") | tostring | esc) + "</span> "
+                + ((.title // .note // "") | tostring | esc)
+                + (if ((.lines // []) | length) > 0 then
+                    " <span class=\"muted\">行 " + ([.lines[] | tostring] | join("、") | esc) + "</span>"
+                  else "" end)
+                + "</li>"
+              ) | join(""))
+            + "</ul></section>\n"
+          end
+      ),
       p0_html: finding_cards("p0"; $r.p0 // []; $r.mode),
       p1_html: finding_cards("p1"; $r.p1 // []; $r.mode),
       p2_html: finding_cards("p2"; $r.p2 // []; $r.mode),
@@ -676,38 +850,15 @@ jq -n -r --slurpfile p "$FRAG" --arg css "$CSS" --arg js "$JS" '
   + "<header class=\"hero\"><div class=\"hero-inner\">\n<p class=\"kicker\" data-zh=\"审查档案 · codexqa-code-reviewer · CodexQA\" data-en=\"INSPECTION DOSSIER · codexqa-code-reviewer · CodexQA\">审查档案 · codexqa-code-reviewer · CodexQA</p>\n"
   + "<h1 data-zh=\"Code Review 结论报告\" data-en=\"Code Review Report\">Code Review 结论报告</h1>\n"
   + "<p class=\"sub\">\($p.repo_label) · <span class=\"mode-bi\">\($p.mode_html)</span> · <strong>\($p.branch)</strong> vs <strong>\($p.diff_base)</strong></p>\n"
-  + "<div class=\"badge-row\">\n<span class=\"badge \($p.risk_class)\"><span data-zh=\"总体风险\" data-en=\"Overall risk\">总体风险</span> \($p.overall_risk_html)</span>\n"
-  + "<span class=\"badge lang\"><span data-zh=\"主语言\" data-en=\"Primary language\">主语言</span> \($p.primary_language) · \($p.language_confidence)</span>\n"
-  + "<span class=\"badge ok\">P0=\($p.p0_count) · P1=\($p.p1_count) · P2=\($p.p2_count)</span>\n"
-  + "<span class=\"badge\"><span data-zh=\"焦点语言\" data-en=\"focus\">焦点语言</span>: \($p.review_language_focus)</span>\n</div>\n"
-  + "<div class=\"meta-grid\">\n"
-  + "<div class=\"meta\"><span class=\"k\">repo</span><span class=\"v\">\($p.repo)</span></div>\n"
-  + "<div class=\"meta\"><span class=\"k\">diff_base</span><span class=\"v\">\($p.diff_base)</span></div>\n"
-  + "<div class=\"meta\"><span class=\"k\">codexqa</span><span class=\"v\">\($p.codexqa_version)</span></div>\n"
-  + "<div class=\"meta\"><span class=\"k\" data-zh=\"evidence\" data-en=\"evidence\">evidence</span><span class=\"v\">\($p.evidence_dir)</span></div>\n"
-  + "<div class=\"meta\"><span class=\"k\" data-zh=\"generated\" data-en=\"generated\">generated</span><span class=\"v\">\($p.generated_at)</span></div>\n"
-  + "</div>\n</div></header>\n"
-  + "<section>" + h2bi("结论一览"; "Overview") + "<div class=\"stats\">\n"
-  + "<div class=\"stat p0\"><div class=\"n\">\($p.p0_count)</div><div class=\"l\" data-zh=\"P0 阻断\" data-en=\"P0 Blocker\">P0 阻断</div></div>\n"
-  + "<div class=\"stat p1\"><div class=\"n\">\($p.p1_count)</div><div class=\"l\" data-zh=\"P1 本迭代应修\" data-en=\"P1 fix this iteration\">P1 本迭代应修</div></div>\n"
-  + "<div class=\"stat p2\"><div class=\"n\">\($p.p2_count)</div><div class=\"l\" data-zh=\"P2 可选 / 债\" data-en=\"P2 optional / debt\">P2 可选 / 债</div></div>\n"
-  + "<div class=\"stat risk\"><div class=\"n\">\($p.overall_risk_html)</div><div class=\"l\" data-zh=\"总体风险\" data-en=\"Overall risk\">总体风险</div></div>\n"
-  + "</div>\n<p class=\"lede\" data-zh=\"" + ($p.summary_zh|esc) + "\" data-en=\"" + ($p.summary_en|esc) + "\">" + ($p.summary_zh|esc) + "</p>\n"
-  + "<p class=\"muted lede\"><span data-zh=\"意图：\" data-en=\"Intent: \">意图：</span>"
-  + "<span data-zh=\"" + ($p.intent_zh|esc) + "\" data-en=\"" + ($p.intent_en|esc) + "\">" + ($p.intent_zh|esc) + "</span></p>\n"
-  + "<p class=\"muted lede\"><span data-zh=\"范围：\" data-en=\"Scope: \">范围：</span>"
-  + "<span data-zh=\"" + ($p.scope_zh|esc) + "\" data-en=\"" + ($p.scope_en|esc) + "\">" + ($p.scope_zh|esc) + "</span></p>\n"
+  + "<div class=\"stats\">\n"
+  + "<div class=\"stat\"><div class=\"n\" data-zh=\"" + ($p.merge_zh|esc) + "\" data-en=\"" + ($p.merge_en|esc) + "\">" + ($p.merge_zh|esc) + "</div><div class=\"l\" data-zh=\"能否合入\" data-en=\"Merge\">能否合入</div></div>\n"
+  + "<div class=\"stat\"><div class=\"n\" data-zh=\"" + ($p.highest_zh|esc) + "\" data-en=\"" + ($p.highest_en|esc) + "\">" + ($p.highest_zh|esc) + "</div><div class=\"l\" data-zh=\"最高严重级别\" data-en=\"Highest severity\">最高严重级别</div></div>\n"
+  + "<div class=\"stat\"><div class=\"n\">" + (($p.p0_count + $p.p1_count + $p.p2_count)|tostring) + "</div><div class=\"l\">P0=" + ($p.p0_count|tostring) + " · P1=" + ($p.p1_count|tostring) + " · P2=" + ($p.p2_count|tostring) + " · <span data-zh=\"证据行 \" data-en=\"evidence lines \">证据行 </span>" + ($p.evidence_line_count|tostring) + "</div></div>\n"
+  + "<div class=\"stat must\"><div class=\"l\" data-zh=\"必测路径\" data-en=\"Must-test paths\">必测路径</div><ol class=\"must-list\">" + $p.must_html + "</ol></div>\n"
+  + "</div>\n"
+  + "<p class=\"muted lede\" data-zh=\"合入仍由人决定，本报告不自动通过合入。\" data-en=\"A person still decides the merge. This report does not auto-approve.\">合入仍由人决定，本报告不自动通过合入。</p>\n"
   + $p.compare_link
-  + "<p class=\"muted lede\" data-zh=\"合入决策留给人工；本报告不自动通过合入。\" data-en=\"Merge decision is left to humans; this report does not auto-approve.\">合入决策留给人工；本报告不自动通过合入。</p>\n</section>\n"
-  + ($p.risk_tier_html // "")
-  + ($p.design_fit_html // "")
-  + ($p.complexity_html // "")
-  + ($p.dependencies_html // "")
-  + ($p.resilience_html // "")
-  + ($p.privacy_html // "")
-  + ($p.rollout_html // "")
-  + ($p.performance_html // "")
-  + ($p.llm_judgment_html // "")
+  + "</div></header>\n"
   + "<section id=\"findings\">" + h2bi("发现项"; "Findings")
   + "<p class=\"muted findings-hint\" data-zh=\"每条记录默认收起，点击卡片展开依据与修复建议。\" data-en=\"Records are collapsed by default. Click a card to expand evidence and the suggested fix.\">每条记录默认收起，点击卡片展开依据与修复建议。</p>\n"
   + "<div class=\"toolbar\">\n"
@@ -725,6 +876,24 @@ jq -n -r --slurpfile p "$FRAG" --arg css "$CSS" --arg js "$JS" '
   + "<div class=\"findings-stack\" data-sev-panel=\"p1\">" + $p.p1_html + "</div>\n"
   + "<div class=\"findings-stack\" data-sev-panel=\"p2\">" + $p.p2_html + "</div>\n"
   + "</section>\n"
+  + ($p.conventions_html // "")
+  + (if (
+      (($p.risk_tier_html // "") + ($p.design_fit_html // "") + ($p.complexity_html // "")
+        + ($p.dependencies_html // "") + ($p.resilience_html // "") + ($p.privacy_html // "")
+        + ($p.rollout_html // "") + ($p.performance_html // "") + ($p.llm_judgment_html // "")) | length
+    ) > 0 then
+      "<details class=\"fold dim-fold\"><summary data-zh=\"维度与调用链\" data-en=\"Dimensions and call chains\">维度与调用链</summary>\n"
+      + ($p.risk_tier_html // "")
+      + ($p.design_fit_html // "")
+      + ($p.complexity_html // "")
+      + ($p.dependencies_html // "")
+      + ($p.resilience_html // "")
+      + ($p.privacy_html // "")
+      + ($p.rollout_html // "")
+      + ($p.performance_html // "")
+      + ($p.llm_judgment_html // "")
+      + "</details>\n"
+    else "" end)
   + "<section>" + h2bi("回归必测清单"; "Regression must-test")
   + "<p class=\"muted\" data-zh=\"目标列写清可执行场景（入口/条件/期望）；证据列用通俗依据，勿只填符号 UUID 或证据包路径。\" data-en=\"Write executable scenarios (entry/conditions/expected result). Evidence should be plain language — not only UUIDs or pack paths.\">目标列写清可执行场景（入口/条件/期望）；证据列用通俗依据，勿只填符号 UUID 或证据包路径。</p>\n"
   + "<div class=\"table-wrap\"><table><thead><tr>"
@@ -752,3 +921,4 @@ jq -n -r --slurpfile p "$FRAG" --arg css "$CSS" --arg js "$JS" '
 ' >"$OUT"
 
 echo "HTML review report written: $OUT"
+echo "Inline comments written: $COMMENTS_OUT"

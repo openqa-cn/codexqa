@@ -3,9 +3,12 @@
 
 Three generic gates, independent of any one repository:
 
-1. Line ledger. Every signal or SAST row with disposition "report" must
-   appear as a line number on some finding. A sentence that defers a defect
-   to another card must name a line that some finding actually lists.
+1. Line ledger. Every behavioral signal or SAST row with disposition "report"
+   must be a finding's primary line, or an also_lines entry with same_fix.
+   A number written only in prose does not close the row. One finding cannot
+   close two rule_id or pattern_class values. Magic numbers, long files, and
+   stale imports close in conventions, not in p0/p1/p2. A sentence that
+   defers a defect to another card must name a line that some finding lists.
 2. Test oracle. Each inventory row answers three defect questions. Skip is
    legal only when all three answers are no.
 3. Set difference. Production symbols with no accepted test edge must be
@@ -59,6 +62,7 @@ SINGLE = re.compile(
 
 ORACLE_KEYS = ("unsafe_pass", "boundary_missed", "branch_uncovered")
 NONE_WORDS = {"", "none", "无"}
+CONVENTION_KINDS = {"magic_number", "long_file", "eol_import"}
 
 
 def load(path: Path):
@@ -113,19 +117,32 @@ def lines_in_text(text: str) -> set[int]:
     return found
 
 
-def finding_lines(finding: dict) -> set[int]:
+def int_set(raw) -> set[int]:
+    found: set[int] = set()
+    if isinstance(raw, list):
+        for number in raw:
+            if isinstance(number, int):
+                found.add(number)
+            elif isinstance(number, str) and number.isdigit():
+                found.add(int(number))
+    return found
+
+
+def finding_structured_lines(finding: dict) -> set[int]:
+    """Primary line, plus also_lines only when the fix is the same.
+
+    Numbers that appear in title, risk, or evidence do not close a row.
+    """
     found: set[int] = set()
     if isinstance(finding.get("line"), int):
         found.add(finding["line"])
-    for key in ("lines",):
-        raw = finding.get(key)
-        if isinstance(raw, list):
-            found.update(int(n) for n in raw if isinstance(n, int) or (isinstance(n, str) and n.isdigit()))
-    for key in ("title", "title_en", "risk", "risk_en", "evidence", "evidence_en", "fix", "fix_en", "location", "location_en"):
-        raw = finding.get(key)
-        if isinstance(raw, str):
-            found |= lines_in_text(raw)
+    if finding.get("same_fix") is True:
+        found |= int_set(finding.get("also_lines"))
     return found
+
+
+def finding_lines(finding: dict) -> set[int]:
+    return finding_structured_lines(finding)
 
 
 def findings_of(conclusion: dict) -> list[dict]:
@@ -140,8 +157,106 @@ def findings_of(conclusion: dict) -> list[dict]:
 def cited_lines(conclusion: dict) -> set[int]:
     found: set[int] = set()
     for finding in findings_of(conclusion):
-        found |= finding_lines(finding)
+        found |= finding_structured_lines(finding)
     return found
+
+
+def norm_path(value: str) -> str:
+    return value.replace("\\", "/").strip().lstrip("./")
+
+
+def finding_paths(finding: dict) -> set[str]:
+    found: set[str] = set()
+    for key in ("file", "path"):
+        raw = finding.get(key)
+        if isinstance(raw, str) and raw.strip():
+            found.add(norm_path(raw))
+    location = finding.get("location")
+    if isinstance(location, str) and location.strip():
+        token = location.split("（")[0].split(",")[0].strip()
+        token = re.split(r":\d+\b", token)[0].strip()
+        if "/" in token or re.search(r"\.[A-Za-z0-9]+$", token):
+            found.add(norm_path(token))
+    return found
+
+
+def paths_compatible(finding: dict, row: dict) -> bool:
+    row_path = norm_path(str(row.get("path") or row.get("file") or ""))
+    if not row_path:
+        return True
+    paths = finding_paths(finding)
+    if not paths:
+        return True
+    return any(
+        row_path == path or row_path.endswith("/" + path) or path.endswith("/" + row_path)
+        for path in paths
+    )
+
+
+def row_relation(row: dict) -> str:
+    rule = str(row.get("rule_id") or "").strip()
+    if rule:
+        return "rule:" + rule
+    klass = str(row.get("pattern_class") or "").strip()
+    if klass:
+        return "class:" + klass
+    kind = str(row.get("kind") or "").strip()
+    if kind and kind not in CONVENTION_KINDS:
+        return "kind:" + kind
+    return ""
+
+
+def finding_relation(finding: dict) -> str:
+    rule = str(finding.get("rule_id") or "").strip()
+    if rule:
+        return "rule:" + rule
+    klass = str(finding.get("pattern_class") or "").strip()
+    if klass:
+        return "class:" + klass
+    return ""
+
+
+def relations_match(finding: dict, row: dict) -> bool:
+    left = finding_relation(finding)
+    right = row_relation(row)
+    if not left or not right:
+        return True
+    return left == right
+
+
+def is_convention_row(row: dict) -> bool:
+    return str(row.get("kind") or "") in CONVENTION_KINDS
+
+
+def convention_lines(conclusion: dict) -> set[int]:
+    found: set[int] = set()
+    for item in conclusion.get("conventions") or []:
+        if not isinstance(item, dict):
+            continue
+        if isinstance(item.get("line"), int):
+            found.add(item["line"])
+        found |= int_set(item.get("lines"))
+        found |= int_set(item.get("also_lines"))
+    return found
+
+
+def drift_skipped_lines(conclusion: dict) -> set[int]:
+    found: set[int] = set()
+    for row in conclusion.get("line_skips") or []:
+        if not isinstance(row, dict) or str(row.get("kind") or "") != "branch_drift":
+            continue
+        if isinstance(row.get("line"), int):
+            found.add(row["line"])
+    return found
+
+
+def finding_closes(finding: dict, row: dict) -> bool:
+    line = row.get("line")
+    if not isinstance(line, int) or line not in finding_structured_lines(finding):
+        return False
+    if not paths_compatible(finding, row):
+        return False
+    return relations_match(finding, row)
 
 
 def sentence_at(text: str, start: int) -> str:
@@ -246,18 +361,51 @@ def check_ledger(pack: Path, conclusion: dict, errors: list[str]) -> None:
                 walk_report_rows(doc, rows)
     if not rows:
         return
-    cited = cited_lines(conclusion)
+    findings = findings_of(conclusion)
+    conventions = convention_lines(conclusion)
+    drift = drift_skipped_lines(conclusion)
     missing = []
+    convention_missing = []
+    closed_by: list[tuple[dict, list[str]]] = [(finding, []) for finding in findings]
     for row in rows:
         line = int(row["line"])
-        if line not in cited:
-            rule = row.get("rule_id") or row.get("pattern_class") or row.get("kind") or "report"
-            path = row.get("path") or row.get("file") or ""
-            missing.append(f"{path}:{line} ({rule})")
+        label_rule = row.get("rule_id") or row.get("pattern_class") or row.get("kind") or "report"
+        label_path = row.get("path") or row.get("file") or ""
+        label = f"{label_path}:{line} ({label_rule})"
+        if is_convention_row(row):
+            if line not in conventions:
+                convention_missing.append(label)
+            for finding, rels in closed_by:
+                if finding_closes(finding, row):
+                    errors.append(f"convention row is filed as a defect: {label}")
+            continue
+        if line in drift:
+            continue
+        closers = [finding for finding in findings if finding_closes(finding, row)]
+        if not closers:
+            missing.append(label)
+            continue
+        relation = row_relation(row)
+        if not relation:
+            continue
+        for finding, rels in closed_by:
+            if finding in closers and relation not in rels:
+                rels.append(relation)
     if missing:
         errors.append(
             "report rows missing from finding line lists: " + "; ".join(missing[:40])
         )
+    if convention_missing:
+        errors.append(
+            "convention rows missing from conventions: " + "; ".join(convention_missing[:40])
+        )
+    for finding, rels in closed_by:
+        if len(rels) > 1:
+            title = str(finding.get("title") or finding.get("id") or "finding")
+            errors.append(
+                "one finding closes two relations (" + ", ".join(rels) + "): " + title[:120]
+            )
+    cited = cited_lines(conclusion)
     for finding in findings_of(conclusion):
         for key in ("title", "title_en", "risk", "risk_en", "evidence", "evidence_en", "fix", "fix_en"):
             text = finding.get(key)
@@ -617,6 +765,8 @@ def check_coverage_ledger(pack: Path, conclusion: dict, errors: list[str]) -> No
         raw = finding.get("lines")
         if isinstance(raw, list):
             cited.update(int(n) for n in raw if isinstance(n, int))
+        if finding.get("same_fix") is True:
+            cited |= int_set(finding.get("also_lines"))
         for line in sorted(cited):
             if line not in allowed:
                 outside.append(str(line))

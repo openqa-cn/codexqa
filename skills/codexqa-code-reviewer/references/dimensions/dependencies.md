@@ -99,4 +99,4 @@ Missed threshold/polarity bugs here are correctness findings on the checker, eve
 - Blocked pack / missing CodexQA engine.
 - Empty change-groups (PR) → blocked before dimensions.
 - No dependency-manifest hits and empty `eol_imports` → explicit None (not a failure).
-- Non-empty `eol_imports` is a dependency finding even when `manifest_hits` is empty.
+- Non-empty `eol_imports` goes in `conventions`, not a P0/P1/P2 defect, even when `manifest_hits` is empty. One convention item may list every line.
