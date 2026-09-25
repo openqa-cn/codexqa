@@ -220,8 +220,10 @@ def self_check() -> int:
     required = {
         "codexqa-code-reviewer",
         "codexqa-code-analyzer",
+        "codexqa-change-analysis",
         "codexqa-code-wiki",
         "codexqa-defect-analyzer",
+        "codexqa-jev-browser",
         "codexqa-requirement-analyzer",
         "codexqa-rootcause-analyzer",
         "codexqa-testcase-generator",

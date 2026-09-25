@@ -14,7 +14,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 | --- | --- |
 | [`codexqa-skill-router`](../skills/codexqa-skill-router/README.zh-CN.md) | 发现现场兄弟 + 内置目录；按需安装；交接给匹配 skill |
 | [`codexqa-code-analyzer`](../skills/codexqa-code-analyzer/README.zh-CN.md) | 给本地仓库建符号图，再分析变更影响、回归范围、测试缺口、入口和报错 |
-| [`codexqa-change-analysis`](../skills/codexqa-change-analysis/README.md) | 对一次变更做 diff 索引，写一份 HTML 报告（影响入口、变更清单、测试方案、覆盖结论、敏感路径），并为未覆盖的点新增可运行的测试文件 |
+| [`codexqa-change-analysis`](../skills/codexqa-change-analysis/README.zh-CN.md) | 对一次变更做 diff 索引，写一份 HTML 报告（影响入口、变更清单、测试方案、覆盖结论、敏感路径），并为未覆盖的点新增可运行的测试文件 |
 | [`codexqa-code-wiki`](../skills/codexqa-code-wiki/README.zh-CN.md) | 给本地仓库建索引，用 `wiki inputs`（不调模型）导出社区 digest，写出架构知识图谱 HTML 报告 |
 | [`codexqa-rootcause-analyzer`](../skills/codexqa-rootcause-analyzer/README.zh-CN.md) | 在 CodexQA CLI 之上做异常根因诊断；带门禁的英文 RCA 报告 |
 | [`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.zh-CN.md) | SAST/lint/secrets/SCA + Agent LLM Detection → `report_scan.*`（P0–P3，去重合并） |

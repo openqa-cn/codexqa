@@ -99,7 +99,7 @@ npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
 npx skills add openqa-cn/codexqa --skill codexqa-jev-browser
 ```
 
-`codexqa-code-analyzer`、`codexqa-change-analysis`、`codexqa-code-wiki`、`codexqa-rootcause-analyzer`、`codexqa-code-reviewer`、`codexqa-defect-analyzer` 与 `codexqa-skill-router` Skill 发布在本仓库中；`@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎，索引和会话写在 `~/.codexqa/`。详见 [`codexqa-code-analyzer` 已知边界](../skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-change-analysis` 已知边界](../skills/codexqa-change-analysis/KNOWN_LIMITATIONS.md)、[`codexqa-code-wiki` 已知边界](../skills/codexqa-code-wiki/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-rootcause-analyzer` 已知边界](../skills/codexqa-rootcause-analyzer/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-code-reviewer` 已知边界](../skills/codexqa-code-reviewer/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-defect-analyzer` 已知边界](../skills/codexqa-defect-analyzer/KNOWN_LIMITATIONS.zh-CN.md) 和 [`codexqa-skill-router` 已知边界](../skills/codexqa-skill-router/KNOWN_LIMITATIONS.zh-CN.md)。
+`codexqa-code-analyzer`、`codexqa-change-analysis`、`codexqa-code-wiki`、`codexqa-rootcause-analyzer`、`codexqa-code-reviewer`、`codexqa-defect-analyzer` 与 `codexqa-skill-router` Skill 发布在本仓库中；`@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎，索引和会话写在 `~/.codexqa/`。详见 [`codexqa-code-analyzer` 已知边界](../skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-change-analysis` 已知边界](../skills/codexqa-change-analysis/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-code-wiki` 已知边界](../skills/codexqa-code-wiki/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-rootcause-analyzer` 已知边界](../skills/codexqa-rootcause-analyzer/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-code-reviewer` 已知边界](../skills/codexqa-code-reviewer/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-defect-analyzer` 已知边界](../skills/codexqa-defect-analyzer/KNOWN_LIMITATIONS.zh-CN.md) 和 [`codexqa-skill-router` 已知边界](../skills/codexqa-skill-router/KNOWN_LIMITATIONS.zh-CN.md)。
 
 只做 `codexqa-code-analyzer` / `codexqa-code-wiki` 冒烟时不需要模型：给本地 checkout 建索引，再查看摘要。
 
@@ -116,7 +116,7 @@ codexqa wiki inputs /path/to/repo --kind architecture --limit 8
 
 - `codexqa-skill-router` 需要待路由的用户请求（以及 Python 3.10+）。它对照内置/现场目录匹配，并可运行 `ensure_skill.py` 把干活 skill 拉到路由旁边。见其 [README](../skills/codexqa-skill-router/README.zh-CN.md)。
 - `codexqa-code-analyzer` 需要本地仓库。审变更时用 `origin/main` 等基线建索引；索引写在 `~/.codexqa/`。见其 [README](../skills/codexqa-code-analyzer/README.zh-CN.md)。
-- `codexqa-change-analysis` 需要本地仓库和一个 git 基线（如 `origin/main`）。它在仓库根目录写一份 HTML 变更影响报告，并为未覆盖的点新增测试文件，不改已有测试。见其 [README](../skills/codexqa-change-analysis/README.md)（英文）。
+- `codexqa-change-analysis` 需要本地仓库和一个 git 基线（如 `origin/main`）。它在仓库根目录写一份 HTML 变更影响报告，并为未覆盖的点新增测试文件，不改已有测试。见其 [README](../skills/codexqa-change-analysis/README.zh-CN.md)。
 - `codexqa-code-wiki` 需要本地仓库和已有索引。它导出 `wiki inputs` 并写 HTML 架构报告，不审变更。见其 [README](../skills/codexqa-code-wiki/README.zh-CN.md)。
 - `codexqa-rootcause-analyzer` 需要异常证据（堆栈 / 日志 / dump），外加 git 地址、本地目录、文件，或已打开的工作区。见其 [README](../skills/codexqa-rootcause-analyzer/README.zh-CN.md)。
 - `codexqa-defect-analyzer` 需要对 diff / 仓库 / 上传 / 粘贴做代码风险扫描。见其 [README](../skills/codexqa-defect-analyzer/README.zh-CN.md)。

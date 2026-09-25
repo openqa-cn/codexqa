@@ -4,6 +4,7 @@ Each release has two sections. **Highlights** is what changes for someone using 
 
 ## Unreleased
 
+- **SEO & GEO documentation polish.** Added root `/llms.txt` for AI engine citation; translated Chinese docs for `codexqa-change-analysis` (`README.zh-CN.md` and `KNOWN_LIMITATIONS.zh-CN.md`); unified skill counts to 10+1 (10 workers + 1 router); added new eval cases for change analysis and Jev browser; updated repo description and topics.
 - **New `codexqa-change-analysis` skill.** One diff at a time: a trusted `index --diff-base --full`, a 7-section English HTML report (affected entries, changed methods, test plan, coverage verdict, sensitive paths), and new runnable test files for uncovered points (add only; existing test files are not edited). Former name: `change-impact-analysis`. General symbol-graph Q&A stays `codexqa-code-analyzer`.
 - Docs list all ten workers. Getting started, FAQ, roadmap, support matrix, architecture, contributing, commercial boundary, and the router README now name `codexqa-change-analysis` and `codexqa-jev-browser` (install lines, inputs, `codexqa` engine dependency, support rows).
 - `codexqa-code-reviewer`: close review relations on objects, callee control flow, unread bounds, and `rule_id`. Nearby lines no longer merge a different relation. An unread expiry is `BND-001`, not only cache growth.

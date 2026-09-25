@@ -1,3 +1,5 @@
+**English** · [简体中文](KNOWN_LIMITATIONS.zh-CN.md)
+
 # Known limitations (measured)
 
 These limits change how reliable a conclusion is. **Treat every item that applies as a constraint during analysis.** Do not skip one silently.

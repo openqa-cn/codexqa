@@ -1,3 +1,5 @@
+**English** · [简体中文](README.zh-CN.md) · [Known Limitations](KNOWN_LIMITATIONS.md)
+
 # codexqa-change-analysis
 
 Change-impact analysis with CodexQA's **symbol graph and diff indexing**. The input is a git baseline (for example `origin/main`). CodexQA finds and labels the change (`index --diff-base` → `change-groups` / `symbol-diff`). The skill produces two things: an **HTML report** (affected entries, change list, test plan, coverage verdict, sensitive paths) and **new test files** in the analyzed repo that cover the gaps (add only; existing test files are not edited).
