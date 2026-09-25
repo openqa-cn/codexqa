@@ -18,16 +18,20 @@ When `24-coverage-ledger.json` marks a symbol `excluded` with reason
 `branch_drift`, do not apply this list. That path is not in the three-dot PR
 patch. The digest counts are the evidence for the branch-behind finding.
 
-When a pending symbol has `rule_plan`, judge only `rule_plan.applicable`.
+When a pending symbol has `rule_plan`, start with `rule_plan.applicable`.
+That list is not an exclusion list. A `look_for` that matches the method body
+is filed even when that `rule_id` is absent from `applicable`. Do not open the
+rule router and do not retract the match. Different `rule_id`s on the same line
+stay separate findings. Do not merge them.
 Each `rule_plan.skips` entry is already the skip: copy its `note` into
 `rule_coverage`. Do not open the rule record again for that id. A rule that
 is applicable on one symbol and skipped on another is judged only on the
-applicable symbols. Identical `span_hash` values may share one judgment, but
+applicable symbols. A skip is not the same as an id missing from `applicable`. Identical `span_hash` values may share one judgment, but
 every pending symbol still gets its own `coverage_closure` row.
 
 ## How to judge
 
-When the judgment packet has `rules`, use `rules[id].look_for` and `rules[id].do_not_report` for each applicable id. That is the record. Do not open [references/business-rule-records.md](../references/business-rule-records.md). A skipped id is already decided: copy `skip_notes`. When the packet has no `rules` object, use that file for each changed method. Apply each applicable record as its own question. Do not replace it with a paraphrase of the whole dimension card.
+When the judgment packet has `rules`, use `rules[id].look_for` and `rules[id].do_not_report`. Start with each applicable id. A `look_for` that matches the method body is still filed when that id is absent from `applicable`. Do not retract it. That is the record. Do not open [references/business-rule-records.md](../references/business-rule-records.md). A skipped id is already decided: copy `skip_notes`. When the packet has no `rules` object, use that file for each changed method. Apply each applicable record as its own question. Do not replace it with a paraphrase of the whole dimension card.
 
 - `LOGIC-001`
 - `BND-001`

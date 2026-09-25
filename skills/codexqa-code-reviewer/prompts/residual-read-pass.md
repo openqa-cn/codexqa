@@ -12,7 +12,7 @@ When `29-judgment-packet.json` exists, `pending`, `read_groups`, and `skip_notes
 - A group with `truncated: true` is the whole read. Do not open the source file to fill lines past the truncation note.
 - Groups with `independent: true` share no path and no caller edge. When `judgment-work/group-*.json` has two or more files, judge those files concurrently. The business-rule list was already used on the first pass: do not paste it again. Each such group gets only that symbol's diff and the findings already confirmed. The open question applies only when `risk_tier.tier` is `T0` from an auth, pay, migration, or IaC path. `plan_required` does not turn a short config or example into that question. Do not copy `coverage_closure`; `seal-conclusion.py` writes one row per pending symbol.
 - Visit every symbol whose `status` is `pending`, including `kind: file_scope` on a source file. Grouping does not drop a symbol. Symbols with `review_scope: branch_drift` are excluded and are not given the business-rule list.
-- When `applicable` or `rule_plan` is present, answer only those `applicable` rules in [business-logic-pass.md](business-logic-pass.md). Skipped ids use the plan note. Do not re-read a skipped rule record and do not copy the full rule list into the notes.
+- When `applicable` or `rule_plan` is present, start with those `applicable` rules in [business-logic-pass.md](business-logic-pass.md). A `look_for` that matches the method body is still filed when that `rule_id` is absent from `applicable`. Do not open the rule router and do not retract the match. Different `rule_id`s on the same line stay separate findings. Skipped ids use the plan note. A skip is not the same as an id missing from `applicable`. Do not re-read a skipped rule record and do not copy the full rule list into the notes.
 - A `file_scope` unit is the changed lines in that source file that no function or method span covers. Read `ranges` only.
 - A symbol with `hits` stays in this queue. Hits are context, not a reason to skip. A report line is still cited on a finding even when its file is not a residual symbol.
 - `excluded` symbols are not read. Non-source changed files (CSV, Markdown, JSON, config) are not pending symbols. Their class and one-line sample are `history.non_source_preview` in `26-review-digest.json`. Do not open those files for the business-rule list.
@@ -31,11 +31,13 @@ When `29-judgment-packet.json` exists, `pending`, `read_groups`, and `skip_notes
 
 ## Questions
 
-1. When the packet or bundle lists `applicable` rules, answer only those.
+1. When the packet or bundle lists `applicable` rules, start with those.
+   A `look_for` that matches the method body is still filed when that
+   `rule_id` is absent from `applicable`. Do not retract the match.
    When `applicable` is absent, answer the fixed business-rule list in
    [business-logic-pass.md](business-logic-pass.md) for this method. Do not
    re-file a relation already present in `hits`. Do not paste the rule list
-   into the finding.
+   into the finding. Different `rule_id`s on the same line stay separate findings.
 2. Open question, only when `risk_tier.tier` is `T0` and a driver names an
    auth, pay, migration, or IaC path. `plan_required` is the checklist flag,
    not this question. A keyword hit in csv, markdown, or txt does not open it.

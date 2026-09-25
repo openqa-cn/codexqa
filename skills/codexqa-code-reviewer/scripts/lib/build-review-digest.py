@@ -564,7 +564,9 @@ def scope_ledger(pack: Path, repo: Path, detail: dict) -> None:
         notes.append(
             "branch_drift symbols are outside the three-dot PR patch and are not "
             "given the business-rule list. pr_delta symbols carry rule_plan: "
-            "judge applicable ids, and use skips as the recorded rule_coverage note."
+            "start with applicable ids. A look_for that matches the method body "
+            "is still filed when that id is absent from applicable. "
+            "Skips are the recorded rule_coverage note. A skip is not a missing id."
         )
     write_atomic(ledger_path, ledger)
 

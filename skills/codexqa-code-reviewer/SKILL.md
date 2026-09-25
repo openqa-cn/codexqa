@@ -97,9 +97,9 @@ Task progress:
 - [ ] 2. Collect evidence pack → OUT_DIR
 - [ ] 3. Validate (auto unless --skip-validate)
 - [ ] 4. Lock primary_language / review_language_focus
-- [ ] 5. Review from `31-model-brief.json` only. It already folded counts, closed report rows, seed hits, and one-line getters. Do not open `29`, the seed, steps 1–14, the channel prompts, `business-rule-records.md`, or `seal-conclusion.py`.
+- [ ] 5. Review from `31-model-brief.json` only. Its `output` object is the schema. It already folded counts, closed report rows, seed hits, and one-line getters. `methods[].source` is the method text. Do not print the methods out again. Do not open `29`, the seed, steps 1–14, the channel prompts, templates, examples, dimension docs, a previous `judgment.json`, `REVIEW-REPORT.html`, `business-rule-records.md`, or `seal-conclusion.py`. `title` / `risk` / `fix` are Chinese; leave the English fields empty. A `look_for` with several shapes is one finding per shape. The first shape does not close the others. A line listed under a `rule_id` in `closed_report` is not filed again. Another line of that `rule_id` is still filed when it is a different shape. Do not open `fill_shapes` or `check_shapes`. State each finding once. Do not reopen a merge. Identifiers in one log statement are one finding. A money check that omits a fee posted in the same method is one `BIZ-003` finding. Do not drop `SEC-001` because `PAY-004` or `AUTH-001` also matches. `applicable` is the first list to judge, not an exclusion list. A `look_for` that matches the method body is filed even when that `rule_id` is absent from `applicable`. Do not open the rule router and do not retract the match. Different `rule_id`s on the same line stay separate findings. A failed render names the sentence to edit. Do not grep `seal-conclusion.py` or `validate-conclusion.py` for fields. Answer every `test_oracle_open` row from that test body. A test absent from that list is closed. Do not investigate why. A `closed_report` row does not close an open oracle line. Set a flag only when that test shows it. A callee missing from `methods` stays on the call line already chosen. Do not open the repository file for its body.
 - [ ] 5b. Agent LLM judgment pass + dedupe merge (`merge-llm-findings.py`)
-- [ ] 6. Novel business findings only, in `judgment.json`. Render (`seal-conclusion.py` fills scripted cards, the stub, and the HTML)
+- [ ] 6. Write each novel finding once into `judgment.json`, then render. The same fix for the same `rule_id` on several lines is one finding with `same_fix: true` and `also_lines`. Do not file those lines and then delete them. Do not re-list the set, re-plan severity, compute `shape_count`, or open `business-rule-records.md`. Copy `test_oracle` flags already decided. `seal-conclusion.py` fills scripted cards, the stub, and the HTML.
 ```
 
 ```bash
@@ -269,7 +269,7 @@ Fails: missing CodexQA provenance; empty change-groups; all `change_status=defau
    `drop` is discarded. Only `suspects[]` go to the SAST suspect channel.
    `allow` records a scanner gap and does not rescan that class. CodexQA
    stays the primary engine.
-7. **Agent LLM judgment (order 16):** when `31-model-brief.json` exists, that file is the whole pass. Write `judgment.json` and render. Do not walk `24`, regroup closed rows, or open `seal-conclusion.py`. When `31` is absent, follow [prompts/llm-judgment-pass.md](prompts/llm-judgment-pass.md).
+7. **Agent LLM judgment (order 16):** when `31-model-brief.json` exists, that file is the whole pass. Write `judgment.json` from its `output` object and render. `title`, `risk`, and `fix` are Chinese; leave the English fields empty. A `look_for` with several shapes is one finding per shape. The first shape does not close the others. A line listed under a `rule_id` in `closed_report` is not filed again. Another line of that `rule_id` is still filed when it is a different shape. Do not open `fill_shapes` or `check_shapes`. State each finding once. `applicable` is the first list, not an exclusion list. A matching `look_for` is filed even when that `rule_id` is absent from `applicable`. Do not retract it. Different `rule_id`s on the same line stay separate findings. A failed render names the sentence to edit. Do not grep seal or validate scripts for fields. Do not walk `24`, regroup closed rows, print every method, or open templates, examples, dimension docs, a previous `judgment.json`, or `seal-conclusion.py`. When `31` is absent, follow [prompts/llm-judgment-pass.md](prompts/llm-judgment-pass.md).
    On that legacy path, SAST suspects, business logic, and semantic candidates are separate prompts. The residual
    read visits every `pending` symbol in `24-coverage-ledger.json`; scanner hits do not dequeue it.
    The host embedded model reviews those packets, then `scripts/lib/merge-llm-findings.py`
@@ -323,10 +323,11 @@ explain risks in plain language — see [references/review-dimensions.md](refere
 
 **Bilingual HTML:** Write primary prose in Chinese (`summary`, `intent`, `scope`,
 dimension `risk`/`yagni`/`evidence`, finding `title`/`risk`/`evidence`/`fix`,
-`call_chain.title`, regression/test-gap notes, `sensitive`) **and** matching
-`*_en` siblings (`summary_en`, `intent_en`, `risk_en`, `title_en`, …). The HTML
-toolbar switches `data-zh`/`data-en`; missing `*_en` falls back to Chinese and
-breaks EN mode — treat bilingual prose as required for delivery.
+`call_chain.title`, regression/test-gap notes, `sensitive`). On `judgment.json`
+findings, leave `title_en`, `risk_en`, and `fix_en` empty. `seal-conclusion.py`
+copies the Chinese text into those English fields at render. The HTML
+toolbar switches `data-zh`/`data-en`; a hand-written English card is not required
+for delivery.
 
 ## Blocked result
 

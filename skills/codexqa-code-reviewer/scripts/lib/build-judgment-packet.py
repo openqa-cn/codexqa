@@ -32,12 +32,46 @@ QUESTION_FANOUT_MIN = 12
 CONVENTION_KINDS = {"magic_number", "rate_literal", "long_file", "eol_import"}
 BUSINESS_RULE_PREFIXES = ("BIZ-", "PAY-", "TXN-", "CONC-", "AUTH-", "SEC-")
 TRIVIAL_RULES = {"LOGIC-001", "NULL-001", "HYG-001", "API-001", "DES-001", "GLOB-001", "ARCH-001"}
+ORACLE_JUDGMENT = (
+    "Answer every test_oracle_open row from that test body. "
+    "A test absent from test_oracle_open is closed. Do not investigate why. "
+    "A closed_report row does not close a test_oracle_open line. "
+    "Set a flag only when that test shows it. Leave the other flags false and do not restate them. "
+    "unsafe_pass is true when an assertion requires an unsafe value, such as a full card number in the output. "
+    "observability_asserted is true only when the test asserts a log, metric, or trace. "
+    "locks_private is true only when the test calls a private production member. "
+    "A callee missing from methods stays on the call line already chosen. "
+    "Do not open the repository file for its body."
+)
+MATCH_OUTSIDE_APPLICABLE = (
+    "applicable is the first list to judge, not an exclusion list. "
+    "A look_for that matches the method body is filed even when that rule_id is absent from applicable. "
+    "Do not open the rule router and do not retract the match. "
+    "Different rule_ids on the same line stay separate findings. Do not merge them. "
+    "A line listed under a rule_id in closed_report is not filed again. "
+    "Another line of that rule_id is still filed when it is a different shape. "
+    "Do not open fill_shapes or check_shapes. "
+    "State each finding once. Do not reopen a merge. "
+    "Identifiers in one log statement are one finding on the line with the strongest identifier. "
+    "Name the others in risk. "
+    "A money check that omits a fee posted in the same method is one BIZ-003 finding. "
+    "Do not try other rule ids for that check. "
+    "A different rule_id that also matches is its own finding. "
+    "Do not drop SEC-001 because PAY-004 or AUTH-001 also matches. "
+    "A failed render names the sentence to edit. "
+    "Do not grep seal-conclusion.py or validate-conclusion.py for fields."
+)
 GROUP_READ_THIS = (
     "Read this file for source, field declarations, and lock-order notes. "
     "Rule text for rule_ids is in shared.json; read that file once. "
     "Do not open another judgment-work group file, judgment-groups, "
     "or the source tree. Place every required_suspect_ids id and write this "
-    "group's result before adding more findings."
+    "group's result before adding more findings. "
+    "Do not open a previous judgment.json, REVIEW-REPORT.html, or an earlier review pack. "
+    "title, risk, and fix are Chinese. Leave the English fields empty. "
+    "A look_for with several shapes is one finding per shape. "
+    "The first shape does not close the others. "
+    + MATCH_OUTSIDE_APPLICABLE
 )
 MAX_NEIGHBOR_PATHS = 10
 HUNK_CONTEXT = 8
@@ -1201,7 +1235,9 @@ def build(pack: Path, repo: Path) -> tuple[dict, dict]:
             "Confirmed magic_number hits are conventions, not P1. "
             "report.branch_drift is cited at render time. "
             "Non-source samples are not symbols. "
-            "rules{} is the business-rule text for applicable ids only. "
+            "rules{} holds look_for text. applicable is the first list, not an exclusion list. "
+            + MATCH_OUTSIDE_APPLICABLE
+            + " "
             "Do not open business-rule-records.md, the channel prompts, "
             "pr-diff-review steps 1-14, or seal-conclusion.py. "
             "skip_notes are the recorded skips; do not re-read those rules."
@@ -2107,7 +2143,13 @@ def split_question_work(pack: Path, packet: dict, repo: Path) -> int:
             "Read this file once. Report rows are already cards. "
             "Convention hits are seeded for seal. "
             "Judge group files concurrently, at most four, and union the findings. "
-            "Do not drop a hit from another group."
+            "Do not drop a hit from another group. "
+            "Do not open a previous judgment.json, REVIEW-REPORT.html, or an earlier review pack. "
+            "title, risk, and fix are Chinese. Leave the English fields empty. "
+            "A look_for with several shapes is one finding per shape. "
+            "The first shape does not close the others. "
+            "A line listed under a rule_id in closed_report is not filed again. Another line of that rule_id is still filed when it is a different shape. "
+            + MATCH_OUTSIDE_APPLICABLE
         ),
     })
     question_groups = []
@@ -2453,6 +2495,22 @@ def write_model_brief(pack: Path, packet: dict) -> None:
             "Seed hits are omitted. Do not re-judge them. "
             "A one-line getter is omitted. "
             "Leave English fields empty. Do not draft review-conclusion.json. "
+            "The output object below is the schema. "
+            "Do not open templates, examples, dimension docs, or seal scripts to check it. "
+            "The same line and the same rule_id may be several findings when each title differs. "
+            "One finding has one rule_id. "
+            "Line numbers are the N| prefix already in methods[].source. "
+            "Do not count a pasted copy. "
+            "A callee missing from methods is filed once, on the call line inside methods[].source. "
+            "After that line is chosen, stop restating it. "
+            "Do not open a previous judgment.json, REVIEW-REPORT.html, or an earlier review pack. "
+            "methods[].source is already the method text. Do not print the methods out again. "
+            "title, risk, and fix are Chinese. Leave the English fields empty. "
+            "A look_for with several shapes is one finding per shape. "
+            "The first shape does not close the others. "
+            "A line listed under a rule_id in closed_report is not filed again. Another line of that rule_id is still filed when it is a different shape. "
+            + MATCH_OUTSIDE_APPLICABLE
+            + " "
             "open_suspects[].source is empty on purpose when source_ref is set. "
             "If source_ref.where is methods, the body is the methods entry with "
             "the same name, path, start_line, and end_line: read that entry's source. "
@@ -2488,21 +2546,34 @@ def write_model_brief(pack: Path, packet: dict) -> None:
             "findings": (
                 "Business defects whose rule_id is absent from closed_report, "
                 "plus an open suspect judged true. "
+                "A line listed under a rule_id in closed_report is not filed again. Another line of that rule_id is still filed when it is a different shape. "
+                "A look_for with several shapes is one finding per shape. "
+                "The first shape does not close the others. "
                 "Fields: title, line, file, severity, rule_id or kind, "
-                "derive_suspect_id when the row has one, risk, fix."
+                "derive_suspect_id when the row has one, risk, fix. "
+                "title, risk, and fix are Chinese. Leave title_en, risk_en, and fix_en empty. "
+                "Write each finding once. Do not re-list the set or re-plan severity. "
+                "The same fix for the same rule_id on several lines is one finding with same_fix true and also_lines for the other lines. "
+                "Do not file those lines and then delete them. "
+                "Do not compute shape_count. Do not open business-rule-records.md. "
+                "Copy test_oracle flags already decided. Do not re-derive them. "
+                + MATCH_OUTSIDE_APPLICABLE
             ),
             "suspect_hits": "derive_suspect_id values from open_suspects judged true.",
             "test_oracle": (
                 "One object per test_oracle_open line that has a true flag. "
                 "Always set unsafe_pass, boundary_missed, branch_uncovered. "
-                "Also set each name in questions."
+                "Also set each name in questions. "
+                + ORACLE_JUDGMENT
             ),
             "card": (
+                "title, risk, and fix are Chinese. Leave the English fields empty. "
                 "title is the failure name. "
                 "risk is 在第 N 行检测到 `代码`。 plus the impact. "
-                "fix is 将第 N 行 `旧文本` 改为： plus the safe edit."
+                "fix is 将第 N 行 `旧文本` 改为： plus the safe edit. "
+                "Do not write 不会, 不是, 而不是, 不用, or 不要."
             ),
-            "then": "render-review-html.sh --dir <pack>",
+            "then": "Write judgment.json once, then render-review-html.sh --dir <pack>. Do not re-list findings before writing.",
         },
     }
     write_json(pack / "31-model-brief.json", brief)
