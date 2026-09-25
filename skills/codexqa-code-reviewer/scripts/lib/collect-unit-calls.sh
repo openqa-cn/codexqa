@@ -26,9 +26,13 @@ SYMBOLS="$DIR/05-coverage-universe.json"
 }
 "$SCRIPT_DIR/../acr-python" - "$REPO" "$SYMBOLS" "$DIR/25-unit-calls.json" <<'PY'
 import json, subprocess, sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 repo, symbols_path, out_path = sys.argv[1:4]
+# One CLI process per method. Eight at a time keeps the graph read, without
+# paying a full process start for each of up to 160 methods in series.
+UNIT_CALL_WORKERS = 8
 doc = json.loads(Path(symbols_path).read_text(encoding="utf-8"))
 nodes = doc.get("nodes") or doc.get("result", {}).get("nodes") or []
 by_id = {}
@@ -45,9 +49,8 @@ for node in nodes:
     by_id[sid] = node
     ids.append(sid)
 ids = ids[:160]
-calls = []
-seen = set()
-for sid in ids:
+
+def outgoing_calls(sid: str) -> list[dict]:
     try:
         proc = subprocess.run(
             ["codexqa", "query", "--repo", repo, "edges", "--id", sid, "--direction", "out"],
@@ -57,20 +60,17 @@ for sid in ids:
             timeout=30,
         )
     except (OSError, subprocess.TimeoutExpired):
-        continue
+        return []
     if proc.returncode != 0 or not proc.stdout.strip():
-        continue
+        return []
     try:
         payload = json.loads(proc.stdout)
     except json.JSONDecodeError:
-        continue
+        return []
+    found = []
     for edge in payload.get("edges") or []:
         if not isinstance(edge, dict) or edge.get("kind") != "calls":
             continue
-        key = (edge.get("from_id"), edge.get("to_id"), edge.get("call_info"))
-        if key in seen:
-            continue
-        seen.add(key)
         info = {}
         raw = edge.get("call_info")
         if isinstance(raw, str) and raw:
@@ -80,14 +80,28 @@ for sid in ids:
                 info = {}
         src = by_id.get(edge.get("from_id") or "", {})
         dst = by_id.get(edge.get("to_id") or "", {})
-        calls.append({
+        found.append({
             "from": src.get("name") or info.get("caller") or edge.get("from_id"),
             "to": dst.get("name") or info.get("callee") or edge.get("to_id"),
             "from_file": edge.get("from_file") or src.get("file_path"),
             "to_file": edge.get("to_file") or dst.get("file_path"),
             "line": info.get("line"),
             "kind": "calls",
+            "_key": (edge.get("from_id"), edge.get("to_id"), edge.get("call_info")),
         })
+    return found
+
+calls = []
+seen = set()
+workers = min(UNIT_CALL_WORKERS, len(ids)) or 1
+with ThreadPoolExecutor(max_workers=workers) as pool:
+    for batch in pool.map(outgoing_calls, ids):
+        for row in batch:
+            key = row.pop("_key", None)
+            if key in seen:
+                continue
+            seen.add(key)
+            calls.append(row)
 Path(out_path).write_text(json.dumps({
     "kind": "UnitCalls",
     "calls": calls,

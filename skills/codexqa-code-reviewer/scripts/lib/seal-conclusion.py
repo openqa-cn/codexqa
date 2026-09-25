@@ -795,11 +795,28 @@ def load_judgments(pack: Path, judgment: dict) -> dict:
         "test_oracle": list(judgment.get("test_oracle") or []),
     }
     seen = set(merged["suspect_hits"])
+    seed = load_json(pack / "judgment-seed.json")
+    if isinstance(seed, dict):
+        for item in seed.get("suspect_hits") or []:
+            text = str(item)
+            if text and text not in seen:
+                seen.add(text)
+                merged["suspect_hits"].append(text)
+        for sid, note in _skip_map(seed.get("suspect_skips")).items():
+            merged["suspect_skips"].setdefault(sid, note)
+        for finding in seed.get("findings") or []:
+            if isinstance(finding, dict):
+                merged["findings"].append(finding)
     lines = {
         row.get("line")
         for row in merged["test_oracle"]
         if isinstance(row, dict)
     }
+    if isinstance(seed, dict):
+        for row in seed.get("test_oracle") or []:
+            if isinstance(row, dict) and row.get("line") not in lines:
+                lines.add(row.get("line"))
+                merged["test_oracle"].append(row)
     folder = pack / "judgment-groups"
     if not folder.is_dir():
         return merged

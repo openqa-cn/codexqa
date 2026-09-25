@@ -377,7 +377,11 @@ def local_patterns(repo: Path, files: list[str], hit_limit: int | None = 80) -> 
 # Fixed registries. Do not combine --metrics=off with --config auto:
 # Semgrep refuses to build the auto ruleset when metrics are disabled and
 # exits 2 with an empty stdout. p/* packs do not need metrics.
+# Packs are started as separate processes. p/security-audit stays on Java
+# files: p/java does not include the trust-manager or hostname-verifier rules.
+# One pack timing out no longer discards hits from the packs that finished.
 SEMGREP_CONFIGS = ("p/java", "p/security-audit", "p/secrets")
+JAVA_EXTS = {".java"}
 
 
 def semgrep_hits_from_results(data: dict, repo: Path | None = None) -> list[dict]:
@@ -461,6 +465,38 @@ def classify_semgrep_run(
     return hits, info
 
 
+def semgrep_configs_for(files: list[str]) -> list[str]:
+    """Packs for these suffixes. Each pack is a separate Semgrep process.
+
+    p/java is omitted when the file set has no Java source. p/security-audit
+    stays for Java because that pack carries SSL rules p/java does not.
+    """
+    exts = {Path(f).suffix.lower() for f in files}
+    configs: list[str] = []
+    if (exts & JAVA_EXTS) or not (exts & CODE_EXT):
+        configs.append("p/java")
+    configs.append("p/security-audit")
+    configs.append("p/secrets")
+    return configs
+
+
+def run_semgrep_pack(bin_path: str, repo: Path, chunk: list[str], cfg: str) -> tuple[list[dict], dict]:
+    cmd = [
+        bin_path, "scan", "--json", "--quiet", "--metrics=off",
+        "--disable-version-check", "--timeout", "15",
+        "--config", cfg,
+        *chunk,
+    ]
+    proc = run_cmd(cmd, repo, 90)
+    if proc is None:
+        hits, info = classify_semgrep_run(None, "", "")
+    else:
+        hits, info = classify_semgrep_run(
+            proc.returncode, proc.stdout or "", proc.stderr or "", repo)
+    info["configs"] = [cfg]
+    return hits, info
+
+
 def parse_semgrep(repo: Path, files: list[str]) -> tuple[list[dict], str, dict]:
     bin_path = which("semgrep")
     if not bin_path:
@@ -468,31 +504,51 @@ def parse_semgrep(repo: Path, files: list[str]) -> tuple[list[dict], str, dict]:
     targets = [f for f in files if Path(f).suffix.lower() in CODE_EXT]
     if not targets:
         return [], "skipped_no_files", {}
+    configs = semgrep_configs_for(targets)
     hits: list[dict] = []
-    info: dict = {"status": "error", "rules_loaded": False, "stderr": "", "configs": list(SEMGREP_CONFIGS)}
-    any_ran = False
+    pack_infos: list[dict] = []
     for chunk in file_batches(targets, 40):
-        cmd = [
-            bin_path, "scan", "--json", "--quiet", "--metrics=off",
-            "--disable-version-check", "--timeout", "15",
-        ]
-        for cfg in SEMGREP_CONFIGS:
-            cmd.extend(["--config", cfg])
-        cmd.extend(chunk)
-        proc = run_cmd(cmd, repo, 90)
-        if proc is None:
-            batch_hits, batch_info = classify_semgrep_run(None, "", "")
-        else:
-            batch_hits, batch_info = classify_semgrep_run(
-                proc.returncode, proc.stdout or "", proc.stderr or "", repo)
-        hits.extend(batch_hits)
-        info = batch_info
-        if batch_info.get("status") == "ran":
-            any_ran = True
-    if any_ran:
+        workers = len(configs) or 1
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            packs = list(pool.map(
+                lambda cfg, chunk=chunk: run_semgrep_pack(bin_path, repo, chunk, cfg),
+                configs,
+            ))
+        for batch_hits, batch_info in packs:
+            hits.extend(batch_hits)
+            pack_infos.append(batch_info)
+    seen_hits: set[tuple] = set()
+    unique_hits: list[dict] = []
+    for item in hits:
+        key = (item.get("file"), item.get("line"), item.get("title"))
+        if key in seen_hits:
+            continue
+        seen_hits.add(key)
+        unique_hits.append(item)
+    hits = unique_hits
+    ran = [info for info in pack_infos if info.get("status") == "ran"]
+    failed = [info for info in pack_infos if info.get("status") != "ran"]
+    stderr_parts = []
+    for info in failed:
+        label = ",".join(info.get("configs") or [])
+        detail = info.get("stderr") or info.get("status") or "error"
+        stderr_parts.append(f"{label}: {detail}")
+    info = {
+        "status": "error",
+        "rules_loaded": False,
+        "stderr": " | ".join(stderr_parts)[:1500],
+        "configs": configs,
+        "returncode": None if failed else 0,
+    }
+    if ran and not failed:
         info["status"] = "ran"
         info["rules_loaded"] = True
+        info["stderr"] = ""
         return hits, "ran", info
+    if ran:
+        # Keep hits from packs that finished. rules_loaded stays false so a
+        # timed-out pack is not treated as a clean zero.
+        info["partial_packs"] = [",".join(item.get("configs") or []) for item in ran]
     return hits, str(info.get("status") or "error"), info
 
 

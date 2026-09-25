@@ -775,8 +775,8 @@ else
   fail "judgment packet fields should keep identical-copy groups"
 fi
 
-# One long file splits by method. Only a 50-line method gets a checklist.
-# A suspect inside that method points at the slice and drops its own source.
+# A file under 2000 pending lines stays one group. The packet checklist
+# stays on. No judgment-work fan-out.
 METHOD_SPLIT="$TMP/method-split"
 mkdir -p "$METHOD_SPLIT/repo" "$METHOD_SPLIT/pack"
 python3 - <<PY
@@ -819,60 +819,282 @@ bundle = {
 }), encoding="utf-8")
 doc, _ = packet.build(pack, repo)
 groups = doc["read_groups"]
-assert len(groups) >= 2, groups
-assert all(g.get("method_split") and g.get("independent") for g in groups), groups
-plans = [g for g in groups if g.get("plan_required")]
-assert len(plans) == 1 and "submit" in plans[0]["symbol_ids"], plans
-assert all("submit" not in g["symbol_ids"] or g.get("plan_required") for g in groups)
-small = [g for g in groups if "fee" in g["symbol_ids"]]
-assert small and small[0].get("plan_required") is False, small
-scope = [s for g in groups for s in g.get("slices") or [] if s.get("covered_by_methods")]
-assert scope and "text" not in scope[0], scope
-hit = doc["suspects"]["packets"][0]
-assert hit["slice_ref"]["symbol_id"] == "submit", hit
-assert "slice" not in hit, hit
+assert len(groups) == 1, groups
+assert not groups[0].get("method_split"), groups[0]
 assert doc["plan_required"] is True
 n = packet.split_work(pack, doc)
-assert n == len(groups) and n >= 2
-work = pack/"judgment-work"
-large = None
-for path in sorted(work.glob("group-*.json")):
-    body = __import__("json").loads(path.read_text(encoding="utf-8"))
-    ids = body["read_groups"][0]["symbol_ids"]
-    if "submit" in ids:
-        large = body
-        assert body["plan_required"] is True
-        assert body["suspects"]["packets"][0]["slice_ref"]["symbol_id"] == "submit"
-        assert "slice" not in body["suspects"]["packets"][0]
-        assert "Do not open shared.json" in body["read_this"]
-        assert "PAY-001" in body["rules"]
-    if "fee" in ids:
-        assert body["plan_required"] is False
-assert large is not None
-shared = __import__("json").loads((work/"shared.json").read_text(encoding="utf-8"))
-assert shared["plan_required"] is False
-assert "slice" not in shared["suspects"]["packets"][0]
-print("method split ok")
+assert n == 0
+assert not (pack/"judgment-work").exists()
+print("single pass ok")
 PY
 if [[ $? -eq 0 ]]; then
-  pass "single file splits by method, plans only the large method, suspects point at slices"
+  pass "a file under 2000 lines stays one group and does not fan out"
 else
-  fail "method split should fan out groups without copying suspect source"
+  fail "a short file should stay one judgment"
 fi
 
-# Heavy groups split again: 10 suspect lines per short-method group, and a
-# method over 60 lines becomes 40-line windows. A 79-line method becomes two
-# windows. Each suspect id is owned once. The group file carries its own rules.
+# A short file stays one model pass even with many suspects. Conventions are
+# seeded. Scripted predicates are removed before the model. One-line getters
+# stay in the file text of that single pass.
+QUESTION_SPLIT="$TMP/question-split"
+mkdir -p "$QUESTION_SPLIT/repo" "$QUESTION_SPLIT/pack"
+python3 - <<PY
+from pathlib import Path
+p = Path(r'''$QUESTION_SPLIT''') / "repo" / "Pay.java"
+lines = ["class Pay {"]
+for i in range(2, 80):
+    lines.append(f"    int field{i};")
+lines += [
+    "    TransferResult submit(int amount) {",
+    "        if (amount > 1) {",
+    "            debit(amount);",
+    "        }",
+    "        return ok;",
+    "    }",
+    "    String getId() { return id; }",
+    "}",
+]
+p.write_text("\n".join(lines) + "\n", encoding="utf-8")
+PY
+"$ROOT/scripts/acr-python" - <<PY
+import importlib.util
+import json
+from pathlib import Path
+root = Path(r'''$ROOT''')
+spec = importlib.util.spec_from_file_location("packet", root/"scripts/lib/build-judgment-packet.py")
+packet = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(packet)
+repo = Path(r'''$QUESTION_SPLIT''')/"repo"
+pack = Path(r'''$QUESTION_SPLIT''')/"pack"
+pending = [
+    {"symbol_id":"submit","name":"submit","kind":"method","path":"Pay.java","start_line":80,"end_line":85,"ranges":[[80,85]],"applicable":["PAY-001","BIZ-003"]},
+    {"symbol_id":"getId","name":"getId","kind":"method","path":"Pay.java","start_line":86,"end_line":86,"ranges":[[86,86]],"applicable":["LOGIC-001","NULL-001"]},
+    {"symbol_id":"file-scope:Pay.java","name":"file_scope","kind":"file_scope","path":"Pay.java","start_line":1,"end_line":87,"ranges":[[1,87]]},
+]
+packets = []
+for n in range(12):
+    packets.append({
+        "derive_suspect_id": f"missing_timeout:Pay.java:{20+n}",
+        "file": "Pay.java",
+        "line": 20+n,
+        "kind": "missing_timeout",
+    })
+packets.append({
+    "derive_suspect_id": "magic_number:Pay.java:3",
+    "file": "Pay.java",
+    "line": 3,
+    "kind": "magic_number",
+})
+bundle = {
+    "pending": pending,
+    "read_groups": [{"id":"blob:pay","paths":["Pay.java"],"symbol_ids":[row["symbol_id"] for row in pending]}],
+    "impacts": [],
+}
+(pack/"28-symbol-bundle.json").write_text(json.dumps(bundle), encoding="utf-8")
+(pack/"24-coverage-ledger.json").write_text("{}", encoding="utf-8")
+(pack/"27-suspect-queue.json").write_text(json.dumps({
+    "policies": {"missing_timeout": {"look_for":"deadline","do_not_report":"set"}},
+    "packets": packets,
+    "sast_packets": [],
+}), encoding="utf-8")
+(pack/"26-review-digest.json").write_text(json.dumps({"counts":{},"dimensions":{}}), encoding="utf-8")
+packet.write(pack, repo)
+doc = json.loads((pack/"29-judgment-packet.json").read_text(encoding="utf-8"))
+assert doc.get("question_fanout") is not True
+assert not (pack/"judgment-work").exists()
+seed = json.loads((pack/"judgment-seed.json").read_text(encoding="utf-8"))
+assert seed["suspect_hits"] == ["magic_number:Pay.java:3"]
+ids = [
+    row.get("derive_suspect_id")
+    for row in doc["suspects"]["packets"]
+    if str(row.get("derive_suspect_id") or "").startswith("missing_timeout:")
+]
+assert len(ids) == 12, ids
+assert "magic_number:Pay.java:3" not in [row.get("derive_suspect_id") for row in doc["suspects"]["packets"]]
+blob = json.dumps(doc["read_groups"])
+assert "debit(amount)" in blob
+print("short file stays one pass", len(ids))
+PY
+if [[ $? -eq 0 ]]; then
+  pass "a short file with many unscripted suspects stays one model pass"
+else
+  fail "a short file should not fan out just because suspects remain"
+fi
+
+# A fee literal and a JDBC call close in the seed. A field declaration does not.
+SCRIPTED="$TMP/scripted-close"
+mkdir -p "$SCRIPTED/repo" "$SCRIPTED/pack"
+python3 - <<PY
+from pathlib import Path
+p = Path(r'''$SCRIPTED''') / "repo" / "Pay.java"
+p.write_text("""class Pay {
+    void submit(int amount) {
+        if (fee < 0.5) {
+            debit(amount);
+        }
+        conn = DriverManager.getConnection(url);
+        pool.execute(new Runnable() { public void run() {} });
+    }
+}
+""", encoding="utf-8")
+PY
+"$ROOT/scripts/acr-python" - <<PY
+import importlib.util
+import json
+from pathlib import Path
+root = Path(r'''$ROOT''')
+spec = importlib.util.spec_from_file_location("packet", root/"scripts/lib/build-judgment-packet.py")
+packet = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(packet)
+repo = Path(r'''$SCRIPTED''')/"repo"
+pack = Path(r'''$SCRIPTED''')/"pack"
+text = (repo/"Pay.java").read_text(encoding="utf-8").splitlines()
+fee_line = next(i for i, line in enumerate(text, 1) if "fee < 0.5" in line)
+jdbc_line = next(i for i, line in enumerate(text, 1) if "getConnection" in line)
+local_line = next(i for i, line in enumerate(text, 1) if "execute(new Runnable" in line)
+pending = [{
+    "symbol_id": "submit", "name": "submit", "kind": "method", "path": "Pay.java",
+    "start_line": 2, "end_line": 8, "ranges": [[2, 8]], "applicable": ["PAY-001"],
+}]
+packets = [
+    {"derive_suspect_id": f"decision_literal:Pay.java:{fee_line}", "file": "Pay.java", "line": fee_line, "kind": "decision_literal"},
+    {"derive_suspect_id": f"missing_timeout:Pay.java:{jdbc_line}", "file": "Pay.java", "line": jdbc_line, "kind": "missing_timeout"},
+    {"derive_suspect_id": f"missing_timeout:Pay.java:{local_line}", "file": "Pay.java", "line": local_line, "kind": "missing_timeout"},
+]
+(pack/"28-symbol-bundle.json").write_text(json.dumps({
+    "pending": pending,
+    "read_groups": [{"id": "blob:pay", "paths": ["Pay.java"], "symbol_ids": ["submit"]}],
+    "impacts": [],
+}), encoding="utf-8")
+(pack/"24-coverage-ledger.json").write_text("{}", encoding="utf-8")
+(pack/"27-suspect-queue.json").write_text(json.dumps({
+    "policies": {},
+    "packets": packets,
+    "sast_packets": [],
+}), encoding="utf-8")
+(pack/"26-review-digest.json").write_text(json.dumps({"counts": {}, "dimensions": {}}), encoding="utf-8")
+(pack/"14-resilience-signals.json").write_text(json.dumps({
+    "missing_timeouts": [{
+        "path": "Pay.java", "line": jdbc_line, "kind": "missing_timeout", "close": "per_line",
+        "derive_suspect_id": f"missing_timeout:Pay.java:{jdbc_line}",
+    }]
+}), encoding="utf-8")
+packet.write(pack, repo)
+doc = json.loads((pack/"29-judgment-packet.json").read_text(encoding="utf-8"))
+seed = json.loads((pack/"judgment-seed.json").read_text(encoding="utf-8"))
+left = [row.get("derive_suspect_id") for row in doc["suspects"]["packets"]]
+assert left == [], left
+assert f"decision_literal:Pay.java:{fee_line}" in seed["suspect_hits"]
+assert f"missing_timeout:Pay.java:{jdbc_line}" in seed["suspect_hits"]
+skipped = {row["id"] for row in seed["suspect_skips"]}
+assert f"missing_timeout:Pay.java:{local_line}" in skipped
+assert doc.get("question_fanout") is not True
+print("scripted close ok", seed["suspect_hits"], skipped)
+PY
+if [[ $? -eq 0 ]]; then
+  pass "fee literals and JDBC calls close before the model pass"
+else
+  fail "scripted predicates should leave the model queue"
+fi
+
+# Opposite lock orders and a no-join test become seed cards. The model does not draft them.
+LOCK_ORACLE="$TMP/lock-oracle"
+mkdir -p "$LOCK_ORACLE/repo" "$LOCK_ORACLE/pack"
+python3 - <<PY
+from pathlib import Path
+p = Path(r'''$LOCK_ORACLE''') / "repo" / "Pay.java"
+body = """class Pay {
+    void settle() {
+        synchronized (accountLock) {
+            synchronized (recordLock) {
+                debit();
+            }
+        }
+    }
+    void reverse() {
+        synchronized (recordLock) {
+            synchronized (accountLock) {
+                credit();
+            }
+        }
+    }
+    @Test
+    void races() {
+        t1.start();
+        t2.start();
+        assertTrue(cache.size() >= 1);
+    }
+}
+"""
+# Past the inline cap so each method stays its own slice and lock order is visible.
+p.write_text(body + "\n" + "\n".join("    // pad" for _ in range(820)), encoding="utf-8")
+PY
+"$ROOT/scripts/acr-python" - <<PY
+import importlib.util
+import json
+from pathlib import Path
+root = Path(r'''$ROOT''')
+spec = importlib.util.spec_from_file_location("packet", root/"scripts/lib/build-judgment-packet.py")
+packet = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(packet)
+repo = Path(r'''$LOCK_ORACLE''')/"repo"
+pack = Path(r'''$LOCK_ORACLE''')/"pack"
+text = (repo/"Pay.java").read_text(encoding="utf-8").splitlines()
+test_line = next(i for i, line in enumerate(text, 1) if "@Test" in line)
+pending = [
+    {"symbol_id": "settle", "name": "settle", "kind": "method", "path": "Pay.java", "start_line": 2, "end_line": 8, "ranges": [[2, 8]], "applicable": ["CONC-002"]},
+    {"symbol_id": "reverse", "name": "reverse", "kind": "method", "path": "Pay.java", "start_line": 9, "end_line": 15, "ranges": [[9, 15]], "applicable": ["CONC-002"]},
+    {"symbol_id": "races", "name": "races", "kind": "method", "path": "Pay.java", "start_line": test_line, "end_line": test_line + 4, "ranges": [[test_line, test_line + 4]], "applicable": []},
+]
+(pack/"28-symbol-bundle.json").write_text(json.dumps({
+    "pending": pending,
+    "read_groups": [{"id": "blob:pay", "paths": ["Pay.java"], "symbol_ids": [row["symbol_id"] for row in pending]}],
+    "impacts": [],
+}), encoding="utf-8")
+(pack/"24-coverage-ledger.json").write_text("{}", encoding="utf-8")
+(pack/"27-suspect-queue.json").write_text(json.dumps({
+    "policies": {},
+    "packets": [{
+        "derive_suspect_id": f"test_oracle:Pay.java:{test_line}",
+        "file": "Pay.java",
+        "line": test_line,
+        "kind": "test_oracle",
+    }],
+    "sast_packets": [],
+}), encoding="utf-8")
+(pack/"26-review-digest.json").write_text(json.dumps({"counts": {}, "dimensions": {}}), encoding="utf-8")
+(pack/"18-maintainability-signals.json").write_text(json.dumps({
+    "test_oracle_hits": [{"line": test_line, "kind": "test_no_join", "disposition": "report"}]
+}), encoding="utf-8")
+packet.write(pack, repo)
+seed = json.loads((pack/"judgment-seed.json").read_text(encoding="utf-8"))
+doc = json.loads((pack/"29-judgment-packet.json").read_text(encoding="utf-8"))
+rules = [row.get("rule_id") for row in seed.get("findings") or []]
+assert "CONC-002" in rules, rules
+left = [row.get("kind") for row in doc["suspects"]["packets"]]
+assert "test_oracle" not in left, left
+assert any(row.get("line") == test_line and row["oracle"]["unsafe_pass"] for row in seed.get("test_oracle") or [])
+print("lock and oracle drafted", rules)
+PY
+if [[ $? -eq 0 ]]; then
+  pass "lock order and no-join oracles are drafted before the model writes a conclusion"
+else
+  fail "script should draft lock-order cards and mechanical test oracles"
+fi
+
+# Past 2000 lines, whole methods pack into chunks of about 800 lines, at most
+# four. A method shorter than 800 lines is not cut. Every chunk carries the
+# lock-order summary. Rule text stays on shared.json.
 HEAVY_SPLIT="$TMP/heavy-split"
 mkdir -p "$HEAVY_SPLIT/repo" "$HEAVY_SPLIT/pack"
 python3 - <<PY
 from pathlib import Path
 p = Path(r'''$HEAVY_SPLIT''') / "repo" / "Pay.java"
-lines = [f"line {i}" for i in range(1, 452)]
+lines = [f"line {i}" for i in range(1, 2601)]
 lines[9] = "synchronized (accountLock) {"
-lines[89] = "synchronized (recordLock) {"
-lines[199] = "synchronized (recordLock) {"
-lines[200] = "synchronized (accountLock) {"
+lines[19] = "synchronized (recordLock) {"
+lines[709] = "synchronized (recordLock) {"
+lines[719] = "synchronized (accountLock) {"
 p.write_text("\n".join(lines) + "\n", encoding="utf-8")
 PY
 "$ROOT/scripts/acr-python" - <<PY
@@ -886,26 +1108,15 @@ spec.loader.exec_module(packet)
 repo = Path(r'''$HEAVY_SPLIT''')/"repo"
 pack = Path(r'''$HEAVY_SPLIT''')/"pack"
 pending = [
-    {"symbol_id":"wide","name":"wide","kind":"method","path":"Pay.java","start_line":1,"end_line":100,"ranges":[[1,100]],"applicable":["PAY-001"]},
-    {"symbol_id":"other","name":"other","kind":"method","path":"Pay.java","start_line":190,"end_line":210,"ranges":[[190,210]]},
-    {"symbol_id":"submit79","name":"submit79","kind":"method","path":"Pay.java","start_line":360,"end_line":438,"ranges":[[360,438]],"applicable":["PAY-001"]},
+    {"symbol_id":"wide","name":"wide","kind":"method","path":"Pay.java","start_line":1,"end_line":700,"ranges":[[1,700]],"applicable":["PAY-001"]},
+    {"symbol_id":"other","name":"other","kind":"method","path":"Pay.java","start_line":701,"end_line":1400,"ranges":[[701,1400]]},
+    {"symbol_id":"tail","name":"tail","kind":"method","path":"Pay.java","start_line":1401,"end_line":2100,"ranges":[[1401,2100]],"applicable":["PAY-001"]},
 ]
-for n in range(11):
-    line = 121 + n
-    pending.append({
-        "symbol_id": f"m{n}", "name": f"m{n}", "kind": "method", "path": "Pay.java",
-        "start_line": line, "end_line": line, "ranges": [[line, line]],
-    })
-pending.append({"symbol_id":"file-scope:Pay.java","name":"file_scope","kind":"file_scope","path":"Pay.java","start_line":1,"end_line":220,"ranges":[[1,220]]})
+pending.append({"symbol_id":"file-scope:Pay.java","name":"file_scope","kind":"file_scope","path":"Pay.java","start_line":1,"end_line":2100,"ranges":[[1,2100]]})
 packets = [
     {"derive_suspect_id":"wide-early","file":"Pay.java","line":10,"kind":"missing_timeout","slice":"10|x"},
-    {"derive_suspect_id":"wide-late","file":"Pay.java","line":90,"kind":"missing_timeout","slice":"90|x"},
+    {"derive_suspect_id":"wide-late","file":"Pay.java","line":710,"kind":"missing_timeout","slice":"710|x"},
 ]
-for n in range(11):
-    packets.append({
-        "derive_suspect_id": f"m{n}-hit", "file": "Pay.java", "line": 121 + n,
-        "kind": "missing_timeout", "slice": "x",
-    })
 bundle = {
     "pending": pending,
     "read_groups": [{"id":"blob:pay","paths":["Pay.java"],"symbol_ids":[row["symbol_id"] for row in pending]}],
@@ -920,45 +1131,41 @@ bundle = {
 }), encoding="utf-8")
 doc, _ = packet.build(pack, repo)
 groups = doc["read_groups"]
-windows = [g for g in groups if "wide" in g["symbol_ids"]]
-assert len(windows) == 3, [ (g["id"], g["slices"][0].get("start_line"), g["slices"][0].get("end_line")) for g in windows ]
-spans = sorted((g["slices"][0]["start_line"], g["slices"][0]["end_line"]) for g in windows)
-assert spans == [(1, 40), (41, 80), (81, 100)], spans
-assert all(g.get("plan_required") is False for g in windows)
-early = next(g for g in windows if g["slices"][0]["end_line"] == 40)
-assert "90|" not in early["slices"][0]["text"]
-assert "accountLock" in early["slices"][0]["text"]
-late = next(g for g in windows if g["slices"][0]["start_line"] == 81)
-assert "recordLock" in late["slices"][0]["text"]
-submit79 = [g for g in groups if "submit79" in g["symbol_ids"]]
-assert len(submit79) == 2, [(g["slices"][0].get("start_line"), g["slices"][0].get("end_line")) for g in submit79]
-assert sorted((g["slices"][0]["start_line"], g["slices"][0]["end_line"]) for g in submit79) == [(360, 399), (400, 438)]
-small = [g for g in groups if any(str(s).startswith("m") for s in g["symbol_ids"])]
-assert len(small) == 2, [g["symbol_ids"] for g in small]
-assert all(g.get("plan_required") is False for g in small)
+assert 2 <= len(groups) <= 4, [(g["id"], [(s.get("start_line"), s.get("end_line")) for s in g.get("slices") or [] if not s.get("covered_by_methods") and not s.get("uncovered_fields")]) for g in groups]
+for g in groups:
+    for sl in g.get("slices") or []:
+        if sl.get("covered_by_methods") or sl.get("uncovered_fields"):
+            continue
+        start, end = sl.get("start_line"), sl.get("end_line")
+        assert isinstance(start, int) and isinstance(end, int)
+        assert end - start + 1 <= 800, (start, end)
+    notes = g.get("cross_method") or []
+    assert notes and notes[0]["kind"] == "lock_order", g.get("id")
+assert any("wide" in g["symbol_ids"] for g in groups)
+assert any("other" in g["symbol_ids"] for g in groups)
+wide = next(g for g in groups if "wide" in g["symbol_ids"])
+assert any(s.get("start_line") == 1 and s.get("end_line") == 700 for s in wide["slices"])
 n = packet.split_work(pack, doc)
-assert n == len(groups) and n >= 4
+assert n == len(groups) and n <= 4
 owned = {}
 for path in (pack/"judgment-work").glob("group-*.json"):
     body = json.loads(path.read_text(encoding="utf-8"))
-    assert "Do not open shared.json" in body["read_this"]
-    assert isinstance(body["rules"], dict)
-    ids = body["required_suspect_ids"]
-    assert len(ids) <= 10, (path.name, ids)
-    for sid in ids:
+    assert "rules" not in body
+    assert "rule_ids" in body
+    assert "shared.json" in body["read_this"]
+    for sid in body["required_suspect_ids"]:
         assert sid not in owned, sid
         owned[sid] = path.name
 assert owned["wide-early"] != owned["wide-late"]
 assert set(owned) == {row["derive_suspect_id"] for row in packets}
-notes = doc["cross_method"]
-assert len(notes) == 1 and notes[0]["kind"] == "lock_order", notes
-assert "wide" in notes[0]["symbol_ids"] and "other" in notes[0]["symbol_ids"]
-print("heavy split ok", n, "groups")
+shared = json.loads((pack/"judgment-work"/"shared.json").read_text(encoding="utf-8"))
+assert "PAY-001" in shared["rules"]
+print("coarse split ok", n, "groups")
 PY
 if [[ $? -eq 0 ]]; then
-  pass "heavy groups split by suspect cap and line windows, each suspect owned once"
+  pass "a file past 2000 lines splits on method boundaries into at most four chunks"
 else
-  fail "heavy group split should cap suspects and window long methods"
+  fail "coarse split should keep methods whole and cap groups at four"
 fi
 
 # Adhoc-shaped git: empty root then the file commit. A long file is sliced by symbol.

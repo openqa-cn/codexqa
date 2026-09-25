@@ -391,10 +391,11 @@ jq -n \
       "20-risk-tier.json","21-performance-signals.json","24-coverage-ledger.json",
       "26-review-digest.json","26-review-digest-detail.json","27-suspect-queue.json",
       "28-symbol-bundle.json","29-judgment-packet.json","30-conclusion-skeleton.json",
+      "31-model-brief.json",
       "impact/","imports/","commands.log"
     ],
     notes: [
-      "adhoc mode: review reads 29-judgment-packet.json. The empty root commit is diff_base so the files are only_on_head.",
+      "adhoc mode: review reads 31-model-brief.json. 29 stays for seal. The empty root commit is diff_base so the files are only_on_head.",
       "When bootstrapped, a mini git repo was created locally for CodexQA index gates only.",
       "from_count is NOT fan-in — prefer edges-in / 19-annotation-edges.json.",
       "Resilience signal hits must become findings or explicit deferred residuals (hard gate), including exception_unwraps. resource_leaks is RES-001, including close_not_in_finally. charset_gaps, null_deref_gaps, and authz_audit_gaps are per-row hard gates.",

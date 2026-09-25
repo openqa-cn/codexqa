@@ -599,6 +599,7 @@ jq -n \
       "28-symbol-bundle.json",
       "29-judgment-packet.json",
       "30-conclusion-skeleton.json",
+      "31-model-brief.json",
       "commands.log",
       "diffs/",
       "impact/",
@@ -626,7 +627,7 @@ jq -n \
       "Performance: 21-performance-signals.json (hot-path/N+1/unbounded-alloc; no profiler); see references/dimensions/performance.md.",
       "Annotation callbacks: 19-annotation-edges.json; see collect/derive-annotation-edges.",
       "If change-groups empty or all change_status=default, re-index with --diff-base.",
-      "Review digest: 26-review-digest.json is the judgment read when 29-judgment-packet.json is absent. When 29 exists, read that file only. 30-conclusion-skeleton.json is sealed into the conclusion at render. Do not recompute the split with git or open every signal file for the dimension verdict."
+      "Review digest: read 31-model-brief.json. 26 is only the fallback when 31 and 29 are both absent. 29 stays for seal. 30-conclusion-skeleton.json is sealed into the conclusion at render. Do not recompute the split with git or open every signal file for the dimension verdict."
     ]
   }' >"$OUT_DIR/manifest.json"
 

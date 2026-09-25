@@ -20,7 +20,9 @@ Usage: derive-sast.sh --dir <OUT_DIR> [--mode pr|full|adhoc] [--repo <REPO>]
 Writes <OUT_DIR>/23-sast-signals.json. Before scanning, installs any missing
 Semgrep, Bandit, gosec, gitleaks, osv-scanner, ruff, or eslint via
 install-sast-tools.sh. Semgrep uses fixed packs p/java, p/security-audit,
-and p/secrets with --metrics=off (never --config auto). tools.semgrep.status
+and p/secrets with --metrics=off (never --config auto). Each pack is its own
+process, so one pack timing out keeps hits from the packs that finished.
+tools.semgrep.status
 is ran only after that ruleset loads; a non-0/1 exit, non-JSON stdout, or
 non-empty errors is status=error and keeps stderr. Set
 CODEXQA_SAST_SKIP_INSTALL=1 only for the offline skill gate — a real review
@@ -60,16 +62,28 @@ fi
 # Same probe as the installer. A child install cannot export PATH back here.
 sast_refresh_path
 
+# install-sast-tools.sh re-resolves PATH and runs --version on the Go tools.
+# When every binary is already visible, that second pass only adds latency.
+sast_tools_on_path() {
+  local tool
+  for tool in semgrep bandit ruff eslint gitleaks gosec osv-scanner; do
+    command -v "$tool" >/dev/null 2>&1 || return 1
+  done
+  return 0
+}
+
 if [[ "${CODEXQA_SAST_SKIP_INSTALL:-}" != "1" ]]; then
-  if [[ -x "$SCRIPT_DIR/install-sast-tools.sh" ]]; then
+  if sast_tools_on_path; then
+    echo "[derive-sast] SAST tools already on PATH; skip install" >&2
+  elif [[ -x "$SCRIPT_DIR/install-sast-tools.sh" ]]; then
     if ! "$SCRIPT_DIR/install-sast-tools.sh"; then
       echo "warn: install-sast-tools.sh did not finish; scan continues with tools that are present" >&2
     fi
+    sast_refresh_path
   else
     echo "error: install-sast-tools.sh missing; refusing to scan without the install step" >&2
     exit 1
   fi
-  sast_refresh_path
 fi
 
 BODY="$SCRIPT_DIR/_sast_body.py"

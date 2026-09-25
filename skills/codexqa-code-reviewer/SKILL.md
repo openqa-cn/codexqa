@@ -97,9 +97,9 @@ Task progress:
 - [ ] 2. Collect evidence pack → OUT_DIR
 - [ ] 3. Validate (auto unless --skip-validate)
 - [ ] 4. Lock primary_language / review_language_focus
-- [ ] 5. Review from `29-judgment-packet.json` only. `rules` is the applicable business-rule text. Do not open steps 1–14, the channel prompts, `business-rule-records.md`, or `seal-conclusion.py`.
+- [ ] 5. Review from `31-model-brief.json` only. It already folded counts, closed report rows, seed hits, and one-line getters. Do not open `29`, the seed, steps 1–14, the channel prompts, `business-rule-records.md`, or `seal-conclusion.py`.
 - [ ] 5b. Agent LLM judgment pass + dedupe merge (`merge-llm-findings.py`)
-- [ ] 6. Write findings in review-conclusion.json + render (`seal-conclusion.py` fills the skeleton)
+- [ ] 6. Novel business findings only, in `judgment.json`. Render (`seal-conclusion.py` fills scripted cards, the stub, and the HTML)
 ```
 
 ```bash
@@ -165,15 +165,16 @@ Full-repo deliverables: hotspot modules (ranked by **edges-in**, not `from_count
 entry concentration, hardening backlog P0/P1/P2. Never invent PR `change_status`.
 No product scorecard / 产品评测打分.
 
-Adhoc: bootstraps a mini git repo when `--repo` is omitted so CodexQA index gates pass. An empty root commit is the diff base, then `build-review-digest.py` writes `26`–`30` while the source is still on disk. Validate with `--mode adhoc`. Judgment still reads only `29-judgment-packet.json`.
+Adhoc: bootstraps a mini git repo when `--repo` is omitted so CodexQA index gates pass. An empty root commit is the diff base, then `build-review-digest.py` writes `26`–`31` while the source is still on disk. Validate with `--mode adhoc`. Judgment reads `31-model-brief.json` once. `29` stays for seal.
 
 ## Capability → pack map
 
 | Capability | Pack evidence |
 |---|---|
 | Change localization | `03-change-groups` / `05-changed-symbols` / `diffs/*.diff.json` |
-| PR review digest | `26-review-digest.json` (commits behind/ahead, three-dot file classes vs two-dot drift, deduped `disposition: report` lines). Superseded by `29-judgment-packet.json` when that file exists. |
-| Judgment packet | `29-judgment-packet.json` (the only file the judgment pass opens when `judgment-work/` is absent: dimension cards, pr_delta report rows, suspect refs, one inlined copy of each read group). A single file is split into method groups under `judgment-work/group-*.json`; those groups are judged concurrently. Short methods share a group until 12 methods or 10 suspect lines. A method longer than 60 lines is cut into 40-line windows. A method with more than 10 suspect lines is also cut into line windows. Each group file contains its own rules; that pass does not open `shared.json` or another group's file. A group's `plan_required` is true only for a method of at least 50 lines. A suspect with `slice_ref` points at that window and does not repeat the source. `identical_to_base` matches the base tip and is not a defect. A csv/markdown/txt keyword hit does not force T0. Confirmed magic numbers seal as conventions, not P1. `30-conclusion-skeleton.json` is sealed into the conclusion at render. |
+| PR review digest | `26-review-digest.json` (commits behind/ahead, three-dot file classes vs two-dot drift, deduped `disposition: report` lines). The judgment pass reads `31-model-brief.json` instead. |
+| Model brief | `31-model-brief.json` (the only file the judgment pass opens: folded counts, closed report rows, open suspects, and method source with one-line getters and the file-scope copy removed). |
+| Judgment packet | `29-judgment-packet.json` stays for seal. A review of at most 2000 pending lines, including one file of about 800 lines, does not create `judgment-work/`. Scripted suspects are closed in `judgment-seed.json` before that pass. Question fan-out starts only when the source left for the model exceeds 2000 lines. That question fan-out writes at most four `judgment-work/group-*.json` files, each holding only methods that own a suspect, a business rule, or a lock-order pair. One-line getters stay out. `magic_number` and `rate_literal` are seeded as conventions in `judgment-seed.json` and are not re-judged. Report rows are closed by seal. Group findings are a union. Past that, whole methods pack into chunks of about 800 lines, at most four concurrent `judgment-work/group-*.json` files. A method is cut only when it is longer than the chunk. Each chunk carries field lines and the lock-order summary. Rule text stays once in `shared.json`. Extra agents on the same change are security, correctness, and quality passes over the full change, not line windows, and the packet does not emit them by default. A suspect with `slice_ref` points at the method slice and does not repeat the source. `identical_to_base` matches the base tip and is not a defect. A csv/markdown/txt keyword hit does not force T0. Confirmed magic numbers seal as conventions, not P1. `30-conclusion-skeleton.json` is sealed into the conclusion at render. |
 | Design fit | `10-design-fit-signals.json` (path + package/import layers, `import_cross_layer`, `dead_nested_symbols` confirmed via empty edges-in; full: `imports/` + on-disk fallback) |
 | Complexity | `11-complexity-signals.json` (method LOC / decisions / nesting / YAGNI hints) |
 | Dependencies | `12-dependency-signals.json` (manifest/lock SNAPSHOT, lock drift, license clues, local audit) |
@@ -268,8 +269,8 @@ Fails: missing CodexQA provenance; empty change-groups; all `change_status=defau
    `drop` is discarded. Only `suspects[]` go to the SAST suspect channel.
    `allow` records a scanner gap and does not rescan that class. CodexQA
    stays the primary engine.
-7. **Agent LLM judgment (order 16):** follow [prompts/llm-judgment-pass.md](prompts/llm-judgment-pass.md).
-   SAST suspects, business logic, and semantic candidates are separate prompts. The residual
+7. **Agent LLM judgment (order 16):** when `31-model-brief.json` exists, that file is the whole pass. Write `judgment.json` and render. Do not walk `24`, regroup closed rows, or open `seal-conclusion.py`. When `31` is absent, follow [prompts/llm-judgment-pass.md](prompts/llm-judgment-pass.md).
+   On that legacy path, SAST suspects, business logic, and semantic candidates are separate prompts. The residual
    read visits every `pending` symbol in `24-coverage-ledger.json`; scanner hits do not dequeue it.
    The host embedded model reviews those packets, then `scripts/lib/merge-llm-findings.py`
    dedupes `p0`/`p1`/`p2` against heuristic findings (`22-llm-judgment.json`).

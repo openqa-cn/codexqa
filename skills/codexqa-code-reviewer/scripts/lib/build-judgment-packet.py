@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Write the one-file judgment packet and the conclusion skeleton.
 
-The host agent reads 29-judgment-packet.json and does not reopen signal
-files, git, or a second copy of a read group. 30-conclusion-skeleton.json
-holds span hashes, drift line skips, and the untested-symbol name list.
-render-review-html.sh merges that skeleton so those fields are not copied
-by hand.
+The host agent reads 31-model-brief.json once and does not reopen the
+packet, the seed, signal files, or seal-conclusion.py. 29 stays for seal.
+30-conclusion-skeleton.json holds span hashes, drift line skips, and the
+untested-symbol name list. render-review-html.sh merges that skeleton so
+those fields are not copied by hand.
 """
 from __future__ import annotations
 
@@ -19,19 +19,23 @@ from pathlib import Path
 
 RULE_FIELDS = ("look_for", "do_not_report")
 
-MAX_SOURCE_LINES = 400
+MAX_SOURCE_LINES = 800
 PLAN_FILE_LINES = 50
 PLAN_GROUP_LINES = 100
-METHOD_GROUP_SIZE = 12
-SUSPECT_GROUP_CAP = 10
-# A method of this length stays one slice so a 60-line checklist fixture is unchanged.
-# Anything longer is cut into METHOD_WINDOW_LINES windows. A 79-line method
-# such as submitTransfer therefore becomes two groups instead of one long write.
-METHOD_WINDOW_TRIGGER = 60
-METHOD_WINDOW_LINES = 40
+SINGLE_PASS_LINES = 2000
+CHUNK_LINES = 800
+MAX_PARALLEL_GROUPS = 4
+ABSORB_LINES = 100
+# A short file stays one read. Question fan-out starts only when the model
+# would otherwise re-judge this many suspects that seal cannot close.
+QUESTION_FANOUT_MIN = 12
+CONVENTION_KINDS = {"magic_number", "rate_literal", "long_file", "eol_import"}
+BUSINESS_RULE_PREFIXES = ("BIZ-", "PAY-", "TXN-", "CONC-", "AUTH-", "SEC-")
+TRIVIAL_RULES = {"LOGIC-001", "NULL-001", "HYG-001", "API-001", "DES-001", "GLOB-001", "ARCH-001"}
 GROUP_READ_THIS = (
-    "Read only this file. Rules and skip notes for this group are in this file. "
-    "Do not open shared.json, another judgment-work file, judgment-groups, "
+    "Read this file for source, field declarations, and lock-order notes. "
+    "Rule text for rule_ids is in shared.json; read that file once. "
+    "Do not open another judgment-work group file, judgment-groups, "
     "or the source tree. Place every required_suspect_ids id and write this "
     "group's result before adding more findings."
 )
@@ -504,75 +508,270 @@ def clip_slice(sl: dict, start: int, end: int) -> dict:
     return out
 
 
-def suspect_windows(paths: list[str], start: int, end: int, points: list[tuple[str, int]]) -> list[tuple[int, int]]:
-    """Cut a span so each piece holds at most SUSPECT_GROUP_CAP suspect lines.
-
-    Suspects that share one line stay together. A span already under the cap
-    is unchanged.
-    """
-    lines = sorted(line for rel, line in points if same_path(rel, paths) and start <= line <= end)
-    if len(lines) <= SUSPECT_GROUP_CAP:
-        return [(start, end)]
-    spans: list[tuple[int, int]] = []
-    for index in range(0, len(lines), SUSPECT_GROUP_CAP):
-        chunk = lines[index:index + SUSPECT_GROUP_CAP]
-        w_start = start if not spans else spans[-1][1] + 1
-        more = index + SUSPECT_GROUP_CAP < len(lines)
-        w_end = chunk[-1] if more else end
-        if w_start > w_end:
-            continue
-        spans.append((w_start, w_end))
-    return spans or [(start, end)]
-
-
-def windows_for(
-    sl: dict,
-    row: dict,
-    paths: list[str],
-    points: list[tuple[str, int]],
-) -> list[tuple[dict, bool]]:
-    """One method becomes line windows when it is long or holds too many suspects."""
+def unit_lines(item: tuple[dict, dict]) -> int:
+    sl, row = item
     start, end = slice_bounds(sl, row)
     if start is None or end is None:
-        return [(sl, False)]
-    spans = [(start, end)]
-    if end - start + 1 > METHOD_WINDOW_TRIGGER:
-        spans = []
+        return len(line_set(row))
+    return end - start + 1
+
+
+def pack_units(units: list[tuple[dict, dict]], budget: int) -> list[list[tuple[dict, dict]]]:
+    chunks: list[list[tuple[dict, dict]]] = []
+    current: list[tuple[dict, dict]] = []
+    current_n = 0
+    for unit in units:
+        span = unit_lines(unit)
+        if current and current_n + span > budget:
+            chunks.append(current)
+            current = []
+            current_n = 0
+        current.append(unit)
+        current_n += span
+    if current:
+        chunks.append(current)
+    return chunks
+
+
+def units_for_budget(
+    methods: list[tuple[dict, dict]],
+    budget: int,
+) -> list[tuple[dict, dict]]:
+    """Keep each method whole. Cut a method only when it is longer than budget."""
+    units: list[tuple[dict, dict]] = []
+    for sl, row in methods:
+        start, end = slice_bounds(sl, row)
+        span = 0 if start is None or end is None else end - start + 1
+        if start is None or span <= budget:
+            units.append((sl, row))
+            continue
         cursor = start
         while cursor <= end:
-            w_end = min(end, cursor + METHOD_WINDOW_LINES - 1)
-            spans.append((cursor, w_end))
+            w_end = min(end, cursor + budget - 1)
+            units.append((clip_slice(sl, cursor, w_end), row))
             cursor = w_end + 1
-    refined: list[tuple[int, int]] = []
-    for w_start, w_end in spans:
-        refined.extend(suspect_windows(paths, w_start, w_end, points))
-    parts = []
-    for w_start, w_end in refined:
-        if len(refined) == 1 and w_start == start and w_end == end:
-            piece = sl
+    return units
+
+
+def fit_chunks(methods: list[tuple[dict, dict]]) -> list[list[tuple[dict, dict]]]:
+    """About CHUNK_LINES per chunk, and never more than MAX_PARALLEL_GROUPS."""
+    total = sum(unit_lines(unit) for unit in units_for_budget(methods, CHUNK_LINES))
+    if total <= 0:
+        return []
+
+    def attempt(budget: int) -> list[list[tuple[dict, dict]]]:
+        return pack_units(units_for_budget(methods, budget), budget)
+
+    chunks = attempt(CHUNK_LINES)
+    if len(chunks) <= MAX_PARALLEL_GROUPS:
+        return chunks
+    lo, hi = CHUNK_LINES, max(CHUNK_LINES, total)
+    best = attempt(hi)
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        trial = attempt(mid)
+        if len(trial) <= MAX_PARALLEL_GROUPS:
+            best = trial
+            hi = mid - 1
         else:
-            piece = clip_slice(sl, w_start, w_end)
-        parts.append((piece, (w_end - w_start + 1) >= PLAN_FILE_LINES))
-    return parts
+            lo = mid + 1
+    return best
+
+
+def chunk_suspects(
+    chunk: list[tuple[dict, dict]],
+    paths: list[str],
+    points: list[tuple[str, int]],
+) -> int:
+    owned = 0
+    for sl, row in chunk:
+        start, end = slice_bounds(sl, row)
+        owned += count_suspects(paths, start, end, points)
+    return owned
+
+
+def absorb_small_chunks(
+    chunks: list[list[tuple[dict, dict]]],
+    paths: list[str],
+    points: list[tuple[str, int]],
+) -> list[list[tuple[dict, dict]]]:
+    """A short chunk with no suspects joins its neighbor instead of starting an agent."""
+    changed = True
+    while changed and len(chunks) > 1:
+        changed = False
+        for index, chunk in enumerate(chunks):
+            span = sum(unit_lines(unit) for unit in chunk)
+            if span >= ABSORB_LINES or chunk_suspects(chunk, paths, points) > 0:
+                continue
+            target = index - 1 if index else index + 1
+            chunks[target].extend(chunk)
+            del chunks[index]
+            changed = True
+            break
+    return chunks
+
+
+def file_needs_split(methods: list[tuple[dict, dict]]) -> bool:
+    lines: set[int] = set()
+    max_span = 0
+    for sl, row in methods:
+        lines.update(line_set(row) or line_set({"start_line": sl.get("start_line"), "end_line": sl.get("end_line")}))
+        start, end = slice_bounds(sl, row)
+        if start is not None and end is not None:
+            max_span = max(max_span, end - start + 1)
+    return len(lines) > SINGLE_PASS_LINES or max_span > CHUNK_LINES
+
+
+def caller_edges(neighbors: list[dict]) -> set[tuple[str, str]]:
+    edges: set[tuple[str, str]] = set()
+    for group in neighbors:
+        src = str(group.get("file") or "")
+        for path in group.get("paths") or []:
+            other = str(path)
+            if src and other:
+                edges.add((src, other))
+                edges.add((other, src))
+    return edges
+
+
+def paths_linked(left: list[str], right: list[str], edges: set[tuple[str, str]]) -> bool:
+    if set(left) & set(right):
+        return True
+    return any((src, dst) in edges for src in left for dst in right)
+
+
+def group_directory(group: dict) -> str:
+    opened = str(group.get("opened") or "")
+    if not opened:
+        paths = group.get("paths") or []
+        opened = str(paths[0]) if paths else ""
+    if "/" not in opened:
+        return ""
+    return opened.rsplit("/", 1)[0]
+
+
+def group_line_count(group: dict, by_id: dict[str, dict]) -> int:
+    lines: set[int] = set()
+    for sid in group.get("symbol_ids") or []:
+        lines.update(line_set(by_id.get(str(sid)) or {}))
+    if lines:
+        return len(lines)
+    total = 0
+    for sl in group.get("slices") or []:
+        if not isinstance(sl, dict):
+            continue
+        start, end = sl.get("start_line"), sl.get("end_line")
+        if isinstance(start, int) and isinstance(end, int) and end >= start:
+            total += end - start + 1
+    return total
+
+
+def merge_read_groups(left: dict, right: dict) -> dict:
+    paths = list(dict.fromkeys([*(left.get("paths") or []), *(right.get("paths") or [])]))
+    text = "\n".join(part for part in (left.get("text") or "", right.get("text") or "") if part)
+    return {
+        "id": f"{left.get('id')}+{right.get('id')}",
+        "paths": paths,
+        "opened": left.get("opened") or right.get("opened") or (paths[0] if paths else ""),
+        "symbol_ids": [*(left.get("symbol_ids") or []), *(right.get("symbol_ids") or [])],
+        "text": text,
+        "truncated": bool(left.get("truncated") or right.get("truncated")),
+        "slices": [*(left.get("slices") or []), *(right.get("slices") or [])],
+    }
+
+
+def pack_directory_groups(
+    groups: list[dict],
+    by_id: dict[str, dict],
+    edges: set[tuple[str, str]],
+) -> list[dict]:
+    """Files in one directory share a chunk until it is full.
+
+    Caller-linked files stay apart so stamp_independent can keep them together
+    as one serial read. Coarse chunks of a long file are already sized.
+    """
+    packed: list[dict] = []
+    buckets: dict[str, list[dict]] = {}
+    for group in groups:
+        if group.get("method_split"):
+            packed.append(group)
+            continue
+        buckets.setdefault(group_directory(group), []).append(group)
+    for _directory, bucket in buckets.items():
+        current: dict | None = None
+        current_n = 0
+        for group in bucket:
+            paths = [str(item) for item in (group.get("paths") or [])]
+            span = group_line_count(group, by_id)
+            if current is not None and (
+                paths_linked(current.get("paths") or [], paths, edges)
+                or current_n + span > CHUNK_LINES
+            ):
+                packed.append(current)
+                current = None
+                current_n = 0
+            if current is None:
+                current = group
+                current_n = span
+            else:
+                current = merge_read_groups(current, group)
+                current_n += span
+        if current is not None:
+            packed.append(current)
+    return packed
+
+
+def cap_parallel_groups(
+    groups: list[dict],
+    by_id: dict[str, dict],
+    edges: set[tuple[str, str]],
+) -> list[dict]:
+    """One wave stays at MAX_PARALLEL_GROUPS by joining the smallest free groups."""
+    while len(groups) > MAX_PARALLEL_GROUPS:
+        order = sorted(range(len(groups)), key=lambda index: group_line_count(groups[index], by_id))
+        merged = False
+        for left_i, left in enumerate(order):
+            for right in order[left_i + 1:]:
+                if paths_linked(groups[left].get("paths") or [], groups[right].get("paths") or [], edges):
+                    continue
+                if groups[left].get("method_split") and groups[right].get("method_split"):
+                    if groups[left].get("opened") != groups[right].get("opened"):
+                        continue
+                nxt = []
+                pair = {left, right}
+                acc = None
+                for index, group in enumerate(groups):
+                    if index not in pair:
+                        nxt.append(group)
+                        continue
+                    acc = group if acc is None else merge_read_groups(acc, group)
+                if acc is not None:
+                    acc["method_split"] = bool(groups[left].get("method_split") or groups[right].get("method_split"))
+                    nxt.append(acc)
+                groups = nxt
+                merged = True
+                break
+            if merged:
+                break
+        if not merged:
+            break
+    return groups
 
 
 def split_method_groups(
     groups: list[dict],
     pending: list[dict],
     suspects: dict | None = None,
+    neighbors: list[dict] | None = None,
 ) -> list[dict]:
-    """Split one file's method slices into concurrent groups.
+    """Keep one read until the file no longer fits, then cut on method boundaries.
 
-    A method of PLAN_FILE_LINES or more is its own group and keeps the
-    checklist. A method longer than METHOD_WINDOW_TRIGGER lines is cut into
-    METHOD_WINDOW_LINES-line windows. Any method
-    whose suspect lines exceed SUSPECT_GROUP_CAP, is cut into line windows.
-    Shorter methods stay in source order, at most METHOD_GROUP_SIZE per
-    group and at most SUSPECT_GROUP_CAP suspect lines, with the checklist
-    off. Identical-copy paths stay on every child. A single chunk is left
-    as the original group so a short file does not change ids. file_scope
-    text is not copied again; the method slices are the read, and the
-    file_scope id hangs on the first child.
+    Unique pending lines at or under SINGLE_PASS_LINES stay one group, including
+    an ~800-line file. Past that, or when one method is longer than CHUNK_LINES,
+    whole methods pack into chunks of about CHUNK_LINES. A method is cut only
+    when it is itself longer than the chunk budget. At most MAX_PARALLEL_GROUPS
+    chunks are emitted. Identical-copy paths stay on every child. file_scope
+    text is not copied again.
     """
     points = suspect_points(suspects)
     by_id = {
@@ -594,60 +793,19 @@ def split_method_groups(
             else:
                 methods.append((sl, row))
         paths = list(group.get("paths") or [])
-        large = [
-            item for item in methods
-            if len(line_set(item[1])) >= PLAN_FILE_LINES
-        ]
-        small = [
-            item for item in methods
-            if len(line_set(item[1])) < PLAN_FILE_LINES
-        ]
-        chunks: list[tuple[str, list, bool]] = []
-        for index, item in enumerate(large):
-            sl, row = item
-            parts = windows_for(sl, row, paths, points)
-            for part_index, (piece, plan) in enumerate(parts):
-                tag = f"large-{index}" if len(parts) == 1 else f"large-{index}-w{part_index}"
-                chunks.append((tag, [(piece, row)], plan))
-        current: list[tuple[dict, dict]] = []
-        current_n = 0
-        rest_index = 0
-
-        def flush_small() -> None:
-            nonlocal current, current_n, rest_index
-            if not current:
-                return
-            chunks.append((f"rest-{rest_index}", current, False))
-            rest_index += 1
-            current = []
-            current_n = 0
-
-        for item in small:
-            sl, row = item
-            start, end = slice_bounds(sl, row)
-            owned = count_suspects(paths, start, end, points)
-            if owned > SUSPECT_GROUP_CAP:
-                flush_small()
-                parts = windows_for(sl, row, paths, points)
-                for part_index, (piece, plan) in enumerate(parts):
-                    tag = f"rest-{rest_index}" if len(parts) == 1 else f"rest-{rest_index}-w{part_index}"
-                    chunks.append((tag, [(piece, row)], plan))
-                rest_index += 1
-                continue
-            if current and (
-                len(current) >= METHOD_GROUP_SIZE or current_n + owned > SUSPECT_GROUP_CAP
-            ):
-                flush_small()
-            current.append(item)
-            current_n += owned
-        flush_small()
-        if len(chunks) < 2:
+        if len(methods) < 2 or not file_needs_split(methods):
+            out.append(group)
+            continue
+        raw_chunks = absorb_small_chunks(fit_chunks(methods), paths, points)
+        if len(raw_chunks) < 2:
             out.append(group)
             continue
         parent = str(group.get("id") or "group")
         opened = str(group.get("opened") or (paths[0] if paths else ""))
         first = True
-        for tag, items, plan in chunks:
+        for index, items in enumerate(raw_chunks):
+            plan = any(len(line_set(row)) >= PLAN_FILE_LINES for _sl, row in items)
+            tag = f"chunk-{index}"
             ids = [str(sl.get("symbol_id")) for sl, _row in items if sl.get("symbol_id")]
             child_slices = [sl for sl, _row in items]
             if first and scopes:
@@ -673,7 +831,9 @@ def split_method_groups(
                 "method_split": True,
                 "plan_required": plan,
             })
-    return out
+    edges = caller_edges(neighbors or [])
+    out = pack_directory_groups(out, by_id, edges)
+    return cap_parallel_groups(out, by_id, edges)
 
 
 def attach_uncovered_lines(groups: list[dict], repo: Path) -> None:
@@ -681,7 +841,7 @@ def attach_uncovered_lines(groups: list[dict], repo: Path) -> None:
 
     file_scope is marked covered_by_methods and has no text, so a line such as
     a shared map never reaches a group. Those lines are attached, capped, to
-    the first group of that file.
+    every chunk of that file.
     """
     by_path: dict[str, list[dict]] = {}
     covered: dict[str, set[int]] = {}
@@ -716,13 +876,15 @@ def attach_uncovered_lines(groups: list[dict], repo: Path) -> None:
                 break
         if not picked:
             continue
-        owners[0].setdefault("slices", []).append({
+        field_slice = {
             "symbol_id": "uncovered:" + path,
             "start_line": None,
             "end_line": None,
             "text": "\n".join(picked),
             "uncovered_fields": True,
-        })
+        }
+        for owner in owners:
+            owner.setdefault("slices", []).append(dict(field_slice))
 
 
 _LOCK = re.compile(r"synchronized\s*\(\s*(\w+)\s*\)")
@@ -774,6 +936,29 @@ def cross_method_notes(groups: list[dict]) -> list[dict]:
     return notes
 
 
+def attach_cross_summaries(groups: list[dict], notes: list[dict]) -> None:
+    """Every coarse chunk of a file sees the same lock-order summary."""
+    if not notes:
+        return
+    by_opened: dict[str, list[dict]] = {}
+    for group in groups:
+        opened = str(group.get("opened") or "")
+        if opened:
+            by_opened.setdefault(opened, []).append(group)
+    for owners in by_opened.values():
+        symbols: set[str] = set()
+        for group in owners:
+            symbols.update(str(item) for item in (group.get("symbol_ids") or []))
+        relevant = [
+            note for note in notes
+            if symbols.intersection(str(item) for item in (note.get("symbol_ids") or []))
+        ]
+        if not relevant:
+            continue
+        for group in owners:
+            group["cross_method"] = relevant
+
+
 def repoint_pending(pending: list[dict], groups: list[dict]) -> None:
     owner: dict[str, str] = {}
     for group in groups:
@@ -815,7 +1000,7 @@ def attach_slice_refs(packet: dict) -> None:
             line = int(row["line"])
             matches = [
                 item for item in index
-                if (not item[0] or rel in item[0]) and item[1] <= line <= item[2]
+                if (not item[0] or same_path(rel, item[0])) and item[1] <= line <= item[2]
             ]
             if not matches:
                 continue
@@ -968,7 +1153,8 @@ def build(pack: Path, repo: Path) -> tuple[dict, dict]:
         "schema_version": 1,
         "generated_by": "build-judgment-packet.py",
         "read_this": (
-            "Read this file once for counts, rules, and report rows. "
+            "Model read is 31-model-brief.json. Do not mine this packet for "
+            "counts, rules, report rows, or source. "
             "When judgment-work/group-*.json exists, source text is only there; "
             "do not read it again from this file. "
             "Do not open 01-28, diffs/, impact/, signal JSON, or git. "
@@ -981,17 +1167,16 @@ def build(pack: Path, repo: Path) -> tuple[dict, dict]:
             "Do not open paths after the first. A truncated slice is the "
             "whole read: do not open the source file to fill the rest. "
             "neighbor_groups are caller files already inlined. "
-            "Method-split groups of one file are independent and judged "
-            "concurrently from judgment-work/group-*.json. "
-            "A group's plan_required is true only when that group has a "
-            "method of at least 50 lines. Other groups skip the checklist. "
-            "Short methods are packed at most 12 per group and at most 10 "
-            "suspect lines. A method longer than 60 lines is cut into "
-            "40-line windows. One method with more than 10 suspect lines "
-            "is also cut into line windows. "
-            "Each judgment-work group file contains its own rules. "
-            "Do not open shared.json or another group's file from that pass. "
-            "A finding line must fall inside that window. "
+            "A file of about 800 lines, or any review of at most 2000 "
+            "pending lines, stays one read. There is no judgment-work "
+            "directory and one judgment.json is the whole pass. "
+            "Past 2000 lines, or when one method is longer than 800 lines, "
+            "whole methods pack into chunks of about 800 lines, at most "
+            "four chunks. A method is cut only when it is longer than that "
+            "chunk. Files in one directory share a chunk until it is full. "
+            "Each chunk includes uncovered field lines and the lock-order "
+            "summary. Rule text stays in this file or in shared.json, once. "
+            "A finding line must fall inside that chunk. "
             "The packet plan_required flag applies only when judgment-work "
             "is absent. "
             "A suspect with slice_ref has no source text. The read-group "
@@ -1057,9 +1242,11 @@ def build(pack: Path, repo: Path) -> tuple[dict, dict]:
         ),
         pending,
         packet.get("suspects") if isinstance(packet.get("suspects"), dict) else {},
+        packet.get("neighbor_groups") if isinstance(packet.get("neighbor_groups"), list) else [],
     )
     attach_uncovered_lines(packet["read_groups"], repo)
     packet["cross_method"] = cross_method_notes(packet["read_groups"])
+    attach_cross_summaries(packet["read_groups"], packet["cross_method"])
     repoint_pending(pending, packet["read_groups"])
     stamp_independent(packet["read_groups"], packet["neighbor_groups"])
     attach_slice_refs(packet)
@@ -1236,12 +1423,9 @@ def split_work(pack: Path, packet: dict) -> int:
         located[str(group.get("id") or "")] = name
         owned = suspects_for_group(suspects, group)
         rules = group_rules(group)
-        notes = packet.get("skip_notes") if isinstance(packet.get("skip_notes"), dict) else {}
         write_json(work / f"group-{index}.json", {
             "read_this": GROUP_READ_THIS,
             "read_groups": [group],
-            "rules": rules,
-            "skip_notes": {key: notes[key] for key in rules if key in notes},
             "rule_ids": list(rules),
             "plan_required": group_plan(group),
             "open_question": open_question,
@@ -1268,11 +1452,1074 @@ def split_work(pack: Path, packet: dict) -> int:
     return len(independent)
 
 
+def suspect_public_id(row: dict) -> str:
+    return str(row.get("derive_suspect_id") or row.get("suspect_id") or "")
+
+
+def peel_conventions(packet: dict) -> list[str]:
+    """Magic numbers and rate literals are conventions. Seal confirms the seed.
+
+    The model does not re-judge them. decision_literal stays, because a fee,
+    timeout, or account limit is still a defect.
+    """
+    suspects = packet.get("suspects") if isinstance(packet.get("suspects"), dict) else {}
+    kept: list[dict] = []
+    seed: list[str] = []
+    for row in suspects.get("packets") or []:
+        if not isinstance(row, dict):
+            continue
+        sid = suspect_public_id(row)
+        if str(row.get("kind") or "") in CONVENTION_KINDS and sid:
+            if sid not in seed:
+                seed.append(sid)
+            continue
+        kept.append(row)
+    suspects["packets"] = kept
+    suspects["convention_hits"] = seed
+    packet["suspects"] = suspects
+    return seed
+
+
+def symbol_span(row: dict) -> int:
+    start, end = row.get("start_line"), row.get("end_line")
+    if isinstance(start, int) and isinstance(end, int) and end >= start:
+        return end - start + 1
+    return 0
+
+
+def owning_method(pending: list[dict], file_name: str, line) -> str:
+    """Smallest method whose declared range contains this line."""
+    if not isinstance(line, int):
+        return ""
+    best = ""
+    best_span = None
+    for row in pending:
+        if str(row.get("kind") or "") == "file_scope":
+            continue
+        path = str(row.get("path") or "")
+        if file_name and path and not same_path(file_name, [path]):
+            continue
+        start, end = row.get("start_line"), row.get("end_line")
+        if not isinstance(start, int) or not isinstance(end, int) or end < start:
+            continue
+        if not start <= line <= end:
+            continue
+        span = end - start
+        if best_span is None or span < best_span:
+            best = str(row.get("symbol_id") or "")
+            best_span = span
+    return best
+
+
+def symbol_needs_model(row: dict, suspect_symbols: set[str]) -> bool:
+    """Getters with only trivial rules stay out of the model prompt.
+
+    A business, auth, or concurrency rule, a suspect, or a method of at
+    least four lines still goes to a question group.
+    """
+    sid = str(row.get("symbol_id") or "")
+    if sid in suspect_symbols:
+        return True
+    if str(row.get("kind") or "") == "file_scope":
+        return False
+    applicable = {str(item) for item in (row.get("applicable") or [])}
+    if any(item.startswith(BUSINESS_RULE_PREFIXES) for item in applicable):
+        return True
+    # One-line getters are often tagged with broad rules. A real off-by-one
+    # or resource leak sits in a method of at least four lines.
+    return bool(applicable) and symbol_span(row) >= 4
+
+
+def _packet_source_lines(packet: dict) -> int:
+    """Lines of source the model would read if the packet stays one pass."""
+    total = 0
+    for group in packet.get("read_groups") or []:
+        if not isinstance(group, dict):
+            continue
+        text = str(group.get("text") or "")
+        if text.strip():
+            total += text.count("\n") + 1
+            continue
+        for sl in group.get("slices") or []:
+            if isinstance(sl, dict) and str(sl.get("text") or "").strip():
+                total += str(sl["text"]).count("\n") + 1
+    return total
+
+
+_REMOTE_CALL = re.compile(
+    r"getConnection\s*\(|createStatement\s*\(|prepareStatement\s*\(|"
+    r"executeQuery\s*\(|executeUpdate\s*\(|openConnection\s*\(|"
+    r"setConnectTimeout\s*\(\s*0|setReadTimeout\s*\(\s*0|"
+    r"Https?URLConnection|RestTemplate|WebClient",
+    re.I,
+)
+_LOCAL_TASK = re.compile(r"Executor|\.execute\s*\(\s*new\s+|newSingleThreadExecutor|\.submit\s*\(", re.I)
+_POSITIVE_TIMEOUT = re.compile(
+    r"setQueryTimeout\s*\(\s*[1-9]|setConnectTimeout\s*\(\s*[1-9]|setReadTimeout\s*\(\s*[1-9]"
+)
+_FEE_WORD = re.compile(r"(?i)\b(fee|timeout|deadline|limit|quota|ttl|rate)\b")
+_RAW_NUMBER = re.compile(r"(?<![\w.])\d")
+_RATE_EXPR = re.compile(r"new\s+BigDecimal\s*\(\s*\"0\.\d+|=\s*0\.\d+")
+_TLS_OFF = re.compile(
+    r"checkServerTrusted|checkClientTrusted|HostnameVerifier|useSSL\s*=\s*false|"
+    r"TrustAll|X509TrustManager|return\s+true",
+    re.I,
+)
+_WEAK_TLS = re.compile(r"getInstance\s*\(\s*\"(?:TLS|SSL)\"\s*\)")
+_REDACT = re.compile(r"\b(redact|mask|last4)\b", re.I)
+_PII_LOG = re.compile(r"(?i)\b(card|account|email|phone|mobile|idNo|pan)\b|getCardNo|getAccountNo")
+_LOG_CALL = re.compile(r"(?i)\b(log|logger|auditLogger|info|warn|error)\s*\(")
+_ABSENCE_TOKEN = {
+    "dual_write_gap": re.compile(r"dual[_ ]?write|backfill", re.I),
+    "feature_flag_gap": re.compile(r"featureFlag|feature_flag|killSwitch|toggle", re.I),
+    "breaking_announcement_gap": re.compile(r"CHANGELOG|migration guide|sunset", re.I),
+    "rollback_gap": re.compile(r"rollback|canary|blue-?green", re.I),
+}
+
+
+def _read_lines(repo: Path, rel: str) -> list[str]:
+    full = repo / rel
+    if not rel or not full.is_file():
+        return []
+    try:
+        return full.read_text(encoding="utf-8", errors="ignore").splitlines()
+    except OSError:
+        return []
+
+
+def _line_at(lines: list[str], number: int) -> str:
+    if number < 1 or number > len(lines):
+        return ""
+    return lines[number - 1]
+
+
+def _window(lines: list[str], number: int, after: int = 6) -> str:
+    if number < 1:
+        return ""
+    return "\n".join(lines[number - 1 : min(len(lines), number - 1 + after)])
+
+
+def _in_test(lines: list[str], number: int) -> bool:
+    start = max(0, number - 40)
+    return any("@Test" in lines[i] or "@test" in lines[i] for i in range(start, min(number, len(lines))))
+
+
+def _signal_index(pack: Path) -> dict[str, dict]:
+    """Suspect id to the signal row, so a script can see close/anchors/snippet."""
+    found: dict[str, dict] = {}
+
+    def walk(node) -> None:
+        if isinstance(node, dict):
+            sid = str(node.get("derive_suspect_id") or node.get("suspect_id") or "")
+            if sid and isinstance(node.get("line"), int) and sid not in found:
+                found[sid] = node
+            for child in node.values():
+                walk(child)
+        elif isinstance(node, list):
+            for child in node:
+                walk(child)
+
+    for path in sorted(pack.glob("*.json")):
+        if path.name.startswith(("29-", "30-", "judgment")):
+            continue
+        doc = load_json(path)
+        if doc is not None:
+            walk(doc)
+    return found
+
+
+def _quote(text: str) -> str:
+    return " ".join(text.strip().split())[:120]
+
+
+def decide_suspect(kind: str, line: str, window: str, in_test: bool) -> tuple[str, str] | None:
+    """Return hit/skip when the policy is a closed predicate. None stays with the model.
+
+    test_oracle and business rules stay with the model: the predicate needs
+    the claim of the test or the money path, not a keyword.
+    """
+    if kind == "decision_literal":
+        if (_FEE_WORD.search(line) and _RAW_NUMBER.search(line)) or _RATE_EXPR.search(line):
+            return "hit", ""
+        return "skip", "该字面量决定的是循环次数、状态码或已命名常量，手续费、超时和账户限额另有规则。"
+    if kind == "missing_timeout":
+        if _POSITIVE_TIMEOUT.search(window):
+            return "skip", "这一行所在调用设置了大于 0 的超时。"
+        if _LOCAL_TASK.search(line) and not _REMOTE_CALL.search(line):
+            return "skip", "这一行提交的是本地任务。"
+        if _REMOTE_CALL.search(line):
+            return "hit", ""
+        return None
+    if kind == "insecure_tls":
+        if in_test:
+            return "skip", "证书校验关闭出现在测试方法里。"
+        if _TLS_OFF.search(line) or _TLS_OFF.search(window):
+            return "hit", ""
+        return None
+    if kind in {"", "weak-ssl-context"} and _WEAK_TLS.search(line):
+        return "hit", ""
+    if kind == "compat_window_gap":
+        if "@Deprecated" in line and "forRemoval" not in line and "since" not in line:
+            return "hit", ""
+        if "@Deprecated" in line:
+            return "skip", "废弃声明已经写了替代版本。"
+        return None
+    if kind == "breaking_hint" and "@Deprecated" in line:
+        return "skip", "同一行的废弃声明由兼容窗口规则记录。"
+    if kind == "todo_fixme":
+        return "skip", "这行是待办注释，同方法里的失败另有记录。"
+    if kind in _ABSENCE_TOKEN:
+        if _ABSENCE_TOKEN[kind].search(line):
+            return None
+        return "skip", "这一行没有该发布规则要看的双写、开关、公告或回滚标记。"
+    if kind == "log_exposure":
+        if _REDACT.search(window):
+            return "skip", "写入日志前已经做了脱敏。"
+        if _LOG_CALL.search(window) and _PII_LOG.search(window):
+            return "hit", ""
+        return None
+    if kind == "retention_or_dsar_gap":
+        if re.search(r"(?i)retention|dsar|erase|deleteAfter", window):
+            return "skip", "这一行附近已经有保留或删除期限。"
+        return "hit", ""
+    if kind == "catch_without_obs":
+        if in_test:
+            return "skip", "空 catch 位于测试方法中。"
+        body = window
+        if re.search(r"\bthrow\b", body):
+            return "skip", "catch 把异常重新抛出。"
+        if re.search(r"(?i)\b(log|logger|audit|metric|trace)\b", body):
+            return "skip", "catch 里已经写了日志或指标。"
+        return "hit", ""
+    return None
+
+
+def _scripted_finding(kind: str, rel: str, number: int, line: str) -> dict | None:
+    """A card for a scripted hit that seal does not build from a per_line row."""
+    shown = _quote(line) or kind
+    if kind == "compat_window_gap":
+        return {
+            "title": "废弃接口没有下线版本",
+            "line": number,
+            "kind": kind,
+            "category": "rollout",
+            "severity": "p1",
+            "file": rel,
+            "source": "scripted_policy",
+            "location": f"{rel}:{number}",
+            "risk": f"在第 {number} 行检测到 `{shown}`。接口标了废弃，旁边没有替代方法和移除版本。",
+            "fix": f"将第 {number} 行 `{shown}` 改为：`@Deprecated(since = \"2\", forRemoval = true)`，并写上替代方法。",
+        }
+    if kind == "insecure_tls":
+        return {
+            "title": "证书校验被关闭",
+            "line": number,
+            "kind": kind,
+            "category": "security",
+            "severity": "p0",
+            "file": rel,
+            "source": "scripted_policy",
+            "location": f"{rel}:{number}",
+            "risk": f"在第 {number} 行检测到 `{shown}`。对端证书或主机名校验被跳过，网关流量可以被冒充。",
+            "fix": f"将第 {number} 行 `{shown}` 改为：使用平台信任库并校验主机名。",
+        }
+    if _WEAK_TLS.search(line):
+        return {
+            "title": "弱 TLS 协议",
+            "line": number,
+            "kind": "weak-ssl-context",
+            "category": "security",
+            "severity": "p2",
+            "file": rel,
+            "source": "scripted_policy",
+            "location": f"{rel}:{number}",
+            "risk": f"在第 {number} 行检测到 `{shown}`。协议名 TLS 仍可协商到 TLS 1.0 和 1.1。",
+            "fix": f"将第 {number} 行 `{shown}` 改为：`SSLContext.getInstance(\"TLSv1.2\")`。",
+        }
+    return None
+
+
+def _mechanical_oracles(pack: Path) -> dict[int, set[str]]:
+    """Test lines whose failure is already a report row. The model does not re-answer them."""
+    found: dict[int, set[str]] = {}
+    doc = load_json(pack / "18-maintainability-signals.json")
+    if not isinstance(doc, dict):
+        return found
+    for row in doc.get("test_oracle_hits") or []:
+        if not isinstance(row, dict) or not isinstance(row.get("line"), int):
+            continue
+        kind = str(row.get("kind") or "")
+        if kind not in {"test_no_join", "test_tautology", "test_unreachable"}:
+            continue
+        found.setdefault(int(row["line"]), set()).add(kind)
+    return found
+
+
+def _oracle_answer(number: int, kinds: set[str]) -> dict:
+    flags = {
+        "unsafe_pass": "test_no_join" in kinds or "test_tautology" in kinds,
+        "boundary_missed": False,
+        "branch_uncovered": "test_unreachable" in kinds,
+        "locks_private": False,
+        "locks_dependency": False,
+        "threshold_pass": "test_no_join" in kinds or "test_tautology" in kinds,
+        "observability_asserted": False,
+    }
+    note = "脚本按已报告的测试缺陷填写预言。"
+    return {"line": number, "oracle": flags, "note": note}
+
+
+def _lock_order_findings(packet: dict) -> list[dict]:
+    """Opposite lock orders are already on the packet. Emit one card, do not ask the model."""
+    findings = []
+    seen = set()
+    for note in packet.get("cross_method") or []:
+        if not isinstance(note, dict) or note.get("kind") != "lock_order":
+            continue
+        orders = note.get("orders") or []
+        symbols = [str(item) for item in (note.get("symbol_ids") or []) if item]
+        if len(orders) < 2 or not symbols:
+            continue
+        key = tuple(sorted(symbols))
+        if key in seen:
+            continue
+        seen.add(key)
+        line_no, shown, rel = _lock_site(packet, symbols[0])
+        if not isinstance(line_no, int):
+            continue
+        shown = shown or "synchronized"
+        findings.append({
+            "title": "锁顺序相反",
+            "line": line_no,
+            "rule_id": "CONC-002",
+            "category": "concurrency",
+            "severity": "p0",
+            "symbol_id": symbols[0],
+            "file": rel,
+            "source": "scripted_policy",
+            "location": f"{rel}:{line_no}",
+            "risk": (
+                f"在第 {line_no} 行检测到 `{shown}`。"
+                f"另一处以相反顺序获取同一组锁，两条路径同时执行会互相等待。"
+            ),
+            "fix": f"将第 {line_no} 行 `{shown}` 改为：与另一处使用同一获取顺序。",
+        })
+    return findings
+
+
+def _lock_site(packet: dict, symbol_id: str) -> tuple[int | None, str, str]:
+    for group in packet.get("read_groups") or []:
+        if not isinstance(group, dict):
+            continue
+        rel = ""
+        paths = group.get("paths") or []
+        if paths:
+            rel = str(paths[0])
+        for sl in group.get("slices") or []:
+            if not isinstance(sl, dict) or str(sl.get("symbol_id") or "") != symbol_id:
+                continue
+            for raw in str(sl.get("text") or "").splitlines():
+                if "synchronized" not in raw:
+                    continue
+                number, _, body = raw.partition("|")
+                if number.isdigit():
+                    return int(number), " ".join(body.split()), rel
+    return None, "", ""
+
+
+def preclose_scripted(pack: Path, packet: dict, repo: Path) -> dict:
+    """Close suspects whose policy is a predicate. The model never sees them.
+
+    Hits on per_line rows stay in the seed so seal writes the card. Other
+    hits get one finding here. Skips become seed notes and, for absence
+    anchors, skeleton line_skips.
+    """
+    suspects = packet.get("suspects") if isinstance(packet.get("suspects"), dict) else {}
+    signals = _signal_index(pack)
+    reported = {
+        (str(row.get("rule") or ""), int(row["line"]))
+        for row in (packet.get("report") or {}).get("pr_delta") or []
+        if isinstance(row, dict) and isinstance(row.get("line"), int)
+    }
+    hits: list[str] = []
+    skips: list[dict] = []
+    findings: list[dict] = []
+    line_skips: list[dict] = []
+    oracles: list[dict] = []
+    cache: dict[str, list[str]] = {}
+    mechanical = _mechanical_oracles(pack)
+
+    def lines_of(rel: str) -> list[str]:
+        if rel not in cache:
+            cache[rel] = _read_lines(repo, rel)
+        return cache[rel]
+
+    def keep(row: dict) -> bool:
+        if not isinstance(row, dict):
+            return False
+        sid = suspect_public_id(row)
+        kind = str(row.get("kind") or "")
+        number = row.get("line")
+        rel = str(row.get("file") or "")
+        if not sid or not isinstance(number, int):
+            return True
+        file_lines = lines_of(rel)
+        line = _line_at(file_lines, number)
+        signal = signals.get(sid) or {}
+        if not line:
+            line = str(signal.get("snippet") or "")
+        window = _window(file_lines, number) or line
+        if kind == "test_oracle" and number in mechanical:
+            if sid not in hits:
+                hits.append(sid)
+            oracles.append(_oracle_answer(number, mechanical[number]))
+            return False
+        decided = decide_suspect(kind, line, window, _in_test(file_lines, number))
+        if decided is None and kind == "" and _WEAK_TLS.search(line):
+            decided = ("hit", "")
+        if decided is None:
+            return True
+        verdict, note = decided
+        if verdict == "hit":
+            if sid not in hits:
+                hits.append(sid)
+            per_line = signal.get("close") == "per_line"
+            already = (kind, number) in reported or ("insecure_tls", number) in reported
+            if not per_line and not already:
+                finding = _scripted_finding(kind, rel, number, line)
+                if finding and not any(item.get("line") == number and item.get("kind") == finding.get("kind") for item in findings):
+                    findings.append(finding)
+        else:
+            skips.append({"id": sid, "note": note or "脚本按规则跳过。"})
+            if signal.get("visible_absence") is True or signal.get("close") == "per_line":
+                anchors = [number]
+                for anchor in signal.get("anchors") or []:
+                    if isinstance(anchor, int) and anchor not in anchors:
+                        anchors.append(anchor)
+                for anchor in anchors:
+                    line_skips.append({"kind": kind, "line": anchor, "note": note or "脚本按规则跳过。"})
+        return False
+
+    for key in ("packets", "sast_packets"):
+        suspects[key] = [row for row in (suspects.get(key) or []) if keep(row)]
+    packet["suspects"] = suspects
+    findings.extend(_lock_order_findings(packet))
+    packet["scripted_closed"] = {"hits": len(hits), "skips": len(skips), "oracles": len(oracles)}
+    return {
+        "hits": hits,
+        "skips": skips,
+        "findings": findings,
+        "line_skips": line_skips,
+        "test_oracle": oracles,
+    }
+
+
+def split_question_work(pack: Path, packet: dict, repo: Path) -> int:
+    """Fan out only when the source left for the model exceeds one pass.
+
+    Scripted suspects are already removed. A file of at most 2000 lines stays
+    one read even if unscripted suspects remain: four prompts would repeat
+    the same rules and the same business methods. Past that budget, each
+    group receives only the methods that own a model suspect, a business
+    rule, or a lock-order pair.
+    """
+    groups = [row for row in (packet.get("read_groups") or []) if isinstance(row, dict)]
+    if any(row.get("method_split") for row in groups):
+        return 0
+    if _packet_source_lines(packet) <= SINGLE_PASS_LINES:
+        return 0
+    suspects = packet.get("suspects") if isinstance(packet.get("suspects"), dict) else {}
+    model_rows = [
+        row for row in (suspects.get("packets") or []) + (suspects.get("sast_packets") or [])
+        if isinstance(row, dict)
+    ]
+    if len(model_rows) < QUESTION_FANOUT_MIN:
+        return 0
+    pending = [row for row in (packet.get("pending") or []) if isinstance(row, dict)]
+    by_symbol_suspects: dict[str, list[dict]] = {}
+    suspect_symbols: set[str] = set()
+    for row in model_rows:
+        ref = row.get("slice_ref") if isinstance(row.get("slice_ref"), dict) else {}
+        sid = str(ref.get("symbol_id") or "")
+        if not sid:
+            sid = owning_method(pending, str(row.get("file") or ""), row.get("line")) or ""
+        if not sid:
+            sid = f"line:{row.get('line')}"
+        suspect_symbols.add(sid)
+        by_symbol_suspects.setdefault(sid, []).append(row)
+    by_symbol = {str(row.get("symbol_id")): row for row in pending}
+    cross_ids: list[str] = []
+    for note in packet.get("cross_method") or []:
+        if not isinstance(note, dict):
+            continue
+        for sid in note.get("symbol_ids") or []:
+            text = str(sid)
+            if text and text not in cross_ids:
+                cross_ids.append(text)
+    seen: set[str] = set()
+    units: list[dict] = []
+
+    def add(sid: str, cross: bool = False) -> None:
+        if not sid or sid in seen:
+            return
+        seen.add(sid)
+        row = by_symbol.get(sid) or {"symbol_id": sid}
+        units.append({
+            "symbol_id": sid,
+            "row": row,
+            "suspects": by_symbol_suspects.get(sid, []),
+            "lines": max(symbol_span(row), 1),
+            "cross": cross or sid in cross_ids,
+        })
+
+    for sid in cross_ids:
+        add(sid, True)
+    for row in pending:
+        if symbol_needs_model(row, suspect_symbols):
+            add(str(row.get("symbol_id") or ""))
+    for sid in by_symbol_suspects:
+        add(sid)
+    if len(units) < 2:
+        return 0
+    slices_by_sid: dict[str, dict] = {}
+    uncovered: list[dict] = []
+    for group in groups:
+        for sl in group.get("slices") or []:
+            if not isinstance(sl, dict):
+                continue
+            if sl.get("uncovered_fields"):
+                uncovered.append(sl)
+                continue
+            if sl.get("covered_by_methods"):
+                continue
+            sid = str(sl.get("symbol_id") or "")
+            if sid and sid not in slices_by_sid:
+                slices_by_sid[sid] = sl
+    for sid in list(by_symbol_suspects):
+        if sid in slices_by_sid or not sid.startswith("line:"):
+            continue
+        try:
+            number = int(sid.split(":", 1)[1])
+        except ValueError:
+            continue
+        sample = by_symbol_suspects[sid][0]
+        rel = str(sample.get("file") or "")
+        full = repo / rel
+        if not full.is_file():
+            continue
+        try:
+            lines = full.read_text(encoding="utf-8", errors="ignore").splitlines()
+        except OSError:
+            continue
+        if number < 1 or number > len(lines):
+            continue
+        slices_by_sid[sid] = {
+            "symbol_id": sid,
+            "start_line": number,
+            "end_line": number,
+            "text": f"{number}|{lines[number - 1]}",
+        }
+    for unit in units:
+        sid = unit["symbol_id"]
+        if sid in slices_by_sid or sid.startswith("line:"):
+            continue
+        row = unit["row"]
+        start, end = row.get("start_line"), row.get("end_line")
+        rel = str(row.get("path") or "")
+        if not isinstance(start, int) or not isinstance(end, int) or end < start or not rel:
+            continue
+        full = repo / rel
+        if not full.is_file():
+            continue
+        try:
+            lines = full.read_text(encoding="utf-8", errors="ignore").splitlines()
+        except OSError:
+            continue
+        body = [
+            f"{number}|{lines[number - 1]}"
+            for number in range(start, end + 1)
+            if 1 <= number <= len(lines)
+        ]
+        if not body:
+            continue
+        slices_by_sid[sid] = {
+            "symbol_id": sid,
+            "start_line": start,
+            "end_line": end,
+            "text": "\n".join(body),
+        }
+    fresh_notes = cross_method_notes([{"id": "question", "slices": list(slices_by_sid.values())}])
+    if fresh_notes:
+        packet["cross_method"] = fresh_notes
+    cross_ids = []
+    for note in packet.get("cross_method") or []:
+        if not isinstance(note, dict):
+            continue
+        for sid in note.get("symbol_ids") or []:
+            text = str(sid)
+            if text and text not in cross_ids:
+                cross_ids.append(text)
+    cross_set = set(cross_ids)
+    for unit in units:
+        unit["cross"] = unit["symbol_id"] in cross_set
+    bins: list[list[dict]] = [[] for _ in range(MAX_PARALLEL_GROUPS)]
+    load = [0] * MAX_PARALLEL_GROUPS
+    for unit in units:
+        if not unit["cross"]:
+            continue
+        bins[0].append(unit)
+        load[0] += unit["lines"]
+    rest = sorted((unit for unit in units if not unit["cross"]), key=lambda unit: unit["lines"], reverse=True)
+    # The lock-order group stays a separate task. Other methods fill the remaining slots.
+    slots = range(1, MAX_PARALLEL_GROUPS) if bins[0] else range(MAX_PARALLEL_GROUPS)
+    for unit in rest:
+        slot = min(slots, key=lambda index: (load[index], index))
+        bins[slot].append(unit)
+        load[slot] += unit["lines"]
+    bins = [bucket for bucket in bins if bucket]
+    if len(bins) < 2:
+        return 0
+    work = pack / "judgment-work"
+    work.mkdir(exist_ok=True)
+    policies = packet.get("rules") if isinstance(packet.get("rules"), dict) else {}
+    tier = packet.get("risk_tier") if isinstance(packet.get("risk_tier"), dict) else {}
+    write_json(work / "shared.json", {
+        "rules": policies,
+        "skip_notes": packet.get("skip_notes") or {},
+        "uncovered_fields": uncovered,
+        "convention_hits": suspects.get("convention_hits") or [],
+        "semantic_candidates": packet.get("semantic_candidates") or [],
+        "cross_method": packet.get("cross_method") or [],
+        "open_question": str(tier.get("tier") or "") == "T0",
+        "closed_by_seal": True,
+        "question_fanout": True,
+        "read_this": (
+            "Read this file once. Report rows are already cards. "
+            "Convention hits are seeded for seal. "
+            "Judge group files concurrently, at most four, and union the findings. "
+            "Do not drop a hit from another group."
+        ),
+    })
+    question_groups = []
+    for index, bucket in enumerate(bins):
+        slices = []
+        ids = []
+        required = []
+        rule_ids: list[str] = []
+        paths: list[str] = []
+        for unit in bucket:
+            sid = unit["symbol_id"]
+            ids.append(sid)
+            sl = slices_by_sid.get(sid)
+            if sl:
+                slices.append(sl)
+            path = str(unit["row"].get("path") or "")
+            if path and path not in paths:
+                paths.append(path)
+            for rule_id in unit["row"].get("applicable") or []:
+                text = str(rule_id)
+                if text not in rule_ids:
+                    rule_ids.append(text)
+            for srow in unit["suspects"]:
+                sid_hit = suspect_public_id(srow)
+                if sid_hit and sid_hit not in required:
+                    required.append(sid_hit)
+        notes = [
+            note for note in (packet.get("cross_method") or [])
+            if isinstance(note, dict) and set(str(item) for item in (note.get("symbol_ids") or [])) & set(ids)
+        ]
+        opened = paths[0] if paths else ""
+        group = {
+            "id": f"question-{index}",
+            "paths": paths,
+            "opened": opened,
+            "symbol_ids": ids,
+            "text": "",
+            "slices": slices,
+            "question_split": True,
+            "independent": True,
+            "method_split": False,
+            "cross_method": notes,
+            "body": f"judgment-work/group-{index}.json",
+        }
+        question_groups.append(group)
+        write_json(work / f"group-{index}.json", {
+            "read_this": (
+                GROUP_READ_THIS
+                + " This group is one question slice. "
+                + "Report rows are closed by seal; do not re-file them. "
+                + "Union findings across groups."
+            ),
+            "read_groups": [group],
+            "rule_ids": rule_ids,
+            "plan_required": False,
+            "open_question": str(tier.get("tier") or "") == "T0",
+            "cross_method": notes,
+            "suspects": {
+                "policies": {
+                    key: value
+                    for key, value in (suspects.get("policies") or {}).items()
+                    if key in {str(row.get("kind") or "") for unit in bucket for row in unit["suspects"]}
+                },
+                "packets": [row for unit in bucket for row in unit["suspects"]],
+                "sast_packets": [],
+            },
+            "required_suspect_ids": required,
+        })
+    for row in packet.get("report", {}).get("pr_delta") or []:
+        if isinstance(row, dict):
+            row.pop("snippet", None)
+            row["closed_by_seal"] = True
+    report = packet.get("report") if isinstance(packet.get("report"), dict) else {}
+    report["closed_by_seal"] = True
+    packet["report"] = report
+    packet["question_fanout"] = True
+    packet["read_groups"] = [
+        {
+            "id": group["id"],
+            "paths": group["paths"],
+            "opened": group["opened"],
+            "symbol_ids": group["symbol_ids"],
+            "text": "",
+            "question_split": True,
+            "independent": True,
+            "body": group["body"],
+        }
+        for group in question_groups
+    ]
+    packet["read_this"] = str(packet.get("read_this") or "") + (
+        " question_fanout is true: the single-read sentence does not apply. "
+        "Source text is only in judgment-work/group-*.json. Read shared.json once. "
+        "Report rows are closed by seal. Convention hits are in judgment-seed.json. "
+        "Judge the groups concurrently, at most four, and union the findings."
+    )
+    return len(question_groups)
+
+
+def _write_conclusion_stub(pack: Path, packet: dict) -> None:
+    """Header for render. The model does not draft this file or the group JSON.
+
+    A unit-test pack has no manifest, so this stays absent there.
+    """
+    path = pack / "review-conclusion.json"
+    manifest = load_json(pack / "manifest.json")
+    if path.is_file() or not isinstance(manifest, dict):
+        return
+    lang = packet.get("language") if isinstance(packet.get("language"), dict) else {}
+    primary = str(lang.get("primary_language") or manifest.get("primary_language") or "")
+    write_json(path, {
+        "mode": manifest.get("mode") or "pr",
+        "skill": "codexqa-code-reviewer",
+        "analysis_backend": "codexqa-cli",
+        "repo": manifest.get("repo") or "",
+        "repo_label": Path(str(manifest.get("repo") or pack)).name,
+        "diff_base": manifest.get("diff_base") or "",
+        "evidence_dir": str(pack),
+        "codexqa_version": manifest.get("codexqa_version") or "",
+        "primary_language": primary,
+        "review_language_focus": str(lang.get("review_language_focus") or primary),
+        "language_confidence": str(lang.get("confidence") or "high"),
+        "summary": "扫描结论和可判定嫌疑已由脚本写入。模型只补充业务规则的新缺陷，然后重新渲染。",
+        "summary_en": "Scanner cards and closed predicates are already included. The model adds only new business findings, then render again.",
+        "p0": [],
+        "p1": [],
+        "p2": [],
+        "dimensions_covered": [
+            "risk_tier", "design", "complexity", "dependencies", "correctness",
+            "resilience", "security", "privacy", "contract", "rollout", "concurrency",
+            "regression", "test_gaps", "observability", "maintainability",
+            "performance", "llm_judgment",
+        ],
+    })
+
+
+def _rule_name(row: dict) -> str:
+    rule = row.get("rule")
+    if isinstance(rule, str) and rule:
+        return rule
+    if isinstance(rule, dict):
+        return str(rule.get("rule_id") or rule.get("kind") or "report")
+    return str(row.get("rule_id") or row.get("kind") or "report")
+
+
+def _slice_text(packet: dict) -> dict[str, str]:
+    """Shortest non-empty slice per symbol. The file-scope copy is not a method."""
+    found: dict[str, str] = {}
+    for group in packet.get("read_groups") or []:
+        if not isinstance(group, dict):
+            continue
+        for sl in group.get("slices") or []:
+            if not isinstance(sl, dict):
+                continue
+            sid = str(sl.get("symbol_id") or "")
+            text = sl.get("text") or ""
+            if not sid or not text:
+                continue
+            prev = found.get(sid)
+            if prev is None or len(text) < len(prev):
+                found[sid] = text
+    return found
+
+
+def _suspect_id(row: dict) -> str:
+    explicit = str(row.get("derive_suspect_id") or row.get("suspect_id") or "")
+    if explicit:
+        return explicit
+    return f"{row.get('kind') or ''}:{row.get('file') or row.get('path') or ''}:{row.get('line')}"
+
+
+def write_model_brief(pack: Path, packet: dict) -> None:
+    """One deterministic read for the model. Seal still owns report cards.
+
+    Counts, closed report rows, seed hits, and getter bodies are folded here
+    so the model does not re-parse 29, the seed, or seal-conclusion.py.
+    """
+    seed = load_json(pack / "judgment-seed.json") or {}
+    closed_ids = {str(item) for item in (seed.get("suspect_hits") or []) if item}
+    closed_oracle_lines = {
+        int(row["line"])
+        for row in (seed.get("test_oracle") or [])
+        if isinstance(row, dict) and isinstance(row.get("line"), int)
+    }
+    report_lines: dict[str, list[int]] = {}
+    report = packet.get("report") if isinstance(packet.get("report"), dict) else {}
+    for row in report.get("pr_delta") or []:
+        if not isinstance(row, dict) or not isinstance(row.get("line"), int):
+            continue
+        bucket = report_lines.setdefault(_rule_name(row), [])
+        if row["line"] not in bucket:
+            bucket.append(row["line"])
+    for lines in report_lines.values():
+        lines.sort()
+
+    slices = _slice_text(packet)
+    policies = {}
+    suspects = packet.get("suspects") if isinstance(packet.get("suspects"), dict) else {}
+    if isinstance(suspects.get("policies"), dict):
+        policies = suspects["policies"]
+    open_suspects = []
+    seen_ids: set[str] = set()
+    for key in ("packets", "sast_packets"):
+        for row in suspects.get(key) or []:
+            if not isinstance(row, dict):
+                continue
+            sid = _suspect_id(row)
+            if sid in closed_ids or sid in seen_ids:
+                continue
+            line = row.get("line")
+            if row.get("kind") == "test_oracle" and isinstance(line, int) and line in closed_oracle_lines:
+                continue
+            seen_ids.add(sid)
+            ref = row.get("slice_ref") if isinstance(row.get("slice_ref"), dict) else {}
+            policy = policies.get(str(row.get("kind") or ""))
+            look = ""
+            if isinstance(policy, dict):
+                look = str(policy.get("look_for") or "")
+            open_suspects.append({
+                "derive_suspect_id": sid,
+                "kind": row.get("kind"),
+                "file": row.get("file") or row.get("path"),
+                "line": line,
+                "look_for": look,
+                "source": slices.get(str(ref.get("symbol_id") or ""), ""),
+            })
+
+    open_lines = {int(row["line"]) for row in open_suspects if isinstance(row.get("line"), int)}
+    methods = []
+    needed_rules: set[str] = set()
+    for row in packet.get("pending") or []:
+        if not isinstance(row, dict):
+            continue
+        if str(row.get("kind") or "") == "file_scope" or str(row.get("symbol_id") or "").startswith("file-scope:"):
+            continue
+        start = row.get("start_line")
+        end = row.get("end_line")
+        if not isinstance(start, int) or not isinstance(end, int):
+            continue
+        holds_open = any(start <= line <= end for line in open_lines)
+        if end - start < 8 and not holds_open:
+            continue
+        applicable = [str(item) for item in (row.get("applicable") or [])]
+        needed_rules.update(applicable)
+        methods.append({
+            "name": row.get("name"),
+            "path": row.get("path"),
+            "start_line": start,
+            "end_line": end,
+            "applicable": applicable,
+            "source": slices.get(str(row.get("symbol_id") or ""), ""),
+        })
+    for suspect in open_suspects:
+        line = suspect.get("line")
+        path = str(suspect.get("file") or "")
+        if not isinstance(line, int):
+            continue
+        if any(
+            str(method.get("path") or "") == path
+            and method["start_line"] <= line <= method["end_line"]
+            and method.get("source")
+            for method in methods
+        ):
+            suspect["source"] = ""
+
+    rules_in = packet.get("rules") if isinstance(packet.get("rules"), dict) else {}
+    rules = {}
+    for rid in sorted(needed_rules):
+        body = rules_in.get(rid)
+        if not isinstance(body, dict):
+            continue
+        rules[rid] = {key: body.get(key) for key in RULE_FIELDS if body.get(key)}
+
+    maintain = load_json(pack / "18-maintainability-signals.json") or {}
+    test_oracle_open = []
+    for row in maintain.get("test_oracle_inventory") or []:
+        if not isinstance(row, dict) or row.get("skip_llm") is True:
+            continue
+        line = row.get("line")
+        if not isinstance(line, int) or line in closed_oracle_lines:
+            continue
+        test_oracle_open.append({
+            "line": line,
+            "file": row.get("path") or row.get("file"),
+            "derive_suspect_id": row.get("derive_suspect_id"),
+            "questions": row.get("questions") or [],
+        })
+
+    semantic_closed = 0
+    reported = {line for lines in report_lines.values() for line in lines}
+    semantic_open = []
+    for row in packet.get("semantic_candidates") or []:
+        if not isinstance(row, dict):
+            continue
+        line = row.get("line")
+        if isinstance(line, int) and line in reported:
+            semantic_closed += 1
+            continue
+        semantic_open.append({
+            "kind": row.get("kind"),
+            "file": row.get("file"),
+            "line": line,
+            "snippet": row.get("snippet"),
+        })
+
+    work = pack / "judgment-work"
+    groups = sorted(path.name for path in work.glob("group-*.json")) if work.is_dir() else []
+    if groups:
+        for method in methods:
+            method["source"] = ""
+    perf = {}
+    dimensions = packet.get("dimensions") if isinstance(packet.get("dimensions"), dict) else {}
+    perf_card = dimensions.get("performance") if isinstance(dimensions.get("performance"), dict) else {}
+    if isinstance(perf_card.get("counts"), dict):
+        perf = perf_card["counts"]
+    tier = packet.get("risk_tier") if isinstance(packet.get("risk_tier"), dict) else {}
+    language = packet.get("language") if isinstance(packet.get("language"), dict) else {}
+    brief = {
+        "kind": "ModelBrief",
+        "schema_version": 1,
+        "generated_by": "build-judgment-packet.py",
+        "read_this": (
+            "Read this file once. Write judgment.json. "
+            "Run render-review-html.sh. "
+            "Do not open 01-30, judgment-seed.json, seal-conclusion.py, "
+            "validate-conclusion.py, or the channel prompts. "
+            "closed_report rows are already cards. "
+            "Seed hits are omitted. Do not re-judge them. "
+            "A one-line getter is omitted. "
+            "Leave English fields empty. Do not draft review-conclusion.json."
+        ),
+        "scale": {
+            "primary_language": language.get("primary_language"),
+            "tier": tier.get("tier"),
+            "evidence_floor": tier.get("evidence_floor"),
+            "pending_symbols": len(packet.get("pending") or []),
+            "report_rows": sum(len(lines) for lines in report_lines.values()),
+            "methods": len(methods),
+            "open_suspects": len(open_suspects),
+            "question_fanout": bool(packet.get("question_fanout")) or bool(groups),
+            "performance": perf,
+        },
+        "closed_report": report_lines,
+        "lock_order_closed": any(
+            isinstance(row, dict) and row.get("rule_id") == "CONC-002"
+            for row in (seed.get("findings") or [])
+        ),
+        "semantic_closed": semantic_closed,
+        "semantic_open": semantic_open,
+        "open_suspects": open_suspects,
+        "test_oracle_open": test_oracle_open,
+        "rules": rules,
+        "methods": methods,
+        "groups": groups,
+        "output": {
+            "file": "judgment.json",
+            "findings": (
+                "Business defects whose rule_id is absent from closed_report, "
+                "plus an open suspect judged true. "
+                "Fields: title, line, file, severity, rule_id or kind, "
+                "derive_suspect_id when the row has one, risk, fix."
+            ),
+            "suspect_hits": "derive_suspect_id values from open_suspects judged true.",
+            "test_oracle": (
+                "One object per test_oracle_open line that has a true flag. "
+                "Always set unsafe_pass, boundary_missed, branch_uncovered. "
+                "Also set each name in questions."
+            ),
+            "card": (
+                "title is the failure name. "
+                "risk is 在第 N 行检测到 `代码`。 plus the impact. "
+                "fix is 将第 N 行 `旧文本` 改为： plus the safe edit."
+            ),
+            "then": "render-review-html.sh --dir <pack>",
+        },
+    }
+    write_json(pack / "31-model-brief.json", brief)
+    print(
+        "Model brief written: "
+        f"methods={len(methods)} open_suspects={len(open_suspects)} "
+        f"oracle_open={len(test_oracle_open)} groups={len(groups)}"
+    )
+
+
 def write(pack: Path, repo: Path) -> None:
     packet, skeleton = build(pack, repo)
+    seed = peel_conventions(packet)
+    scripted = preclose_scripted(pack, packet, repo)
+    for sid in scripted["hits"]:
+        if sid not in seed:
+            seed.append(sid)
+    for row in scripted["line_skips"]:
+        skeleton["line_skips"].append(row)
+    seed_path = pack / "judgment-seed.json"
+    if seed or scripted["skips"] or scripted["findings"] or scripted["test_oracle"]:
+        write_json(seed_path, {
+            "suspect_hits": seed,
+            "suspect_skips": scripted["skips"],
+            "findings": scripted["findings"],
+            "test_oracle": scripted["test_oracle"],
+            "source": "convention_kinds+scripted_policy",
+            "note": (
+                "magic_number and rate_literal are conventions. "
+                "Scripted hits, skips, lock-order cards, and mechanical test oracles are closed. "
+                "Seal merges them. The model does not re-judge these ids."
+            ),
+        })
+    elif seed_path.is_file():
+        seed_path.unlink()
     work_groups = split_work(pack, packet)
+    if work_groups == 0:
+        work_groups = split_question_work(pack, packet, repo)
+    if work_groups == 0:
+        stale = pack / "judgment-work"
+        if stale.is_dir():
+            for child in stale.iterdir():
+                if child.is_file():
+                    child.unlink()
+            stale.rmdir()
     write_json(pack / "29-judgment-packet.json", packet)
     write_json(pack / "30-conclusion-skeleton.json", skeleton)
+    _write_conclusion_stub(pack, packet)
+    write_model_brief(pack, packet)
     print(
         "Judgment packet written: "
         f"groups={len(packet['read_groups'])} "
