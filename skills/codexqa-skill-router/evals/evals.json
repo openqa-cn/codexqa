@@ -87,6 +87,27 @@
         "Output does not choose codexqa-testcase-generator as the primary skill",
         "Output shows suggest_route.py"
       ]
+    },
+    {
+      "id": 8,
+      "prompt": "分析这次变更相对 origin/main 的影响面，出一份变更影响报告并补上缺的测试。路由即可，宣布选中的 skill。",
+      "expected_output": "suggest_route outcome clear winner codexqa-change-analysis. Does not select codexqa-code-reviewer.",
+      "files": [],
+      "assertions": [
+        "Output names codexqa-change-analysis as the chosen skill",
+        "Output does not choose codexqa-code-reviewer as the primary skill",
+        "Output shows suggest_route.py"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "用 Jev browser 回放这个站点，执行 cases/examples/search-docs.yaml。路由即可，宣布选中的 skill。",
+      "expected_output": "suggest_route outcome explicit winner codexqa-jev-browser.",
+      "files": [],
+      "assertions": [
+        "Output names codexqa-jev-browser as the chosen skill",
+        "Output shows suggest_route.py"
+      ]
     }
   ]
 }

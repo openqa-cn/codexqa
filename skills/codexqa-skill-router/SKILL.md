@@ -87,6 +87,7 @@ Task shape, not the shared verb:
 - 缺陷检测 / SAST / 漏洞·密钥·依赖·CVE / 安全基线 / 粘贴或上传代码找漏洞 / `report_scan` / "review this diff for vulnerabilities" → `codexqa-defect-analyzer`. 格式化、自动改风格不归这里
 - Both a review report and a scan list, with no order → `ambiguous` (ask). 先评审再扫描 → `chain`, reviewer then defect
 - 影响面 / 谁在调用 / 入口风险 / 敏感路径 / 测试缺口 / 有没有单测 / 回归哪些 / 相对 main 变了什么 / 建索引 / 错误定位 / 模块归属 → `codexqa-code-analyzer`. Those words inside a 代码评审 stay with the reviewer. 补测试缺口 stays here; 补测试 / 写用例 does not
+- 变更分析 / 变更代码分析 / 变更影响报告 / 影响入口 / 召回测试用例 / change impact report, or impact words on one diff (变更 / 改动 / PR / diff / 分支) plus an HTML report or 补上缺的测试 → `codexqa-change-analysis`. 只要影响面, a report with no diff, or a named analyzer stays with the analyzer; inside a 代码评审 it stays with the reviewer; PRD or 提测 cases stay with the testcase generator; 先…再… stays a chain
 - 架构 wiki / 模块地图 / 模块划分 / 从哪开始读 / 阅读导览 / 仓库导览 / 这个模块是干什么 / `wiki inputs` → `codexqa-code-wiki`. Bare 知识图谱 → ask (wiki vs analyzer)
 - 堆栈 / 根因 / 崩溃 / 报错原因 / 线上报错 / 日志里的异常 / 调试输出 / 根因报告 → `codexqa-rootcause-analyzer`. A call chain or "报错在哪" used to explain that failure stays root-cause
 - 需求评审 / 需求缺口 / 需求歧义 / 需求一致性 / 非功能需求 / 需求能不能测 / requirements review → `codexqa-requirement-analyzer`, not a code review

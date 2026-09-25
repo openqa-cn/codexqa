@@ -78,6 +78,7 @@ POLICY = "suggest_route/2"
 REVIEWER = "codexqa-code-reviewer"
 DEFECT = "codexqa-defect-analyzer"
 ANALYZER = "codexqa-code-analyzer"
+CHANGE = "codexqa-change-analysis"
 WIKI = "codexqa-code-wiki"
 RCA = "codexqa-rootcause-analyzer"
 REQUIREMENT = "codexqa-requirement-analyzer"
@@ -91,6 +92,7 @@ ALIASES = (
     (REVIEWER, ("codexqa-code-reviewer", "ai-code-reviewer", "code-reviewer")),
     (DEFECT, ("codexqa-defect-analyzer", "defect-detection", "defect-analyzer")),
     (ANALYZER, ("codexqa-code-analyzer", "code-analyzer")),
+    (CHANGE, ("codexqa-change-analysis", "change-impact-analysis", "change-analysis")),
     (WIKI, ("codexqa-code-wiki", "code-wiki")),
     (RCA, ("codexqa-rootcause-analyzer", "root-cause-diagnosis", "rootcause-analyzer")),
     (REQUIREMENT, ("codexqa-requirement-analyzer", "requirements-analyzer", "requirement-analyzer")),
@@ -130,9 +132,46 @@ CODE_CTX_RE = re.compile(
 )
 
 
+CHANGE_REPORT_RE = re.compile(
+    r"(影响|变更|impact|change)[^，。,.;；]{0,8}(报告|report)",
+    re.I,
+)
+CHANGE_TESTS_RE = re.compile(
+    r"补上?(缺的|缺失的|没覆盖的)测试|补测(?!试缺口)|新增(可运行的?)?测试|生成测试文件|"
+    r"(new|generate|add)\s+(runnable\s+)?tests?\b|runnable tests",
+    re.I,
+)
+CHANGE_CTX_RE = re.compile(
+    r"变更|改动|分支|origin/|提交|(?<![A-Za-z])(diff|pr|mr|commit|branch|patch)(?![A-Za-z])",
+    re.I,
+)
+# NEG_BEFORE needs the negation right before the phrase; change requests are
+# usually negated with a verb in between (别做变更分析, 不要出变更影响报告).
+CHANGE_NEG_RE = re.compile(
+    r"(不要|别|不用|无需|不需要|不必|don't|do not|\bno)\s*(做|出|写|跑|生成|给|要|make|write|run|produce)?\s*(一份|个|一个|an?)?\s*$",
+    re.I,
+)
+
+
 def is_negated(text: str, start: int) -> bool:
     window = text[max(0, start - 8) : start]
     return NEG_BEFORE.search(window) is not None
+
+
+def _change_negated(text: str, start: int) -> bool:
+    return is_negated(text, start) or CHANGE_NEG_RE.search(text[max(0, start - 20) : start]) is not None
+
+
+def _unnegated(text: str, pattern: "re.Pattern[str]") -> bool:
+    return any(not _change_negated(text, m.start()) for m in pattern.finditer(text))
+
+
+def _change_phrase_present(text: str, phrases: Sequence[str]) -> bool:
+    for phrase in phrases:
+        pat = _ascii_pattern(phrase) if re.fullmatch(r"[A-Za-z0-9 .+/_-]+", phrase) else re.escape(phrase)
+        if any(not _change_negated(text, m.start()) for m in re.finditer(pat, text, re.I)):
+            return True
+    return False
 
 
 def _ascii_pattern(phrase: str) -> str:
@@ -241,6 +280,7 @@ def score_request(text: str) -> Dict[str, Dict[str, Any]]:
             REVIEWER,
             DEFECT,
             ANALYZER,
+            CHANGE,
             WIKI,
             RCA,
             REQUIREMENT,
@@ -382,6 +422,30 @@ def score_request(text: str) -> Dict[str, Dict[str, Any]]:
         r"(相对|对比|against|vs\.?)\s*(origin/)?(main|master)", text, re.I
     ) and re.search(r"变了|改了|变更|diff|影响|调用", text, re.I):
         add(ANALYZER, 5, "vs-base")
+
+    change_phrases = (
+        "变更分析",
+        "变更代码分析",
+        "变更影响报告",
+        "影响入口",
+        "召回测试用例",
+        "召回用例",
+        "change impact report",
+        "change-impact report",
+        "change analysis",
+        "change-impact analysis",
+        "recall tests",
+        "link existing tests",
+    )
+    if _change_phrase_present(text, change_phrases):
+        add(CHANGE, 5, "change-impact")
+    # The analyzer also writes a report, so shared impact words need one diff
+    # plus an HTML report or new tests. A chain keeps its own steps.
+    if scores[ANALYZER]["score"] > 0 and CHANGE_CTX_RE.search(text) and not CHAIN_RE.search(text):
+        if _unnegated(text, CHANGE_REPORT_RE) and re.search(r"html", text, re.I):
+            add(CHANGE, 5, "impact-html-report")
+        if _unnegated(text, CHANGE_TESTS_RE):
+            add(CHANGE, 5, "impact-new-tests")
 
     wiki_strong = (
         "架构 wiki",
@@ -669,6 +733,23 @@ def _resolve_overlaps(text: str, scores: Dict[str, Dict[str, Any]]) -> None:
         else:
             _zero(scores, ANALYZER, "review-includes-impact")
 
+    if scores[CHANGE]["score"] > 0:
+        named = alias_mentions(text)[0]
+        if strong:
+            _zero(scores, CHANGE, "review-includes-impact")
+        elif any_present(text, ("只要影响面", "只查调用", "只建索引", "仅影响面")):
+            _zero(scores, CHANGE, "graph-only")
+        elif any(name != CHANGE and scores[name]["score"] > 0 for name in named):
+            _zero(scores, CHANGE, "user-named-another-skill")
+        else:
+            _zero(scores, REVIEWER, "change-impact-not-review")
+            _zero(scores, ANALYZER, "change-impact-report")
+    if scores[CHANGE]["score"] > 0 and scores[TESTCASE]["score"] > 0 and not CHAIN_RE.search(text):
+        if REQ_CTX_RE.search(text) or re.search(r"提测", text):
+            _zero(scores, CHANGE, "cases-from-prd")
+        else:
+            _zero(scores, TESTCASE, "diff-impact-tests")
+
     if scores[WIKI]["score"] >= 5 and scores[ANALYZER]["score"] <= 2:
         _zero(scores, ANALYZER, "wiki-shape")
     elif scores[ANALYZER]["score"] >= 5 and 0 < scores[WIKI]["score"] <= 2:
@@ -852,6 +933,7 @@ def _reason_for(winner: str, scores: Dict[str, Dict[str, Any]]) -> str:
         REVIEWER: "code review / 代码评审 / review report, not a SAST scan",
         DEFECT: "defect scan / SAST / report_scan, not a code review",
         ANALYZER: "symbol-graph query / impact / test gaps, not an HTML review",
+        CHANGE: "one-diff change-impact HTML report plus new tests, not general graph Q&A",
         WIKI: "architecture wiki / module map",
         RCA: "exception root cause from a stack, log, or crash",
         REQUIREMENT: "requirement quality / gap register, not code review",
@@ -867,6 +949,7 @@ def _first_hit(text: str, skill: str) -> int:
         REVIEWER: ("代码评审", "代码审查", "code review", "审查报告", "评审"),
         DEFECT: ("缺陷", "扫描", "sast", "漏洞", "report_scan"),
         ANALYZER: ("影响面", "查调用", "建索引", "测试缺口", "回归范围"),
+        CHANGE: ("变更分析", "变更影响报告", "影响入口", "召回", "change analysis", "change impact"),
         WIKI: ("wiki", "模块地图", "阅读导览"),
         RCA: ("根因", "堆栈", "崩溃", "stack"),
         REQUIREMENT: ("需求", "gap register", "requirement"),
@@ -972,6 +1055,7 @@ FIXTURES: Tuple[Dict[str, Any], ...] = (
     {"text": "把这些用例的前置账号造出来", "outcome": "clear", "winner": TESTDATA},
     {"text": "这段代码有没有 SQL 注入", "outcome": "clear", "winner": DEFECT},
     {"text": "先做代码评审，再做漏洞扫描", "outcome": "chain", "winner": None, "steps": [REVIEWER, DEFECT]},
+    {"text": "先做变更分析，再构造前置数据", "outcome": "chain", "winner": None, "steps": [CHANGE, TESTDATA]},
     {"text": "用 codexqa-code-reviewer 只查调用方，不要审查报告", "outcome": "explicit_conflict", "winner": None, "alternatives": [ANALYZER]},
     {"text": "单文件评审这个支付类，给审查意见", "outcome": "clear", "winner": REVIEWER},
     {"text": "整仓做一次语义评审，要双语审查", "outcome": "clear", "winner": REVIEWER},
@@ -987,6 +1071,30 @@ FIXTURES: Tuple[Dict[str, Any], ...] = (
     {"text": "补测试缺口，不要写用例", "outcome": "clear", "winner": ANALYZER},
     {"text": "这个报错在哪个方法，帮我错误定位", "outcome": "clear", "winner": ANALYZER},
     {"text": "模块归属是不是分层不对", "outcome": "clear", "winner": ANALYZER},
+    {"text": "变更分析：新增了哪些方法，影响了哪些入口", "outcome": "clear", "winner": CHANGE},
+    {
+        "text": "分析这次变更相对 origin/main 的影响面，出一份变更影响报告并补上缺的测试",
+        "outcome": "clear",
+        "winner": CHANGE,
+    },
+    {"text": "这次改动的影响面，出一份 HTML 影响报告", "outcome": "clear", "winner": CHANGE},
+    {"text": "这个PR影响面，帮我补上缺的测试", "outcome": "clear", "winner": CHANGE},
+    {"text": "change impact report for this diff with new runnable tests", "outcome": "clear", "winner": CHANGE},
+    {"text": "召回测试用例，看这次 diff 有哪些现有用例能复用", "outcome": "clear", "winner": CHANGE},
+    {"text": "变更分析，不要评审", "outcome": "clear", "winner": CHANGE},
+    {"text": "用 codexqa-change-analysis 分析这个 PR", "outcome": "explicit", "winner": CHANGE},
+    {"text": "只要影响面，不要变更影响报告", "outcome": "clear", "winner": ANALYZER},
+    {"text": "代码评审时顺便出变更影响报告", "outcome": "clear", "winner": REVIEWER},
+    {"text": "按 PRD 写测试用例，顺便召回测试用例", "outcome": "clear", "winner": TESTCASE},
+    {"text": "帮我出一份影响分析报告", "outcome": "clear", "winner": ANALYZER},
+    {"text": "who calls this and generate tests", "outcome": "clear", "winner": ANALYZER},
+    {"text": "用 code-analyzer 出变更影响报告", "outcome": "explicit", "winner": ANALYZER},
+    {"text": "先看影响面再补测试", "outcome": "chain", "winner": None, "steps": [ANALYZER, TESTCASE]},
+    {"text": "先做变更分析，再写测试方案", "outcome": "chain", "winner": None, "steps": [CHANGE, TESTCASE]},
+    {"text": "别做变更分析", "outcome": "none", "winner": None},
+    {"text": "don't write a change impact report, who calls this", "outcome": "clear", "winner": ANALYZER},
+    {"text": "只看调用方，不要出变更影响报告", "outcome": "clear", "winner": ANALYZER},
+    {"text": "这次的回归范围，补测一下", "outcome": "clear", "winner": ANALYZER},
     {"text": "这个仓库从哪开始读，给一份模块划分", "outcome": "clear", "winner": WIKI},
     {"text": "讲讲这个模块是干什么的，要阅读路径", "outcome": "clear", "winner": WIKI},
     {"text": "不调模型，用 wiki inputs 出仓库导览", "outcome": "clear", "winner": WIKI},

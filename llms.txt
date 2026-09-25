@@ -1,0 +1,31 @@
+# CodexQA
+
+> CodexQA is a public, local-first Agent Skills pack for Cursor, Claude Code, Codex, and OpenClaw. It provides 10 specialized verification skills and 1 auto-router to verify code quality, trace change blast radius, detect logic defects, audit PRD requirements, generate manual test cases, construct test data, replay browser UI workflows, and diagnose root causes before merging AI-generated code.
+
+## Core Capabilities
+
+- Local-first execution: all skills run on the developer's machine with no external account, API gateway, or QA SaaS migration.
+- Narrow contracts and stop conditions: each skill defines unambiguous inputs, evidence gates, and verifiable Markdown/HTML artifacts.
+- Deterministic routing: `codexqa-skill-router` automatically matches natural-language prompts to the right worker skill and fetches missing skills on demand.
+
+## Published Skills
+
+- [codexqa-skill-router](skills/codexqa-skill-router/README.md): Auto-route natural-language requests to the matching skill and install workers on demand.
+- [codexqa-defect-analyzer](skills/codexqa-defect-analyzer/README.md): SAST/lint/secrets scan + Agent LLM Detection into de-duplicated P0–P3 findings and HTML report.
+- [codexqa-code-reviewer](skills/codexqa-code-reviewer/README.md): CodexQA symbol-graph evidence pack + heuristic dimensions + Agent judgment → bilingual `REVIEW-REPORT.html`.
+- [codexqa-change-analysis](skills/codexqa-change-analysis/README.md): Diff-indexed impact analysis for one change: 7-section HTML report (affected entries, change list, test plan, coverage verdict, sensitive paths) + new runnable test files for uncovered points.
+- [codexqa-code-analyzer](skills/codexqa-code-analyzer/README.md): Symbol-graph queries for local repositories: trace change blast radius, affected HTTP/RPC/MQ entries, call chains, regression scope, and test gaps.
+- [codexqa-code-wiki](skills/codexqa-code-wiki/README.md): Architecture knowledge graph: export Leiden communities with `wiki inputs` (no model needed) and generate DeepWiki-style HTML report.
+- [codexqa-rootcause-analyzer](skills/codexqa-rootcause-analyzer/README.md): Exception RCA from stacks, logs, or crash dumps with gated root-cause report.
+- [codexqa-requirement-analyzer](skills/codexqa-requirement-analyzer/README.md): Quality, ambiguity, and conflict analysis of PRD and requirement documents into a gap register.
+- [codexqa-testcase-generator](skills/codexqa-testcase-generator/README.md): Generate manual test plans and cases (Plan / Exec / Incremental) from local PRDs into Markdown + aggregated HTML.
+- [codexqa-testdata-generator](skills/codexqa-testdata-generator/README.md): Construct reusable test data against real backends and backfill business IDs into case preconditions.
+- [codexqa-jev-browser](skills/codexqa-jev-browser/README.md): Replay YAML/Markdown/API test cases or run goal-driven browser flows in Playwright Chromium with marked screenshot reports.
+
+## Documentation & Links
+
+- [Installation & Getting Started](docs/GETTING_STARTED.md): Step-by-step setup for Cursor, Claude Code, Codex, and OpenClaw.
+- [Frequently Asked Questions](docs/FAQ.md): Architecture, data privacy, and comparison with traditional linters/SaaS.
+- [Roadmap & Capabilities](docs/ROADMAP.md): Capability matrix, current delivery status, and planned features.
+- [Commercial Boundary](docs/COMMERCIAL_BOUNDARY.md): Boundary between public Agent Skills and the separately distributed `@openqa-cn/codexqa` engine.
+- [Official Website](https://openqa.cn): Product documentation, interactive report showcase, and enterprise solutions.

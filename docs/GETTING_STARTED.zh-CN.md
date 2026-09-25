@@ -4,13 +4,13 @@
 
 面向搜索引擎的 HTML 文档：[openqa.cn](https://openqa.cn/)。本页是 GitHub 源文。
 
-在 Cursor、Claude Code、Codex 或 OpenClaw 上一次只装一个 skill。本页以 [`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.zh-CN.md) 为例，因为它有可冒烟的 CLI。同一条命令也可以加 `--skill codexqa-skill-router`、`--skill codexqa-code-analyzer`、`--skill codexqa-code-wiki`、`--skill codexqa-rootcause-analyzer`、`--skill codexqa-code-reviewer`、`--skill codexqa-requirement-analyzer`、`--skill codexqa-testcase-generator`、`--skill codexqa-testdata-generator`。不确定装哪个时优先 [`codexqa-skill-router`](../skills/codexqa-skill-router/README.zh-CN.md)——它能匹配并按需拉取干活 skill。`codexqa-code-analyzer`、`codexqa-code-wiki`、`codexqa-rootcause-analyzer` 与 `codexqa-code-reviewer` 使用单独的 `codexqa` 符号图 CLI；`codexqa-defect-analyzer` 由 Python 编排，实图同样使用该 CLI；`codexqa-skill-router` 的发现/按需安装需要 Python 3.10+。
+在 Cursor、Claude Code、Codex 或 OpenClaw 上一次只装一个 skill。本页以 [`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.zh-CN.md) 为例，因为它有可冒烟的 CLI。同一条命令也可以加 `--skill codexqa-skill-router`、`--skill codexqa-code-analyzer`、`--skill codexqa-change-analysis`、`--skill codexqa-code-wiki`、`--skill codexqa-rootcause-analyzer`、`--skill codexqa-code-reviewer`、`--skill codexqa-requirement-analyzer`、`--skill codexqa-testcase-generator`、`--skill codexqa-testdata-generator`、`--skill codexqa-jev-browser`。不确定装哪个时优先 [`codexqa-skill-router`](../skills/codexqa-skill-router/README.zh-CN.md)——它能匹配并按需拉取干活 skill。`codexqa-code-analyzer`、`codexqa-change-analysis`、`codexqa-code-wiki`、`codexqa-rootcause-analyzer` 与 `codexqa-code-reviewer` 使用单独的 `codexqa` 符号图 CLI；`codexqa-defect-analyzer` 由 Python 编排，实图同样使用该 CLI；`codexqa-skill-router` 的发现/按需安装需要 Python 3.10+；`codexqa-jev-browser` 用自带的 TypeScript CLI 驱动 Playwright Chromium。
 
 每个 skill 要交的材料不一样（[FAQ](FAQ.zh-CN.md#每个-skill-要我交什么)）。跑完长什么样见 [README · 所有技能SKILL概览](../README.zh-CN.md#所有技能SKILL概览)。
 
 ## 环境要求
 
-需要 Node.js、npm/npx、Git，以及能够读取 skill 文件并执行命令的 Coding Agent。`codexqa-code-analyzer` 和 `codexqa-code-wiki` 要求 Node.js 18 或更高版本。`codexqa-testcase-generator` 要求 Python 3.10+（经该 skill 的 `scripts/tcg-python` 调用）。`codexqa-defect-analyzer` 的 Python 流水线在本地与 CI 以 Python 3.11 验证；部分历史 TypeScript 冒烟仍可能需要：
+需要 Node.js、npm/npx、Git，以及能够读取 skill 文件并执行命令的 Coding Agent。`codexqa-code-analyzer`、`codexqa-change-analysis` 和 `codexqa-code-wiki` 要求 Node.js 18 或更高版本；`codexqa-jev-browser` 要求 Node.js 20 或更高版本。`codexqa-testcase-generator` 要求 Python 3.10+（经该 skill 的 `scripts/tcg-python` 调用）。`codexqa-defect-analyzer` 的 Python 流水线在本地与 CI 以 Python 3.11 验证；部分历史 TypeScript 冒烟仍可能需要：
 
 ```bash
 python3 --version   # 3.10+；codexqa-defect-analyzer / codexqa-testcase-generator 推荐 3.11
@@ -86,6 +86,7 @@ npx skills remove codexqa-defect-analyzer --agent codex
 
 ```bash
 npx skills add openqa-cn/codexqa --skill codexqa-code-analyzer
+npx skills add openqa-cn/codexqa --skill codexqa-change-analysis
 npx skills add openqa-cn/codexqa --skill codexqa-code-wiki
 npm install -g @openqa-cn/codexqa
 
@@ -95,9 +96,10 @@ npx skills add openqa-cn/codexqa --skill codexqa-code-reviewer
 npx skills add openqa-cn/codexqa --skill codexqa-requirement-analyzer
 npx skills add openqa-cn/codexqa --skill codexqa-testcase-generator
 npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
+npx skills add openqa-cn/codexqa --skill codexqa-jev-browser
 ```
 
-`codexqa-code-analyzer`、`codexqa-code-wiki`、`codexqa-rootcause-analyzer`、`codexqa-code-reviewer`、`codexqa-defect-analyzer` 与 `codexqa-skill-router` Skill 发布在本仓库中；`@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎，索引和会话写在 `~/.codexqa/`。详见 [`codexqa-code-analyzer` 已知边界](../skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-code-wiki` 已知边界](../skills/codexqa-code-wiki/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-rootcause-analyzer` 已知边界](../skills/codexqa-rootcause-analyzer/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-code-reviewer` 已知边界](../skills/codexqa-code-reviewer/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-defect-analyzer` 已知边界](../skills/codexqa-defect-analyzer/KNOWN_LIMITATIONS.zh-CN.md) 和 [`codexqa-skill-router` 已知边界](../skills/codexqa-skill-router/KNOWN_LIMITATIONS.zh-CN.md)。
+`codexqa-code-analyzer`、`codexqa-change-analysis`、`codexqa-code-wiki`、`codexqa-rootcause-analyzer`、`codexqa-code-reviewer`、`codexqa-defect-analyzer` 与 `codexqa-skill-router` Skill 发布在本仓库中；`@openqa-cn/codexqa` 是单独分发的闭源本地代码分析引擎，索引和会话写在 `~/.codexqa/`。详见 [`codexqa-code-analyzer` 已知边界](../skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-change-analysis` 已知边界](../skills/codexqa-change-analysis/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-code-wiki` 已知边界](../skills/codexqa-code-wiki/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-rootcause-analyzer` 已知边界](../skills/codexqa-rootcause-analyzer/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-code-reviewer` 已知边界](../skills/codexqa-code-reviewer/KNOWN_LIMITATIONS.zh-CN.md)、[`codexqa-defect-analyzer` 已知边界](../skills/codexqa-defect-analyzer/KNOWN_LIMITATIONS.zh-CN.md) 和 [`codexqa-skill-router` 已知边界](../skills/codexqa-skill-router/KNOWN_LIMITATIONS.zh-CN.md)。
 
 只做 `codexqa-code-analyzer` / `codexqa-code-wiki` 冒烟时不需要模型：给本地 checkout 建索引，再查看摘要。
 
@@ -114,6 +116,7 @@ codexqa wiki inputs /path/to/repo --kind architecture --limit 8
 
 - `codexqa-skill-router` 需要待路由的用户请求（以及 Python 3.10+）。它对照内置/现场目录匹配，并可运行 `ensure_skill.py` 把干活 skill 拉到路由旁边。见其 [README](../skills/codexqa-skill-router/README.zh-CN.md)。
 - `codexqa-code-analyzer` 需要本地仓库。审变更时用 `origin/main` 等基线建索引；索引写在 `~/.codexqa/`。见其 [README](../skills/codexqa-code-analyzer/README.zh-CN.md)。
+- `codexqa-change-analysis` 需要本地仓库和一个 git 基线（如 `origin/main`）。它在仓库根目录写一份 HTML 变更影响报告，并为未覆盖的点新增测试文件，不改已有测试。见其 [README](../skills/codexqa-change-analysis/README.zh-CN.md)。
 - `codexqa-code-wiki` 需要本地仓库和已有索引。它导出 `wiki inputs` 并写 HTML 架构报告，不审变更。见其 [README](../skills/codexqa-code-wiki/README.zh-CN.md)。
 - `codexqa-rootcause-analyzer` 需要异常证据（堆栈 / 日志 / dump），外加 git 地址、本地目录、文件，或已打开的工作区。见其 [README](../skills/codexqa-rootcause-analyzer/README.zh-CN.md)。
 - `codexqa-defect-analyzer` 需要对 diff / 仓库 / 上传 / 粘贴做代码风险扫描。见其 [README](../skills/codexqa-defect-analyzer/README.zh-CN.md)。
@@ -121,6 +124,7 @@ codexqa wiki inputs /path/to/repo --kind architecture --limit 8
 - `codexqa-requirement-analyzer` 需要需求文档，不要交仓库。见 [README · 你要交什么](../skills/codexqa-requirement-analyzer/README.zh-CN.md#你要交什么)。
 - `codexqa-testcase-generator` 需要本地需求材料（文件、目录、粘贴，或本轮 HTTPS 文档 URL）。可选知识目录 / Git URL。Exec 后产物在 `testcase/cases/` 与 `testdesign/testcase_generation_report.html`。冒烟：在 skill 目录执行 `./scripts/tcg-python scripts/close_stage.py --self-check`（以及 `check_run_gate.py` / `generate_case_report.py --self-check`）。见其 [README](../skills/codexqa-testcase-generator/README.zh-CN.md)。
 - `codexqa-testdata-generator` 需要造数请求、用例或 API 来源，**不要**丢被测源码当输入。见其 [README · 你要交什么](../skills/codexqa-testdata-generator/README.zh-CN.md#你要交什么)。
+- `codexqa-jev-browser` 需要一份 UI 用例（YAML / Markdown / API），或一句自然语言目标加 URL。先在 skill 目录执行 `npm install`；现场 `auto` / `generate --goal` 还需要在 `.env` 里配置模型密钥。见其 [README](../skills/codexqa-jev-browser/README.zh-CN.md)。
 
 对各 skill 可以直接说的话：[仓库 README · 快速开始](../README.zh-CN.md#快速开始)。
 

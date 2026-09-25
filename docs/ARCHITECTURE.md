@@ -46,7 +46,7 @@ A practical consequence: to understand *how a skill works*, start with its human
 
 ## Naming and maturity
 
-- A skill directory uses a short action-oriented name, such as `codexqa-skill-router`, `codexqa-code-wiki`, `codexqa-code-analyzer`, `codexqa-rootcause-analyzer`, `codexqa-defect-analyzer`, `codexqa-code-reviewer`, `codexqa-requirement-analyzer`, `codexqa-testcase-generator`, or `codexqa-testdata-generator`.
+- A skill directory uses a short action-oriented name, such as `codexqa-skill-router`, `codexqa-code-wiki`, `codexqa-code-analyzer`, `codexqa-change-analysis`, `codexqa-rootcause-analyzer`, `codexqa-defect-analyzer`, `codexqa-code-reviewer`, `codexqa-requirement-analyzer`, `codexqa-testcase-generator`, `codexqa-testdata-generator`, or `codexqa-jev-browser`.
 - `SKILL.md` is the agent-facing contract.
 - Examples and tests are required before a skill is called supported.
 - Experimental adapters may change without a compatibility promise.

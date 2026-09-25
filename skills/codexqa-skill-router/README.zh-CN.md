@@ -9,11 +9,14 @@
 [`codexqa-defect-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-defect-analyzer/README.zh-CN.md)、
 [`codexqa-code-reviewer`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-code-reviewer/README.zh-CN.md)、
 [`codexqa-code-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-code-analyzer/README.zh-CN.md)、
+[`codexqa-change-analysis`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-change-analysis/README.zh-CN.md)、
+[`codexqa-code-wiki`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-code-wiki/README.zh-CN.md)、
 [`codexqa-rootcause-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-rootcause-analyzer/README.zh-CN.md)、
 [`codexqa-requirement-analyzer`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-requirement-analyzer/README.zh-CN.md)、
-[`codexqa-testcase-generator`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-testcase-generator/README.zh-CN.md)
+[`codexqa-testcase-generator`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-testcase-generator/README.zh-CN.md)、
+[`codexqa-testdata-generator`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-testdata-generator/README.zh-CN.md)
 或
-[`codexqa-testdata-generator`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-testdata-generator/README.zh-CN.md)。
+[`codexqa-jev-browser`](https://github.com/openqa-cn/codexqa/blob/main/skills/codexqa-jev-browser/README.zh-CN.md)。
 那些才是干活的 skill；本 skill 负责**发现、匹配、按需安装、按对方 SKILL.md 交接**。
 
 ## 安装

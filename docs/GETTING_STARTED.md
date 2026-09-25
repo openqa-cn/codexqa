@@ -4,13 +4,13 @@
 
 HTML documentation for search engines: [openqa.cn](https://openqa.cn/). This page is the GitHub source.
 
-Install one skill at a time on Cursor, Claude Code, Codex, or OpenClaw. This page walks [`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.md) because it has a CLI you can smoke-test. The same command also takes `--skill codexqa-skill-router`, `--skill codexqa-code-analyzer`, `--skill codexqa-code-wiki`, `--skill codexqa-rootcause-analyzer`, `--skill codexqa-code-reviewer`, `--skill codexqa-requirement-analyzer`, `--skill codexqa-testcase-generator`, and `--skill codexqa-testdata-generator`. Prefer [`codexqa-skill-router`](../skills/codexqa-skill-router/README.md) when you are unsure which worker to install — it can match and fetch workers on demand. `codexqa-code-analyzer`, `codexqa-code-wiki`, `codexqa-rootcause-analyzer`, and `codexqa-code-reviewer` use the separate `codexqa` symbol-graph CLI; `codexqa-defect-analyzer` is Python-orchestrated and also uses that CLI for live graphs; `codexqa-skill-router` needs Python 3.10+ for discover/ensure.
+Install one skill at a time on Cursor, Claude Code, Codex, or OpenClaw. This page walks [`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.md) because it has a CLI you can smoke-test. The same command also takes `--skill codexqa-skill-router`, `--skill codexqa-code-analyzer`, `--skill codexqa-change-analysis`, `--skill codexqa-code-wiki`, `--skill codexqa-rootcause-analyzer`, `--skill codexqa-code-reviewer`, `--skill codexqa-requirement-analyzer`, `--skill codexqa-testcase-generator`, `--skill codexqa-testdata-generator`, and `--skill codexqa-jev-browser`. Prefer [`codexqa-skill-router`](../skills/codexqa-skill-router/README.md) when you are unsure which worker to install — it can match and fetch workers on demand. `codexqa-code-analyzer`, `codexqa-change-analysis`, `codexqa-code-wiki`, `codexqa-rootcause-analyzer`, and `codexqa-code-reviewer` use the separate `codexqa` symbol-graph CLI; `codexqa-defect-analyzer` is Python-orchestrated and also uses that CLI for live graphs; `codexqa-skill-router` needs Python 3.10+ for discover/ensure; `codexqa-jev-browser` runs its own TypeScript CLI on Playwright Chromium.
 
 What you give each skill is different ([FAQ](FAQ.md#what-do-i-have-to-give-each-skill)). What a finished report looks like: [README · Overview of all skills](../README.md#overview-of-all-skills).
 
 ## Requirements
 
-Use Node.js, npm/npx, Git, and a coding agent able to read skill files and run commands. `codexqa-code-analyzer` and `codexqa-code-wiki` require Node.js 18 or newer. `codexqa-testcase-generator` requires Python 3.10+ (invoke via that skill's `scripts/tcg-python`). The `codexqa-defect-analyzer` Python pipeline is exercised with Python 3.11 locally and in CI:
+Use Node.js, npm/npx, Git, and a coding agent able to read skill files and run commands. `codexqa-code-analyzer`, `codexqa-change-analysis`, and `codexqa-code-wiki` require Node.js 18 or newer; `codexqa-jev-browser` requires Node.js 20 or newer. `codexqa-testcase-generator` requires Python 3.10+ (invoke via that skill's `scripts/tcg-python`). The `codexqa-defect-analyzer` Python pipeline is exercised with Python 3.11 locally and in CI:
 
 ```bash
 python3 --version   # 3.10+; 3.11 recommended (codexqa-defect-analyzer / codexqa-testcase-generator)
@@ -83,6 +83,7 @@ For global installations add `--global` where supported. Back up configuration a
 
 ```bash
 npx skills add openqa-cn/codexqa --skill codexqa-code-analyzer
+npx skills add openqa-cn/codexqa --skill codexqa-change-analysis
 npx skills add openqa-cn/codexqa --skill codexqa-code-wiki
 npm install -g @openqa-cn/codexqa
 
@@ -92,9 +93,10 @@ npx skills add openqa-cn/codexqa --skill codexqa-code-reviewer
 npx skills add openqa-cn/codexqa --skill codexqa-requirement-analyzer
 npx skills add openqa-cn/codexqa --skill codexqa-testcase-generator
 npx skills add openqa-cn/codexqa --skill codexqa-testdata-generator
+npx skills add openqa-cn/codexqa --skill codexqa-jev-browser
 ```
 
-The `codexqa-code-analyzer`, `codexqa-code-wiki`, `codexqa-rootcause-analyzer`, `codexqa-defect-analyzer`, and `codexqa-skill-router` Skills are published in this repository. `@openqa-cn/codexqa` is the separately distributed, closed-source local code-analysis engine; indexes and sessions live under `~/.codexqa/`. See [`codexqa-code-analyzer` known limitations](../skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.md), [`codexqa-code-wiki` known limitations](../skills/codexqa-code-wiki/KNOWN_LIMITATIONS.md), [`codexqa-rootcause-analyzer` known limitations](../skills/codexqa-rootcause-analyzer/KNOWN_LIMITATIONS.md), [`codexqa-defect-analyzer` known limitations](../skills/codexqa-defect-analyzer/KNOWN_LIMITATIONS.md), and [`codexqa-skill-router` known limitations](../skills/codexqa-skill-router/KNOWN_LIMITATIONS.md).
+The `codexqa-code-analyzer`, `codexqa-change-analysis`, `codexqa-code-wiki`, `codexqa-rootcause-analyzer`, `codexqa-code-reviewer`, `codexqa-defect-analyzer`, and `codexqa-skill-router` Skills are published in this repository. `@openqa-cn/codexqa` is the separately distributed, closed-source local code-analysis engine; indexes and sessions live under `~/.codexqa/`. See [`codexqa-code-analyzer` known limitations](../skills/codexqa-code-analyzer/KNOWN_LIMITATIONS.md), [`codexqa-change-analysis` known limitations](../skills/codexqa-change-analysis/KNOWN_LIMITATIONS.md), [`codexqa-code-wiki` known limitations](../skills/codexqa-code-wiki/KNOWN_LIMITATIONS.md), [`codexqa-rootcause-analyzer` known limitations](../skills/codexqa-rootcause-analyzer/KNOWN_LIMITATIONS.md), [`codexqa-code-reviewer` known limitations](../skills/codexqa-code-reviewer/KNOWN_LIMITATIONS.md), [`codexqa-defect-analyzer` known limitations](../skills/codexqa-defect-analyzer/KNOWN_LIMITATIONS.md), and [`codexqa-skill-router` known limitations](../skills/codexqa-skill-router/KNOWN_LIMITATIONS.md).
 
 For a model-free `codexqa-code-analyzer` / `codexqa-code-wiki` smoke check, index a local checkout and inspect its summary:
 
@@ -111,6 +113,7 @@ After install, start a new agent session and point it at the skill. Inputs diffe
 
 - `codexqa-skill-router` needs a user request to route (and Python 3.10+). It matches the bundled/live catalog and can run `ensure_skill.py` to fetch a worker beside the router. See its [README](../skills/codexqa-skill-router/README.md).
 - `codexqa-code-analyzer` needs a local repository. For change review, index it with a baseline such as `origin/main`; indexes live under `~/.codexqa/`. See its [README](../skills/codexqa-code-analyzer/README.md).
+- `codexqa-change-analysis` needs a local repository and one git baseline (for example `origin/main`). It writes an HTML change-impact report at the repo root and adds new test files for uncovered points; existing tests are not edited. See its [README](../skills/codexqa-change-analysis/README.md).
 - `codexqa-code-wiki` needs a local repository and an existing index. It exports `wiki inputs` and writes an HTML architecture report; it does not review a change. See its [README](../skills/codexqa-code-wiki/README.md).
 - `codexqa-rootcause-analyzer` needs exception evidence (stack / log / dump) plus a git URL, local dir, file, or already-open workspace. See its [README](../skills/codexqa-rootcause-analyzer/README.md).
 - `codexqa-defect-analyzer` needs a diff, repo, upload, or paste for a code-risk scan. See its [README](../skills/codexqa-defect-analyzer/README.md).
@@ -118,6 +121,7 @@ After install, start a new agent session and point it at the skill. Inputs diffe
 - `codexqa-requirement-analyzer` needs requirement documents, not a repo. See [What you give it](../skills/codexqa-requirement-analyzer/README.md#what-you-give-it).
 - `codexqa-testcase-generator` needs local requirement materials (file, directory, paste, or HTTPS document URL this turn). Optional knowledge dir / Git URL. After Exec, expect Markdown under `testcase/cases/` plus `testdesign/testcase_generation_report.html`. Smoke: `./scripts/tcg-python scripts/close_stage.py --self-check` (and `check_run_gate.py` / `generate_case_report.py --self-check`) from the skill directory. See its [README](../skills/codexqa-testcase-generator/README.md).
 - `codexqa-testdata-generator` needs a construct request, cases, or an API source — not application source. See [What you give it](../skills/codexqa-testdata-generator/README.md#what-you-give-it).
+- `codexqa-jev-browser` needs a UI case (YAML / Markdown / API) or a natural-language goal plus a URL. Run `npm install` in the skill directory first; live `auto` / `generate --goal` also need a model key in `.env`. See its [README](../skills/codexqa-jev-browser/README.md).
 
 Sample prompts for each skill: [root README · Quick start](../README.md#quick-start).
 

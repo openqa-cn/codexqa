@@ -22,6 +22,7 @@
 | ZIP 打包 | 打包 / 解包冒烟测试 | 需要 Bash、rsync、zip、unzip |
 | 证据 schema | 仓库内提供 schema | 不宣称 skill 输出自动符合该 schema |
 | `codexqa-code-analyzer` 符号图工作流 | 已发布路由契约、查询 schema、分析 playbook、证据图示例和已知边界文档；本地建索引与查询需要 Node.js 18+ 和单独分发的闭源 `@openqa-cn/codexqa` 引擎 | 本仓库 CI 不安装或执行该引擎；没有公开宿主 Agent 运行；图完整性受 parser 覆盖、stub 和符号碰撞影响 |
+| `codexqa-change-analysis` 变更影响工作流 | 已发布路由契约、分析 / 报告 / 用例生成 / 测试召回 playbook、自包含 HTML 报告模板和已知边界文档；`index --diff-base` 与 diff 查询依赖同一套 Node.js 18+ 闭源引擎 | 本仓库 CI 不安装或执行该引擎；没有公开宿主 Agent 运行或样例报告；生成的测试文件需要被测仓库能启动（端到端层还需要浏览器） |
 | `codexqa-code-wiki` 架构 Wiki 工作流 | 已发布路由契约、playbook、DeepWiki 风格 HTML 报告模板（侧栏 + 正文 + 本页目录，深色 Claude chrome）和已知边界文档；`wiki inputs` / `wiki --no-llm` 依赖同一套 Node.js 18+ 闭源引擎 | 本仓库 CI 不安装或执行该引擎；没有公开宿主 Agent 运行；社区是 Leiden 切分加页数上限，不是模块边界的证明 |
 | `codexqa-rootcause-analyzer` CLI / 脚本 | `skills/codexqa-rootcause-analyzer` 本地 `npm test`（解析、落地、草稿、冒烟）；用 `@openqa-cn/codexqa` CLI 做 index/query；Node.js 22+ + TypeScript stripping | 引擎不在本仓库 CI 中运行；RCA 叙事由模型判断；无公开宿主 agent 成绩；图缺口会削弱证据 |
 | `codexqa-defect-analyzer` 流水线 | `skills/codexqa-defect-analyzer` 本地 `npm test`（Python 流水线 + 策略夹具，优先 3.11）；可选 SAST/lint/secrets；实图用 CodexQA CLI | CI 不强制完整 Agent LLM Detection Stage1/Stage2 与全部 SAST 二进制；语义发现由模型判断；无公开宿主 agent 成绩 |
@@ -29,6 +30,7 @@
 | `codexqa-testdata-generator` 脚本 | 打包、slot 检索和本地 catalog mock 见该 skill 文档 | 运行依赖已配置的 adapter 与 slot；不在 codexqa-defect-analyzer CLI 套件覆盖范围内 |
 | `codexqa-code-reviewer` 证据包 | 本地 `bash scripts/validate-skill.sh`（静态树、fixture 校验+渲染、plan-coverage）；现场收集需要 Node ≥ 18、bash、jq、Python 3.10+ 与 `@openqa-cn/codexqa` | 本仓库 CI 不跑现场 CodexQA 建索引；评审叙事与 Agent LLM judgment 由模型判断；无公开宿主 agent 成绩 |
 | `codexqa-requirement-analyzer` | 该 skill 的 `evals/` skill-up 用例和解析/转换脚本 | 没有已记录的宿主 agent 成绩；分析靠模型，不是 `run_analysis.ts` |
+| `codexqa-jev-browser` CLI | `skills/codexqa-jev-browser` 本地 `npm test`（Vitest）；Node.js 20+ 与 Playwright Chromium；回放不调用决策模型 | 不在本仓库 CI 中运行；`auto` / `generate` / `explore` 由模型判断；无公开宿主 agent 成绩 |
 | `codexqa-skill-router` 发现 + 按需安装 | `discover_skills.py --self-check` / `--with-catalog`；`ensure_skill.py --dry-run` / `--from-repo` / tarball / npx 兜底（Python 3.10+） | 按需安装需要网络或本地 checkout；路由选择由模型判断；无公开宿主 agent 成绩 |
 
 当前证据：已有一次 JS 端到端盲测样本（召回/精确率 7/7，见上表 JS / TS 方法级一行）。尚未形成多模型公开 benchmark。另见[示例](../examples/README.zh-CN.md)和[评估方法](../benchmarks/README.md)。

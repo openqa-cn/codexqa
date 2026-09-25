@@ -35,7 +35,8 @@ That sentence means an incremental **scan**, not a code review.
 |---|---|---|
 | 代码评审 / 走查 / 单文件或整仓评审 / code review / PR·MR review / 审查意见 / 语义评审 / 双语审查 / 证据包 / 合入建议 / 这段代码有没有问题 | `codexqa-code-reviewer` | `codexqa-defect-analyzer` |
 | 缺陷检测 / SAST / 漏洞·密钥·依赖·CVE / 安全基线 / 粘贴或上传找漏洞 / `report_scan` / review this diff **for vulnerabilities** | `codexqa-defect-analyzer` | `codexqa-code-reviewer` |
-| 影响面 / 谁在调用 / 入口风险 / 敏感路径 / 测试缺口 / 有没有单测 / 回归哪些 / 相对 main 变了什么 / 建索引 / 错误定位 / 模块归属, and no review report | `codexqa-code-analyzer` | reviewer, wiki, defect scan |
+| 影响面 / 谁在调用 / 入口风险 / 敏感路径 / 测试缺口 / 有没有单测 / 回归哪些 / 相对 main 变了什么 / 建索引 / 错误定位 / 模块归属, and no review report or change-impact report | `codexqa-code-analyzer` | reviewer, wiki, defect scan |
+| 变更分析 / 变更代码分析 / 变更影响报告 / 影响入口 / 召回测试用例 / change impact report / change analysis, or impact words on one diff (变更 / 改动 / PR / diff / 分支) plus an HTML report or 补上缺的测试 | `codexqa-change-analysis` | general symbol-graph Q&A (`codexqa-code-analyzer`), PRD case library |
 | Same impact words inside 代码评审 | `codexqa-code-reviewer` | `codexqa-code-analyzer` |
 | 架构 wiki / 模块地图 / 模块划分 / 从哪开始读 / 阅读导览 / 这个模块是干什么 / `wiki inputs` | `codexqa-code-wiki` | impact query or SAST report |
 | Bare 知识图谱 / knowledge graph | ask (wiki vs analyzer) | picking either silently |
