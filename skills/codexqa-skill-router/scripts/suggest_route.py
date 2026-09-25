@@ -142,7 +142,13 @@ CHANGE_TESTS_RE = re.compile(
     re.I,
 )
 CHANGE_CTX_RE = re.compile(
-    r"变更|改动|这次|本次|分支|origin/|提交|(?<![A-Za-z])(diff|pr|mr|commit|branch|patch)(?![A-Za-z])",
+    r"变更|改动|分支|origin/|提交|(?<![A-Za-z])(diff|pr|mr|commit|branch|patch)(?![A-Za-z])",
+    re.I,
+)
+# NEG_BEFORE needs the negation right before the phrase; change requests are
+# usually negated with a verb in between (别做变更分析, 不要出变更影响报告).
+CHANGE_NEG_RE = re.compile(
+    r"(不要|别|不用|无需|不需要|不必|don't|do not|\bno)\s*(做|出|写|跑|生成|给|要|make|write|run|produce)?\s*(一份|个|一个|an?)?\s*$",
     re.I,
 )
 
@@ -152,8 +158,20 @@ def is_negated(text: str, start: int) -> bool:
     return NEG_BEFORE.search(window) is not None
 
 
+def _change_negated(text: str, start: int) -> bool:
+    return is_negated(text, start) or CHANGE_NEG_RE.search(text[max(0, start - 20) : start]) is not None
+
+
 def _unnegated(text: str, pattern: "re.Pattern[str]") -> bool:
-    return any(not is_negated(text, m.start()) for m in pattern.finditer(text))
+    return any(not _change_negated(text, m.start()) for m in pattern.finditer(text))
+
+
+def _change_phrase_present(text: str, phrases: Sequence[str]) -> bool:
+    for phrase in phrases:
+        pat = _ascii_pattern(phrase) if re.fullmatch(r"[A-Za-z0-9 .+/_-]+", phrase) else re.escape(phrase)
+        if any(not _change_negated(text, m.start()) for m in re.finditer(pat, text, re.I)):
+            return True
+    return False
 
 
 def _ascii_pattern(phrase: str) -> str:
@@ -419,7 +437,7 @@ def score_request(text: str) -> Dict[str, Dict[str, Any]]:
         "recall tests",
         "link existing tests",
     )
-    if any_present(text, change_phrases):
+    if _change_phrase_present(text, change_phrases):
         add(CHANGE, 5, "change-impact")
     # The analyzer also writes a report, so shared impact words need one diff
     # plus an HTML report or new tests. A chain keeps its own steps.
@@ -1073,6 +1091,10 @@ FIXTURES: Tuple[Dict[str, Any], ...] = (
     {"text": "用 code-analyzer 出变更影响报告", "outcome": "explicit", "winner": ANALYZER},
     {"text": "先看影响面再补测试", "outcome": "chain", "winner": None, "steps": [ANALYZER, TESTCASE]},
     {"text": "先做变更分析，再写测试方案", "outcome": "chain", "winner": None, "steps": [CHANGE, TESTCASE]},
+    {"text": "别做变更分析", "outcome": "none", "winner": None},
+    {"text": "don't write a change impact report, who calls this", "outcome": "clear", "winner": ANALYZER},
+    {"text": "只看调用方，不要出变更影响报告", "outcome": "clear", "winner": ANALYZER},
+    {"text": "这次的回归范围，补测一下", "outcome": "clear", "winner": ANALYZER},
     {"text": "这个仓库从哪开始读，给一份模块划分", "outcome": "clear", "winner": WIKI},
     {"text": "讲讲这个模块是干什么的，要阅读路径", "outcome": "clear", "winner": WIKI},
     {"text": "不调模型，用 wiki inputs 出仓库导览", "outcome": "clear", "winner": WIKI},
