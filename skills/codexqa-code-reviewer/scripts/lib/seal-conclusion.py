@@ -979,8 +979,25 @@ def _test_name(name: str) -> bool:
     return name.startswith("test") or "Should" in name or name in {"setUp", "tearDown", "static"}
 
 
+_HTML_TAG_IN_PROSE = re.compile(r"</?[A-Za-z][^<>]*?>")
+
+
+def _neutralize_markup_in_prose(text: str) -> str:
+    """Keep code snippets readable without letting <tag> re-parse as HTML.
+
+    Bilingual cells put the same sentence in data-zh/data-en. A preview that
+    expands &quot;/&lt; before parsing can turn `"<h1>…"` into a real heading.
+    Replace only tag-shaped spans so `>=` and generics stay intact.
+    """
+
+    def _repl(match: re.Match[str]) -> str:
+        return match.group(0).replace("<", "‹").replace(">", "›")
+
+    return _HTML_TAG_IN_PROSE.sub(_repl, str(text or ""))
+
+
 def _plain_sentence(text: str, limit: int = 140) -> str:
-    sentence = " ".join(str(text or "").split())
+    sentence = _neutralize_markup_in_prose(" ".join(str(text or "").split()))
     for mark in ("。", ". "):
         cut = sentence.find(mark)
         if 0 <= cut <= limit:
@@ -1000,6 +1017,10 @@ def fill_regression_tests(conclusion: dict, pack: Path) -> None:
         if isinstance(row, dict) and str(row.get("target") or "").strip()
     ]
     if existing:
+        for row in existing:
+            for key in ("why", "why_en", "target", "target_en", "evidence", "evidence_en"):
+                if row.get(key):
+                    row[key] = _neutralize_markup_in_prose(str(row[key]))
         conclusion["regression_tests"] = existing
         return
     nodes = _symbol_nodes(pack)
