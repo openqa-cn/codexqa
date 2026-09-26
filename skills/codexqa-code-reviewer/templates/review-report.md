@@ -109,7 +109,7 @@ Layer / Over-engineering / Timing. Each concern subsection needs `risk` or risk-
 
 一张卡一个失败场景。标题写后果，不写规则名。正文四句：谁（`actor`）、什么输入（`input`）、哪一行（`line`）、账户变成什么样（`outcome`）。修法（`fix`）单独一句。同一根因且同一种修法才合并，把其余行放进 `also_lines` 并设 `same_fix: true`（页面写「另见第 N 行」）。触发条件或账务结果不同就拆开。`getFxRate()` 放大入账和 `BigDecimal.equals` 放过限额是两张卡。
 
-调用链路、变更状态、分类、入口默认折叠。**不展示：** 符号 id、tested_count、置信度、独立「影响面示意」整节。
+调用链路、变更状态、分类、入口默认折叠。**不展示：** 符号 id、tested_count、置信度、stub 数量、UNKNOWN 封顶、独立「影响面示意」整节。无调用方只写「未记录调用方」，不解释索引不完整。
 
 魔法数、超长文件、过期 import 写入 `conventions`，不进入 P0/P1/P2。状态码和 URL 若改变分支或账务结果，仍是单独的缺陷卡。
 
@@ -157,18 +157,13 @@ _None_ or short list.
 - **原因列**：用业务/风险语言说明为何不测会出问题（少用纯缩写堆砌；必要时括号补全，如「数组越界」）。
 - **证据列**：写人能读懂的依据（改了什么、哪个类/方法、哪类调用方）。**禁止**把 `05-changed-symbols`、`source:104`、裸 UUID/`symbol <id>`、`hot-but-thin` 当作证据正文；内部路径/id 最多放在句末括号作附录。
 
-## 4. Test gaps (edge-based)
+## 4. Test gaps (JSON only, not rendered)
 
-**统计口径（须在 HTML「测试缺口」标题下展示）：** 以 CodexQA 调用图为准——生产符号
-`tested_count>0` 或 `tests-reach` 非空才算已测。**不是**「仓库有没有 tests 目录 /
-有没有单测文件」。测试文件里的普通 `calls`、文件名带 test、检索命中函数名，都不算覆盖。
-
-| Symbol | tested_count | tests-reach | Risk note |
-|---|---|---|---|
-
-表里只列承载行为的方法。下面四类写入 `waived_symbols`，不单独成行：类初始化块（`static` / `<clinit>`）、类型和构造器、`getX` / `setX` / `isX` 访问器、private 辅助方法。要测的是调用它们的公开或包内方法。嵌套测试里的一次调用不是测试边，行为方法的 `tested_count` 仍为 0 时继续留在表里。
-
-Distinguish: test file name hit ≠ tests edge.
+Do **not** emit an HTML「测试缺口」section or symbol table. `seal-conclusion.py`
+still writes `test_gaps` into `review-conclusion.json` so the closure gate can
+see production symbols with `tested_count==0`. A static initializer, a type or
+constructor, a get/set/is accessor, or a private helper goes to `waived_symbols`.
+Coverage is still `tested_count` / tests-reach, not a test directory name.
 
 ## 5. Sensitive paths
 

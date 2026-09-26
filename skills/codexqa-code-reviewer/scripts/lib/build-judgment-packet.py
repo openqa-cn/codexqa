@@ -2571,6 +2571,46 @@ def _shape_closed(shapes: list[dict], rule_id: str, shape: str) -> bool:
     return any(slot["rule_id"] == rule_id and slot["shape"] == shape for slot in shapes)
 
 
+def _coded_rule_ids() -> set[str]:
+    """Rules the script already matches. They do not go to the model as look_for."""
+    return set(RULE_SHAPES) | {"BIZ-002"}
+
+
+_LOOK_FOR_IDS: set[str] | None = None
+
+
+def _look_for_rule_ids() -> set[str]:
+    """Catalog rules whose text the model can judge."""
+    global _LOOK_FOR_IDS
+    if _LOOK_FOR_IDS is not None:
+        return _LOOK_FOR_IDS
+    found = set()
+    for rule_id, policy in load_rule_policies().items():
+        if policy.get("look_for") and policy.get("do_not_report"):
+            found.add(rule_id)
+    _LOOK_FOR_IDS = found
+    return found
+
+
+def _rule_reported_in_method(closed_lines: dict[str, set[int]], rule_id: str, method: dict) -> bool:
+    """A report line closes the rule only inside the method that contains it."""
+    lines = closed_lines.get(rule_id)
+    if not lines:
+        return False
+    start = method.get("start_line")
+    end = method.get("end_line")
+    if not isinstance(start, int) or not isinstance(end, int):
+        return False
+    return any(start <= line <= end for line in lines)
+
+
+def _has_uncoded_rule(method: dict, coded: set[str], look_for_ids: set[str]) -> bool:
+    for rule_id in method.get("applicable") or []:
+        if rule_id not in coded and rule_id in look_for_ids:
+            return True
+    return False
+
+
 def _first_line(lines: list[tuple[int, str]], pattern: re.Pattern[str]) -> tuple[int, str] | None:
     for number, text in lines:
         if pattern.search(text):
@@ -2726,15 +2766,17 @@ def _method_candidates(
     add("BIZ-004", "no_precondition", _first_line(lines, re.compile(r"\.subtract\s*\(")),
         batch and "for (" in blob and ".subtract(" in blob and "compareTo" not in blob)
     # A triggered shape that was not located stays open. Applicable rules
-    # without a shape map stay open as look_for so an uncoded pattern is still judged.
-    mapped = set(RULE_SHAPES)
-    mapped.update({"BIZ-002", "RES-001", "DES-001", "GLOB-001", "ARCH-001", "ERR-001", "HYG-001"})
+    # without a coded shape stay open as look_for so the model still judges them.
+    # A report line closes that rule only for the method that contains the line.
+    mapped = _coded_rule_ids()
+    look_for_ids = _look_for_rule_ids()
+    closed_lines = _closed_line_set(closed)
     for rule_id in method.get("applicable") or []:
-        if rule_id in mapped or rule_id in _closed_line_set(closed):
+        if rule_id in mapped or rule_id not in look_for_ids:
             continue
         if any(hit["rule_id"] == rule_id for hit in hits):
             continue
-        if not rule_id.startswith(("BIZ-", "PAY-", "TXN-", "CONC-", "AUTH-", "SEC-", "API-")):
+        if _rule_reported_in_method(closed_lines, rule_id, method):
             continue
         open_shapes.append(f"{rule_id}:look_for")
     if entry and not authed and not any(hit["rule_id"] == "SEC-001" for hit in hits):
@@ -3187,10 +3229,13 @@ def write_model_brief(pack: Path, packet: dict, repo: Path | None = None) -> Non
             "applicable": [str(item) for item in (row.get("applicable") or [])],
             "source": slices.get(str(row.get("symbol_id") or ""), ""),
         })
+    coded = _coded_rule_ids()
+    look_for_ids = _look_for_rule_ids()
     methods = []
     for method in catalog:
         holds_open = any(method["start_line"] <= line <= method["end_line"] for line in open_lines)
-        if method["end_line"] - method["start_line"] >= 8 or holds_open:
+        span = method["end_line"] - method["start_line"]
+        if span >= 8 or holds_open or _has_uncoded_rule(method, coded, look_for_ids):
             methods.append(method)
     for method in catalog:
         if method in methods:

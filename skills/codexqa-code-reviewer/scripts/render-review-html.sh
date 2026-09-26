@@ -179,7 +179,6 @@ jq \
       p2_count: ($p2 | length),
       conventions: (as_array($c0.conventions)),
       regression_tests: as_array($c0.regression_tests),
-      test_gaps: as_array($c0.test_gaps),
       fix_order: as_string_list($c0.fix_order),
       residual_risks: as_string_list($c0.residual_risks),
       diagrams: as_array($c0.diagrams)
@@ -440,7 +439,7 @@ jq -c '
     | if nonempty($drawn) then $drawn
       else
         "<div class=\"call-chain\"><div class=\"chain-title\" data-zh=\"未记录调用方\" data-en=\"No caller recorded\">未记录调用方</div>"
-        + "<p data-zh=\"图里没有记下指向这一行的调用边。这不是僵尸函数。这一行可能是注释、导入，或由命令行直接进入；索引不完整时，真实调用边也会缺。\" data-en=\"The graph did not record a caller into this line. That does not make it a dead function. The line may be a comment, an import, or a command-line entry; a thin index also drops real caller edges.\">图里没有记下指向这一行的调用边。这不是僵尸函数。这一行可能是注释、导入，或由命令行直接进入；索引不完整时，真实调用边也会缺。</p></div>"
+        + "<p data-zh=\"图里没有记下指向这一行的调用边。这不是僵尸函数。这一行可能是注释、导入，或由命令行直接进入。\" data-en=\"The graph did not record a caller into this line. That does not make it a dead function. The line may be a comment, an import, or a command-line entry.\">图里没有记下指向这一行的调用边。这不是僵尸函数。这一行可能是注释、导入，或由命令行直接进入。</p></div>"
       end;
   # Machine change_status → bilingual human label (keep raw values in JSON).
   def change_label($s; $mode):
@@ -633,32 +632,6 @@ jq -c '
             + "<td data-zh=\"" + ((.target // "")|esc) + "\" data-en=\"" + ((.target_en // .target // "")|esc) + "\">" + ((.target // "")|esc) + "</td>"
             + "<td data-zh=\"" + ((.why // "")|esc) + "\" data-en=\"" + ((.why_en // .why // "")|esc) + "\">" + ((.why // "")|esc) + "</td>"
             + "<td data-zh=\"" + ((.evidence // "")|esc) + "\" data-en=\"" + ((.evidence_en // .evidence // "")|esc) + "\">" + ((.evidence // "")|esc) + "</td>"
-            + "</tr>"
-          ) | join("")
-          end
-      ),
-      gap_rows: (
-        [ ($r.test_gaps // [])[] | . as $g
-          | if (($g.symbols // []) | length) > 0 then
-              ($g.symbols // [])[]
-              | {
-                  symbol: .,
-                  symbol_en: .,
-                  tested_count: ($g.tested_count // "0"),
-                  tests_reach: ($g.tests_reach // "empty"),
-                  tests_reach_en: ($g.tests_reach_en // "No accepted test edge"),
-                  note: (. + " 在调用图上没有测试边。"),
-                  note_en: (. + " has no accepted test edge.")
-                }
-            else $g end
-        ]
-        | if length == 0 then "<tr><td colspan=\"4\" class=\"muted\" data-zh=\"无\" data-en=\"None\">无</td></tr>"
-          else map(
-            "<tr>"
-            + "<td data-zh=\"" + ((.symbol // "")|esc) + "\" data-en=\"" + ((.symbol_en // .symbol // "")|esc) + "\">" + ((.symbol // "")|esc) + "</td>"
-            + "<td>" + ((.tested_count // "") | tostring | esc) + "</td>"
-            + "<td data-zh=\"" + ((.tests_reach // "")|esc) + "\" data-en=\"" + ((.tests_reach_en // .tests_reach // "")|esc) + "\">" + ((.tests_reach // "")|esc) + "</td>"
-            + "<td data-zh=\"" + ((.note // "")|esc) + "\" data-en=\"" + ((.note_en // .note // "")|esc) + "\">" + ((.note // "")|esc) + "</td>"
             + "</tr>"
           ) | join("")
           end
@@ -990,16 +963,8 @@ jq -n -r --slurpfile p "$FRAG" --arg css "$CSS" --arg js "$JS" '
   + "<th data-zh=\"依据说明\" data-en=\"Evidence\">依据说明</th>"
   + "</tr></thead><tbody>\n"
   + $p.regression_rows + "\n</tbody></table></div></section>\n"
-  + "<section>" + h2bi("测试缺口"; "Test gaps")
-  + "<p class=\"muted\" data-zh=\"统计口径：看调用图里该生产符号是否被测试覆盖边罩住——tested_count&gt;0 或 tests-reach 非空才算已测。这不是「仓库有没有 tests 目录 / 有没有单测文件」。测试文件里普通调用了函数、或文件名带 test，都不算覆盖。因此可能出现：仓库里已有测试代码，但图上仍记为缺口。表里只列行为方法。类初始化块、类型和构造器、get/set/is 访问器、private 辅助方法不单列。\" data-en=\"Criterion: a production symbol counts as tested only when the call graph has a tests coverage edge (tested_count&gt;0 or non-empty tests-reach). This is not about whether a tests/ folder or unit-test files exist. Ordinary calls from test files, or test-like filenames, do not count as coverage. So the repo may already have tests while the graph still shows a gap. The table lists behavior methods only. Static initializers, types and constructors, get/set/is accessors, and private helpers are not separate rows.\">统计口径：看调用图里该生产符号是否被测试覆盖边罩住——tested_count>0 或 tests-reach 非空才算已测。这不是「仓库有没有 tests 目录 / 有没有单测文件」。测试文件里普通调用了函数、或文件名带 test，都不算覆盖。因此可能出现：仓库里已有测试代码，但图上仍记为缺口。表里只列行为方法。类初始化块、类型和构造器、get/set/is 访问器、private 辅助方法不单列。</p>\n"
-  + "<div class=\"table-wrap\"><table><thead><tr>"
-  + "<th data-zh=\"符号\" data-en=\"Symbol\">符号</th>"
-  + "<th>tested_count</th><th>tests-reach</th>"
-  + "<th data-zh=\"说明\" data-en=\"Notes\">说明</th>"
-  + "</tr></thead><tbody>\n"
-  + $p.gap_rows + "\n</tbody></table></div>\n"
-  + "<p class=\"muted lede\"><span data-zh=\"敏感路径：\" data-en=\"Sensitive paths: \">敏感路径：</span>"
-  + "<span data-zh=\"" + ($p.sensitive_zh|esc) + "\" data-en=\"" + ($p.sensitive_en|esc) + "\">" + ($p.sensitive_zh|esc) + "</span></p></section>\n"
+  + "<section>" + h2bi("敏感路径"; "Sensitive paths")
+  + "<p class=\"muted lede\"><span data-zh=\"" + ($p.sensitive_zh|esc) + "\" data-en=\"" + ($p.sensitive_en|esc) + "\">" + ($p.sensitive_zh|esc) + "</span></p></section>\n"
   + "<footer><span data-zh=\"由技能 codexqa-code-reviewer · CodexQA CLI · scripts/render-review-html.sh 生成\" data-en=\"Generated by skill codexqa-code-reviewer · CodexQA CLI · scripts/render-review-html.sh\">由技能 codexqa-code-reviewer · CodexQA CLI · scripts/render-review-html.sh 生成</span>"
   + (if (($p.evidence_dir // "") | length) > 0 then " · <span class=\"path\">\($p.evidence_dir)</span>" else "" end)
   + "</footer>\n"

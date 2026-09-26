@@ -656,7 +656,7 @@ fi
 MERGE_DIFF="$TMP/merge-diff"
 mkdir -p "$MERGE_DIFF"
 printf '%s\n' '{"p0":[],"p1":[],"p2":[]}' >"$MERGE_DIFF/base.json"
-printf '%s\n' '{"p0":[],"p1":[{"title":"helper builds SQL","category":"security","file":"src/A.java","line":4,"existing_code":"rawSql()"}],"p2":[]}' >"$MERGE_DIFF/cand.json"
+printf '%s\n' '{"p0":[],"p1":[{"title":"helper builds SQL","category":"security","rule_id":"SEC-001","file":"src/A.java","line":4,"existing_code":"rawSql()"}],"p2":[]}' >"$MERGE_DIFF/cand.json"
 printf '%s\n' '{"src/A.java":"stmt.execute(sql)"}' >"$MERGE_DIFF/diffs.json"
 "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
   --baseline "$MERGE_DIFF/base.json" --candidates "$MERGE_DIFF/cand.json" \
@@ -665,7 +665,7 @@ printf '%s\n' '{"src/A.java":"stmt.execute(sql)"}' >"$MERGE_DIFF/diffs.json"
   --baseline "$MERGE_DIFF/base.json" --candidates "$MERGE_DIFF/cand.json" \
   --diffs "$MERGE_DIFF/diffs.json" \
   --out "$MERGE_DIFF/dropped.json" --report "$MERGE_DIFF/dropped-report.json" --mode pr >/dev/null
-printf '%s\n' '{"p0":[],"p1":[{"title":"limit uses equals","category":"correctness","file":"src/A.java","line":4,"existing_code":"rawSql()"}],"p2":[]}' >"$MERGE_DIFF/safe.json"
+printf '%s\n' '{"p0":[],"p1":[{"title":"limit uses equals","category":"correctness","rule_id":"LOGIC-001","file":"src/A.java","line":4,"existing_code":"rawSql()"}],"p2":[]}' >"$MERGE_DIFF/safe.json"
 "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
   --baseline "$MERGE_DIFF/base.json" --candidates "$MERGE_DIFF/safe.json" \
   --diffs "$MERGE_DIFF/diffs.json" \
@@ -1222,6 +1222,49 @@ assert "Judge only questions" in brief["read_this"]
 assert "boundary_missed stays false unless preset is true" in brief["read_this"]
 assert "omits closed_shapes" in brief["read_this"]
 assert '"oracle":' in brief["output"]["test_oracle"]
+
+# Uncoded rules stay open per method. A report line closes only that method.
+# A short method with an uncoded rule is scanned. @Test still returns no shapes.
+short = method("audit", "dispatchAuditEvent", 455,
+               "void dispatchAuditEvent() {\n"
+               "    asyncNotifyExecutor.execute(task);\n"
+               "}")
+short["applicable"] = ["TEN-004", "RES-001", "BIZ-003"]
+short["end_line"] = 461
+inside = method("load", "loadAccount", 540,
+                "Account loadAccount(String id) {\n"
+                "    return query(id);\n"
+                "}")
+inside["applicable"] = ["TEN-002", "RES-001"]
+inside["end_line"] = 543
+tested = method("blank", "blankRemarkShouldBeAccepted", 380,
+                "@Test\nvoid blankRemarkShouldBeAccepted() {\n"
+                "    assertTrue(blank(remark));\n"
+                "}")
+tested["applicable"] = ["TEN-002", "RES-001", "DES-001"]
+tested["end_line"] = 383
+closed = [
+    {"rule_id": "RES-001", "shape": "report", "lines": [542], "same_shape_lines": []},
+    {"rule_id": "TEN-002", "shape": "report", "lines": [417], "same_shape_lines": []},
+]
+for row in (short, inside, tested):
+    row["source"] = row["source_body"]
+peers = {row["name"]: row["source"] for row in (short, inside, tested)}
+opened = {}
+for row in (short, inside, tested):
+    _hits, shapes = packet._method_candidates(row, peers, closed)
+    opened[row["name"]] = shapes
+assert packet._has_uncoded_rule(short, packet._coded_rule_ids(), packet._look_for_rule_ids())
+coded_only = dict(short)
+coded_only["applicable"] = ["BIZ-003"]
+assert not packet._has_uncoded_rule(coded_only, packet._coded_rule_ids(), packet._look_for_rule_ids())
+assert "TEN-004:look_for" in opened["dispatchAuditEvent"], opened
+assert "RES-001:look_for" in opened["dispatchAuditEvent"], opened
+assert "BIZ-003:look_for" not in opened["dispatchAuditEvent"], opened
+assert "TEN-002:look_for" in opened["loadAccount"], opened
+assert "RES-001:look_for" not in opened["loadAccount"], opened
+assert opened["blankRemarkShouldBeAccepted"] == [], opened
+print("uncoded look_for stays open per method", opened)
 seal_dir = pack / "seal"
 seal_dir.mkdir()
 (seal_dir / "18-maintainability-signals.json").write_text(json.dumps({
@@ -3220,6 +3263,7 @@ cat >"$MERGE_DIR/baseline.json" <<'EOF'
       "title": "空 catch 吞异常",
       "location": "src/PayService.java:42",
       "category": "resilience",
+      "rule_id": "RES-001",
       "risk": "catch 块为空导致支付失败被静默吞掉",
       "evidence": "14-resilience-signals.json"
     }
@@ -3235,6 +3279,7 @@ cat >"$MERGE_DIR/candidates.json" <<'EOF'
       "title": "静默吞掉支付异常",
       "location": "src/PayService.java:42",
       "category": "llm_judgment",
+      "rule_id": "RES-001",
       "risk": "空的 catch 把支付失败吞掉了",
       "evidence": "LLM read PayService.java"
     },
@@ -3242,6 +3287,7 @@ cat >"$MERGE_DIR/candidates.json" <<'EOF'
       "title": "回调空指针未防护",
       "location": "src/PayService.java:88",
       "category": "correctness",
+      "rule_id": "NULL-001",
       "risk": "amount 为空时解引用会 NPE",
       "evidence": "LLM read PayService.java:88"
     }
@@ -3265,7 +3311,7 @@ if jq -e '
   .kind == "LlmJudgmentSignals"
   and .kept_novel == 1
   and .deduped_against_heuristics == 1
-  and .enriched_existing == 1
+  and .enriched_existing == 0
 ' "$MERGE_DIR/22-llm-judgment.json" >/dev/null; then
   pass "merge-llm-findings dedupes same-line resilience hit and keeps novel"
 else
@@ -3273,14 +3319,14 @@ else
   jq '{merged:.}' "$MERGE_DIR/merged.json" >&2
   jq '.' "$MERGE_DIR/22-llm-judgment.json" >&2
 fi
-# enriched evidence on baseline duplicate target
+# Same key drops the candidate and leaves the baseline card unchanged.
 if jq -e '
   [.p1[]|select(.title=="空 catch 吞异常")|.evidence]
-  | map(test("llm_judgment enrich")) | any
+  | map(test("14-resilience-signals.json") and (test("llm_judgment enrich")|not)) | any
 ' "$MERGE_DIR/merged.json" >/dev/null; then
-  pass "merge-llm-findings enriches duplicate baseline evidence"
+  pass "merge-llm-findings keeps the baseline card when the key matches"
 else
-  fail "merge-llm-findings should enrich matched baseline evidence"
+  fail "merge-llm-findings should keep the baseline card unchanged"
   jq '.p1' "$MERGE_DIR/merged.json" >&2
 fi
 
@@ -3330,8 +3376,8 @@ else
 fi
 cat >"$LEDGER_DIR/candidates.json" <<'EOF'
 {"p0":[],"p1":[
-  {"title":"inside","line":12,"file":"src/Pay.java","category":"correctness","risk":"inside span","evidence":"read"},
-  {"title":"outside","line":500,"file":"src/Pay.java","category":"correctness","risk":"outside span","evidence":"read"}
+  {"title":"inside","line":12,"file":"src/Pay.java","rule_id":"NULL-001","category":"correctness","risk":"inside span","evidence":"read"},
+  {"title":"outside","line":500,"file":"src/Pay.java","rule_id":"NULL-001","category":"correctness","risk":"outside span","evidence":"read"}
 ],"p2":[]}
 EOF
 echo '{"p0":[],"p1":[],"p2":[]}' >"$LEDGER_DIR/baseline.json"
@@ -3563,8 +3609,7 @@ else
   jq '.' "$MERGE_RULE/22.json" >&2
 fi
 
-# Nearby lines are not a relation. An unlabeled card must not swallow a
-# different rule_id a few lines away. The same rule_id still dedupes.
+# Nearby lines are not a relation. The same rule_id on another line stays.
 MERGE_NEAR="$TMP/merge-near"
 mkdir -p "$MERGE_NEAR"
 cat >"$MERGE_NEAR/baseline.json" <<'EOF'
@@ -3601,11 +3646,11 @@ EOF
   --mode pr >/dev/null
 if jq -e '(.p1|length)==2' "$MERGE_NEAR/near.json" >/dev/null \
   && jq -e '.kept_novel==1 and .deduped_against_heuristics==0' "$MERGE_NEAR/near-report.json" >/dev/null \
-  && jq -e '(.p1|length)==1' "$MERGE_NEAR/same.json" >/dev/null \
-  && jq -e '.kept_novel==0 and .deduped_against_heuristics==1' "$MERGE_NEAR/same-report.json" >/dev/null; then
-  pass "merge-llm-findings uses rule_id, not nearby lines, as the relation"
+  && jq -e '(.p1|length)==2' "$MERGE_NEAR/same.json" >/dev/null \
+  && jq -e '.kept_novel==1 and .deduped_against_heuristics==0' "$MERGE_NEAR/same-report.json" >/dev/null; then
+  pass "merge-llm-findings uses file, line, and rule_id, not nearby lines"
 else
-  fail "merge-llm-findings should keep a different relation within three lines and dedupe the same rule_id"
+  fail "merge-llm-findings should keep the same rule_id on a different line"
   jq '.' "$MERGE_NEAR/near.json" "$MERGE_NEAR/near-report.json" "$MERGE_NEAR/same-report.json" >&2
 fi
 
@@ -3956,7 +4001,7 @@ echo '{"p0":[],"p1":[],"p2":[]}' >"$SAST_MERGE/base.json"
 cat >"$SAST_MERGE/cand.json" <<'EOF'
 {"p0":[],"p1":[
   {"title":"SSRF via request URL","risk":"server-side request forgery","category":"security","source":"llm_judgment","file":"pay.py","line":4},
-  {"title":"missing tenant predicate","risk":"lookup by id without tenant_id","category":"security","source":"llm_judgment","file":"q.py","line":2}
+  {"title":"missing tenant predicate","risk":"lookup by id without tenant_id","category":"security","source":"llm_judgment","rule_id":"TEN-002","file":"q.py","line":2}
 ],"p2":[
   {"title":"float money on price","risk":"浮点金额","category":"correctness","source":"llm_judgment","file":"pay.py","line":2}
 ]}
@@ -3967,9 +4012,9 @@ if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
   --out "$SAST_MERGE/merged.json" \
   --report "$SAST_MERGE/22.json" \
   --mode pr >/dev/null \
-  && jq -e '.dropped_sast_owned==2 and .kept_novel==1' "$SAST_MERGE/22.json" >/dev/null \
+  && jq -e '.dropped_missing_rule_id==2 and .kept_novel==1' "$SAST_MERGE/22.json" >/dev/null \
   && jq -e '[.p1[].title] | (index("missing tenant predicate") != null) and (index("SSRF via request URL") == null)' "$SAST_MERGE/merged.json" >/dev/null; then
-  pass "merge drops SAST-owned LLM repeats (SSRF, float money) and keeps residual authz"
+  pass "merge drops candidates without a rule id and keeps a keyed tenant card"
 else
   fail "merge should drop SAST-owned pattern classes"
   jq '.' "$SAST_MERGE/22.json" >&2 || true
@@ -3984,7 +4029,7 @@ echo '{"p0":[],"p1":[],"p2":[]}' >"$SAST_POL/base.json"
 cat >"$SAST_POL/cand.json" <<'EOF'
 {"p0":[],"p1":[
   {"title":"SQL injection via account number","risk":"sql injection","category":"security","source":"llm_judgment","file":"A.java","line":12},
-  {"title":"missing tenant predicate","risk":"lookup by id without tenant_id","category":"security","source":"llm_judgment","file":"q.py","line":2}
+  {"title":"missing tenant predicate","risk":"lookup by id without tenant_id","category":"security","source":"llm_judgment","rule_id":"TEN-002","file":"q.py","line":2}
 ],"p2":[]}
 EOF
 cat >"$SAST_POL/err.json" <<'EOF'
@@ -4003,29 +4048,29 @@ cat >"$SAST_POL/sus-signals.json" <<'EOF'
 EOF
 cat >"$SAST_POL/sus-cand.json" <<'EOF'
 {"p0":[],"p1":[
-  {"title":"SQL injection via helper","risk":"sql injection","pattern_class":"sqli","suspect_id":"sqli:A.java:40","category":"security","source":"llm_judgment","file":"A.java","line":40}
+  {"title":"SQL injection via helper","risk":"sql injection","pattern_class":"sqli","suspect_id":"sqli:A.java:40","rule_id":"SEC-001","category":"security","source":"llm_judgment","file":"A.java","line":40}
 ],"p2":[]}
 EOF
 if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
   --baseline "$SAST_POL/base.json" --candidates "$SAST_POL/cand.json" \
   --sast-signals "$SAST_POL/err.json" --out "$SAST_POL/allow.json" \
   --report "$SAST_POL/allow-report.json" --mode pr >/dev/null \
-  && jq -e '.dropped_sast_owned==1 and .kept_novel==1' "$SAST_POL/allow-report.json" >/dev/null \
+  && jq -e '.dropped_missing_rule_id==1 and .kept_novel==1' "$SAST_POL/allow-report.json" >/dev/null \
   && "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
   --baseline "$SAST_POL/base.json" --candidates "$SAST_POL/cand.json" \
   --sast-signals "$SAST_POL/clean.json" --out "$SAST_POL/sup.json" \
   --report "$SAST_POL/sup-report.json" --mode pr >/dev/null \
-  && jq -e '.dropped_sast_owned==1 and .kept_novel==1' "$SAST_POL/sup-report.json" >/dev/null \
+  && jq -e '.dropped_missing_rule_id==1 and .kept_novel==1' "$SAST_POL/sup-report.json" >/dev/null \
   && "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
   --baseline "$SAST_POL/base.json" --candidates "$SAST_POL/variant.json" \
   --sast-signals "$SAST_POL/clean.json" --out "$SAST_POL/var.json" \
   --report "$SAST_POL/var-report.json" --mode pr >/dev/null \
-  && jq -e '.dropped_sast_owned==1 and .kept_novel==0' "$SAST_POL/var-report.json" >/dev/null \
+  && jq -e '.dropped_missing_rule_id==1 and .kept_novel==0' "$SAST_POL/var-report.json" >/dev/null \
   && "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/merge-llm-findings.py" \
   --baseline "$SAST_POL/base.json" --candidates "$SAST_POL/sus-cand.json" \
   --sast-signals "$SAST_POL/sus-signals.json" --out "$SAST_POL/sus.json" \
   --report "$SAST_POL/sus-report.json" --mode pr >/dev/null \
-  && jq -e '.dropped_sast_owned==0 and .kept_novel==1' "$SAST_POL/sus-report.json" >/dev/null \
+  && jq -e '.dropped_missing_rule_id==0 and .kept_novel==1' "$SAST_POL/sus-report.json" >/dev/null \
   && [[ -f "$ROOT/prompts/sast-suspect-pass.md" ]] \
   && [[ -f "$ROOT/prompts/business-logic-pass.md" ]] \
   && grep -q 'suspect_id' "$ROOT/prompts/sast-suspect-pass.md" \

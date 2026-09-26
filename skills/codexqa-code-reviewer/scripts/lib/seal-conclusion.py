@@ -1218,7 +1218,7 @@ def _is_private(node: dict) -> bool:
 
 
 def _gap_table_name(node: dict, indexed: dict) -> bool:
-    """A row in the HTML test-gap table. Initializers, types, accessors, and private helpers are waived."""
+    """A name listed in test_gaps.symbols. Initializers, types, accessors, and private helpers are waived. The HTML report does not render this list."""
     if node.get("kind") not in {"method", "function"}:
         return False
     name = str(node.get("name") or "")

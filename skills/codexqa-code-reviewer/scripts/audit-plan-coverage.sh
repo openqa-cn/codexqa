@@ -519,7 +519,7 @@ else
   row H4 "证据包前置必要" I FAIL "missing"
 fi
 
-REQ_SECTIONS=(变更摘要 总风险 P0 P1 P2 回归 测试缺口 敏感 Mermaid 修复顺序 残留)
+REQ_SECTIONS=(变更摘要 总风险 P0 P1 P2 回归 敏感 Mermaid 修复顺序 残留)
 MISS=()
 for s in "${REQ_SECTIONS[@]}"; do
   has "$s" "$DESC" "$ROOT/templates/review-report.md" "$ROOT/prompts/pr-diff-review.md" || MISS+=("$s")

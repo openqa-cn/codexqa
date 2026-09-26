@@ -290,13 +290,13 @@ Fails: missing CodexQA provenance; empty change-groups; all `change_status=defau
      `oracle.boundary_missed`, and `oracle.branch_uncovered`, plus that row's
      extra questions. Skip is legal only when every flag is false.
    - Production symbols with `tested_count == 0` are in `test_gaps.symbols` or
-     `waived_symbols`. The HTML table lists behavior methods only. A static
-     initializer, a type or constructor, a get/set/is accessor, or a private
-     helper goes to `waived_symbols` and does not get its own row. A rule whose look-for has several shapes lists
+     `waived_symbols` inside `review-conclusion.json`. The HTML report does not
+     render that table. A static initializer, a type or constructor, a get/set/is
+     accessor, or a private helper goes to `waived_symbols`. A rule whose look-for has several shapes lists
      every shape; the first hit does not close the rest.
 
-Cover: 页头四块（能否合入、最高严重级别、行为缺陷数与证据行数、必测三条路径）、一张卡一个失败场景、规范项（不计缺陷）、回归必测清单、测试缺口、敏感路径。有问题的维度和调用链默认折叠，排在发现项之后。`ok`/`none` 维度不进报告。`seal-conclusion.py` 在渲染前用信号文件补上结论里空着的维度（风险分档、架构契合、复杂度、依赖、韧性、隐私、变更发布、性能、模型语义评审），所以判定稿不写维度长文时，HTML 仍会展示有信号的维度。
-**不渲染：** 建议修复顺序、残留风险与假设、独立影响面示意。
+Cover: 页头四块（能否合入、最高严重级别、行为缺陷数与证据行数、必测三条路径）、一张卡一个失败场景、规范项（不计缺陷）、回归必测清单、敏感路径。有问题的维度和调用链默认折叠，排在发现项之后。`ok`/`none` 维度不进报告。`seal-conclusion.py` 在渲染前用信号文件补上结论里空着的维度（风险分档、架构契合、复杂度、依赖、韧性、隐私、变更发布、性能、模型语义评审），所以判定稿不写维度长文时，HTML 仍会展示有信号的维度。
+**不渲染：** 测试缺口表、建议修复顺序、残留风险与假设、独立影响面示意。`test_gaps` 仍写入 `review-conclusion.json` 供闭合校验，不进 HTML。
 `render-review-html.sh` 会过滤干净维度；仍须在 `review-conclusion.json` 写全评估结果与
 `dimensions_covered`。Final findings must already be **dedupe-merged** (no duplicate
 heuristic + LLM cards for the same defect).
@@ -313,7 +313,8 @@ explain risks in plain language — see [references/review-dimensions.md](refere
 - `title`: SARIF `shortDescription`，规则名，例如 `SQL 注入`。不写规则编号，不写 `这一行不是…`。
 - `risk`: Semgrep / SARIF `message`。`在第 N 行检测到 \`代码\`。` 接一条影响。不写 `不会` / `不是` / `而不是`。
 - `fix`: SARIF `fix` / Sonar recommendation。`将第 N 行 \`代码\` 改为：` 接安全写法。不写 `不用` / `不要` / `而不是`。
-- `call_chain`: `谁会走到这一行`. No recorded caller stays `未记录调用方`, not `没有入边` and not a dead function.
+- `call_chain`: `谁会走到这一行`. No recorded caller stays `未记录调用方`, not `没有入边` and not a dead function. Do not add that the index is thin, that stubs capped confidence at UNKNOWN, or that real edges may be missing.
+- Stub counts and the UNKNOWN confidence cap stay in the validate log and `manifest.index_quality`. Do not put them in `REVIEW-REPORT.html` or in the user-facing summary.
 - PR cards only. A file outside the three-dot diff is a branch-drift skip, not `既有代码`.
 
 **Bilingual HTML:** Write primary prose in Chinese (`summary`, `intent`, `scope`,
