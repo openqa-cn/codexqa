@@ -120,6 +120,33 @@ RULE_SHAPES = {
     "HYG-001": ("identifier_in_output",),
 }
 SHORT_CALLEE_MAX = 40
+_FINALLY_RELEASE = re.compile(
+    r"(?i)finally[\s\S]{0,800}(?:\.close\s*\(|\.disconnect\s*\()"
+)
+_STREAM_CTOR = re.compile(
+    r"new\s+(?:[\w.]+\.)?(?:File(?:Input|Output)Stream|File(?:Reader|Writer)|"
+    r"Buffered(?:Reader|Writer)|PrintWriter)\s*\("
+)
+_LEAK_ALLOC = re.compile(
+    r"(?i)DriverManager|createStatement|prepareStatement|executeQuery|"
+    r"ResultSet|getOutputStream|getInputStream|Executors\.new"
+)
+_RESOURCE_HOST = re.compile(
+    r"(?i)("
+    r"DriverManager|getConnection\s*\(|createStatement|prepareStatement|executeQuery|"
+    r"ResultSet|FileOutputStream|FileInputStream|getOutputStream|getInputStream|"
+    r"Executors\.new|new\s+\w*(?:Stream|Socket|Connection|Reader|Writer)\b|"
+    r"HttpsURLConnection|openConnection\s*\("
+    r")"
+)
+_NESTED_TEST_CLASS = re.compile(r"\bclass\s+\w*Test\b")
+_TEST_PATH = re.compile(
+    r"(?i)(^|/)(test|tests|__tests__|spec)(/|$)|Test\.java$|_test\.go$|^test_.*\.py$"
+)
+_REVERSAL_NAME = re.compile(r"(?i)(?:reverse|refund|chargeback)")
+_EXTRA_ID_LOOKUP = re.compile(
+    r"(?i)\b(?:find|load|fetch)\w*\s*\(|\bget\w*(?:Account|Record|Transfer)\w*\s*\("
+)
 _KIND_TO_SHAPE = {
     "retry_side_effect": "retry_without_idempotency",
     "null_deref_after_load": "unguarded_load",
@@ -164,7 +191,17 @@ BRIEF_READ_THIS = (
     "Identifiers in one log statement are one finding, on the line with the strongest identifier. "
     "A money check that omits a fee posted in the same method is the fee_omitted shape. "
     "Do not drop SEC-001 because PAY-004 or AUTH-001 also matches. "
-    "Seed hits and one-line getters are omitted. Do not run merge-llm-findings.py."
+    "Seed hits and one-line getters are omitted. Do not run merge-llm-findings.py. "
+    "still_open is one row per shape, with hosts. Judge each shape once. "
+    "Read only those hosts. Do not list the same shape twice. "
+    "Do not restate look_for, do_not_report, or closed_lines. "
+    "closed_lines are already cards. Do not open review-conclusion or rule-construction. "
+    "A different shape is its own finding. Do not decide whether it is the same defect as a closed line. "
+    "chain_dimensions.chains is every call chain CodexQA recorded. "
+    "Judge each chain once against chain_dimensions.rules. "
+    "File a hit on that chain step's line. Do not invent a caller or a chain. "
+    "An empty chains list means this channel is closed. "
+    "A line already in closed_shapes or candidate_hits stays closed."
 )
 MATCH_OUTSIDE_APPLICABLE = (
     "applicable is the first list to judge, not an exclusion list. "
@@ -2592,6 +2629,116 @@ def _look_for_rule_ids() -> set[str]:
     return found
 
 
+def _closed_lines_for(closed: list[dict], rule_id: str) -> list[int]:
+    lines: list[int] = []
+    for slot in closed:
+        if slot.get("rule_id") != rule_id:
+            continue
+        for number in (slot.get("lines") or []) + (slot.get("same_shape_lines") or []):
+            if isinstance(number, int) and number not in lines:
+                lines.append(number)
+    return lines
+
+
+def _res_still_open(source: str) -> bool:
+    """A resource the scanner did not already close.
+
+    A finally that closes or disconnects covers ResultSet and the request
+    stream. A stream constructed on the success path, with no release in
+    finally, stays open.
+    """
+    if not _RESOURCE_HOST.search(source or ""):
+        return False
+    if (
+        _STREAM_CTOR.search(source)
+        and not re.search(r"\btry\s*\(", source)
+        and not _FINALLY_RELEASE.search(source)
+    ):
+        return True
+    if _FINALLY_RELEASE.search(source):
+        return False
+    return _LEAK_ALLOC.search(source) is not None
+
+
+def _keep_open_shape(method: dict, shape: str) -> bool:
+    """Drop shapes a host cannot carry. DES-001 is filed once for the file."""
+    if shape == "DES-001:look_for":
+        return False
+    start = method.get("start_line")
+    end = method.get("end_line")
+    if isinstance(start, int) and start == end:
+        return False
+    if shape == "RES-001:look_for":
+        return _res_still_open(method.get("source") or "")
+    return True
+
+
+def _group_still_open(rows: list[dict], closed: list[dict], filed: set[tuple[str, str]]) -> list[dict]:
+    """One row per shape. Identical method lists are not repeated."""
+    buckets: dict[str, list[dict]] = {}
+    for row in rows:
+        host = {
+            "method": row.get("method"),
+            "path": row.get("path"),
+            "start_line": row.get("start_line"),
+            "end_line": row.get("end_line"),
+        }
+        for shape in row.get("shapes") or []:
+            rule_id, _, name = shape.partition(":")
+            if name != "look_for" and (rule_id, name) in filed:
+                continue
+            buckets.setdefault(shape, [])
+            key = (host["method"], host["path"])
+            seen = {(item["method"], item["path"]) for item in buckets[shape]}
+            if key not in seen:
+                buckets[shape].append(host)
+    grouped = []
+    for shape, hosts in buckets.items():
+        if not hosts:
+            continue
+        rule_id = shape.split(":", 1)[0]
+        grouped.append({
+            "shape": shape,
+            "closed_lines": _closed_lines_for(closed, rule_id),
+            "hosts": hosts,
+        })
+    return grouped
+
+
+def _nested_test_hits(repo: Path | None, paths: list[str], closed_lines: set[int]) -> list[dict]:
+    """A production file that nests a test type. The import row is already closed."""
+    if repo is None:
+        return []
+    hits = []
+    seen: set[tuple[str, int]] = set()
+    for rel in paths:
+        if not rel or _TEST_PATH.search(rel.replace("\\", "/")):
+            continue
+        full = repo / rel
+        if not full.is_file():
+            continue
+        try:
+            text = full.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        for number, line in enumerate(text.splitlines(), 1):
+            if number in closed_lines or not _NESTED_TEST_CLASS.search(line):
+                continue
+            key = (rel, number)
+            if key in seen:
+                continue
+            seen.add(key)
+            hits.append({
+                "rule_id": "DES-001",
+                "shape": "nested_test",
+                "line": number,
+                "file": rel,
+                "method": "",
+                "quote": _quote_line(line),
+            })
+    return hits
+
+
 def _rule_reported_in_method(closed_lines: dict[str, set[int]], rule_id: str, method: dict) -> bool:
     """A report line closes the rule only inside the method that contains it."""
     lines = closed_lines.get(rule_id)
@@ -2765,6 +2912,17 @@ def _method_candidates(
     add("BIZ-004", "failure_continues", loop_persist, batch and "for (" in blob and "persist(" in blob)
     add("BIZ-004", "no_precondition", _first_line(lines, re.compile(r"\.subtract\s*\(")),
         batch and "for (" in blob and ".subtract(" in blob and "compareTo" not in blob)
+    closed_ids = {
+        line
+        for slot in closed
+        if slot.get("rule_id") == "TEN-005"
+        for line in (slot.get("lines") or []) + (slot.get("same_shape_lines") or [])
+    }
+    if _REVERSAL_NAME.search(name):
+        for number, text in lines:
+            if number in closed_ids or not _EXTRA_ID_LOOKUP.search(text):
+                continue
+            add("TEN-005", "id_lookup_omits_tenant", (number, text), True)
     # A triggered shape that was not located stays open. Applicable rules
     # without a coded shape stay open as look_for so the model still judges them.
     # A report line closes that rule only for the method that contains the line.
@@ -2938,6 +3096,16 @@ _CARD_TEXT = {
         "在第 {line} 行检测到 `{quote}`。卡号、姓名或商户号被写入日志或回单。{also}",
         "将第 {line} 行 `{quote}` 改为：只记录卡号末四位和账号掩码，回单与日志同样掩码后再写。",
     ),
+    ("TEN-005", "id_lookup_omits_tenant"): (
+        "冲正按账号读取未校验租户",
+        "在第 {line} 行检测到 `{quote}`。冲正按账号读取账户时没有带上租户。{also}",
+        "将第 {line} 行 `{quote}` 改为：按服务端租户和账号一起读取，租户不一致时按未找到拒绝冲正。",
+    ),
+    ("DES-001", "nested_test"): (
+        "生产类内嵌测试",
+        "在第 {line} 行检测到 `{quote}`。结算生产类型中嵌套了测试类，测试框架随生产类一起进入编译单元。",
+        "将第 {line} 行 `{quote}` 改为：把该测试类移到独立的测试源码文件。",
+    ),
 }
 
 
@@ -3040,7 +3208,7 @@ def _assertion_text(source: str) -> str:
 
 
 def _claim_status(name: str, source: str) -> str:
-    """satisfied when every claimed token is read by an assertion. unmatched stays open."""
+    """satisfied when every claimed token is read by an assertion."""
     folded = name.lower()
     asserted = _assertion_text(source)
     saw = False
@@ -3065,7 +3233,7 @@ def _unsafe_pass(source: str) -> bool | None:
 
 
 def _branch_uncovered(name: str, source: str, flags: dict) -> bool | None:
-    """None when the name and the assertion have to be compared by the model."""
+    """None only when the name makes no listed claim and still calls the service."""
     if not _ASSERT_CALL.search(source):
         return True
     if flags.get("boundary_missed") or flags.get("threshold_pass") or flags.get("unsafe_pass"):
@@ -3074,7 +3242,7 @@ def _branch_uncovered(name: str, source: str, flags: dict) -> bool | None:
         return False
     status = _claim_status(name, source)
     if status == "unmatched":
-        return None
+        return True
     if status == "satisfied":
         return False
     if _ASSERT_CALL.search(source) and not _SERVICE_CALL.search(source):
@@ -3144,6 +3312,232 @@ def _private_method_names(methods: list[dict]) -> set[str]:
             if match:
                 names.add(match.group(1))
     return names
+
+
+CHAIN_DIMENSION_RULES = (
+    {
+        "id": "resilience",
+        "title": "韧性",
+        "look_for": "这条链上的数据库、网关或远程调用没有超时；重试没有退避或幂等；异常被吞掉后仍入账或继续批处理。",
+        "do_not_report": "链上已有超时、退避和补偿，或该行已在 closed_shapes、candidate_hits 中。",
+    },
+    {
+        "id": "privacy",
+        "title": "隐私",
+        "look_for": "这条链把卡号、证件、邮箱或姓名写入日志、回单、文件或响应。",
+        "do_not_report": "链上只保留掩码或令牌，或该行已有卡片。",
+    },
+    {
+        "id": "performance",
+        "title": "性能",
+        "look_for": "这条链在循环里逐条访问数据库或远程接口，或在热路径上无界增长缓存。",
+        "do_not_report": "访问在循环外合并，或缓存有上限和失效。",
+    },
+    {
+        "id": "observability",
+        "title": "可观测性",
+        "look_for": "这条链捕获失败后没有日志、指标或链路标识。",
+        "do_not_report": "失败路径已写日志、指标或链路标识。",
+    },
+    {
+        "id": "contract",
+        "title": "契约",
+        "look_for": "这条链把调用方文本拼进 HTML，或把失败返回成成功。",
+        "do_not_report": "输出已转义，失败用明确拒绝码返回。",
+    },
+    {
+        "id": "rollout",
+        "title": "变更与发布",
+        "look_for": "这条链同时写新旧两套状态，却没有开关、迁移或回滚。",
+        "do_not_report": "链上能看出开关、迁移步骤或回滚路径。",
+    },
+    {
+        "id": "design",
+        "title": "架构契合",
+        "look_for": "这条链从入口直接拼 SQL 或直接打开连接，或生产类型里嵌着测试。",
+        "do_not_report": "入口经过已有的数据访问边界，测试在独立源码中。",
+    },
+    {
+        "id": "complexity",
+        "title": "复杂度",
+        "look_for": "这条链上一个方法同时做校验、入账、通知和审计，失败路径被分支挡住。",
+        "do_not_report": "这些步骤已拆到链上不同的方法，且失败路径看得清。",
+    },
+    {
+        "id": "dependencies",
+        "title": "依赖",
+        "look_for": "这条链要靠过期库或快照版本才能编译或运行。",
+        "do_not_report": "链上没有过期库或快照版本。",
+    },
+    {
+        "id": "maintainability",
+        "title": "可维护性",
+        "look_for": "这条链用魔法数或未完成的 TODO 决定金额、超时或限额。",
+        "do_not_report": "金额、超时和限额来自命名常量或配置，且该字面量已在规范项。",
+    },
+)
+_CHAIN_LIMIT = 24
+_CHAIN_DEPTH = 6
+_CHAIN_SOURCE_LINES = 40
+
+
+def _symbol_table(pack: Path) -> dict[str, dict]:
+    found: dict[str, dict] = {}
+    for name in ("05-coverage-universe.json", "05-changed-symbols.json"):
+        doc = load_json(pack / name)
+        if not isinstance(doc, dict):
+            continue
+        nodes = doc.get("nodes") or (doc.get("result") or {}).get("nodes") or []
+        for node in nodes:
+            if not isinstance(node, dict) or not node.get("id"):
+                continue
+            found[str(node["id"])] = node
+    return found
+
+
+def _impact_edges(pack: Path) -> list[dict]:
+    impact = pack / "impact"
+    if not impact.is_dir():
+        return []
+    rows = []
+    seen = set()
+    for path in sorted(impact.glob("*/edges-in.json")):
+        doc = load_json(path)
+        if not isinstance(doc, dict):
+            continue
+        for edge in doc.get("edges") or []:
+            if not isinstance(edge, dict):
+                continue
+            key = (
+                str(edge.get("from_id") or ""),
+                str(edge.get("to_id") or ""),
+                str(edge.get("call_info") or ""),
+            )
+            if key in seen or not key[0] or not key[1]:
+                continue
+            seen.add(key)
+            rows.append(edge)
+    return rows
+
+
+def _call_info(raw) -> dict:
+    if isinstance(raw, dict):
+        return raw
+    if not isinstance(raw, str) or not raw.strip():
+        return {}
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError:
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def _step_source(method: dict | None, repo: Path | None, file_path: str, start, end) -> str:
+    if method and method.get("source"):
+        lines = method["source"].splitlines()
+        return "\n".join(lines[:_CHAIN_SOURCE_LINES])
+    if repo is None or not file_path or not isinstance(start, int):
+        return ""
+    full = repo / file_path
+    if not full.is_file():
+        return ""
+    try:
+        text = full.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return ""
+    stop = end if isinstance(end, int) and end >= start else start
+    stop = min(stop, start + _CHAIN_SOURCE_LINES - 1, len(text))
+    return "\n".join(f"{number}|{text[number - 1]}" for number in range(start, stop + 1))
+
+
+def _walk_chains(outgoing: dict[str, list[tuple[str, dict]]], roots: list[str]) -> list[list[tuple[str, dict]]]:
+    """Each chain starts at a CodexQA caller and ends at the last callee."""
+    chains = []
+
+    def walk(node: str, path: list[tuple[str, dict]]) -> None:
+        if len(chains) >= _CHAIN_LIMIT:
+            return
+        nxt = outgoing.get(node) or []
+        if not nxt or len(path) >= _CHAIN_DEPTH:
+            if len(path) >= 2:
+                chains.append(path)
+            return
+        extended = False
+        for to_id, info in nxt:
+            if any(step[0] == to_id for step in path):
+                continue
+            extended = True
+            walk(to_id, path + [(to_id, info)])
+        if not extended and len(path) >= 2:
+            chains.append(path)
+
+    for root in roots:
+        if len(chains) >= _CHAIN_LIMIT:
+            break
+        walk(root, [(root, {})])
+    return chains
+
+
+def build_chain_dimensions(pack: Path, methods: list[dict], repo: Path | None) -> dict:
+    """CodexQA call chains plus the dimension semantic rules for one LLM pass."""
+    symbols = _symbol_table(pack)
+    edges = _impact_edges(pack)
+    outgoing: dict[str, list[tuple[str, dict]]] = {}
+    incoming = set()
+    for edge in edges:
+        info = _call_info(edge.get("call_info"))
+        info["from_file"] = edge.get("from_file") or ""
+        info["to_file"] = edge.get("to_file") or ""
+        from_id = str(edge.get("from_id") or "")
+        to_id = str(edge.get("to_id") or "")
+        outgoing.setdefault(from_id, []).append((to_id, info))
+        incoming.add(to_id)
+    roots = [node for node in outgoing if node not in incoming]
+    if not roots:
+        roots = list(outgoing)
+    by_name = {
+        (str(method.get("name") or ""), str(method.get("path") or "")): method
+        for method in methods
+    }
+    chains = []
+    seen = set()
+    for path in _walk_chains(outgoing, roots):
+        steps = []
+        for index, (node_id, info) in enumerate(path):
+            node = symbols.get(node_id) or {}
+            name = str(node.get("name") or info.get("callee") or "")
+            file_path = str(
+                node.get("file_path") or node.get("path") or info.get("to_file") or info.get("from_file") or ""
+            )
+            start = node.get("start_line")
+            end = node.get("end_line")
+            method = by_name.get((name, file_path))
+            call = path[index + 1][1] if index + 1 < len(path) else {}
+            line = call.get("line")
+            if not isinstance(line, int):
+                line = start if isinstance(start, int) else None
+            calls = str(call.get("callee") or "")
+            if not calls and index + 1 < len(path):
+                nxt = symbols.get(path[index + 1][0]) or {}
+                calls = str(nxt.get("name") or "")
+            steps.append({
+                "name": name,
+                "file": file_path,
+                "line": line,
+                "calls": calls,
+                "source": _step_source(method, repo, file_path, start, end),
+            })
+        key = tuple((step["name"], step["file"], step["line"]) for step in steps)
+        if not steps or key in seen:
+            continue
+        seen.add(key)
+        chains.append({"id": f"chain-{len(chains) + 1}", "steps": steps})
+    return {
+        "kind": "ChainDimensions",
+        "rules": [dict(rule) for rule in CHAIN_DIMENSION_RULES],
+        "chains": chains,
+        "note": "Judge only these CodexQA call chains. Do not invent a caller.",
+    }
 
 
 def write_model_brief(pack: Path, packet: dict, repo: Path | None = None) -> None:
@@ -3370,12 +3764,27 @@ def write_model_brief(pack: Path, packet: dict, repo: Path | None = None) -> Non
             candidate_hits.append(hit)
         if lock_order_closed:
             pending_shapes = [item for item in pending_shapes if not item.startswith("CONC-002:")]
+        pending_shapes = [item for item in pending_shapes if _keep_open_shape(method, item)]
         if pending_shapes:
             still_open.append({
                 "method": method.get("name"),
                 "path": method.get("path"),
+                "start_line": method.get("start_line"),
+                "end_line": method.get("end_line"),
                 "shapes": pending_shapes,
             })
+    nested_closed = set(_closed_lines_for(closed_shapes, "DES-001"))
+    nested_paths = []
+    for method in methods:
+        path = str(method.get("path") or "")
+        if path and path not in nested_paths:
+            nested_paths.append(path)
+    for hit in _nested_test_hits(repo, nested_paths, nested_closed):
+        key = (hit["rule_id"], hit["shape"], hit["line"], hit.get("file"))
+        if key in seen_hits:
+            continue
+        seen_hits.add(key)
+        candidate_hits.append(hit)
     merged_hits = []
     merged_index: dict[tuple[str, str], dict] = {}
     for hit in candidate_hits:
@@ -3393,8 +3802,17 @@ def write_model_brief(pack: Path, packet: dict, repo: Path | None = None) -> Non
         "zero_amount", "null_amount", "default_zone_cutoff", "unread_expiry",
         "collection_write", "off_by_one_slice", "inverted_condition", "truncating_round",
     }
+    p2_shapes = {"nested_test"}
     for hit in candidate_hits:
-        hit["severity"] = "p1" if hit["shape"] in p1_shapes else "p0"
+        if hit["shape"] in p2_shapes:
+            hit["severity"] = "p2"
+        elif hit["shape"] in p1_shapes:
+            hit["severity"] = "p1"
+        else:
+            hit["severity"] = "p0"
+    filed_shapes = {(hit["rule_id"], hit["shape"]) for hit in candidate_hits}
+    still_open = _group_still_open(still_open, closed_shapes, filed_shapes)
+    for hit in candidate_hits:
         if hit.get("also_lines"):
             hit["same_fix"] = True
     for suspect in open_suspects:
@@ -3486,7 +3904,9 @@ def write_model_brief(pack: Path, packet: dict, repo: Path | None = None) -> Non
             "file": "judgment.json",
             "findings": (
                 "Already written in judgment.json from candidate_hits. Do not rewrite title, risk, fix, line, or severity. "
-                "Append a finding only for a still_open shape. "
+                "still_open is one row per shape. Judge each row once and read only its hosts. "
+                "Do not restate look_for, do_not_report, or closed_lines. "
+                "A different shape is a separate finding. "
                 "Test rows go to test_oracle and suspect_hits only."
             ),
             "suspect_hits": (
@@ -3499,15 +3919,28 @@ def write_model_brief(pack: Path, packet: dict, repo: Path | None = None) -> Non
                 + ORACLE_JUDGMENT
             ),
             "card": "Candidate cards are already in judgment.json. Do not rewrite them.",
-            "then": "Add test_oracle rows only, then render-review-html.sh --dir <pack>. Do not rewrite findings.",
+            "chain_dimensions": (
+                "Judge each chain once against rules. "
+                "A hit is one finding on that step line. "
+                "Leave source empty. Do not invent a chain."
+            ),
+            "then": "Add test_oracle rows and chain findings, then render-review-html.sh --dir <pack>. Do not rewrite findings.",
         },
+    }
+    chain_dimensions = build_chain_dimensions(pack, methods, repo)
+    write_json(pack / "32-chain-dimensions.json", chain_dimensions)
+    brief["chain_dimensions"] = {
+        "rules": chain_dimensions["rules"],
+        "chains": chain_dimensions["chains"],
+        "note": chain_dimensions["note"],
     }
     write_json(pack / "31-model-brief.json", brief)
     print(
         "Model brief written: "
         f"methods={len(methods)} candidates={len(candidate_hits)} "
         f"still_open={len(still_open)} open_suspects={len(open_suspects)} "
-        f"oracle_open={len(test_oracle_open)} groups={len(groups)}"
+        f"oracle_open={len(test_oracle_open)} groups={len(groups)} "
+        f"chains={len(chain_dimensions['chains'])}"
     )
 
 

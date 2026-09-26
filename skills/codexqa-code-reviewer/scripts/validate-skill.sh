@@ -1194,16 +1194,12 @@ doc = {
 packet.write_model_brief(pack, doc, None)
 brief = json.loads((pack/"31-model-brief.json").read_text(encoding="utf-8"))
 names = [row.get("name") for row in brief["methods"]]
-assert names == ["gatewayFailoverShouldCompleteQuietly"], names
+assert names == [], names
 assert brief["still_open"] == [], brief["still_open"]
 assert brief["candidate_hits"] == []
 assert brief["closed_shapes"] == []
 assert brief["rules"] == {}
-by_line = {row["line"]: row for row in brief["test_oracle_open"]}
-assert set(by_line) == {150}, sorted(by_line)
-assert by_line[150]["questions"] == ["branch_uncovered"], by_line[150]
-assert by_line[150]["preset"]["boundary_missed"] is False
-assert "branch_uncovered" not in by_line[150]["preset"]
+assert brief["test_oracle_open"] == []
 ids = [row.get("derive_suspect_id") for row in brief["open_suspects"]]
 assert ids == [], ids
 judgment = json.loads((pack/"judgment.json").read_text(encoding="utf-8"))
@@ -1213,6 +1209,8 @@ assert resolved[10]["oracle"]["branch_uncovered"] is False
 assert resolved[50]["oracle"]["threshold_pass"] is True
 assert resolved[50]["oracle"]["boundary_missed"] is False
 assert resolved[170]["oracle"]["branch_uncovered"] is True
+assert resolved[150]["oracle"]["branch_uncovered"] is True
+assert resolved[150]["oracle"]["unsafe_pass"] is False
 assert 30 not in resolved and 70 not in resolved
 assert any(item == "log_exposure:Pay.java:111" for item in judgment["suspect_hits"]), judgment["suspect_hits"]
 assert any(row.get("rule_id") == "HYG-001" for row in judgment["findings"]), judgment["findings"]
@@ -1265,6 +1263,56 @@ assert "TEN-002:look_for" in opened["loadAccount"], opened
 assert "RES-001:look_for" not in opened["loadAccount"], opened
 assert opened["blankRemarkShouldBeAccepted"] == [], opened
 print("uncoded look_for stays open per method", opened)
+getter = method("rate", "getRate", 612, "BigDecimal getRate() { return rate; }")
+getter["source"] = getter["source_body"]
+getter["end_line"] = 612
+assert packet._keep_open_shape(getter, "RES-001:look_for") is False
+assert packet._keep_open_shape(getter, "DES-001:look_for") is False
+loader = method("load", "loadAccount", 540,
+                "540|    Account loadAccount(String id) {\n"
+                "545|        conn = DriverManager.getConnection(url);\n"
+                "549|        ResultSet rs = stmt.executeQuery(sql);\n")
+loader["source"] = loader["source_body"]
+loader["end_line"] = 569
+assert packet._keep_open_shape(loader, "RES-001:look_for") is True
+released = method("load2", "loadAccount", 540,
+                  "conn = DriverManager.getConnection(url);\n"
+                  "ResultSet rs = stmt.executeQuery(sql);\n"
+                  "} finally {\n"
+                  "    stmt.close();\n")
+released["source"] = released["source_body"]
+released["end_line"] = 569
+assert packet._keep_open_shape(released, "RES-001:look_for") is False
+plain = method("fee", "calculateFee", 491, "491|    BigDecimal calculateFee() { return fee; }")
+plain["source"] = plain["source_body"]
+plain["end_line"] = 502
+assert packet._keep_open_shape(plain, "RES-001:look_for") is False
+grouped = packet._group_still_open([
+    {"method": "getRate", "path": "Pay.java", "start_line": 612, "end_line": 612,
+     "shapes": ["RES-001:look_for", "DES-001:look_for"]},
+    {"method": "getAmount", "path": "Pay.java", "start_line": 687, "end_line": 687,
+     "shapes": ["RES-001:look_for", "DES-001:look_for"]},
+    {"method": "loadAccount", "path": "Pay.java", "start_line": 540, "end_line": 569,
+     "shapes": ["RES-001:look_for"]},
+], [{"rule_id": "RES-001", "shape": "report", "lines": [68, 467], "same_shape_lines": []}], set())
+shapes = {row["shape"]: [host["method"] for host in row["hosts"]] for row in grouped}
+assert shapes["RES-001:look_for"] == ["getRate", "getAmount", "loadAccount"], shapes
+assert shapes["DES-001:look_for"] == ["getRate", "getAmount"], shapes
+assert len(grouped) == 2, grouped
+assert next(row["closed_lines"] for row in grouped if row["shape"] == "RES-001:look_for") == [68, 467]
+reverse = method("rev", "reverseTransfer", 387,
+                 "record = transferStore.find(transferId);\n"
+                 "payer = loadAccount(record.getFromAccountNo());\n"
+                 "payee = loadAccount(record.getToAccountNo());\n")
+reverse["source"] = reverse["source_body"]
+reverse["end_line"] = 410
+reverse["applicable"] = ["TEN-005"]
+rev_hits, rev_open = packet._method_candidates(reverse, {"reverseTransfer": reverse["source"]}, [
+    {"rule_id": "TEN-005", "shape": "report", "lines": [387], "same_shape_lines": []},
+])
+assert [hit["line"] for hit in rev_hits] == [388, 389], rev_hits
+assert "TEN-005:look_for" not in rev_open, rev_open
+print("still_open collapses by shape", grouped)
 seal_dir = pack / "seal"
 seal_dir.mkdir()
 (seal_dir / "18-maintainability-signals.json").write_text(json.dumps({
@@ -1295,6 +1343,34 @@ assert covered[10]["oracle"]["unsafe_pass"] is False
 assert not str(covered[10]["note"]).startswith("脚本默认跳过")
 assert covered[50]["oracle"]["branch_uncovered"] is True
 assert covered[50]["oracle"]["threshold_pass"] is True
+typed = {"p0": [], "p1": [], "p2": []}
+seal.merge_judgment(typed, {"findings": [
+    {"title": "余额校验未计入手续费", "line": 111, "file": "Pay.java", "rule_id": "BIZ-003", "severity": "p0"},
+    {"title": "证书校验被关闭", "line": 81, "file": "Pay.java", "source": "scripted_policy", "severity": "p0"},
+]})
+seal.merge_judgment(typed, {"findings": [
+    {"title": "余额校验未计入手续费", "line": 111, "file": "Pay.java", "rule_id": "BIZ-003", "severity": "p0"},
+]})
+assert typed["p0"][0]["source"] == "llm_judgment", typed["p0"]
+assert typed["p0"][1]["source"] == "scripted_policy", typed["p0"]
+assert len(typed["p0"]) == 2, typed["p0"]
+chain_pack = pack / "chains"
+(chain_pack / "impact" / "caller").mkdir(parents=True)
+(chain_pack / "05-changed-symbols.json").write_text(json.dumps({"nodes": [
+    {"id": "caller", "kind": "method", "name": "submitTransfer", "file_path": "src/Pay.java", "start_line": 10, "end_line": 20},
+    {"id": "callee", "kind": "method", "name": "loadAccount", "file_path": "src/Pay.java", "start_line": 40, "end_line": 48},
+]}), encoding="utf-8")
+(chain_pack / "impact" / "caller" / "edges-in.json").write_text(json.dumps({"edges": [{
+    "from_id": "caller", "to_id": "callee",
+    "from_file": "src/Pay.java", "to_file": "src/Pay.java",
+    "call_info": json.dumps({"callee": "loadAccount", "line": 12}),
+}]}), encoding="utf-8")
+built = packet.build_chain_dimensions(chain_pack, [], None)
+assert [rule["id"] for rule in built["rules"]][:3] == ["resilience", "privacy", "performance"], built["rules"]
+assert len(built["chains"]) == 1, built["chains"]
+assert [step["name"] for step in built["chains"][0]["steps"]] == ["submitTransfer", "loadAccount"], built["chains"]
+assert built["chains"][0]["steps"][0]["line"] == 12
+assert built["chains"][0]["steps"][0]["calls"] == "loadAccount"
 print("oracle brief narrowed", names)
 PY
 if [[ $? -eq 0 ]]; then
@@ -4420,8 +4496,14 @@ fi
 rm -rf "$NOMANIFEST"
 if grep -q 'still_open, open_suspects, and test_oracle_open are all empty' \
     "$ROOT/scripts/lib/build-judgment-packet.py" \
+  && grep -q 'one row per shape' "$ROOT/scripts/lib/build-judgment-packet.py" \
+  && grep -q 'Do not restate look_for' "$ROOT/scripts/lib/build-judgment-packet.py" \
+  && grep -q 'one row per shape' "$ROOT/SKILL.md" \
   && grep -q 'install-sast-tools.sh in parallel' "$ROOT/SKILL.md" \
-  && grep -q 'do not read methods or `judgment-work` groups' "$ROOT/prompts/llm-judgment-pass.md"; then
+  && grep -q 'do not read methods or `judgment-work` groups' "$ROOT/prompts/llm-judgment-pass.md" \
+  && grep -q 'one row per shape' "$ROOT/prompts/llm-judgment-pass.md" \
+  && grep -q 'chain_dimensions.chains' "$ROOT/scripts/lib/build-judgment-packet.py" \
+  && grep -q 'chain_dimensions.chains' "$ROOT/SKILL.md"; then
   pass "fast path keeps sealed cards and skips empty judgment lists"
 else
   fail "fast path instructions are incomplete"

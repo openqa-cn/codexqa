@@ -674,7 +674,11 @@ def finding_fingerprint(finding: dict) -> str:
 def add_finding(conclusion: dict, card: dict, severity: str) -> None:
     ensure_lists(conclusion)
     fingerprint = finding_fingerprint(card)
-    if any(finding_fingerprint(item) == fingerprint for item in conclusion[severity] if isinstance(item, dict)):
+    for item in conclusion[severity]:
+        if not isinstance(item, dict) or finding_fingerprint(item) != fingerprint:
+            continue
+        if str(card.get("source") or "") == "llm_judgment" and not str(item.get("source") or "").strip():
+            item["source"] = "llm_judgment"
         conclusion[f"{severity}_count"] = len(conclusion[severity])
         return
     conclusion[severity].append(card)
@@ -1141,6 +1145,8 @@ def merge_judgment(conclusion: dict, judgment: dict) -> None:
     for finding in judgment.get("findings") or []:
         if not isinstance(finding, dict):
             continue
+        if not str(finding.get("source") or "").strip():
+            finding["source"] = "llm_judgment"
         add_finding(conclusion, finding, severity_key(finding))
 
 

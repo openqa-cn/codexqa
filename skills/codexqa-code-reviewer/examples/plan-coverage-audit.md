@@ -1,7 +1,7 @@
 # Plan coverage audit (fine-grained)
 
 - skill_root: `skills/codexqa-code-reviewer`
-- audited_at: 2026-09-26T02:42:02Z
+- audited_at: 2026-09-26T05:02:39Z
 - method: atomic function points × layers (I/S/T)
 - plan: AI Code Reviewer (CodexQA-backed)
 
@@ -131,7 +131,7 @@
 | H5 | 默认输出九块覆盖 | I/T | **PARTIAL** | missing hints: 变更摘要 总风险 |
 | H6 | 全仓：热点/分层漂移/入口集中；禁产品打分 | I | **PASS** | full-repo prompt+SKILL |
 | H7 | 高优 finding 附：符号/调用方/入口 path/tested_count | I | **PASS** | Deliver section |
-| H8 | SKILL.md < 500 行 | I | **PASS** | lines=384 |
+| H8 | SKILL.md < 500 行 | I | **PASS** | lines=385 |
 
 ## I. Acceptance criteria
 

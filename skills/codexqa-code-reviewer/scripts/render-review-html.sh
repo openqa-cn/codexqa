@@ -611,10 +611,23 @@ jq -c '
             + pbi("muted"; "魔法数、超长文件、过期 import。不计入行为缺陷。"; "Magic numbers, long files, and stale imports. Not counted as behavioral defects.")
             + "<ul class=\"convention-list\">"
             + (map(
-                "<li><span class=\"defect-id\">" + ((.kind // "convention") | tostring | esc) + "</span> "
-                + ((.title // .note // "") | tostring | esc)
-                + (if ((.lines // []) | length) > 0 then
-                    " <span class=\"muted\">行 " + ([.lines[] | tostring] | join("、") | esc) + "</span>"
+                ((.kind // "convention") | tostring) as $kind
+                | ((.title // .note // "") | tostring) as $title
+                | ((.path // .file // "") | tostring) as $path
+                | ((.lines // []) | map(tostring)) as $lines
+                | (if ($path != "" and ($lines | length) == 1) then ($path + ":" + $lines[0])
+                   elif ($path != "" and ($lines | length) > 1) then ($path + " 行 " + ($lines | join("、")))
+                   elif ($lines | length) > 0 then ("行 " + ($lines | join("、")))
+                   else "" end) as $loc_zh
+                | (if ($path != "" and ($lines | length) == 1) then ($path + ":" + $lines[0])
+                   elif ($path != "" and ($lines | length) > 1) then ($path + " lines " + ($lines | join(", ")))
+                   elif ($lines | length) > 0 then ("lines " + ($lines | join(", ")))
+                   else "" end) as $loc_en
+                | "<li><span class=\"defect-id\">" + ($kind | esc) + "</span> "
+                + (if ($title != "" and $title != $kind) then (($title | esc) + " ") else "" end)
+                + (if $loc_zh != "" then
+                    "<span class=\"muted\" data-zh=\"" + ($loc_zh | esc) + "\" data-en=\"" + ($loc_en | esc) + "\">"
+                    + ($loc_zh | esc) + "</span>"
                   else "" end)
                 + "</li>"
               ) | join(""))
