@@ -2,12 +2,12 @@
   "findings": [
     {
       "title": "循环里重试了一次写入，而且这次调用没有幂等键",
-      "title_en": "A loop retried a write, and that call has no idempotency key",
+      "title_en": "",
       "line": 80,
       "risk": "同一次写入会再执行一遍。",
-      "risk_en": "The same write runs again.",
+      "risk_en": "",
       "fix": "把第 80 行 `credit(payee, amount)` 改成按原账户和原金额冲正。",
-      "fix_en": "Change line 80 `credit(payee, amount)` to a reversal of the original account and amount.",
+      "fix_en": "",
       "category": "correctness",
       "severity": "p0"
     }

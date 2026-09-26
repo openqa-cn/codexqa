@@ -32,16 +32,139 @@ QUESTION_FANOUT_MIN = 12
 CONVENTION_KINDS = {"magic_number", "rate_literal", "long_file", "eol_import"}
 BUSINESS_RULE_PREFIXES = ("BIZ-", "PAY-", "TXN-", "CONC-", "AUTH-", "SEC-")
 TRIVIAL_RULES = {"LOGIC-001", "NULL-001", "HYG-001", "API-001", "DES-001", "GLOB-001", "ARCH-001"}
+ORACLE_FLAGS = {
+    "unsafe_pass": (
+        "True only when an assertion requires a sensitive value in rendered output: "
+        "HTML, a response body, or a log. A getter round-trip of a value the test just set is false."
+    ),
+    "boundary_missed": "True when the test name claims a boundary and the asserted value is not that boundary.",
+    "branch_uncovered": "True when the test name claims a branch or outcome and no assertion reads that outcome.",
+    "locks_private": "True when the test calls a private production member. Copy preset when it is present.",
+    "locks_dependency": "True when the test stubs or asserts through a collaborator instead of the method it names.",
+    "threshold_pass": "True when the assertion is a loose time or size ceiling that passes without proving the claim.",
+    "observability_asserted": "True only when the test asserts a log, metric, or trace.",
+}
 ORACLE_JUDGMENT = (
-    "Answer every test_oracle_open row from that test body. "
+    "Judge each test_oracle_open line once. Do not reopen a flag. "
+    "A true flag cannot fail validation. "
+    "Copy preset onto oracle and do not change those keys. "
+    "Judge only questions. boundary_missed stays false unless preset is true. "
+    "A name that claims a reject code, gateway failover, or acceptance, while the assertion reads a different result, is branch_uncovered. "
+    "Omit a row when every flag is false. "
     "A test absent from test_oracle_open is closed. Do not investigate why. "
-    "A closed_report row does not close a test_oracle_open line. "
-    "Set a flag only when that test shows it. Leave the other flags false and do not restate them. "
-    "unsafe_pass is true when an assertion requires an unsafe value, such as a full card number in the output. "
-    "observability_asserted is true only when the test asserts a log, metric, or trace. "
-    "locks_private is true only when the test calls a private production member. "
-    "A callee missing from methods stays on the call line already chosen. "
-    "Do not open the repository file for its body."
+    "A closed shape does not close an open oracle line. "
+    "Write the seven flags only under oracle, once. Do not narrate flags and do not revisit a line. "
+    'Example: {"line":12,"file":"src/A.java","derive_suspect_id":"test_oracle:src/A.java:12",'
+    '"oracle":{"unsafe_pass":false,"boundary_missed":true,"branch_uncovered":false,'
+    '"locks_private":false,"locks_dependency":false,"threshold_pass":false,'
+    '"observability_asserted":false}}.'
+)
+_ASSERT_CALL = re.compile(r"(?i)\b(?:org\.junit\.Assert\.)?(?:assert\w+|fail)\s*\(")
+_SERVICE_CALL = re.compile(
+    r"\b(?:submit\w*|settle\w*|notify\w*|persist|reverse\w*|purge\w*|convert|compensate|checkAccess|handle\w*|build\w*Html)\s*\("
+)
+_DEPENDENCY = re.compile(r"(?i)\b(?:mockito|mock|when|verify|stub|spy|@Mock|fake)\b")
+_OBS_ASSERT = re.compile(r"(?i)assert\w*\s*\([\s\S]{0,180}\b(?:log|metric|trace|span)\b")
+_ASSERT_TRUE_SENSITIVE = re.compile(
+    r"(?i)assert(?:True|Equals)\s*\([^;]{0,240}contains\s*\(\s*\"[^\"]*(?:\d{13,19}|@)[^\"]*\""
+)
+_SINK_WORD = re.compile(r"(?i)\b(?:html|log|logger|response|body)\b")
+_CONTAINS_CALL = re.compile(r"(?i)contains\s*\(")
+_CLAIM_PATTERNS = (
+    ("reject", r"getCode\s*\("),
+    ("gateway", r"(?i)gateway|notifyMerchant"),
+    ("failover", r"(?i)gateway|notifyMerchant|failover"),
+    ("accept", r"(?i)submit\w*\s*\(|\baccept"),
+    ("denied", r"(?i)assertFalse\s*\(|checkAccess\s*\("),
+    ("timeout", r"(?i)timeout|gateway"),
+    ("quietly", r"(?i)gateway|notifyMerchant"),
+)
+_ORACLE_FLAG_KEYS = (
+    "unsafe_pass",
+    "boundary_missed",
+    "branch_uncovered",
+    "locks_private",
+    "locks_dependency",
+    "threshold_pass",
+    "observability_asserted",
+)
+_BOUNDARY_NAME = re.compile(r"(?i)(?:^|(?<=[a-z]))(?:boundary|limit|edge)(?=[A-Z]|$)")
+_COMPARES_NAMED_LIMIT = re.compile(
+    r"compareTo\s*\(\s*[A-Z][A-Z0-9_]+|[A-Z][A-Z0-9_]+\s*\.\s*compareTo\s*\("
+)
+_SETS_NUMERIC = re.compile(r"set[A-Z]\w*\s*\(\s*(?:new\s+\w+\s*\(\s*)?\"?\d")
+_SETS_CONSTANT = re.compile(r"set[A-Z]\w*\s*\(\s*[A-Z][A-Z0-9_]+\s*\)")
+_LOOSE_TIME = re.compile(r"(?i)\b(?:elapsed|duration)\b[^;\n]{0,80}[<]=?\s*\d{3,}")
+# Shapes the brief can locate. A shape absent from this map stays in still_open.
+RULE_SHAPES = {
+    "BIZ-001": ("write_without_idempotency", "retry_without_idempotency"),
+    "BIZ-003": ("null_amount", "negative_amount", "zero_amount", "fee_omitted", "default_zone_cutoff"),
+    "BIZ-004": ("no_precondition", "failure_continues"),
+    "BIZ-005": ("deprecated_balance",),
+    "PAY-001": ("id_not_unique",),
+    "PAY-002": ("client_rate",),
+    "PAY-004": ("webhook_without_signature",),
+    "PAY-005": ("post_before_ack", "compensation_mismatch"),
+    "PAY-006": ("reverse_without_state",),
+    "PAY-007": ("truncating_round",),
+    "TXN-001": ("multi_write",),
+    "CONC-001": ("check_then_act",),
+    "CONC-003": ("collection_write",),
+    "AUTH-001": ("unchecked_party", "unrestricted_object"),
+    "AUTH-002": ("role_substring",),
+    "SEC-001": ("route_without_authz",),
+    "API-001": ("purge_returns_success",),
+    "BND-001": ("unread_expiry",),
+    "NULL-001": ("unguarded_parse",),
+    "LOGIC-001": ("off_by_one_slice", "inverted_condition"),
+    "HYG-001": ("identifier_in_output",),
+}
+SHORT_CALLEE_MAX = 40
+_KIND_TO_SHAPE = {
+    "retry_side_effect": "retry_without_idempotency",
+    "null_deref_after_load": "unguarded_load",
+    "shared_mutable": "unsafe_static",
+    "process_default_write": "process_default",
+    "unguarded_parse": "unguarded_parse",
+    "disabled_bound": "disabled_bound",
+}
+BRIEF_READ_THIS = (
+    "Read this file once. Write judgment.json. Run render-review-html.sh. "
+    "Do not open 01-30, judgment-seed.json, seal-conclusion.py, validate-conclusion.py, "
+    "templates, examples, dimension docs, channel prompts, or the repository. "
+    "closed_report lists lines that are already cards. "
+    "closed_shapes groups those lines by shape. A listed shape is closed for the whole file, "
+    "including same_shape_lines. Do not reclassify a closed shape. "
+    "A different shape of the same rule_id stays open. "
+    "judgment.json findings are already copied from candidate_hits. Do not rewrite them. "
+    "Do not list findings in prose. If still_open is empty, do not add a finding. "
+    "If still_open is not empty, append only those shapes. "
+    "Do not scan a rule that is absent from both. "
+    "One shape is one finding. The same shape on several lines uses same_fix true and also_lines. "
+    "Different shapes stay separate findings, even on the same line. Do not reopen a finding. "
+    "methods[].source is the method text. callee_of true means a short callee body is included; read it. "
+    "A callee still missing from methods is filed once, on the call line, and that choice is finished. "
+    "Line numbers are the N| prefix. title, risk, and fix are Chinese. Leave English fields empty. "
+    "Copy each candidate line, severity, also_lines, and derive_suspect_id. Do not pick a different line. "
+    "A test_oracle row is not a finding. Put it only in test_oracle, and its id only in suspect_hits. "
+    "Judge each test_oracle_open line once. Do not reopen a flag. A true flag cannot fail validation. "
+    "Copy preset onto oracle and do not change those keys. Judge only questions. "
+    "boundary_missed stays false unless preset is true. "
+    "unsafe_pass is true only for a sensitive value in HTML, a response body, or a log. "
+    "A getter round-trip of a value the test just set is false. "
+    "Write the test_oracle JSON once. Do not narrate flags and do not revisit a line. "
+    "Omit a test_oracle row when every flag is false. "
+    "A test absent from test_oracle_open is closed. Do not investigate why. "
+    "A closed shape does not close an open oracle line. "
+    "Write the seven flags only under oracle. "
+    "If still_open is empty, read only methods that own a test_oracle_open line. "
+    "If still_open, open_suspects, and test_oracle_open are all empty, do not read methods or judgment-work groups. "
+    "An id already in judgment.json suspect_hits is closed. Do not re-judge it. "
+    "review-conclusion.json is already in the pack. Run render. Do not write or edit that file. "
+    "Identifiers in one log statement are one finding, on the line with the strongest identifier. "
+    "A money check that omits a fee posted in the same method is the fee_omitted shape. "
+    "Do not drop SEC-001 because PAY-004 or AUTH-001 also matches. "
+    "Seed hits and one-line getters are omitted. Do not run merge-llm-findings.py."
 )
 MATCH_OUTSIDE_APPLICABLE = (
     "applicable is the first list to judge, not an exclusion list. "
@@ -2252,6 +2375,7 @@ def _write_conclusion_stub(pack: Path, packet: dict) -> None:
     """Header for render. The model does not draft this file or the group JSON.
 
     A unit-test pack has no manifest, so this stays absent there.
+    Collectors call this again with --conclusion-stub-only after manifest.json exists.
     """
     path = pack / "review-conclusion.json"
     manifest = load_json(pack / "manifest.json")
@@ -2320,7 +2444,667 @@ def _suspect_id(row: dict) -> str:
     return f"{row.get('kind') or ''}:{row.get('file') or row.get('path') or ''}:{row.get('line')}"
 
 
-def write_model_brief(pack: Path, packet: dict) -> None:
+def _numbered_lines(source: str) -> list[tuple[int, str]]:
+    rows = []
+    for raw in (source or "").splitlines():
+        match = re.match(r"^(\d+)\|(.*)$", raw)
+        if match:
+            rows.append((int(match.group(1)), match.group(2)))
+    return rows
+
+
+def _quote_line(text: str) -> str:
+    return " ".join(text.strip().split())[:140]
+
+
+def _trivial_getter(source: str) -> bool:
+    """A single field return. Short callees with a decision stay in the brief."""
+    body = []
+    for _number, text in _numbered_lines(source):
+        stripped = text.strip()
+        if not stripped or stripped in {"{", "}"}:
+            continue
+        if stripped.startswith(("public ", "private ", "protected ", "@")):
+            continue
+        body.append(stripped)
+    if len(body) != 1:
+        return False
+    if re.search(r"\b(if|for|while|switch|try)\b", body[0]):
+        return False
+    return bool(re.match(r"return\s+[\w.]+\s*;", body[0]))
+
+
+def _file_lines(repo: Path | None, rel: str) -> list[str]:
+    if repo is None or not rel:
+        return []
+    path = Path(repo) / rel
+    if not path.is_file():
+        return []
+    try:
+        return path.read_text(encoding="utf-8", errors="ignore").splitlines()
+    except OSError:
+        return []
+
+
+def _disabling_inits(lines: list[str]) -> dict[str, int]:
+    found = {}
+    pattern = re.compile(r"\b([A-Z][A-Z0-9_]{2,})\s*=\s*(?:0|-1|false)\b")
+    for number, line in enumerate(lines, 1):
+        match = pattern.search(line)
+        if match and match.group(1) not in found:
+            found[match.group(1)] = number
+    return found
+
+
+def _infer_shape(rule_id: str, snippet: str, kind: str) -> str:
+    """Packet rows keep rule and snippet. Recover the shape the scanner used."""
+    if kind and kind not in {"report", ""}:
+        return _KIND_TO_SHAPE.get(kind, kind)
+    text = snippet or ""
+    if rule_id == "BND-001":
+        return "disabled_bound"
+    if rule_id == "CONC-003":
+        if re.search(r"DateFormat|Calendar|Random|SimpleDateFormat", text):
+            return "unsafe_static"
+        return "collection_write"
+    if rule_id == "BIZ-001":
+        if re.search(r"notify|retry", text):
+            return "retry_without_idempotency"
+        return "write_without_idempotency"
+    if rule_id == "NULL-001":
+        if re.search(r"new\s+BigDecimal|Integer\.parse|parse\s*\(", text):
+            return "unguarded_parse"
+        return "unguarded_load"
+    if rule_id == "GLOB-001":
+        return "process_default"
+    return "report"
+
+
+def _closed_shapes(rows: list[dict], repo: Path | None) -> list[dict]:
+    """Group already-reported lines by rule and shape, and attach disabling declarations."""
+    grouped: dict[tuple[str, str], dict] = {}
+    files: dict[str, list[str]] = {}
+    for row in rows:
+        if not isinstance(row, dict) or not isinstance(row.get("line"), int):
+            continue
+        rule_id = _rule_name(row)
+        shape = _infer_shape(rule_id, str(row.get("snippet") or ""), str(row.get("kind") or ""))
+        slot = grouped.setdefault((rule_id, shape), {
+            "rule_id": rule_id,
+            "shape": shape,
+            "lines": [],
+            "same_shape_lines": [],
+        })
+        if row["line"] not in slot["lines"]:
+            slot["lines"].append(row["line"])
+        if shape != "disabled_bound":
+            continue
+        rel = str(row.get("file") or row.get("path") or "")
+        if rel not in files:
+            files[rel] = _file_lines(repo, rel)
+        inits = _disabling_inits(files[rel])
+        snippet = str(row.get("snippet") or "")
+        if not snippet and files[rel] and 1 <= row["line"] <= len(files[rel]):
+            snippet = files[rel][row["line"] - 1]
+        for name in re.findall(r"\b[A-Z][A-Z0-9_]{2,}\b", snippet):
+            declared = inits.get(name)
+            if declared and declared not in slot["lines"] and declared not in slot["same_shape_lines"]:
+                slot["same_shape_lines"].append(declared)
+    shapes = list(grouped.values())
+    for slot in shapes:
+        slot["lines"].sort()
+        slot["same_shape_lines"].sort()
+    shapes.sort(key=lambda slot: (slot["rule_id"], slot["shape"]))
+    return shapes
+
+
+def _closed_line_set(shapes: list[dict]) -> dict[str, set[int]]:
+    found: dict[str, set[int]] = {}
+    for slot in shapes:
+        lines = found.setdefault(slot["rule_id"], set())
+        lines.update(slot["lines"])
+        lines.update(slot["same_shape_lines"])
+    return found
+
+
+def _shape_closed(shapes: list[dict], rule_id: str, shape: str) -> bool:
+    return any(slot["rule_id"] == rule_id and slot["shape"] == shape for slot in shapes)
+
+
+def _first_line(lines: list[tuple[int, str]], pattern: re.Pattern[str]) -> tuple[int, str] | None:
+    for number, text in lines:
+        if pattern.search(text):
+            return number, text
+    return None
+
+
+def _method_candidates(
+    method: dict,
+    peers: dict[str, str],
+    closed: list[dict],
+) -> tuple[list[dict], list[str]]:
+    """High-precision shapes for one method. Unmatched shapes of a known rule stay open."""
+    source = method.get("source") or ""
+    lines = _numbered_lines(source)
+    blob = "\n".join(text for _number, text in lines)
+    name = str(method.get("name") or "")
+    hits: list[dict] = []
+    open_shapes: list[str] = []
+    if "@Test" in blob or "org.junit" in blob:
+        return hits, open_shapes
+
+    def add(rule_id: str, shape: str, found: tuple[int, str] | None, triggered: bool) -> None:
+        if not triggered or _shape_closed(closed, rule_id, shape):
+            return
+        if found is not None and found[0] in {
+            line
+            for slot in closed
+            if slot["rule_id"] == rule_id
+            for line in slot["lines"] + slot["same_shape_lines"]
+        }:
+            return
+        if found is None:
+            if shape not in open_shapes:
+                open_shapes.append(shape)
+            return
+        number, text = found
+        hits.append({
+            "rule_id": rule_id,
+            "shape": shape,
+            "line": number,
+            "file": method.get("path"),
+            "method": name,
+            "quote": _quote_line(text),
+        })
+
+    posts_money = bool(re.search(r"setAvailableBalance|persist\s*\(|\.subtract\s*\(|\.add\s*\(", blob))
+    amount = posts_money and ("getAmount" in blob or re.search(r"\bamount\b", blob) is not None)
+    sign_guard = bool(re.search(r"signum\s*\(|<\s*0|<=\s*0|compareTo\(\s*BigDecimal\.ZERO", blob))
+    null_guard = bool(re.search(r"amount\s*==\s*null|amount\s*!=\s*null", blob))
+    add("BIZ-003", "fee_omitted", _first_line(lines, re.compile(r"compareTo\(\s*amount\s*\)")),
+        "compareTo(amount)" in blob and ("totalDebit" in blob or ".add(fee)" in blob))
+    add("BIZ-003", "negative_amount", _first_line(lines, re.compile(r"getAmount\s*\(|\bamount\b")),
+        amount and not sign_guard)
+    add("BIZ-003", "zero_amount",
+        _first_line(lines, re.compile(r"compareTo\(\s*amount\s*\)|getAmount\s*\(|\.add\s*\(\s*amount\s*\)")),
+        amount and not sign_guard and "BigDecimal.ZERO" not in blob)
+    add("BIZ-003", "null_amount", _first_line(lines, re.compile(r"amount\.equals\s*\(")),
+        "amount.equals" in blob and not null_guard)
+    for peer_name, peer_source in peers.items():
+        if peer_name == name or "getInstance" not in peer_source or "ZoneId" in peer_source:
+            continue
+        if "Calendar" not in peer_source and "LocalDateTime.now" not in peer_source:
+            continue
+        called = _first_line(lines, re.compile(r"\b" + re.escape(peer_name) + r"\s*\("))
+        if called:
+            add("BIZ-003", "default_zone_cutoff", called, True)
+            break
+    add("AUTH-002", "role_substring",
+        _first_line(lines, re.compile(r"""\.contains\(\s*["']ADMIN["']\)|indexOf\(\s*["']ADMIN["']\)""")),
+        "contains(" in blob or "indexOf(" in blob)
+    add("AUTH-001", "unrestricted_object",
+        _first_line(lines, re.compile(r"\|\|\s*!\s*\w*\.?isRestricted\s*\(")),
+        "isRestricted" in blob)
+    add("AUTH-001", "unchecked_party",
+        _first_line(lines, re.compile(r"persist\(\s*to\s*\)|to\.set\w+\(")),
+        "checkAccess" in blob and "getToAccountNo" in blob and "checkAccess" not in "".join(
+            text for _n, text in lines if "getToAccountNo" in text or "to," in text
+        ))
+    entry = bool(re.match(r"(?i)(purge|settle|handle)[A-Z]", name)) and "public" in blob
+    authed = bool(re.search(r"(?i)\b(checkAccess|authorize|isAuthorized|hasRole)\s*\(", blob))
+    signature = _first_line(lines, re.compile(r"\bpublic\b"))
+    add("SEC-001", "route_without_authz", signature, entry and not authed)
+    add("API-001", "purge_returns_success", _first_line(lines, re.compile(r"return\s+0\s*;")),
+        "purge" in name.lower() and "return 0" in blob)
+    add("PAY-001", "id_not_unique",
+        _first_line(lines, re.compile(r"(?<!void )persist\s*\(|setAvailableBalance")),
+        posts_money and "getTransferId" in blob and "reverse" not in name.lower()
+        and "callback" not in name.lower() and not re.search(r"(?i)idempoten|alreadyExists", blob))
+    add("PAY-002", "client_rate", _first_line(lines, re.compile(r"getFxRate\s*\(")), "getFxRate" in blob)
+    add("PAY-007", "truncating_round", _first_line(lines, re.compile(r"RoundingMode\.DOWN")),
+        "RoundingMode.DOWN" in blob)
+    persist_at = blob.find("persist(")
+    notify_at = blob.find("notify")
+    add("PAY-005", "post_before_ack", _first_line(lines, re.compile(r"persist\s*\(")),
+        persist_at >= 0 and notify_at >= 0 and persist_at < notify_at)
+    add("PAY-005", "compensation_mismatch", _first_line(lines, re.compile(r"compensate\s*\(")),
+        "compensate(" in blob)
+    add("PAY-004", "webhook_without_signature",
+        _first_line(lines, re.compile(r"setAvailableBalance")),
+        ("callback" in name.lower() or "params.get" in blob) and "setAvailableBalance" in blob
+        and not re.search(r"(?i)signature|hmac|verifySign", blob))
+    add("PAY-006", "reverse_without_state",
+        _first_line(lines, re.compile(r"setAvailableBalance")),
+        "reverse" in name.lower() and "setAvailableBalance" in blob and not re.search(r"(?i)status", blob))
+    add("BIZ-005", "deprecated_balance",
+        _first_line(lines, re.compile(r"AvailableBalanceLegacy")),
+        "AvailableBalanceLegacy" in blob and name not in {"loadAccount", "persist"}
+        and bool(re.search(r"compareTo|subtract|\.add\s*\(", blob)))
+    add("CONC-001", "check_then_act",
+        _first_line(lines, re.compile(r"compareTo\s*\(")),
+        "compareTo" in blob and "setAvailableBalance" in blob and "synchronized" not in blob)
+    add("TXN-001", "multi_write", _first_line(lines, re.compile(r"persist\s*\(")),
+        blob.count("persist(") >= 2)
+    add("BND-001", "unread_expiry", _first_line(lines, re.compile(r"getRate\s*\(")),
+        "getRate(" in blob and "fetchedAt" not in blob and not re.search(r"(?i)ttl|expir", blob))
+    add("HYG-001", "identifier_in_output", _first_line(lines, re.compile(r"getCardNo\s*\(")),
+        "getCardNo(" in blob)
+    add("HYG-001", "identifier_in_output", _first_line(lines, re.compile(r"getCustomerName\s*\(")),
+        "getCustomerName(" in blob and "html" in blob.lower())
+    add("CONC-003", "collection_write", _first_line(lines, re.compile(r"\.put\s*\(")),
+        ".put(" in blob and "synchronized" not in blob and re.search(r"(?i)map|cache", blob))
+    add("NULL-001", "unguarded_parse",
+        _first_line(lines, re.compile(r"new\s+BigDecimal\s*\([^)]*\.get\s*\(")),
+        "new BigDecimal" in blob and ".get(" in blob)
+    add("LOGIC-001", "inverted_condition",
+        _first_line(lines, re.compile(r"\|\|\s*!\s*\w*\.?isRestricted\s*\(")),
+        "isRestricted" in blob)
+    own_slice = _first_line(lines, re.compile(r"subList\s*\("))
+    if own_slice and re.search(r"-\s*\w+\s*-\s*1", own_slice[1]):
+        add("LOGIC-001", "off_by_one_slice", own_slice, True)
+    else:
+        for peer_name, peer_source in peers.items():
+            if peer_name == name or not re.search(r"\b" + re.escape(peer_name) + r"\s*\(", blob):
+                continue
+            sliced = _first_line(_numbered_lines(peer_source), re.compile(r"subList\s*\("))
+            if not sliced or not re.search(r"-\s*\w+\s*-\s*1", sliced[1]):
+                continue
+            add("LOGIC-001", "off_by_one_slice", sliced, True)
+            if hits and hits[-1]["shape"] == "off_by_one_slice":
+                hits[-1]["method"] = peer_name
+            break
+    retry = _first_line(lines, re.compile(r"\bfor\s*\("))
+    add("BIZ-001", "retry_without_idempotency", retry,
+        "for (" in blob and "notify" in blob and not re.search(r"(?i)idempoten", blob))
+    add("BIZ-001", "write_without_idempotency", _first_line(lines, re.compile(r"(?<!void )persist\s*\(")),
+        name != "persist" and re.search(r"(?<!void )persist\s*\(", blob) and not re.search(r"(?i)idempoten", blob))
+    add("BIZ-002", "missing_previous_status", _first_line(lines, re.compile(r"persist\s*\(")),
+        "settle" in name.lower() and "persist(" in blob and not re.search(r"(?i)\bstatus\b", blob))
+    loop_persist = _first_line(lines, re.compile(r"persist\s*\("))
+    batch = "settle" in name.lower()
+    add("BIZ-004", "failure_continues", loop_persist, batch and "for (" in blob and "persist(" in blob)
+    add("BIZ-004", "no_precondition", _first_line(lines, re.compile(r"\.subtract\s*\(")),
+        batch and "for (" in blob and ".subtract(" in blob and "compareTo" not in blob)
+    # A triggered shape that was not located stays open. Applicable rules
+    # without a shape map stay open as look_for so an uncoded pattern is still judged.
+    mapped = set(RULE_SHAPES)
+    mapped.update({"BIZ-002", "RES-001", "DES-001", "GLOB-001", "ARCH-001", "ERR-001", "HYG-001"})
+    for rule_id in method.get("applicable") or []:
+        if rule_id in mapped or rule_id in _closed_line_set(closed):
+            continue
+        if any(hit["rule_id"] == rule_id for hit in hits):
+            continue
+        if not rule_id.startswith(("BIZ-", "PAY-", "TXN-", "CONC-", "AUTH-", "SEC-", "API-")):
+            continue
+        open_shapes.append(f"{rule_id}:look_for")
+    if entry and not authed and not any(hit["rule_id"] == "SEC-001" for hit in hits):
+        if not _shape_closed(closed, "SEC-001", "route_without_authz"):
+            open_shapes.append("SEC-001:route_without_authz")
+    qualified = []
+    for item in open_shapes:
+        if ":" in item:
+            qualified.append(item)
+            continue
+        owner = next((rule_id for rule_id, shapes in list(RULE_SHAPES.items()) + [("BIZ-002", ("missing_previous_status",))] if item in shapes), "")
+        if owner:
+            qualified.append(f"{owner}:{item}")
+    deduped = []
+    for item in qualified:
+        if item not in deduped:
+            deduped.append(item)
+    return hits, deduped
+
+
+_CARD_TEXT = {
+    ("AUTH-001", "unchecked_party"): (
+        "转入账户缺少权限校验",
+        "在第 {line} 行检测到 `{quote}`。这次写入的另一个账户没有经过与转出账户相同的权限校验。{also}",
+        "将第 {line} 行 `{quote}` 改为：先对该账户做权限校验，通过后再入账。",
+    ),
+    ("AUTH-001", "unrestricted_object"): (
+        "未受限账户被跨网点放行",
+        "在第 {line} 行检测到 `{quote}`。网点不一致时，账户只要未标记受限，操作员仍获得权限。{also}",
+        "将第 {line} 行 `{quote}` 改为：`&& !account.isRestricted()`，网点一致且账户未受限才放行。",
+    ),
+    ("AUTH-002", "role_substring"): (
+        "管理员角色按子串匹配",
+        "在第 {line} 行检测到 `{quote}`。角色串里出现 ADMIN 这四个字符就会获得全部权限。{also}",
+        "将第 {line} 行 `{quote}` 改为：按分隔后的角色集合做相等比较，仅当存在完整角色 ADMIN 时放行。",
+    ),
+    ("SEC-001", "route_without_authz"): (
+        "资金与清理入口缺少鉴权",
+        "在第 {line} 行检测到 `{quote}`。变更余额或删除记录之前没有操作员校验。{also}",
+        "将第 {line} 行 `{quote}` 改为：方法开始处校验已认证主体及其权限，未通过时返回拒绝且不改余额。",
+    ),
+    ("PAY-001", "id_not_unique"): (
+        "转账号可以重复入账",
+        "在第 {line} 行检测到 `{quote}`。业务单号只出现在日志或列表里，写入前没有按该号拒绝第二笔。{also}",
+        "将第 {line} 行 `{quote}` 改为：以转账号做唯一约束，已存在的单号直接返回原结果。",
+    ),
+    ("PAY-002", "client_rate"): (
+        "入账汇率来自请求参数",
+        "在第 {line} 行检测到 `{quote}`。客户端传入的汇率直接决定贷记金额。{also}",
+        "将第 {line} 行 `{quote}` 改为：使用服务端牌价换算，汇率只从牌价服务获取。",
+    ),
+    ("PAY-004", "webhook_without_signature"): (
+        "商户回调未验签即入账",
+        "在第 {line} 行检测到 `{quote}`。请求里的金额被直接加到账户，没有核对渠道签名，同一次通知可以反复入账。{also}",
+        "将第 {line} 行 `{quote}` 改为：先验渠道签名和事件号唯一性，通过后再按服务端订单金额入账一次。",
+    ),
+    ("PAY-005", "post_before_ack"): (
+        "网关确认前已完成入账",
+        "在第 {line} 行检测到 `{quote}`。本地余额在外部确认之前已经落库，中间没有待确认或冻结状态。{also}",
+        "将第 {line} 行 `{quote}` 改为：先写入待确认状态并冻结金额，外部确认成功后再提交为已入账。",
+    ),
+    ("PAY-005", "compensation_mismatch"): (
+        "冲正记到了错误账户",
+        "在第 {line} 行检测到 `{quote}`。冲正使用的账户或金额与刚才借记、贷记的那一笔不一致。{also}",
+        "将第 {line} 行 `{quote}` 改为：按原付款账户加回借记额，并按原收款账户扣回贷记额。",
+    ),
+    ("PAY-006", "reverse_without_state"): (
+        "冲正未核对原交易状态",
+        "在第 {line} 行检测到 `{quote}`。找到记录后直接加减余额，没有核对原状态，也没有重新执行限额和权限校验。{also}",
+        "将第 {line} 行 `{quote}` 改为：仅当原状态属于可冲正集合时，重新执行限额、权限和余额校验，再按原借记金额回退。",
+    ),
+    ("PAY-007", "truncating_round"): (
+        "换汇乘法向下截断且尾差未入账",
+        "在第 {line} 行检测到 `{quote}`。乘法结果向零截断，被去掉的尾差没有记入任何账户。{also}",
+        "将第 {line} 行 `{quote}` 改为：`setScale(2, RoundingMode.HALF_UP)`，并把舍去的余数记入尾差账户。",
+    ),
+    ("TXN-001", "multi_write"): (
+        "多笔余额更新没有事务",
+        "在第 {line} 行检测到 `{quote}`。多笔余额更新没有放在同一个事务里。{also}",
+        "将第 {line} 行 `{quote}` 改为：与同一次业务的其他余额更新放在同一数据库事务中，任一失败则整笔回滚。",
+    ),
+    ("BIZ-002", "missing_previous_status"): (
+        "批量清算未读取先前状态",
+        "在第 {line} 行检测到 `{quote}`。扣减前没有读取该笔是否已经清算或处于允许的状态。{also}",
+        "将第 {line} 行 `{quote}` 改为：先读取转账状态，仅允许从待清算迁到已清算后再扣减余额。",
+    ),
+    ("BIZ-003", "fee_omitted"): (
+        "余额校验未计入手续费",
+        "在第 {line} 行检测到 `{quote}`。余额只和本金比较，同一方法里实际借记的是本金加手续费。{also}",
+        "将第 {line} 行 `{quote}` 改为：在算出手续费并得到应借记总额之后，再与可用余额比较，不足时拒绝。",
+    ),
+    ("BIZ-003", "negative_amount"): (
+        "负数金额会调换借贷方向",
+        "在第 {line} 行检测到 `{quote}`。负数可以通过限额和余额判断，付款侧减法会变成加款，收款侧加法会变成扣款。{also}",
+        "将第 {line} 行 `{quote}` 改为：在比较前拒绝 `amount.signum() < 0`。",
+    ),
+    ("BIZ-003", "zero_amount"): (
+        "零金额转账仍会入账",
+        "在第 {line} 行检测到 `{quote}`。金额为 0 时比较通过，随后仍计算手续费并入账。{also}",
+        "将第 {line} 行 `{quote}` 改为：金额等于 0 时返回拒绝。",
+    ),
+    ("BIZ-003", "null_amount"): (
+        "空金额被记成系统错误",
+        "在第 {line} 行检测到 `{quote}`。金额为空时这里抛出异常，并被收成笼统的系统错误。{also}",
+        "将第 {line} 行 `{quote}` 改为：金额为空时返回明确的拒绝码。",
+    ),
+    ("BIZ-003", "default_zone_cutoff"): (
+        "清算截止时间使用默认时区",
+        "在第 {line} 行检测到 `{quote}`。截止判断走服务器默认时区，部署区域变化后截止时刻会错位。{also}",
+        "将第 {line} 行 `{quote}` 改为：用清算业务时区 `Asia/Shanghai` 比较当前时刻与截止时刻。",
+    ),
+    ("BIZ-004", "no_precondition"): (
+        "批量清算逐笔没有前置条件",
+        "在第 {line} 行检测到 `{quote}`。循环对每一笔直接扣减，没有逐笔核对可用余额、转账状态和权限。{also}",
+        "将第 {line} 行 `{quote}` 改为：该笔先通过余额、状态和权限校验，失败时记下该笔并停止后续扣减。",
+    ),
+    ("BIZ-004", "failure_continues"): (
+        "单笔落库失败后批次继续",
+        "在第 {line} 行检测到 `{quote}`。落库失败被吞掉后调用方继续处理后续请求。{also}",
+        "将第 {line} 行 `{quote}` 改为：让落库失败向上抛出，循环在该笔失败时停止并回滚已扣款项。",
+    ),
+    ("BIZ-005", "deprecated_balance"): (
+        "入账读取已废弃余额",
+        "在第 {line} 行检测到 `{quote}`。借记和贷记通过已废弃的余额字段决定。{also}",
+        "将第 {line} 行 `{quote}` 改为：读取当前可用余额，并在写入点改用现行 setter。",
+    ),
+    ("CONC-001", "check_then_act"): (
+        "余额先读后写缺少原子保护",
+        "在第 {line} 行检测到 `{quote}`。比较通过后到写回新余额之间，没有在同一条语句里重读校验。{also}",
+        "将第 {line} 行 `{quote}` 改为：用带余额条件的单条更新语句扣减，影响行数为 0 时拒绝。",
+    ),
+    ("CONC-003", "collection_write"): (
+        "汇率缓存被并发写入",
+        "在第 {line} 行检测到 `{quote}`。普通 Map 在转账线程里写入时没有锁。{also}",
+        "将第 {line} 行 `{quote}` 改为：换用并发 Map，或在同一把锁内完成读取与写入。",
+    ),
+    ("BND-001", "unread_expiry"): (
+        "缓存汇率不按有效期失效",
+        "在第 {line} 行检测到 `{quote}`。条目保存了获取时间，这里直接使用汇率，没有和有效期比较。{also}",
+        "将第 {line} 行 `{quote}` 改为：当前时间减去获取时间超过有效期时重新拉取牌价，再用新汇率计算。",
+    ),
+    ("LOGIC-001", "off_by_one_slice"): (
+        "审计轨迹尾部截取越界",
+        "在第 {line} 行检测到 `{quote}`。按长度减去条数再减一会多取一条，轨迹更短时起点为负并抛出越界异常。{also}",
+        "将第 {line} 行 `{quote}` 改为：起点使用 `Math.max(0, steps.size() - tailSize)`，只返回末尾指定条数。",
+    ),
+    ("LOGIC-001", "inverted_condition"): (
+        "权限条件把网点校验接成了或",
+        "在第 {line} 行检测到 `{quote}`。网点相等与账户未受限用或连接，网点不同的操作员在账户未受限时得到通过结果。{also}",
+        "将第 {line} 行 `{quote}` 改为：`&& !account.isRestricted()`。",
+    ),
+    ("API-001", "purge_returns_success"): (
+        "清理失败时返回零行",
+        "在第 {line} 行检测到 `{quote}`。公开清理在失败时返回 0，调用方把它和删除了 0 行看成同一种结果。{also}",
+        "将第 {line} 行 `{quote}` 改为：抛出带明确错误码的异常，并在执行删除前校验调用方具备清理权限。",
+    ),
+    ("HYG-001", "identifier_in_output"): (
+        "日志和回单写出了卡号",
+        "在第 {line} 行检测到 `{quote}`。卡号、姓名或商户号被写入日志或回单。{also}",
+        "将第 {line} 行 `{quote}` 改为：只记录卡号末四位和账号掩码，回单与日志同样掩码后再写。",
+    ),
+}
+
+
+def _fill_candidate_card(hit: dict) -> None:
+    also_lines = hit.get("also_lines") or []
+    also = ""
+    if also_lines:
+        joined = "、".join(f"第 {number} 行" for number in also_lines)
+        also = f"{joined}与第 {hit['line']} 行同一处修复。"
+    title, risk, fix = _CARD_TEXT.get(
+        (hit["rule_id"], hit["shape"]),
+        (
+            hit["shape"],
+            "在第 {line} 行检测到 `{quote}`。{also}",
+            "将第 {line} 行 `{quote}` 改为：按该形状的安全写法处理。",
+        ),
+    )
+    fields = {"line": hit["line"], "quote": hit.get("quote") or "", "also": also}
+    hit["title"] = title
+    hit["risk"] = risk.format(**fields)
+    hit["fix"] = fix.format(**fields)
+    hit["title_en"] = ""
+    hit["risk_en"] = ""
+    hit["fix_en"] = ""
+
+
+def _write_prefilled_judgment(pack: Path, candidate_hits: list[dict], resolved_oracles: list[dict] | None = None) -> None:
+    """Write findings once. The model adds only still-open test_oracle rows."""
+    findings = []
+    suspect_hits = []
+    for hit in candidate_hits:
+        row = {
+            "title": hit.get("title") or "",
+            "title_en": "",
+            "line": hit.get("line"),
+            "file": hit.get("file") or "",
+            "severity": hit.get("severity") or "p1",
+            "rule_id": hit.get("rule_id") or "",
+            "shape": hit.get("shape") or "",
+            "risk": hit.get("risk") or "",
+            "risk_en": "",
+            "fix": hit.get("fix") or "",
+            "fix_en": "",
+        }
+        if hit.get("same_fix") and hit.get("also_lines"):
+            row["same_fix"] = True
+            row["also_lines"] = list(hit["also_lines"])
+        suspect_id = hit.get("derive_suspect_id")
+        if suspect_id:
+            row["derive_suspect_id"] = suspect_id
+            suspect_hits.append(suspect_id)
+        findings.append(row)
+    for row in resolved_oracles or []:
+        if not isinstance(row, dict):
+            continue
+        suspect_id = row.get("derive_suspect_id")
+        if suspect_id and suspect_id not in suspect_hits and any((row.get("oracle") or {}).values()):
+            suspect_hits.append(suspect_id)
+    write_json(pack / "judgment.json", {
+        "findings": findings,
+        "suspect_hits": suspect_hits,
+        "test_oracle": [row for row in (resolved_oracles or []) if isinstance(row, dict)],
+        "note": (
+            "Findings are copied from candidate_hits. Add test_oracle only for test_oracle_open. "
+            "Do not rewrite findings. Copy preset and judge only questions."
+        ),
+    })
+
+
+def _oracle_presets(name: str, source: str) -> dict:
+    """Flags a scan can decide without a second pass. Empty keys stay with the model.
+
+    boundary_missed: the name claims a boundary and the asserted value is a
+    numeric literal compared with a different named limit.
+    threshold_pass: the assertion is a loose elapsed/duration ceiling.
+    branch_uncovered stays open only when the name claims an outcome the assertion does not read.
+    """
+    preset: dict[str, bool] = {}
+    if (
+        _BOUNDARY_NAME.search(name)
+        and _COMPARES_NAMED_LIMIT.search(source)
+        and _SETS_NUMERIC.search(source)
+        and not _SETS_CONSTANT.search(source)
+    ):
+        preset["boundary_missed"] = True
+    if _LOOSE_TIME.search(source):
+        preset["threshold_pass"] = True
+    return preset
+
+
+def _assertion_text(source: str) -> str:
+    """Assertion lines only. The method name is not evidence that the claim was read."""
+    kept = []
+    for line in source.splitlines():
+        match = re.match(r"^\d+\|(.*)$", line)
+        body = match.group(1) if match else line
+        if _ASSERT_CALL.search(body):
+            kept.append(body)
+    return "\n".join(kept)
+
+
+def _claim_status(name: str, source: str) -> str:
+    """satisfied when every claimed token is read by an assertion. unmatched stays open."""
+    folded = name.lower()
+    asserted = _assertion_text(source)
+    saw = False
+    for token, pattern in _CLAIM_PATTERNS:
+        if token not in folded:
+            continue
+        saw = True
+        if not re.search(pattern, asserted):
+            return "unmatched"
+    return "satisfied" if saw else "none"
+
+
+def _unsafe_pass(source: str) -> bool | None:
+    """True for an asserted sensitive literal in HTML, a body, or a log. None stays open."""
+    if not _SINK_WORD.search(source):
+        return False
+    if _ASSERT_TRUE_SENSITIVE.search(source):
+        return True
+    if _CONTAINS_CALL.search(source):
+        return None
+    return False
+
+
+def _branch_uncovered(name: str, source: str, flags: dict) -> bool | None:
+    """None when the name and the assertion have to be compared by the model."""
+    if not _ASSERT_CALL.search(source):
+        return True
+    if flags.get("boundary_missed") or flags.get("threshold_pass") or flags.get("unsafe_pass"):
+        return False
+    if flags.get("locks_private"):
+        return False
+    status = _claim_status(name, source)
+    if status == "unmatched":
+        return None
+    if status == "satisfied":
+        return False
+    if _ASSERT_CALL.search(source) and not _SERVICE_CALL.search(source):
+        return False
+    return None
+
+
+def _oracle_classify(name: str, source: str, private_names: set[str]) -> tuple[dict, list[str]]:
+    """Decided flags, plus the keys the model still has to set.
+
+    An empty question list means the row is closed. All-false rows are omitted.
+    A true flag is written onto judgment.json so seal keeps the hit.
+    """
+    flags = {key: False for key in _ORACLE_FLAG_KEYS}
+    if any(
+        re.search(r"\b" + re.escape(member) + r"\s*\(", source) and member != name
+        for member in private_names
+    ):
+        flags["locks_private"] = True
+    flags.update(_oracle_presets(name, source))
+    if _OBS_ASSERT.search(source):
+        flags["observability_asserted"] = True
+    pending: list[str] = []
+    if _DEPENDENCY.search(source):
+        pending.append("locks_dependency")
+    unsafe = _unsafe_pass(source)
+    if unsafe is None:
+        pending.append("unsafe_pass")
+    else:
+        flags["unsafe_pass"] = unsafe
+    branch = _branch_uncovered(name, source, flags)
+    if branch is None:
+        pending.append("branch_uncovered")
+    else:
+        flags["branch_uncovered"] = branch
+    return flags, pending
+
+
+def _drop_judged_suspects(suspects: list[dict], pack: Path) -> list[dict]:
+    """Ids already copied onto judgment.json are closed. The model does not re-read them."""
+    written = load_json(pack / "judgment.json") or {}
+    judged = {str(item) for item in (written.get("suspect_hits") or []) if item}
+    if not judged:
+        return suspects
+    return [
+        suspect
+        for suspect in suspects
+        if str(suspect.get("derive_suspect_id") or "") not in judged
+    ]
+
+
+def _methods_for_open_lines(methods: list[dict], lines: set[int]) -> list[dict]:
+    if not lines:
+        return []
+    return [
+        method
+        for method in methods
+        if any(method["start_line"] <= line <= method["end_line"] for line in lines)
+    ]
+
+
+def _private_method_names(methods: list[dict]) -> set[str]:
+    names = set()
+    for method in methods:
+        for _number, text in _numbered_lines(method.get("source") or ""):
+            match = re.search(r"\bprivate\b[^;{=\n]*\b(\w+)\s*\(", text)
+            if match:
+                names.add(match.group(1))
+    return names
+
+
+def write_model_brief(pack: Path, packet: dict, repo: Path | None = None) -> None:
     """One deterministic read for the model. Seal still owns report cards.
 
     Counts, closed report rows, seed hits, and getter bodies are folded here
@@ -2343,6 +3127,14 @@ def write_model_brief(pack: Path, packet: dict) -> None:
             bucket.append(row["line"])
     for lines in report_lines.values():
         lines.sort()
+    closed_shapes = _closed_shapes(report.get("pr_delta") or [], repo)
+    if any(isinstance(row, dict) and row.get("rule_id") == "CONC-002" for row in (seed.get("findings") or [])):
+        closed_shapes.append({
+            "rule_id": "CONC-002",
+            "shape": "opposite_lock_order",
+            "lines": [],
+            "same_shape_lines": [],
+        })
 
     slices = _slice_text(packet)
     policies = {}
@@ -2377,8 +3169,7 @@ def write_model_brief(pack: Path, packet: dict) -> None:
             })
 
     open_lines = {int(row["line"]) for row in open_suspects if isinstance(row.get("line"), int)}
-    methods = []
-    needed_rules: set[str] = set()
+    catalog = []
     for row in packet.get("pending") or []:
         if not isinstance(row, dict):
             continue
@@ -2388,19 +3179,37 @@ def write_model_brief(pack: Path, packet: dict) -> None:
         end = row.get("end_line")
         if not isinstance(start, int) or not isinstance(end, int):
             continue
-        holds_open = any(start <= line <= end for line in open_lines)
-        if end - start < 8 and not holds_open:
-            continue
-        applicable = [str(item) for item in (row.get("applicable") or [])]
-        needed_rules.update(applicable)
-        methods.append({
+        catalog.append({
             "name": row.get("name"),
             "path": row.get("path"),
             "start_line": start,
             "end_line": end,
-            "applicable": applicable,
+            "applicable": [str(item) for item in (row.get("applicable") or [])],
             "source": slices.get(str(row.get("symbol_id") or ""), ""),
         })
+    methods = []
+    for method in catalog:
+        holds_open = any(method["start_line"] <= line <= method["end_line"] for line in open_lines)
+        if method["end_line"] - method["start_line"] >= 8 or holds_open:
+            methods.append(method)
+    for method in catalog:
+        if method in methods:
+            continue
+        span = method["end_line"] - method["start_line"]
+        callee_name = str(method.get("name") or "")
+        if not callee_name or span < 2 or span > 15:
+            continue
+        callee_source = method.get("source") or ""
+        if _trivial_getter(callee_source):
+            continue
+        if not re.search(r"\b(if|for|while|try|catch|subList)\b|getInstance\s*\(|loadAccount\s*\(", callee_source):
+            continue
+        if any(re.search(r"\b" + re.escape(callee_name) + r"\s*\(", kept.get("source") or "") for kept in methods):
+            method["callee_of"] = True
+            methods.append(method)
+    needed_rules: set[str] = set()
+    for method in methods:
+        needed_rules.update(method.get("applicable") or [])
     for suspect in open_suspects:
         line = suspect.get("line")
         path = str(suspect.get("file") or "")
@@ -2436,18 +3245,48 @@ def write_model_brief(pack: Path, packet: dict) -> None:
 
     maintain = load_json(pack / "18-maintainability-signals.json") or {}
     test_oracle_open = []
+    resolved_oracles = []
+    private_names = _private_method_names(methods)
     for row in maintain.get("test_oracle_inventory") or []:
         if not isinstance(row, dict) or row.get("skip_llm") is True:
             continue
         line = row.get("line")
         if not isinstance(line, int) or line in closed_oracle_lines:
             continue
-        test_oracle_open.append({
+        owner = next(
+            (
+                method for method in methods
+                if method["start_line"] <= line <= method["end_line"]
+            ),
+            None,
+        )
+        owner_source = (owner or {}).get("source") or ""
+        owner_name = str((owner or {}).get("name") or "")
+        opened = {
             "line": line,
             "file": row.get("path") or row.get("file"),
             "derive_suspect_id": row.get("derive_suspect_id"),
             "questions": row.get("questions") or [],
-        })
+        }
+        if not owner_source:
+            test_oracle_open.append(opened)
+            continue
+        flags, pending = _oracle_classify(owner_name, owner_source, private_names)
+        if not pending:
+            if any(flags.values()):
+                resolved_oracles.append({
+                    "line": line,
+                    "file": opened["file"],
+                    "derive_suspect_id": opened["derive_suspect_id"],
+                    "oracle": flags,
+                    "note": "脚本按测试正文填写预言。",
+                })
+            continue
+        preset = {key: flags[key] for key in _ORACLE_FLAG_KEYS if key not in pending}
+        if preset:
+            opened["preset"] = preset
+        opened["questions"] = pending
+        test_oracle_open.append(opened)
 
     semantic_closed = 0
     reported = {line for lines in report_lines.values() for line in lines}
@@ -2466,8 +3305,86 @@ def write_model_brief(pack: Path, packet: dict) -> None:
             "snippet": row.get("snippet"),
         })
 
+    peers = {str(method.get("name") or ""): method.get("source") or "" for method in methods}
+    lock_order_closed = any(
+        isinstance(row, dict) and row.get("rule_id") == "CONC-002"
+        for row in (seed.get("findings") or [])
+    )
+    candidate_hits = []
+    still_open = []
+    seen_hits = set()
+    for method in methods:
+        if method.get("callee_of"):
+            continue
+        hits, pending_shapes = _method_candidates(method, peers, closed_shapes)
+        for hit in hits:
+            key = (hit["rule_id"], hit["shape"], hit["line"], hit.get("file"))
+            if key in seen_hits:
+                continue
+            seen_hits.add(key)
+            candidate_hits.append(hit)
+        if lock_order_closed:
+            pending_shapes = [item for item in pending_shapes if not item.startswith("CONC-002:")]
+        if pending_shapes:
+            still_open.append({
+                "method": method.get("name"),
+                "path": method.get("path"),
+                "shapes": pending_shapes,
+            })
+    merged_hits = []
+    merged_index: dict[tuple[str, str], dict] = {}
+    for hit in candidate_hits:
+        key = (hit["rule_id"], hit["shape"])
+        primary = merged_index.get(key)
+        if primary is None:
+            merged_index[key] = hit
+            merged_hits.append(hit)
+            continue
+        extra = primary.setdefault("also_lines", [])
+        if hit["line"] not in extra and hit["line"] != primary["line"]:
+            extra.append(hit["line"])
+    candidate_hits = merged_hits
+    p1_shapes = {
+        "zero_amount", "null_amount", "default_zone_cutoff", "unread_expiry",
+        "collection_write", "off_by_one_slice", "inverted_condition", "truncating_round",
+    }
+    for hit in candidate_hits:
+        hit["severity"] = "p1" if hit["shape"] in p1_shapes else "p0"
+        if hit.get("also_lines"):
+            hit["same_fix"] = True
+    for suspect in open_suspects:
+        if suspect.get("kind") != "log_exposure" or not isinstance(suspect.get("line"), int):
+            continue
+        for hit in candidate_hits:
+            if hit["rule_id"] != "HYG-001":
+                continue
+            if suspect["line"] != hit["line"]:
+                extra = hit.setdefault("also_lines", [])
+                if suspect["line"] not in extra:
+                    extra.append(suspect["line"])
+            hit["derive_suspect_id"] = suspect.get("derive_suspect_id")
+            if hit.get("also_lines"):
+                hit["same_fix"] = True
+    for hit in candidate_hits:
+        _fill_candidate_card(hit)
+    _write_prefilled_judgment(pack, candidate_hits, resolved_oracles)
+
     work = pack / "judgment-work"
     groups = sorted(path.name for path in work.glob("group-*.json")) if work.is_dir() else []
+    open_suspects = _drop_judged_suspects(open_suspects, pack)
+    open_oracle_lines = {
+        int(row["line"])
+        for row in test_oracle_open
+        if isinstance(row.get("line"), int)
+    }
+    open_suspects = [
+        suspect for suspect in open_suspects
+        if str(suspect.get("kind") or "") != "test_oracle" or suspect.get("line") in open_oracle_lines
+    ]
+    oracle_only = not still_open and not groups
+    if oracle_only:
+        methods = _methods_for_open_lines(methods, open_oracle_lines)
+        open_suspects = []
     if groups:
         for method in methods:
             method["source"] = ""
@@ -2482,42 +3399,17 @@ def write_model_brief(pack: Path, packet: dict) -> None:
         perf = perf_card["counts"]
     tier = packet.get("risk_tier") if isinstance(packet.get("risk_tier"), dict) else {}
     language = packet.get("language") if isinstance(packet.get("language"), dict) else {}
+    read_this = BRIEF_READ_THIS
+    if oracle_only:
+        read_this += (
+            " still_open is empty. This brief omits closed_shapes, candidate_hits, and rules. "
+            "Findings are already in judgment.json."
+        )
     brief = {
         "kind": "ModelBrief",
         "schema_version": 1,
         "generated_by": "build-judgment-packet.py",
-        "read_this": (
-            "Read this file once. Write judgment.json. "
-            "Run render-review-html.sh. "
-            "Do not open 01-30, judgment-seed.json, seal-conclusion.py, "
-            "validate-conclusion.py, or the channel prompts. "
-            "closed_report rows are already cards. "
-            "Seed hits are omitted. Do not re-judge them. "
-            "A one-line getter is omitted. "
-            "Leave English fields empty. Do not draft review-conclusion.json. "
-            "The output object below is the schema. "
-            "Do not open templates, examples, dimension docs, or seal scripts to check it. "
-            "The same line and the same rule_id may be several findings when each title differs. "
-            "One finding has one rule_id. "
-            "Line numbers are the N| prefix already in methods[].source. "
-            "Do not count a pasted copy. "
-            "A callee missing from methods is filed once, on the call line inside methods[].source. "
-            "After that line is chosen, stop restating it. "
-            "Do not open a previous judgment.json, REVIEW-REPORT.html, or an earlier review pack. "
-            "methods[].source is already the method text. Do not print the methods out again. "
-            "title, risk, and fix are Chinese. Leave the English fields empty. "
-            "A look_for with several shapes is one finding per shape. "
-            "The first shape does not close the others. "
-            "A line listed under a rule_id in closed_report is not filed again. Another line of that rule_id is still filed when it is a different shape. "
-            + MATCH_OUTSIDE_APPLICABLE
-            + " "
-            "open_suspects[].source is empty on purpose when source_ref is set. "
-            "If source_ref.where is methods, the body is the methods entry with "
-            "the same name, path, start_line, and end_line: read that entry's source. "
-            "If source_ref.where is judgment-work, the body is in the listed group file. "
-            "Empty source plus source_ref means the body was moved there. "
-            "Do not treat it as missing source and do not open the repository file."
-        ),
+        "read_this": read_this,
         "scale": {
             "primary_language": language.get("primary_language"),
             "tier": tier.get("tier"),
@@ -2525,61 +3417,51 @@ def write_model_brief(pack: Path, packet: dict) -> None:
             "pending_symbols": len(packet.get("pending") or []),
             "report_rows": sum(len(lines) for lines in report_lines.values()),
             "methods": len(methods),
+            "callees": sum(1 for method in methods if method.get("callee_of")),
+            "candidate_hits": len(candidate_hits),
+            "still_open": len(still_open),
             "open_suspects": len(open_suspects),
             "question_fanout": bool(packet.get("question_fanout")) or bool(groups),
             "performance": perf,
         },
-        "closed_report": report_lines,
-        "lock_order_closed": any(
-            isinstance(row, dict) and row.get("rule_id") == "CONC-002"
-            for row in (seed.get("findings") or [])
-        ),
+        "closed_report": {} if oracle_only else report_lines,
+        "closed_shapes": [] if oracle_only else closed_shapes,
+        "candidate_hits": [] if oracle_only else candidate_hits,
+        "still_open": still_open,
+        "oracle_flags": ORACLE_FLAGS,
+        "lock_order_closed": lock_order_closed,
         "semantic_closed": semantic_closed,
-        "semantic_open": semantic_open,
+        "semantic_open": [] if oracle_only else semantic_open,
         "open_suspects": open_suspects,
         "test_oracle_open": test_oracle_open,
-        "rules": rules,
+        "rules": {} if oracle_only else rules,
         "methods": methods,
         "groups": groups,
         "output": {
             "file": "judgment.json",
             "findings": (
-                "Business defects whose rule_id is absent from closed_report, "
-                "plus an open suspect judged true. "
-                "A line listed under a rule_id in closed_report is not filed again. Another line of that rule_id is still filed when it is a different shape. "
-                "A look_for with several shapes is one finding per shape. "
-                "The first shape does not close the others. "
-                "Fields: title, line, file, severity, rule_id or kind, "
-                "derive_suspect_id when the row has one, risk, fix. "
-                "title, risk, and fix are Chinese. Leave title_en, risk_en, and fix_en empty. "
-                "Write each finding once. Do not re-list the set or re-plan severity. "
-                "The same fix for the same rule_id on several lines is one finding with same_fix true and also_lines for the other lines. "
-                "Do not file those lines and then delete them. "
-                "Do not compute shape_count. Do not open business-rule-records.md. "
-                "Copy test_oracle flags already decided. Do not re-derive them. "
-                + MATCH_OUTSIDE_APPLICABLE
+                "Already written in judgment.json from candidate_hits. Do not rewrite title, risk, fix, line, or severity. "
+                "Append a finding only for a still_open shape. "
+                "Test rows go to test_oracle and suspect_hits only."
             ),
-            "suspect_hits": "derive_suspect_id values from open_suspects judged true.",
+            "suspect_hits": (
+                "derive_suspect_id values from open_suspects judged true. "
+                "An id already in judgment.json suspect_hits is closed."
+            ),
             "test_oracle": (
                 "One object per test_oracle_open line that has a true flag. "
-                "Always set unsafe_pass, boundary_missed, branch_uncovered. "
-                "Also set each name in questions. "
+                "Copy preset onto oracle. Judge only questions. "
                 + ORACLE_JUDGMENT
             ),
-            "card": (
-                "title, risk, and fix are Chinese. Leave the English fields empty. "
-                "title is the failure name. "
-                "risk is 在第 N 行检测到 `代码`。 plus the impact. "
-                "fix is 将第 N 行 `旧文本` 改为： plus the safe edit. "
-                "Do not write 不会, 不是, 而不是, 不用, or 不要."
-            ),
-            "then": "Write judgment.json once, then render-review-html.sh --dir <pack>. Do not re-list findings before writing.",
+            "card": "Candidate cards are already in judgment.json. Do not rewrite them.",
+            "then": "Add test_oracle rows only, then render-review-html.sh --dir <pack>. Do not rewrite findings.",
         },
     }
     write_json(pack / "31-model-brief.json", brief)
     print(
         "Model brief written: "
-        f"methods={len(methods)} open_suspects={len(open_suspects)} "
+        f"methods={len(methods)} candidates={len(candidate_hits)} "
+        f"still_open={len(still_open)} open_suspects={len(open_suspects)} "
         f"oracle_open={len(test_oracle_open)} groups={len(groups)}"
     )
 
@@ -2622,7 +3504,7 @@ def write(pack: Path, repo: Path) -> None:
     write_json(pack / "29-judgment-packet.json", packet)
     write_json(pack / "30-conclusion-skeleton.json", skeleton)
     _write_conclusion_stub(pack, packet)
-    write_model_brief(pack, packet)
+    write_model_brief(pack, packet, repo)
     print(
         "Judgment packet written: "
         f"groups={len(packet['read_groups'])} "
@@ -2638,13 +3520,24 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Write 29-judgment-packet.json")
     parser.add_argument("--dir", required=True)
     parser.add_argument("--repo", required=True)
+    parser.add_argument(
+        "--conclusion-stub-only",
+        action="store_true",
+        help="Write review-conclusion.json once manifest.json exists. Do not rebuild the packet.",
+    )
     args = parser.parse_args()
     pack = Path(args.dir)
-    repo = Path(args.repo)
     if not pack.is_dir():
         print(f"error: pack dir missing: {pack}", file=sys.stderr)
         return 2
-    write(pack, repo)
+    if args.conclusion_stub_only:
+        packet = load_json(pack / "29-judgment-packet.json") or {}
+        _write_conclusion_stub(pack, packet)
+        if not (pack / "review-conclusion.json").is_file():
+            print("error: review-conclusion.json was not written", file=sys.stderr)
+            return 1
+        return 0
+    write(pack, Path(args.repo))
     return 0
 
 

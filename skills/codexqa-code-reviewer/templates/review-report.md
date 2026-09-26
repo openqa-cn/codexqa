@@ -166,6 +166,8 @@ _None_ or short list.
 | Symbol | tested_count | tests-reach | Risk note |
 |---|---|---|---|
 
+表里只列承载行为的方法。下面四类写入 `waived_symbols`，不单独成行：类初始化块（`static` / `<clinit>`）、类型和构造器、`getX` / `setX` / `isX` 访问器、private 辅助方法。要测的是调用它们的公开或包内方法。嵌套测试里的一次调用不是测试边，行为方法的 `tested_count` 仍为 0 时继续留在表里。
+
 Distinguish: test file name hit ≠ tests edge.
 
 ## 5. Sensitive paths

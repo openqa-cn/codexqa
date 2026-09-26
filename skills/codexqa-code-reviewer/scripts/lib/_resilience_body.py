@@ -19,6 +19,7 @@ from _det_rules import (  # noqa: E402
     scan_admin_grant_without_audit,
     scan_charset_gaps,
     scan_close_on_success,
+    scan_cross_tenant_id_actions,
     scan_disabled_bounds,
     scan_exception_unwraps,
     scan_executor_leaks,
@@ -26,6 +27,8 @@ from _det_rules import (  # noqa: E402
     scan_process_defaults,
     scan_retry_side_effects,
     scan_shared_mutables,
+    scan_tenant_context_drops,
+    scan_tenant_predicate_gaps,
     scan_unguarded_parses,
 )
 
@@ -445,6 +448,7 @@ def main() -> None:
     charset_gaps = []
     null_deref_gaps = []
     authz_audit_gaps = []
+    tenant_scope_gaps = []
     disabled_bounds = []
     retry_side_effects = []
     shared_mutables = []
@@ -488,6 +492,9 @@ def main() -> None:
         null_deref_gaps.extend(scan_null_deref_gaps(rel, lines))
         null_deref_gaps.extend(scan_unguarded_parses(rel, lines))
         authz_audit_gaps.extend(scan_admin_grant_without_audit(rel, lines))
+        tenant_scope_gaps.extend(scan_tenant_predicate_gaps(rel, lines))
+        tenant_scope_gaps.extend(scan_tenant_context_drops(rel, lines))
+        tenant_scope_gaps.extend(scan_cross_tenant_id_actions(rel, lines))
         disabled_bounds.extend(scan_disabled_bounds(rel, lines))
         retry_side_effects.extend(scan_retry_side_effects(rel, lines))
         shared_mutables.extend(scan_shared_mutables(rel, lines))
@@ -504,6 +511,7 @@ def main() -> None:
     charset_gaps = dedupe(charset_gaps)
     null_deref_gaps = dedupe(null_deref_gaps)
     authz_audit_gaps = dedupe(authz_audit_gaps)
+    tenant_scope_gaps = dedupe(tenant_scope_gaps)
     disabled_bounds = dedupe(disabled_bounds)
     retry_side_effects = dedupe(retry_side_effects)
     shared_mutables = dedupe(shared_mutables)
@@ -558,6 +566,7 @@ def main() -> None:
         and len(charset_gaps) == 0
         and len(null_deref_gaps) == 0
         and len(authz_audit_gaps) == 0
+        and len(tenant_scope_gaps) == 0
         and len(disabled_bounds) == 0
         and len(retry_side_effects) == 0
         and len(shared_mutables) == 0
@@ -580,6 +589,7 @@ def main() -> None:
         "charset_gaps": charset_gaps,
         "null_deref_gaps": null_deref_gaps,
         "authz_audit_gaps": authz_audit_gaps,
+        "tenant_scope_gaps": tenant_scope_gaps,
         "disabled_bounds": disabled_bounds,
         "retry_side_effects": retry_side_effects,
         "shared_mutables": shared_mutables,

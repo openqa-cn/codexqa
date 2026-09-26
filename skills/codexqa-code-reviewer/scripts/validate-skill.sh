@@ -97,6 +97,7 @@ for sh in \
   "$ROOT/scripts/lib/sast-tool-path.sh" \
   "$ROOT/scripts/lib/derive-annotation-edges.sh" \
   "$ROOT/scripts/lib/index-diff-base.sh" \
+  "$ROOT/scripts/lib/collect-trace.sh" \
   "$ROOT/scripts/validate-skill.sh"
 do
   if [[ -f "$sh" ]]; then
@@ -1080,6 +1081,183 @@ if [[ $? -eq 0 ]]; then
   pass "lock order and no-join oracles are drafted before the model writes a conclusion"
 else
   fail "script should draft lock-order cards and mechanical test oracles"
+fi
+
+# Oracle presets, one-pass brief, and top-level flags still seal.
+ORACLE_BRIEF="$TMP/oracle-brief"
+mkdir -p "$ORACLE_BRIEF/pack"
+"$ROOT/scripts/acr-python" - <<PY
+import importlib.util
+import json
+from pathlib import Path
+root = Path(r'''$ROOT''')
+spec = importlib.util.spec_from_file_location("packet", root/"scripts/lib/build-judgment-packet.py")
+packet = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(packet)
+pack = Path(r'''$ORACLE_BRIEF''')/"pack"
+
+def numbered(start, body):
+    lines = body.splitlines()
+    return "\n".join(f"{start + i}|{line}" for i, line in enumerate(lines))
+
+def method(sid, name, start, body):
+    text = numbered(start, body)
+    end = start + max(8, len(body.splitlines()) - 1)
+    return {
+        "symbol_id": sid,
+        "name": name,
+        "kind": "method",
+        "path": "Pay.java",
+        "start_line": start,
+        "end_line": end,
+        "ranges": [[start, end]],
+        "applicable": [],
+        "source_body": text,
+    }
+
+rows = [
+    method("limit", "limitBoundaryShouldHold", 10,
+           "@Test\nvoid limitBoundaryShouldHold() {\n"
+           "    request.setAmount(new BigDecimal(\"1000.00\"));\n"
+           "    assertTrue(request.getAmount().compareTo(SINGLE_TRANSFER_LIMIT) < 0);\n"
+           "}"),
+    method("real", "limitBoundaryShouldReject", 30,
+           "@Test\nvoid limitBoundaryShouldReject() {\n"
+           "    request.setAmount(SINGLE_TRANSFER_LIMIT);\n"
+           "    assertEquals(\"OVER_LIMIT\", result.getCode());\n"
+           "}"),
+    method("fast", "highVolumeRequestBuildShouldKeepUp", 50,
+           "@Test\nvoid highVolumeRequestBuildShouldKeepUp() {\n"
+           "    long elapsed = System.currentTimeMillis() - started;\n"
+           "    assertTrue(elapsed < 5000);\n"
+           "}"),
+    method("hold", "accountShouldHoldBasicFields", 70,
+           "@Test\nvoid accountShouldHoldBasicFields() {\n"
+           "    assertEquals(\"6222020000123456789\", account.getAccountNo());\n"
+           "}"),
+    method("fee", "feeShouldStayWithinHistoricalBand", 90,
+           "@Test\nvoid feeShouldStayWithinHistoricalBand() {\n"
+           "    if (fee.compareTo(new BigDecimal(\"200.0\")) > 0) fail();\n"
+           "}"),
+    method("send", "send", 110,
+           "void send() {\n"
+           "    auditLogger.info(\"card=\" + request.getCardNo());\n"
+           "}"),
+    method("ping", "ping", 130, "void ping() {\n    return;\n}"),
+    method("gate", "gatewayFailoverShouldCompleteQuietly", 150,
+           "@Test\nvoid gatewayFailoverShouldCompleteQuietly() {\n"
+           "    assertEquals(3, outcomes.size());\n"
+           "}"),
+    method("job", "settlementJobShouldHoldService", 170,
+           "@Test\nvoid settlementJobShouldHoldService() {\n"
+           "    job.run(pending);\n"
+           "}"),
+]
+(pack/"18-maintainability-signals.json").write_text(json.dumps({
+    "test_oracle_inventory": [
+        {"path": "Pay.java", "line": 10, "derive_suspect_id": "test_oracle:Pay.java:10",
+         "questions": ["locks_private", "locks_dependency", "threshold_pass", "observability_asserted"]},
+        {"path": "Pay.java", "line": 30, "derive_suspect_id": "test_oracle:Pay.java:30",
+         "questions": ["locks_private", "locks_dependency", "threshold_pass", "observability_asserted"]},
+        {"path": "Pay.java", "line": 50, "derive_suspect_id": "test_oracle:Pay.java:50",
+         "questions": ["locks_private", "locks_dependency", "threshold_pass", "observability_asserted"]},
+        {"path": "Pay.java", "line": 70, "derive_suspect_id": "test_oracle:Pay.java:70",
+         "questions": ["locks_private", "locks_dependency", "threshold_pass", "observability_asserted"]},
+        {"path": "Pay.java", "line": 150, "derive_suspect_id": "test_oracle:Pay.java:150",
+         "questions": ["locks_private", "locks_dependency", "threshold_pass", "observability_asserted"]},
+        {"path": "Pay.java", "line": 170, "derive_suspect_id": "test_oracle:Pay.java:170",
+         "questions": ["locks_private", "locks_dependency", "threshold_pass", "observability_asserted"]},
+    ]
+}), encoding="utf-8")
+pending = []
+slices = []
+for row in rows:
+    body = row.pop("source_body")
+    pending.append(row)
+    slices.append({"symbol_id": row["symbol_id"], "text": body})
+doc = {
+    "pending": pending,
+    "read_groups": [{"id": "blob:pay", "paths": ["Pay.java"], "slices": slices, "symbol_ids": [row["symbol_id"] for row in pending]}],
+    "suspects": {"policies": {}, "packets": [{
+        "derive_suspect_id": "log_exposure:Pay.java:111",
+        "kind": "log_exposure",
+        "file": "Pay.java",
+        "line": 111,
+    }], "sast_packets": []},
+    "semantic_candidates": [],
+    "report": {"pr_delta": []},
+    "rules": {},
+    "language": {"primary_language": "Java", "review_language_focus": "Java", "confidence": "high"},
+    "risk_tier": {"tier": "T0"},
+    "dimensions": {},
+}
+packet.write_model_brief(pack, doc, None)
+brief = json.loads((pack/"31-model-brief.json").read_text(encoding="utf-8"))
+names = [row.get("name") for row in brief["methods"]]
+assert names == ["gatewayFailoverShouldCompleteQuietly"], names
+assert brief["still_open"] == [], brief["still_open"]
+assert brief["candidate_hits"] == []
+assert brief["closed_shapes"] == []
+assert brief["rules"] == {}
+by_line = {row["line"]: row for row in brief["test_oracle_open"]}
+assert set(by_line) == {150}, sorted(by_line)
+assert by_line[150]["questions"] == ["branch_uncovered"], by_line[150]
+assert by_line[150]["preset"]["boundary_missed"] is False
+assert "branch_uncovered" not in by_line[150]["preset"]
+ids = [row.get("derive_suspect_id") for row in brief["open_suspects"]]
+assert ids == [], ids
+judgment = json.loads((pack/"judgment.json").read_text(encoding="utf-8"))
+resolved = {row["line"]: row for row in judgment["test_oracle"]}
+assert resolved[10]["oracle"]["boundary_missed"] is True
+assert resolved[10]["oracle"]["branch_uncovered"] is False
+assert resolved[50]["oracle"]["threshold_pass"] is True
+assert resolved[50]["oracle"]["boundary_missed"] is False
+assert resolved[170]["oracle"]["branch_uncovered"] is True
+assert 30 not in resolved and 70 not in resolved
+assert any(item == "log_exposure:Pay.java:111" for item in judgment["suspect_hits"]), judgment["suspect_hits"]
+assert any(row.get("rule_id") == "HYG-001" for row in judgment["findings"]), judgment["findings"]
+assert "getter round-trip" in brief["oracle_flags"]["unsafe_pass"]
+assert "Do not reopen a flag" in brief["read_this"]
+assert "Judge only questions" in brief["read_this"]
+assert "boundary_missed stays false unless preset is true" in brief["read_this"]
+assert "omits closed_shapes" in brief["read_this"]
+assert '"oracle":' in brief["output"]["test_oracle"]
+seal_dir = pack / "seal"
+seal_dir.mkdir()
+(seal_dir / "18-maintainability-signals.json").write_text(json.dumps({
+    "test_oracle_inventory": [
+        {"path": "Pay.java", "line": 10, "questions": ["locks_private", "threshold_pass"]},
+        {"path": "Pay.java", "line": 50, "questions": ["threshold_pass"]},
+    ]
+}), encoding="utf-8")
+seal_spec = importlib.util.spec_from_file_location("seal", root/"scripts/lib/seal-conclusion.py")
+seal = importlib.util.module_from_spec(seal_spec)
+seal_spec.loader.exec_module(seal)
+conclusion = {"test_oracle_coverage": [
+    {"path": "Pay.java", "line": 10, "result": "skip", "oracle": {"unsafe_pass": False},
+     "note": "脚本默认跳过：模型未把这条测试标成 oracle hit。"},
+    {"path": "Pay.java", "line": 50, "result": "hit", "oracle": {"branch_uncovered": True, "unsafe_pass": False},
+     "note": "脚本按已报告的测试缺陷填写预言。"},
+]}
+seal.fill_oracle(conclusion, seal_dir, {"test_oracle": [
+    {"line": 10, "boundary_missed": True, "unsafe_pass": False, "branch_uncovered": False,
+     "locks_private": False, "locks_dependency": False, "threshold_pass": False, "observability_asserted": False},
+    {"line": 50, "oracle": {"branch_uncovered": False, "unsafe_pass": False, "boundary_missed": False,
+     "locks_private": False, "locks_dependency": False, "threshold_pass": True, "observability_asserted": False}},
+]})
+covered = {row["line"]: row for row in conclusion["test_oracle_coverage"]}
+assert covered[10]["result"] == "hit", covered[10]
+assert covered[10]["oracle"]["boundary_missed"] is True
+assert covered[10]["oracle"]["unsafe_pass"] is False
+assert not str(covered[10]["note"]).startswith("脚本默认跳过")
+assert covered[50]["oracle"]["branch_uncovered"] is True
+assert covered[50]["oracle"]["threshold_pass"] is True
+print("oracle brief narrowed", names)
+PY
+if [[ $? -eq 0 ]]; then
+  pass "oracle presets are copied once and a closed suspect is not reopened"
+else
+  fail "oracle brief should preset boundary and time flags without dropping defect cards"
 fi
 
 # Past 2000 lines, whole methods pack into chunks of about 800 lines, at most
@@ -4135,6 +4313,73 @@ if [[ "$(printf '%s\n' "$PARSED" | awk 'NR==1')" == "incremental (no changes)" \
 else
   fail "index log parser missed incremental zero-file output"
   printf '%s\n' "$PARSED" >&2
+fi
+
+# Collect traces stay in commands.log. The conclusion stub is written after manifest.json.
+if grep -n 'tee -a' \
+  "$ROOT/scripts/collect-pr-evidence.sh" \
+  "$ROOT/scripts/collect-fullrepo-evidence.sh" \
+  "$ROOT/scripts/collect-adhoc-evidence.sh" >/dev/null; then
+  fail "collectors still mirror command traces to stdout"
+else
+  pass "collectors keep command traces in commands.log"
+fi
+TRACE_DIR="$TMP/collect-trace"
+mkdir -p "$TRACE_DIR"
+if (
+  LOG="$TRACE_DIR/commands.log"
+  OUT_DIR="$TRACE_DIR"
+  COMMANDS=()
+  : >"$LOG"
+  # shellcheck source=lib/collect-trace.sh
+  source "$ROOT/scripts/lib/collect-trace.sh"
+  traced="$(run true)"
+  [[ -z "$traced" ]] && grep -q '+ true' "$LOG"
+); then
+  pass "collect trace helper does not echo successful commands"
+else
+  fail "collect trace helper leaked a successful command"
+fi
+STUB_DIR="$TMP/conclusion-stub"
+mkdir -p "$STUB_DIR"
+printf '%s\n' '{"mode":"pr","repo":"/repo","diff_base":"origin/main","primary_language":"TypeScript","codexqa_version":"codexqa test"}' >"$STUB_DIR/manifest.json"
+printf '%s\n' '{"language":{"primary_language":"TypeScript","review_language_focus":"TypeScript","confidence":"medium"}}' >"$STUB_DIR/29-judgment-packet.json"
+if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/build-judgment-packet.py" \
+    --dir "$STUB_DIR" --repo /repo --conclusion-stub-only >/dev/null \
+  && jq -e '.primary_language=="TypeScript" and .repo=="/repo" and .diff_base=="origin/main" and (.p0|length)==0' \
+    "$STUB_DIR/review-conclusion.json" >/dev/null \
+  && jq '.summary="sentinel"' "$STUB_DIR/review-conclusion.json" >"$STUB_DIR/rewritten.json" \
+  && mv "$STUB_DIR/rewritten.json" "$STUB_DIR/review-conclusion.json" \
+  && "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/build-judgment-packet.py" \
+    --dir "$STUB_DIR" --repo /repo --conclusion-stub-only >/dev/null \
+  && jq -e '.summary=="sentinel"' "$STUB_DIR/review-conclusion.json" >/dev/null; then
+  pass "conclusion stub is written after manifest and is not rewritten"
+else
+  fail "conclusion stub missing after manifest"
+  jq . "$STUB_DIR/review-conclusion.json" >&2 || true
+fi
+rm -rf "$STUB_DIR"
+NOMANIFEST="$TMP/conclusion-stub-nomanifest"
+mkdir -p "$NOMANIFEST"
+printf '%s\n' '{"language":{"primary_language":"TypeScript"}}' >"$NOMANIFEST/29-judgment-packet.json"
+if "$ROOT/scripts/acr-python" "$ROOT/scripts/lib/build-judgment-packet.py" \
+    --dir "$NOMANIFEST" --repo /repo --conclusion-stub-only >/dev/null 2>&1; then
+  fail "conclusion stub must stay absent until manifest.json exists"
+else
+  if [[ -f "$NOMANIFEST/review-conclusion.json" ]]; then
+    fail "conclusion stub wrote a file without manifest.json"
+  else
+    pass "conclusion stub stays absent when manifest.json is missing"
+  fi
+fi
+rm -rf "$NOMANIFEST"
+if grep -q 'still_open, open_suspects, and test_oracle_open are all empty' \
+    "$ROOT/scripts/lib/build-judgment-packet.py" \
+  && grep -q 'install-sast-tools.sh in parallel' "$ROOT/SKILL.md" \
+  && grep -q 'do not read methods or `judgment-work` groups' "$ROOT/prompts/llm-judgment-pass.md"; then
+  pass "fast path keeps sealed cards and skips empty judgment lists"
+else
+  fail "fast path instructions are incomplete"
 fi
 
 # --- create-skill compliance (structure / discoverability) ---

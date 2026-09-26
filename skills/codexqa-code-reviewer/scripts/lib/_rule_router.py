@@ -65,7 +65,10 @@ FAMILIES = (
     ),
     (
         "tenant",
-        re.compile(r"(?i)\btenants?\b"),
+        re.compile(
+            r"(?i)(?:\btenants?\b|\btenant(?=[_A-Z])|"
+            r"\borg(?:anization|anisation)?_?id\b)"
+        ),
         ("TEN-002", "TEN-004", "TEN-005", "TEN-006"),
         "span has no tenant id or tenant scope",
     ),
@@ -84,12 +87,28 @@ FAMILIES = (
 )
 
 
-def rule_plan(text: str | None, kind: str) -> dict:
+# A tenant-scoped type keeps the absence rules applicable on the methods that
+# omit the word. ``tenantId`` has no word boundary after "tenant", and the
+# query, handoff, or reversal that drops tenant often never spells it.
+_TENANT_FIELD = re.compile(
+    r"(?i)\b(?:tenant|org|organization|organisation)(?:Id|_id)\b"
+)
+_TENANT_ABSENCE = re.compile(
+    r"(?i)(\bwhere\b"
+    r"|\.execute\s*\(\s*new\s+\w*(?:Runnable|Callable)"
+    r"|\.submit\s*\(\s*(?:lambda|new\s+\w*(?:Runnable|Callable))"
+    r"|\b(?:reverse|refund|chargeback)\w*\s*\()"
+)
+
+
+def rule_plan(text: str | None, kind: str, file_text: str | None = None) -> dict:
     """Return applicable rule ids and recorded skips.
 
     ``text is None`` means the span could not be read: do not skip.
     ``file_scope`` is not a method; structure rules stay applicable there
     because the uncovered lines are the fields around the methods.
+    A file that declares a tenant or org id still applies TEN-* to a span
+    that queries by id, hands work to another thread, or reverses by id.
     """
     applicable = list(ALWAYS)
     skips = []
@@ -101,10 +120,14 @@ def rule_plan(text: str | None, kind: str) -> dict:
                 if rule_id not in applicable:
                     applicable.append(rule_id)
         return {"applicable": applicable, "skips": skips, "span_read": False}
+    file_has_tenant = bool(file_text and _TENANT_FIELD.search(file_text))
     for _name, rx, rules, note in FAMILIES:
         if kind == "file_scope" and _name == "structure":
             continue
-        if rx.search(text):
+        haystack = text
+        if _name == "tenant" and file_has_tenant and _TENANT_ABSENCE.search(text):
+            haystack = text + "\n tenant"
+        if rx.search(haystack):
             applicable.extend(rules)
         else:
             for rule_id in rules:

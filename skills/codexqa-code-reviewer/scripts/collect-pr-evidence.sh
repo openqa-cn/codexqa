@@ -96,26 +96,8 @@ fi
 mkdir -p "$OUT_DIR"/{diffs,impact,entries}
 LOG="$OUT_DIR/commands.log"
 touch "$LOG"
-
-run() {
-  echo "+ $*" | tee -a "$LOG"
-  COMMANDS+=("$*")
-  "$@"
-}
-
-run_json() {
-  local out="$1"; shift
-  echo "+ $* > $out" | tee -a "$LOG"
-  COMMANDS+=("$* > $out")
-  if "$@" >"$out" 2>"$OUT_DIR/.last_err"; then
-    return 0
-  fi
-  {
-    echo "{\"error\":true,\"command\":\"$*\",\"stderr\":$(jq -Rs . <"$OUT_DIR/.last_err")}"
-  } >"$out"
-  echo "warn: command failed, wrote error stub to $out" | tee -a "$LOG" >&2
-  return 0
-}
+# shellcheck source=lib/collect-trace.sh
+source "$SCRIPT_DIR/lib/collect-trace.sh"
 
 CODEXQA_VERSION="$(codexqa_version_string)"
 STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -129,9 +111,10 @@ if [[ "$SKIP_INDEX" -eq 0 ]]; then
   if [[ -n "$GITHUB_PR" ]]; then
     if index_diff_base_github_files "$GITHUB_PR" "$GH_LIST"; then
       GH_CHANGED="$(index_diff_base_file_count "$GH_LIST")"
-      echo "+ github pr files $GITHUB_PR count=$GH_CHANGED" | tee -a "$LOG"
+      collect_trace "github pr files $GITHUB_PR count=$GH_CHANGED"
     else
-      echo "warn: GitHub PR file list unavailable for $GITHUB_PR" | tee -a "$LOG" >&2
+      echo "warn: GitHub PR file list unavailable for $GITHUB_PR" >&2
+      printf 'warn: GitHub PR file list unavailable for %s\n' "$GITHUB_PR" >>"$LOG"
     fi
   fi
   EXPECTED_CHANGED="$GIT_CHANGED"
@@ -139,30 +122,25 @@ if [[ "$SKIP_INDEX" -eq 0 ]]; then
     EXPECTED_CHANGED="$GH_CHANGED"
   fi
   if index_diff_base_cache_miss "$DIFF_BASE_STAMP" "$DIFF_BASE_SHA"; then
-    echo "+ diff-base cache miss ($DIFF_BASE_SHA); full index" | tee -a "$LOG"
+    collect_trace "diff-base cache miss ($DIFF_BASE_SHA); full index"
     FORCE_FULL=1
   fi
   INDEX_LOG="$OUT_DIR/index.log"
   if [[ "$FORCE_FULL" -eq 1 ]]; then
-    echo "+ codexqa index $REPO_ABS --full --diff-base $DIFF_BASE" | tee -a "$LOG"
-    COMMANDS+=("codexqa index $REPO_ABS --full --diff-base $DIFF_BASE")
-    codexqa index "$REPO_ABS" --full --diff-base "$DIFF_BASE" 2>&1 | tee "$INDEX_LOG" | tee -a "$LOG"
+    collect_index "$INDEX_LOG" codexqa index "$REPO_ABS" --full --diff-base "$DIFF_BASE"
   else
-    echo "+ codexqa index $REPO_ABS --diff-base $DIFF_BASE" | tee -a "$LOG"
-    COMMANDS+=("codexqa index $REPO_ABS --diff-base $DIFF_BASE")
-    codexqa index "$REPO_ABS" --diff-base "$DIFF_BASE" 2>&1 | tee "$INDEX_LOG" | tee -a "$LOG"
+    collect_index "$INDEX_LOG" codexqa index "$REPO_ABS" --diff-base "$DIFF_BASE"
     INDEX_PARSED="$(index_diff_base_parse_index_log "$INDEX_LOG")"
     INDEX_MODE="$(printf '%s\n' "$INDEX_PARSED" | awk 'NR==1')"
     INDEX_FILES="$(printf '%s\n' "$INDEX_PARSED" | awk 'NR==2')"
     if index_diff_base_ignored_diff "$INDEX_MODE" "$INDEX_FILES" "$EXPECTED_CHANGED" "$DIFF_BASE_STAMP"; then
-      echo "+ incremental index parsed 0 files but diff has $EXPECTED_CHANGED; full index" | tee -a "$LOG"
-      COMMANDS+=("codexqa index $REPO_ABS --full --diff-base $DIFF_BASE")
-      codexqa index "$REPO_ABS" --full --diff-base "$DIFF_BASE" 2>&1 | tee "$INDEX_LOG" | tee -a "$LOG"
+      collect_trace "incremental index parsed 0 files but diff has $EXPECTED_CHANGED; full index"
+      collect_index "$INDEX_LOG" codexqa index "$REPO_ABS" --full --diff-base "$DIFF_BASE"
     fi
   fi
   index_diff_base_write_stamp "$DIFF_BASE_STAMP" "$DIFF_BASE" "$DIFF_BASE_SHA" "$EXPECTED_CHANGED"
 else
-  echo "+ (skipped) codexqa index --diff-base $DIFF_BASE" | tee -a "$LOG"
+  collect_trace "(skipped) codexqa index --diff-base $DIFF_BASE"
   COMMANDS+=("(skipped) codexqa index --diff-base $DIFF_BASE")
   codexqa_require_existing_index "$REPO_ABS"
 fi
@@ -174,7 +152,7 @@ run_json "$OUT_DIR/04-changed-files.json" codexqa query --repo "$REPO_ABS" files
 run_json "$OUT_DIR/05-changed-symbols.json" codexqa query --repo "$REPO_ABS" symbols --change add,change --kind function,method
 
 # Primary language profile (CodexQA lang_stats + changed-file languages)
-echo "+ detect primary language from CodexQA summary/lang_stats" | tee -a "$LOG"
+collect_trace "detect primary language from CodexQA summary/lang_stats"
 COMMANDS+=("codexqa_detect_language_profile 02-summary.json 04-changed-files.json")
 codexqa_detect_language_profile \
   "$OUT_DIR/02-summary.json" \
@@ -196,7 +174,7 @@ jq '
 # Sensitive search + symbols --name (plan: search / symbols --name + callers)
 SENSITIVE_NAMES=(password secret token auth pay)
 if [[ "$SKIP_SEARCH_INDEX" -eq 0 ]]; then
-  echo "+ codexqa search-index $REPO_ABS (best-effort)" | tee -a "$LOG"
+  collect_trace "codexqa search-index $REPO_ABS (best-effort)"
   COMMANDS+=("codexqa search-index $REPO_ABS")
   if codexqa search-index "$REPO_ABS" >>"$LOG" 2>&1; then
     run_json "$OUT_DIR/06-sensitive-search.json" \
@@ -233,7 +211,7 @@ jq -n \
   >"$OUT_DIR/06-sensitive-hits.json"
 
 # Tags: keys + tagged samples → 07-tags.json (plan naming)
-echo "+ codexqa tag keys (best-effort)" | tee -a "$LOG"
+collect_trace "codexqa tag keys (best-effort)"
 COMMANDS+=("codexqa tag $REPO_ABS keys --json")
 TAG_KEYS_RAW="$OUT_DIR/.tag-keys-raw.json"
 if codexqa tag "$REPO_ABS" keys --json >"$TAG_KEYS_RAW" 2>>"$LOG"; then
@@ -336,7 +314,7 @@ for id in "${SYMBOL_IDS[@]+"${SYMBOL_IDS[@]}"}"; do
 done
 
 if [[ -f "$SCRIPT_DIR/lib/collect-unit-calls.sh" ]]; then
-  bash "$SCRIPT_DIR/lib/collect-unit-calls.sh" --repo "$REPO_ABS" --dir "$OUT_DIR" \
+  bash "$SCRIPT_DIR/lib/collect-unit-calls.sh" --repo "$REPO_ABS" --dir "$OUT_DIR" >>"$LOG" 2>&1 \
     || echo "warn: unit calls failed" >&2
 fi
 
@@ -378,7 +356,7 @@ fi
 
 # Design fit signals (pure jq; 0 extra codexqa). WARN-only on failure — do not block collect.
 if [[ -x "$SCRIPT_DIR/lib/derive-design-fit.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-design-fit.sh" --dir "$OUT_DIR" --mode pr; then
+  if ! "$SCRIPT_DIR/lib/derive-design-fit.sh" --dir "$OUT_DIR" --mode pr >>"$LOG" 2>&1; then
     echo "warn: derive-design-fit.sh failed; continuing without 10-design-fit-signals.json" >&2
   fi
 else
@@ -388,7 +366,7 @@ fi
 # Complexity signals (pure local; 0 extra codexqa). Pass --repo because manifest
 # is written after derive — otherwise body scan (decisions/nesting/YAGNI comments) is skipped.
 if [[ -x "$SCRIPT_DIR/lib/derive-complexity.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-complexity.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-complexity.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-complexity.sh failed; continuing without 11-complexity-signals.json" >&2
   fi
 else
@@ -397,7 +375,7 @@ fi
 
 # Dependencies / supply-chain signals (local manifests/locks only; 0 extra codexqa; no network CVE).
 if [[ -x "$SCRIPT_DIR/lib/derive-dependencies.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-dependencies.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-dependencies.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-dependencies.sh failed; continuing without 12-dependency-signals.json" >&2
   fi
 else
@@ -406,7 +384,7 @@ fi
 
 # Privacy / compliance signals (local PII/log heuristics; 0 extra codexqa; no legal conclusions).
 if [[ -x "$SCRIPT_DIR/lib/derive-privacy.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-privacy.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-privacy.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-privacy.sh failed; continuing without 13-privacy-signals.json" >&2
   fi
 else
@@ -415,7 +393,7 @@ fi
 
 # Error handling / resilience signals (local timeout/retry/swallow heuristics; 0 extra codexqa).
 if [[ -x "$SCRIPT_DIR/lib/derive-resilience.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-resilience.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-resilience.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-resilience.sh failed; continuing without 14-resilience-signals.json" >&2
   fi
 else
@@ -424,7 +402,7 @@ fi
 
 # Change / rollout signals (migration/dual-write/flag/compat/rollback; 0 extra codexqa).
 if [[ -x "$SCRIPT_DIR/lib/derive-rollout.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-rollout.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-rollout.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-rollout.sh failed; continuing without 15-rollout-signals.json" >&2
   fi
 else
@@ -432,7 +410,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-risk-tier.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-risk-tier.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-risk-tier.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-risk-tier.sh failed; continuing without 20-risk-tier.json" >&2
   fi
 else
@@ -440,7 +418,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-observability.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-observability.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-observability.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-observability.sh failed; continuing without 16-observability-signals.json" >&2
   fi
 else
@@ -448,7 +426,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-contract.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-contract.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-contract.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-contract.sh failed; continuing without 17-contract-signals.json" >&2
   fi
 else
@@ -456,7 +434,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-maintainability.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-maintainability.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-maintainability.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-maintainability.sh failed; continuing without 18-maintainability-signals.json" >&2
   fi
 else
@@ -464,7 +442,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-performance.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-performance.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-performance.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-performance.sh failed; continuing without 21-performance-signals.json" >&2
   fi
 else
@@ -472,7 +450,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-sast.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-sast.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-sast.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-sast.sh failed; continuing without 23-sast-signals.json" >&2
   fi
 else
@@ -481,7 +459,7 @@ fi
 
 # Annotation-edge compensation (Spring/Resilience4j callbacks; 0 extra CodexQA)
 if [[ -x "$SCRIPT_DIR/lib/derive-annotation-edges.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-annotation-edges.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-annotation-edges.sh" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-annotation-edges.sh failed; continuing without 19-annotation-edges.json" >&2
   fi
 else
@@ -495,7 +473,7 @@ if [[ -f "$SCRIPT_DIR/lib/build-coverage-ledger.py" ]]; then
   else
     LEDGER_PY=(python3)
   fi
-  if ! "${LEDGER_PY[@]}" "$SCRIPT_DIR/lib/build-coverage-ledger.py" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS"; then
+  if ! "${LEDGER_PY[@]}" "$SCRIPT_DIR/lib/build-coverage-ledger.py" --dir "$OUT_DIR" --mode pr --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: build-coverage-ledger.py failed; continuing without 24-coverage-ledger.json" >&2
   fi
 else
@@ -510,7 +488,7 @@ if [[ -f "$SCRIPT_DIR/lib/build-review-digest.py" ]]; then
     DIGEST_PY=(python3)
   fi
   if ! "${DIGEST_PY[@]}" "$SCRIPT_DIR/lib/build-review-digest.py" \
-      --dir "$OUT_DIR" --repo "$REPO_ABS" --diff-base "$DIFF_BASE"; then
+      --dir "$OUT_DIR" --repo "$REPO_ABS" --diff-base "$DIFF_BASE" >>"$LOG" 2>&1; then
     echo "warn: build-review-digest.py failed; continuing without 26-review-digest.json" >&2
   fi
 else
@@ -600,6 +578,7 @@ jq -n \
       "29-judgment-packet.json",
       "30-conclusion-skeleton.json",
       "31-model-brief.json",
+      "review-conclusion.json",
       "commands.log",
       "diffs/",
       "impact/",
@@ -630,6 +609,7 @@ jq -n \
       "Review digest: read 31-model-brief.json. 26 is only the fallback when 31 and 29 are both absent. 29 stays for seal. 30-conclusion-skeleton.json is sealed into the conclusion at render. Do not recompute the split with git or open every signal file for the dimension verdict."
     ]
   }' >"$OUT_DIR/manifest.json"
+collect_write_conclusion_stub
 
 PRIMARY_DETECTED="$(jq -r '.primary_language // "UNKNOWN"' "$OUT_DIR/09-language-profile.json")"
 echo "Primary language: $PRIMARY_DETECTED (see 09-language-profile.json)"

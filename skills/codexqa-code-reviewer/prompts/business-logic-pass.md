@@ -49,7 +49,7 @@ Do not judge it again here.
 
 Do not re-file the same relation already emitted as a hard-gate row
 (`null_deref_gaps` including `unguarded_parse`, `resource_leaks`,
-`authz_audit_gaps`, `n_plus_one_risks`, `disabled_bounds`, `retry_side_effects`,
+`authz_audit_gaps`, `tenant_scope_gaps`, `n_plus_one_risks`, `disabled_bounds`, `retry_side_effects`,
 `shared_mutables`, `process_defaults`, `prod_test_coupling`, `test_oracle_hits`).
 A different `rule_id` on that line is still a finding. A skip names the
 relation, not only the line number. `rule_coverage.note` lists every matching

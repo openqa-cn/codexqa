@@ -638,7 +638,20 @@ jq -c '
           end
       ),
       gap_rows: (
-        ($r.test_gaps // [])
+        [ ($r.test_gaps // [])[] | . as $g
+          | if (($g.symbols // []) | length) > 0 then
+              ($g.symbols // [])[]
+              | {
+                  symbol: .,
+                  symbol_en: .,
+                  tested_count: ($g.tested_count // "0"),
+                  tests_reach: ($g.tests_reach // "empty"),
+                  tests_reach_en: ($g.tests_reach_en // "No accepted test edge"),
+                  note: (. + " 在调用图上没有测试边。"),
+                  note_en: (. + " has no accepted test edge.")
+                }
+            else $g end
+        ]
         | if length == 0 then "<tr><td colspan=\"4\" class=\"muted\" data-zh=\"无\" data-en=\"None\">无</td></tr>"
           else map(
             "<tr>"
@@ -978,7 +991,7 @@ jq -n -r --slurpfile p "$FRAG" --arg css "$CSS" --arg js "$JS" '
   + "</tr></thead><tbody>\n"
   + $p.regression_rows + "\n</tbody></table></div></section>\n"
   + "<section>" + h2bi("测试缺口"; "Test gaps")
-  + "<p class=\"muted\" data-zh=\"统计口径：看调用图里该生产符号是否被测试覆盖边罩住——tested_count&gt;0 或 tests-reach 非空才算已测。这不是「仓库有没有 tests 目录 / 有没有单测文件」。测试文件里普通调用了函数、或文件名带 test，都不算覆盖。因此可能出现：仓库里已有测试代码，但图上仍记为缺口。\" data-en=\"Criterion: a production symbol counts as tested only when the call graph has a tests coverage edge (tested_count&gt;0 or non-empty tests-reach). This is not about whether a tests/ folder or unit-test files exist. Ordinary calls from test files, or test-like filenames, do not count as coverage. So the repo may already have tests while the graph still shows a gap.\">统计口径：看调用图里该生产符号是否被测试覆盖边罩住——tested_count>0 或 tests-reach 非空才算已测。这不是「仓库有没有 tests 目录 / 有没有单测文件」。测试文件里普通调用了函数、或文件名带 test，都不算覆盖。因此可能出现：仓库里已有测试代码，但图上仍记为缺口。</p>\n"
+  + "<p class=\"muted\" data-zh=\"统计口径：看调用图里该生产符号是否被测试覆盖边罩住——tested_count&gt;0 或 tests-reach 非空才算已测。这不是「仓库有没有 tests 目录 / 有没有单测文件」。测试文件里普通调用了函数、或文件名带 test，都不算覆盖。因此可能出现：仓库里已有测试代码，但图上仍记为缺口。表里只列行为方法。类初始化块、类型和构造器、get/set/is 访问器、private 辅助方法不单列。\" data-en=\"Criterion: a production symbol counts as tested only when the call graph has a tests coverage edge (tested_count&gt;0 or non-empty tests-reach). This is not about whether a tests/ folder or unit-test files exist. Ordinary calls from test files, or test-like filenames, do not count as coverage. So the repo may already have tests while the graph still shows a gap. The table lists behavior methods only. Static initializers, types and constructors, get/set/is accessors, and private helpers are not separate rows.\">统计口径：看调用图里该生产符号是否被测试覆盖边罩住——tested_count>0 或 tests-reach 非空才算已测。这不是「仓库有没有 tests 目录 / 有没有单测文件」。测试文件里普通调用了函数、或文件名带 test，都不算覆盖。因此可能出现：仓库里已有测试代码，但图上仍记为缺口。表里只列行为方法。类初始化块、类型和构造器、get/set/is 访问器、private 辅助方法不单列。</p>\n"
   + "<div class=\"table-wrap\"><table><thead><tr>"
   + "<th data-zh=\"符号\" data-en=\"Symbol\">符号</th>"
   + "<th>tested_count</th><th>tests-reach</th>"

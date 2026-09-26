@@ -353,6 +353,151 @@ def scan_admin_grant_without_audit(rel: str, lines: list[str]) -> list[dict]:
     return out[:20]
 
 
+# Tenant scope is a field on the type. The methods that drop it often never
+# spell "tenant", so the file, not the method name, is the source role.
+_TENANT_FIELD = re.compile(
+    r"(?i)\b(?:tenant|org|organization|organisation)(?:Id|_id)\b"
+)
+_TENANT_WORD = re.compile(
+    r"(?i)\b(?:tenant(?:_?id)?|org(?:_?id)?|organization(?:_?id)?|organisation(?:_?id)?)\b"
+)
+_SQL_START = re.compile(r"(?i)\b(?:select|update|delete)\b")
+_SQL_WHERE = re.compile(r"(?i)\bwhere\b")
+_ID_EQ = re.compile(
+    r"(?i)\b\w*(?:id|no|key|code)\b\s*=\s*(?:\?|%s|:\w+|\$\d+|['\"])"
+)
+_ASYNC_HANDOFF = re.compile(
+    r"(?i)(?:\.execute\s*\(\s*new\s+\w*(?:Runnable|Callable)"
+    r"|\.submit\s*\(\s*(?:lambda|new\s+\w*(?:Runnable|Callable))"
+    r"|\bgo\s+func\s*\("
+    r"|\.publish\s*\(|\.enqueue\s*\()"
+)
+_ANY_ID = re.compile(r"(?i)\b([A-Za-z_]\w*(?:Id|_id))\b")
+_SCOPE_ID = re.compile(
+    r"(?i)^(tenant|org|organization|organisation|actor|trace|span|correlation|request)"
+)
+_ACTOR = re.compile(
+    r"(?i)\b(?:actor(?:Id|_id)?|principal|operatorId|userId|user_id)\b"
+)
+_TRACE = re.compile(
+    r"(?i)\b(?:trace(?:Id)?|span(?:Id)?|correlation(?:Id)?|requestId|request_id)\b"
+)
+_REVERSAL_DEF = re.compile(
+    r"(?i)\b(?:reverse|refund|chargeback)\w*\s*\([^)\n]*\)"
+)
+_ID_ARG_CALL = re.compile(
+    r"(?i)\b(?:find|get|load|fetch)\w*\s*\(\s*[A-Za-z_]\w*(?:Id|id|_id)\b"
+)
+
+
+def _file_has_tenant_scope(lines: list[str]) -> bool:
+    for _i, line, _stripped in iter_code_lines(lines):
+        if is_heuristic_meta_line(line):
+            continue
+        if _TENANT_FIELD.search(line):
+            return True
+    return False
+
+
+def _with_severity(row: dict, severity: str) -> dict:
+    row["severity"] = severity
+    return row
+
+
+def scan_tenant_predicate_gaps(rel: str, lines: list[str]) -> list[dict]:
+    """Id lookup or update whose statement has no tenant predicate.
+
+    The file must declare a tenant or org id. A statement that already ANDs
+    that scope is not a hit. One statement does not close the next.
+    """
+    if not _file_has_tenant_scope(lines):
+        return []
+    code = [
+        (i, line)
+        for i, line, _stripped in iter_code_lines(lines)
+        if not is_heuristic_meta_line(line)
+    ]
+    out = []
+    seen = set()
+    for pos, (i, line) in enumerate(code):
+        if not _SQL_START.search(line):
+            continue
+        window = code[pos : pos + 8]
+        blob = "\n".join(text for _n, text in window)
+        if not _SQL_WHERE.search(blob) or not _ID_EQ.search(blob):
+            continue
+        if _TENANT_WORD.search(blob):
+            continue
+        where = next((n for n, text in window if _SQL_WHERE.search(text)), i)
+        if where in seen:
+            continue
+        seen.add(where)
+        snippet = next(text for n, text in window if n == where)
+        out.append(_with_severity(
+            _hit(rel, where + 1, "tenant_predicate_missing", snippet, "TEN-002", "security"),
+            "p0",
+        ))
+    return out[:20]
+
+
+def scan_tenant_context_drops(rel: str, lines: list[str]) -> list[dict]:
+    """Work handed to another thread carries a business id and drops scope.
+
+    Tenant, actor, and trace are one bundle. The worker does not have to load
+    a row. A payload that already carries all three is not a hit.
+    """
+    if not _file_has_tenant_scope(lines):
+        return []
+    out = []
+    for i, line, _stripped in iter_code_lines(lines):
+        if is_heuristic_meta_line(line) or not _ASYNC_HANDOFF.search(line):
+            continue
+        body = _brace_body(lines, i) or _indent_body(lines, i)
+        blob = line + "\n" + "\n".join(text for _n, text in body)
+        business = [
+            name
+            for name in _ANY_ID.findall(blob)
+            if not _SCOPE_ID.search(name)
+        ]
+        if not business:
+            continue
+        if _TENANT_WORD.search(blob) and _ACTOR.search(blob) and _TRACE.search(blob):
+            continue
+        out.append(_with_severity(
+            _hit(rel, i + 1, "tenant_context_dropped", line, "TEN-004", "security"),
+            "p1",
+        ))
+    return out[:20]
+
+
+def scan_cross_tenant_id_actions(rel: str, lines: list[str]) -> list[dict]:
+    """Reverse, refund, or chargeback loads a row by object id alone.
+
+    A lookup that also takes the server tenant is not a hit. Each call is
+    its own row.
+    """
+    if not _file_has_tenant_scope(lines):
+        return []
+    out = []
+    seen = set()
+    for i, line, _stripped in iter_code_lines(lines):
+        if is_heuristic_meta_line(line) or not _REVERSAL_DEF.search(line):
+            continue
+        body = _brace_body(lines, i) or _indent_body(lines, i)
+        blob = line + "\n" + "\n".join(text for _n, text in body)
+        if _TENANT_WORD.search(blob):
+            continue
+        for n, text in body:
+            if n in seen or not _ID_ARG_CALL.search(text):
+                continue
+            seen.add(n)
+            out.append(_with_severity(
+                _hit(rel, n + 1, "tenant_id_only_lookup", text, "TEN-005", "security"),
+                "p0",
+            ))
+    return out[:20]
+
+
 def scan_unpooled_connections(rel: str, lines: list[str]) -> list[dict]:
     """DriverManager.getConnection opens a connection with no pool.
 

@@ -112,6 +112,7 @@ jq -n \
       charset_gaps: ($b.charset_gaps // []),
       null_deref_gaps: ($b.null_deref_gaps // []),
       authz_audit_gaps: ($b.authz_audit_gaps // []),
+      tenant_scope_gaps: ($b.tenant_scope_gaps // []),
       disabled_bounds: ($b.disabled_bounds // []),
       retry_side_effects: ($b.retry_side_effects // []),
       shared_mutables: ($b.shared_mutables // []),
@@ -131,6 +132,7 @@ jq -n \
         charset_gap_count: (($b.charset_gaps // [])|length),
         null_deref_gap_count: (($b.null_deref_gaps // [])|length),
         authz_audit_gap_count: (($b.authz_audit_gaps // [])|length),
+        tenant_scope_gap_count: (($b.tenant_scope_gaps // [])|length),
         disabled_bound_count: (($b.disabled_bounds // [])|length),
         retry_side_effect_count: (($b.retry_side_effects // [])|length),
         shared_mutable_count: (($b.shared_mutables // [])|length),
@@ -178,8 +180,9 @@ jq -n \
               if (($b.charset_gaps // [])|length) > 0
                  or (($b.null_deref_gaps // [])|length) > 0
                  or (($b.authz_audit_gaps // [])|length) > 0
+                 or (($b.tenant_scope_gaps // [])|length) > 0
                  or (($b.resource_leaks // [])|length) > 0 then
-                ["Hard gate: each charset_gaps, null_deref_gaps, authz_audit_gaps, resource_leaks, disabled_bounds, retry_side_effects, shared_mutables, and process_defaults row needs path:line. A disabling literal is not a residual. A max retry count does not close retry_side_effects. A different rule_id on the same line is a separate finding."]
+                ["Hard gate: each charset_gaps, null_deref_gaps, authz_audit_gaps, tenant_scope_gaps, resource_leaks, disabled_bounds, retry_side_effects, shared_mutables, and process_defaults row needs path:line. A disabling literal is not a residual. A max retry count does not close retry_side_effects. A different rule_id or kind on the same line is a separate finding. Two resource_leaks kinds do not share a card."]
               else []
               end
             )

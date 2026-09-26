@@ -34,7 +34,8 @@ one shape does not close the rule. Judge `SEC-001`, `AUTH-*`, `TEN-*`, and
 `HYG-001` only in [prompts/business-logic-pass.md](../../prompts/business-logic-pass.md)
 using [business-rule-records.md](../business-rule-records.md). Do not judge them
 while filing SAST rows. A line already in `authz_audit_gaps` is the `TEN-006`
-relation; do not file that relation again. A different id on the same line,
+relation; do not file that relation again. A line in `tenant_scope_gaps` is
+`TEN-002`, `TEN-004`, or `TEN-005`; do not file that relation again. A different id on the same line,
 including `AUTH-002`, is still a finding. `process_defaults` rows are `GLOB-001`: replacing a process-scoped default is its own finding. An insecure certificate check filed by SAST stays that class; do not drop the process-wide assignment because the certificate card exists.
 
 | rule_id | type | sev | Look for | Do not report |

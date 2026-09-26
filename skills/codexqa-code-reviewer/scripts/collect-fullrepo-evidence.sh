@@ -95,26 +95,8 @@ fi
 mkdir -p "$OUT_DIR/imports" "$OUT_DIR/entries/tagged"
 LOG="$OUT_DIR/commands.log"
 touch "$LOG"
-
-run() {
-  echo "+ $*" | tee -a "$LOG"
-  COMMANDS+=("$*")
-  "$@"
-}
-
-run_json() {
-  local out="$1"; shift
-  echo "+ $* > $out" | tee -a "$LOG"
-  COMMANDS+=("$* > $out")
-  if "$@" >"$out" 2>"$OUT_DIR/.last_err"; then
-    return 0
-  fi
-  {
-    echo "{\"error\":true,\"command\":\"$*\",\"stderr\":$(jq -Rs . <"$OUT_DIR/.last_err")}"
-  } >"$out"
-  echo "warn: command failed, wrote error stub to $out" | tee -a "$LOG" >&2
-  return 0
-}
+# shellcheck source=lib/collect-trace.sh
+source "$SCRIPT_DIR/lib/collect-trace.sh"
 
 query_imports_for_file() {
   local fpath="$1"
@@ -183,7 +165,7 @@ STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 if [[ "$SKIP_INDEX" -eq 0 ]]; then
   run codexqa index "$REPO_ABS"
 else
-  echo "+ (skipped) codexqa index" | tee -a "$LOG"
+  collect_trace "(skipped) codexqa index"
   COMMANDS+=("(skipped) codexqa index")
   codexqa_require_existing_index "$REPO_ABS"
 fi
@@ -194,7 +176,7 @@ run_json "$OUT_DIR/03-files-sample.json" codexqa query --repo "$REPO_ABS" files 
 run_json "$OUT_DIR/04-hot-symbols.json" \
   codexqa query --repo "$REPO_ABS" symbols --kind function,method --limit "$SYMBOL_LIMIT"
 
-echo "+ detect primary language from CodexQA summary/lang_stats" | tee -a "$LOG"
+collect_trace "detect primary language from CodexQA summary/lang_stats"
 COMMANDS+=("codexqa_detect_language_profile 02-summary.json")
 codexqa_detect_language_profile \
   "$OUT_DIR/02-summary.json" \
@@ -269,7 +251,7 @@ done
 echo "$SELECTED_JSON" >"$OUT_DIR/impact/index.json"
 
 if [[ -f "$SCRIPT_DIR/lib/collect-unit-calls.sh" ]]; then
-  bash "$SCRIPT_DIR/lib/collect-unit-calls.sh" --repo "$REPO_ABS" --dir "$OUT_DIR" \
+  bash "$SCRIPT_DIR/lib/collect-unit-calls.sh" --repo "$REPO_ABS" --dir "$OUT_DIR" >>"$LOG" 2>&1 \
     || echo "warn: unit calls failed" >&2
 fi
 
@@ -298,7 +280,7 @@ jq --argjson lim "$HOTSPOT_LIMIT" --slurpfile idx "$OUT_DIR/impact/index.json" '
 mv "$OUT_DIR/05-untested-hotspots.json.tmp" "$OUT_DIR/05-untested-hotspots.json"
 
 if [[ "$SKIP_SEARCH_INDEX" -eq 0 ]]; then
-  echo "+ codexqa search-index $REPO_ABS (best-effort)" | tee -a "$LOG"
+  collect_trace "codexqa search-index $REPO_ABS (best-effort)"
   COMMANDS+=("codexqa search-index $REPO_ABS")
   if codexqa search-index "$REPO_ABS" >>"$LOG" 2>&1; then
     run_json "$OUT_DIR/06-sensitive-hits.json" \
@@ -310,7 +292,7 @@ else
   echo '{"kind":"Bm25Search","results":[],"note":"search skipped"}' >"$OUT_DIR/06-sensitive-hits.json"
 fi
 
-echo "+ codexqa tag keys (best-effort)" | tee -a "$LOG"
+collect_trace "codexqa tag keys (best-effort)"
 COMMANDS+=("codexqa tag $REPO_ABS keys --json")
 TAG_KEYS_RAW="$OUT_DIR/.tag-keys-raw.json"
 if codexqa tag "$REPO_ABS" keys --json >"$TAG_KEYS_RAW" 2>>"$LOG"; then
@@ -372,7 +354,7 @@ echo "$IMPORTS_LIST" >"$OUT_DIR/imports/index.json"
 
 # Design fit signals (pure jq; 0 extra codexqa). WARN-only on failure.
 if [[ -x "$SCRIPT_DIR/lib/derive-design-fit.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-design-fit.sh" --dir "$OUT_DIR" --mode full; then
+  if ! "$SCRIPT_DIR/lib/derive-design-fit.sh" --dir "$OUT_DIR" --mode full >>"$LOG" 2>&1; then
     echo "warn: derive-design-fit.sh failed; continuing without 10-design-fit-signals.json" >&2
   fi
 else
@@ -380,7 +362,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-complexity.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-complexity.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-complexity.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-complexity.sh failed; continuing without 11-complexity-signals.json" >&2
   fi
 else
@@ -388,7 +370,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-dependencies.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-dependencies.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-dependencies.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-dependencies.sh failed; continuing without 12-dependency-signals.json" >&2
   fi
 else
@@ -396,7 +378,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-privacy.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-privacy.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-privacy.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-privacy.sh failed; continuing without 13-privacy-signals.json" >&2
   fi
 else
@@ -404,7 +386,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-resilience.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-resilience.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-resilience.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-resilience.sh failed; continuing without 14-resilience-signals.json" >&2
   fi
 else
@@ -412,7 +394,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-rollout.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-rollout.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-rollout.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-rollout.sh failed; continuing without 15-rollout-signals.json" >&2
   fi
 else
@@ -420,7 +402,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-risk-tier.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-risk-tier.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-risk-tier.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-risk-tier.sh failed; continuing without 20-risk-tier.json" >&2
   fi
 else
@@ -428,7 +410,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-observability.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-observability.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-observability.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-observability.sh failed; continuing without 16-observability-signals.json" >&2
   fi
 else
@@ -436,7 +418,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-contract.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-contract.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-contract.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-contract.sh failed; continuing without 17-contract-signals.json" >&2
   fi
 else
@@ -444,7 +426,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-maintainability.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-maintainability.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-maintainability.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-maintainability.sh failed; continuing without 18-maintainability-signals.json" >&2
   fi
 else
@@ -452,7 +434,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-performance.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-performance.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-performance.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-performance.sh failed; continuing without 21-performance-signals.json" >&2
   fi
 else
@@ -460,7 +442,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-sast.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-sast.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-sast.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-sast.sh failed; continuing without 23-sast-signals.json" >&2
   fi
 else
@@ -468,7 +450,7 @@ else
 fi
 
 if [[ -x "$SCRIPT_DIR/lib/derive-annotation-edges.sh" ]]; then
-  if ! "$SCRIPT_DIR/lib/derive-annotation-edges.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS"; then
+  if ! "$SCRIPT_DIR/lib/derive-annotation-edges.sh" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: derive-annotation-edges.sh failed; continuing without 19-annotation-edges.json" >&2
   fi
 else
@@ -482,7 +464,7 @@ if [[ -f "$SCRIPT_DIR/lib/build-coverage-ledger.py" ]]; then
   else
     LEDGER_PY=(python3)
   fi
-  if ! "${LEDGER_PY[@]}" "$SCRIPT_DIR/lib/build-coverage-ledger.py" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS"; then
+  if ! "${LEDGER_PY[@]}" "$SCRIPT_DIR/lib/build-coverage-ledger.py" --dir "$OUT_DIR" --mode full --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: build-coverage-ledger.py failed; continuing without 24-coverage-ledger.json" >&2
   fi
 else
@@ -581,6 +563,7 @@ jq -n \
       "Entry concentration: use 07-tags.json tagged samples when present."
     ]
   }' >"$OUT_DIR/manifest.json"
+collect_write_conclusion_stub
 
 PRIMARY_DETECTED="$(jq -r '.primary_language // "UNKNOWN"' "$OUT_DIR/09-language-profile.json")"
 echo "Primary language: $PRIMARY_DETECTED (see 09-language-profile.json)"

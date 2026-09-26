@@ -92,14 +92,11 @@ Keep `source` and `codexqa_cli_path` in this shell. `$(codexqa_cli_path)` drops 
 ```text
 Task progress:
 - [ ] 1. Preflight gate in this shell (source + codexqa_cli_path). Steps 1b–6 stay blocked until this has run once.
-- [ ] 1a. Resolve the PR checkout locally (`scripts/resolve-pr-checkout.sh`). Do not `git fetch` or `git clone` before it returns.
-- [ ] 1b. Install every missing SAST tool (mandatory — do not scan with status=missing)
-- [ ] 2. Collect evidence pack → OUT_DIR
-- [ ] 3. Validate (auto unless --skip-validate)
-- [ ] 4. Lock primary_language / review_language_focus
-- [ ] 5. Review from `31-model-brief.json` only. Its `output` object is the schema. It already folded counts, closed report rows, seed hits, and one-line getters. `methods[].source` is the method text. Do not print the methods out again. Do not open `29`, the seed, steps 1–14, the channel prompts, templates, examples, dimension docs, a previous `judgment.json`, `REVIEW-REPORT.html`, `business-rule-records.md`, or `seal-conclusion.py`. `title` / `risk` / `fix` are Chinese; leave the English fields empty. A `look_for` with several shapes is one finding per shape. The first shape does not close the others. A line listed under a `rule_id` in `closed_report` is not filed again. Another line of that `rule_id` is still filed when it is a different shape. Do not open `fill_shapes` or `check_shapes`. State each finding once. Do not reopen a merge. Identifiers in one log statement are one finding. A money check that omits a fee posted in the same method is one `BIZ-003` finding. Do not drop `SEC-001` because `PAY-004` or `AUTH-001` also matches. `applicable` is the first list to judge, not an exclusion list. A `look_for` that matches the method body is filed even when that `rule_id` is absent from `applicable`. Do not open the rule router and do not retract the match. Different `rule_id`s on the same line stay separate findings. A failed render names the sentence to edit. Do not grep `seal-conclusion.py` or `validate-conclusion.py` for fields. Answer every `test_oracle_open` row from that test body. A test absent from that list is closed. Do not investigate why. A `closed_report` row does not close an open oracle line. Set a flag only when that test shows it. A callee missing from `methods` stays on the call line already chosen. Do not open the repository file for its body.
-- [ ] 5b. Agent LLM judgment pass + dedupe merge (`merge-llm-findings.py`)
-- [ ] 6. Write each novel finding once into `judgment.json`, then render. The same fix for the same `rule_id` on several lines is one finding with `same_fix: true` and `also_lines`. Do not file those lines and then delete them. Do not re-list the set, re-plan severity, compute `shape_count`, or open `business-rule-records.md`. Copy `test_oracle` flags already decided. `seal-conclusion.py` fills scripted cards, the stub, and the HTML.
+- [ ] 1a+1b. After the path is printed, run resolve-pr-checkout.sh and install-sast-tools.sh in parallel. Do not git fetch or git clone before resolve returns. SAST install stays mandatory.
+- [ ] 2. Collect. Stdout is the primary language, the pack path, and validate-evidence. Traces stay in commands.log. status=ok ends the incremental-index question; do not open the collector or commands.log.
+- [ ] 3. From 31-model-brief.json, jq only still_open, open_suspects, test_oracle_open, and output. Do not print methods.
+- [ ] 4. If those three lists are empty, render immediately. Do not read methods, judgment-work, 29, or the repository. If any list is non-empty, judge only that list from the brief (groups when source was moved there).
+- [ ] 5. Render writes the sealed review-conclusion.json. Summarize from that file. Do not reclassify a sealed card by opening the repository.
 ```
 
 ```bash
@@ -107,13 +104,10 @@ Task progress:
 source scripts/lib/codexqa-preflight.sh
 codexqa_cli_path
 
-# Step 1a — GitHub PR only. Local commits win. The script fetches at most one URL,
-# and an empty HTTP reply gets one HTTP/1.1 downgrade, then stop. Do not fetch again.
+# Steps 1a and 1b run in parallel after codexqa_cli_path has printed a path.
+# 1a fetches at most one URL. An empty HTTP reply gets one HTTP/1.1 downgrade, then stop.
 ./scripts/resolve-pr-checkout.sh --pr <url-or-owner/repo#N> --search-root <workspace>
-# Use the printed repo and diff_base. status=local means do not fetch.
-
-# Step 1b — only after codexqa_cli_path has printed a path.
-# Mandatory when any of semgrep / bandit / gosec / gitleaks / osv-scanner / ruff / eslint is missing.
+# status=local means do not fetch. Use the printed repo and diff_base.
 ./scripts/lib/install-sast-tools.sh
 
 # PR / diff (default). derive-sast.sh runs the installer again before the scan.
@@ -173,7 +167,7 @@ Adhoc: bootstraps a mini git repo when `--repo` is omitted so CodexQA index gate
 |---|---|
 | Change localization | `03-change-groups` / `05-changed-symbols` / `diffs/*.diff.json` |
 | PR review digest | `26-review-digest.json` (commits behind/ahead, three-dot file classes vs two-dot drift, deduped `disposition: report` lines). The judgment pass reads `31-model-brief.json` instead. |
-| Model brief | `31-model-brief.json` (the only file the judgment pass opens: folded counts, closed report rows, open suspects, and method source with one-line getters and the file-scope copy removed). An empty `open_suspects[].source` with `source_ref` points at `methods[].source` for that method, or at `judgment-work/` when `source_ref.where` is `judgment-work`. |
+| Model brief | `31-model-brief.json` (the only file the judgment pass opens: closed shapes, candidate hits, still-open shapes, oracle flags, and method source). Short callees used by a kept method are included. An empty `open_suspects[].source` with `source_ref` points at `methods[].source` for that method, or at `judgment-work/` when `source_ref.where` is `judgment-work`. |
 | Judgment packet | `29-judgment-packet.json` stays for seal. A review of at most 2000 pending lines, including one file of about 800 lines, does not create `judgment-work/`. Scripted suspects are closed in `judgment-seed.json` before that pass. Question fan-out starts only when the source left for the model exceeds 2000 lines. That question fan-out writes at most four `judgment-work/group-*.json` files, each holding only methods that own a suspect, a business rule, or a lock-order pair. One-line getters stay out. `magic_number` and `rate_literal` are seeded as conventions in `judgment-seed.json` and are not re-judged. Report rows are closed by seal. Group findings are a union. Past that, whole methods pack into chunks of about 800 lines, at most four concurrent `judgment-work/group-*.json` files. A method is cut only when it is longer than the chunk. Each chunk carries field lines and the lock-order summary. Rule text stays once in `shared.json`. Extra agents on the same change are security, correctness, and quality passes over the full change, not line windows, and the packet does not emit them by default. A suspect with `slice_ref` points at the method slice and does not repeat the source. `identical_to_base` matches the base tip and is not a defect. A csv/markdown/txt keyword hit does not force T0. Confirmed magic numbers seal as conventions, not P1. `30-conclusion-skeleton.json` is sealed into the conclusion at render. |
 | Design fit | `10-design-fit-signals.json` (path + package/import layers, `import_cross_layer`, `dead_nested_symbols` confirmed via empty edges-in; full: `imports/` + on-disk fallback) |
 | Complexity | `11-complexity-signals.json` (method LOC / decisions / nesting / YAGNI hints) |
@@ -235,7 +229,7 @@ PR: `REPO` + `DIFF_BASE`. Full-repo: `REPO` only. Prefer absolute repo paths.
 
 ### 2. Collect
 
-Blocked until the Preflight gate has run once in this shell. Shared helpers: `scripts/lib/codexqa-preflight.sh`.
+Blocked until the Preflight gate has run once in this shell. Collectors append command traces to `commands.log` and print the primary language, the pack path, and `validate-evidence` status. Shared helpers: `scripts/lib/codexqa-preflight.sh`.
 Options: `--full`, `--github-pr owner/repo#N`, `--primary-lang <Lang>`, `--skip-index`, `--skip-validate`, `--out DIR`.
 A changed `--diff-base` misses the index cache and forces `--full`. An incremental index that parses 0 files while the three-dot diff or the GitHub PR file list is non-empty is re-run with `--full`.
 PR collect writes `26-review-digest.json` after the signal files. Judgment reads that digest for commits behind/ahead, file-class counts, report rows, and dimension cards. Full path lists stay in `26-review-digest-detail.json`. Do not recompute the split with git or open every signal file for the dimension verdict. Residual reading opens each `24-coverage-ledger.json` `read_groups` entry once and still writes one closure row per pending symbol. Non-source files are not residual symbols. Byte-identical copies are scanned once; findings keep every path. Files whose bytes differ are both scanned.
@@ -253,8 +247,8 @@ Fails: missing CodexQA provenance; empty change-groups; all `change_status=defau
 
 ### 4. Review from artifacts
 
-1. Read [prompts/pr-diff-review.md](prompts/pr-diff-review.md) or
-   [prompts/full-repo-review.md](prompts/full-repo-review.md).
+1. When `31-model-brief.json` is absent, read [prompts/pr-diff-review.md](prompts/pr-diff-review.md) or
+   [prompts/full-repo-review.md](prompts/full-repo-review.md). When it exists, do not open those prompts.
 2. Confirm `manifest.engine` is `codexqa` (or legacy codexqa in commands). Else blocked.
 3. Lock language from `manifest.json` + `09-language-profile.json`.
 4. For top risks: `diffs/`, `impact/<id>/`, `paths/`, then tags / hot-but-thin / sensitive.
@@ -269,7 +263,7 @@ Fails: missing CodexQA provenance; empty change-groups; all `change_status=defau
    `drop` is discarded. Only `suspects[]` go to the SAST suspect channel.
    `allow` records a scanner gap and does not rescan that class. CodexQA
    stays the primary engine.
-7. **Agent LLM judgment (order 16):** when `31-model-brief.json` exists, that file is the whole pass. Write `judgment.json` from its `output` object and render. `title`, `risk`, and `fix` are Chinese; leave the English fields empty. A `look_for` with several shapes is one finding per shape. The first shape does not close the others. A line listed under a `rule_id` in `closed_report` is not filed again. Another line of that `rule_id` is still filed when it is a different shape. Do not open `fill_shapes` or `check_shapes`. State each finding once. `applicable` is the first list, not an exclusion list. A matching `look_for` is filed even when that `rule_id` is absent from `applicable`. Do not retract it. Different `rule_id`s on the same line stay separate findings. A failed render names the sentence to edit. Do not grep seal or validate scripts for fields. Do not walk `24`, regroup closed rows, print every method, or open templates, examples, dimension docs, a previous `judgment.json`, or `seal-conclusion.py`. When `31` is absent, follow [prompts/llm-judgment-pass.md](prompts/llm-judgment-pass.md).
+7. **Agent LLM judgment (order 16):** when `31-model-brief.json` exists, jq `still_open`, `open_suspects`, `test_oracle_open`, and `output` only. Findings in `judgment.json` are already copied from `candidate_hits`. Do not rewrite `title`, `risk`, `fix`, `line`, or `severity`. If those three lists are empty, do not add a finding, do not read methods or `judgment-work`, and render. If a list is non-empty, judge only that list: copy `preset` under `oracle`, judge only `questions`, and leave a preset key unchanged. `boundary_missed` stays false unless `preset` is true. `title`, `risk`, and `fix` are Chinese; leave the English fields empty. An id already in `suspect_hits` is closed. A failed render names the sentence to edit. Do not grep seal or validate scripts for fields. Do not walk `24`, regroup closed rows, or open templates, examples, dimension docs, or `seal-conclusion.py`. When `31` is absent, follow [prompts/llm-judgment-pass.md](prompts/llm-judgment-pass.md).
    On that legacy path, SAST suspects, business logic, and semantic candidates are separate prompts. The residual
    read visits every `pending` symbol in `24-coverage-ledger.json`; scanner hits do not dequeue it.
    The host embedded model reviews those packets, then `scripts/lib/merge-llm-findings.py`
@@ -278,8 +272,7 @@ Fails: missing CodexQA provenance; empty change-groups; all `change_status=defau
 ### 5. Deliver
 
 1. Optional chat notes: [templates/review-report.md](templates/review-report.md)
-2. **Required:** `<OUT_DIR>/review-conclusion.json` from
-   [templates/review-conclusion.json](templates/review-conclusion.json)
+2. **Required:** `review-conclusion.json` is already in the pack. Do not replace it.
 3. **Required:** `./scripts/render-review-html.sh --dir <OUT_DIR>` → **`REVIEW-REPORT.html`**
    and **`review-comments.json`** (same defect id, no score).
    Render runs `scripts/lib/seal-conclusion.py` before
@@ -296,8 +289,10 @@ Fails: missing CodexQA provenance; empty change-groups; all `change_status=defau
    - Each `test_oracle_inventory` row has `oracle.unsafe_pass`,
      `oracle.boundary_missed`, and `oracle.branch_uncovered`, plus that row's
      extra questions. Skip is legal only when every flag is false.
-   - Production symbols with `tested_count == 0` are in `test_gaps` or an
-     explicit waiver list. A rule whose look-for has several shapes lists
+   - Production symbols with `tested_count == 0` are in `test_gaps.symbols` or
+     `waived_symbols`. The HTML table lists behavior methods only. A static
+     initializer, a type or constructor, a get/set/is accessor, or a private
+     helper goes to `waived_symbols` and does not get its own row. A rule whose look-for has several shapes lists
      every shape; the first hit does not close the rest.
 
 Cover: 页头四块（能否合入、最高严重级别、行为缺陷数与证据行数、必测三条路径）、一张卡一个失败场景、规范项（不计缺陷）、回归必测清单、测试缺口、敏感路径。有问题的维度和调用链默认折叠，排在发现项之后。`ok`/`none` 维度不进报告。`seal-conclusion.py` 在渲染前用信号文件补上结论里空着的维度（风险分档、架构契合、复杂度、依赖、韧性、隐私、变更发布、性能、模型语义评审），所以判定稿不写维度长文时，HTML 仍会展示有信号的维度。

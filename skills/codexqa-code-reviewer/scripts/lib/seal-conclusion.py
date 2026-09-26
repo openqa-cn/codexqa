@@ -331,11 +331,32 @@ _SAST: dict[str, tuple[str, str, str, str, str, str]] = {
         "Open the stream with try-with-resources.",
     ),
     "admin_grant_without_audit": (
-        "角色子串授予管理员", "Admin Granted by Substring",
-        "contains(\"ADMIN\") 会把名称里夹有这四个字母的角色当成管理员。",
-        "contains(\"ADMIN\") treats any role whose name contains those letters as an administrator.",
-        "按分隔符拆开角色后，与 ADMIN 做相等比较，并记录鉴权结果。",
-        "Split roles on the delimiter, compare each one to ADMIN for equality, and record the authorization result.",
+        "管理员放行没有审计", "Admin Grant Without an Audit",
+        "管理员分支直接返回成功，没有记下操作者、租户和被访问的对象。",
+        "The admin branch returns success and does not record the actor, tenant, and objects.",
+        "在访问数据之前写入审计，记下操作者、租户和对象。",
+        "Write an audit of the actor, tenant, and objects before the admin path touches data.",
+    ),
+    "tenant_predicate_missing": (
+        "按标识读写时没有租户条件", "Id Access Without a Tenant Predicate",
+        "类型上有租户字段，按标识查询或更新时没有带上租户条件，别的租户的同号记录会被读写。",
+        "The type has a tenant field, and an id query or update omits it, so another tenant's row with the same id can be read or written.",
+        "在每条按标识的查询和更新上与服务端租户做与。",
+        "AND the server tenant into every id query and update.",
+    ),
+    "tenant_context_dropped": (
+        "异步任务丢掉了租户上下文", "Async Task Drops Tenant Context",
+        "交给另一个线程的任务带了业务标识，没有带上租户、操作者和追踪号。",
+        "Work handed to another thread carries a business id and does not carry tenant, actor, and trace.",
+        "入队前把租户、操作者和追踪号放进任务，工作线程再绑定它们。",
+        "Put tenant, actor, and trace on the task before it is queued, and rebind them in the worker.",
+    ),
+    "tenant_id_only_lookup": (
+        "冲正只按业务号取记录", "Reversal Looks Up by Id Alone",
+        "冲正或退款只按业务号取记录，没有同时核对租户，知道单号就能动到别的租户。",
+        "A reversal or refund loads the row by object id alone, so knowing the id is enough to act on another tenant.",
+        "用服务端租户和业务号一起查询，对不上就当作未找到。",
+        "Look up by the server tenant and the id together, and treat a mismatch as not found.",
     ),
     "shared_mutable": (
         "共享的非线程安全对象", "Shared Non-Thread-Safe Object",
@@ -569,6 +590,9 @@ def stamp_relation(card: dict, row: dict) -> None:
         card["pattern_class"] = row["pattern_class"]
     elif row.get("kind"):
         card["kind"] = row["kind"]
+    # Keep the shape beside the rule so two RES-001 kinds stay distinct cards.
+    if row.get("kind") and (row.get("rule_id") or row.get("pattern_class")):
+        card["kind"] = row["kind"]
 
 
 def source_line(pack: Path | None, path: str, line: int) -> str:
@@ -754,7 +778,12 @@ def fill_report_cards(
             continue
         if row_closed(row, conclusion, validate):
             continue
-        groups.setdefault(validate.row_relation(row) + "\n" + row_path(row), []).append(row)
+        # Same rule_id with a different kind is a different defect. RES-001
+        # covers both an unclosed stream and an executor that is never shut down.
+        kind = str(row.get("kind") or "")
+        groups.setdefault(
+            validate.row_relation(row) + "\n" + kind + "\n" + row_path(row), []
+        ).append(row)
     if conventions:
         conclusion["conventions"] = conventions
     for grouped in groups.values():
@@ -869,8 +898,177 @@ def required_suspect_ids(pack: Path) -> list[str]:
     return found
 
 
+def _symbol_nodes(pack: Path) -> list[dict]:
+    doc = load_json(pack / "05-changed-symbols.json")
+    if not isinstance(doc, dict):
+        return []
+    nodes = doc.get("nodes") or doc.get("result", {}).get("nodes") or []
+    return [node for node in nodes if isinstance(node, dict)]
+
+
+def _method_owning(nodes: list[dict], path: str, line: int) -> dict | None:
+    best = None
+    best_span = None
+    for node in nodes:
+        if node.get("kind") not in {"method", "function"}:
+            continue
+        start = node.get("start_line")
+        end = node.get("end_line")
+        if not isinstance(start, int):
+            continue
+        if not isinstance(end, int) or end < start:
+            end = start
+        file_path = str(node.get("file_path") or node.get("path") or "")
+        if path and file_path and not (path.endswith(file_path) or file_path.endswith(path)):
+            continue
+        if not start <= line <= end:
+            continue
+        span = end - start
+        if best is None or best_span is None or span < best_span:
+            best = node
+            best_span = span
+    return best
+
+
+def _caller_names(pack: Path, nodes: list[dict]) -> dict[str, list[str]]:
+    """Callee method name to the methods that call it. File paths are not callers."""
+    by_id = {}
+    for node in nodes:
+        sid = str(node.get("id") or node.get("symbol_id") or "")
+        name = str(node.get("name") or "")
+        if sid and name:
+            by_id[sid] = name
+    callers: dict[str, list[str]] = {}
+    impact = pack / "impact"
+    if not impact.is_dir():
+        return callers
+    for edges_path in sorted(impact.glob("*/edges-in.json")):
+        doc = load_json(edges_path)
+        if not isinstance(doc, dict):
+            continue
+        for edge in doc.get("edges") or []:
+            if not isinstance(edge, dict) or str(edge.get("kind") or "") != "calls":
+                continue
+            src = by_id.get(str(edge.get("from_id") or ""))
+            dst = by_id.get(str(edge.get("to_id") or ""))
+            if not src or not dst or src == dst:
+                continue
+            bucket = callers.setdefault(dst, [])
+            if src not in bucket:
+                bucket.append(src)
+    return callers
+
+
+def _bean_accessor(name: str) -> bool:
+    """getX / setX / isX. settleBatch is not a setter."""
+    for prefix in ("get", "set", "is"):
+        if (
+            name.startswith(prefix)
+            and len(name) > len(prefix)
+            and name[len(prefix)].isupper()
+        ):
+            return True
+    return False
+
+
+def _test_name(name: str) -> bool:
+    return name.startswith("test") or "Should" in name or name in {"setUp", "tearDown", "static"}
+
+
+def _plain_sentence(text: str, limit: int = 140) -> str:
+    sentence = " ".join(str(text or "").split())
+    for mark in ("。", ". "):
+        cut = sentence.find(mark)
+        if 0 <= cut <= limit:
+            return sentence[: cut + (1 if mark == "。" else 0)]
+    return sentence[:limit]
+
+
+def fill_regression_tests(conclusion: dict, pack: Path) -> None:
+    """Must-test rows are executable paths, not method names alone.
+
+    A conclusion that already names scenarios is left as written. Otherwise
+    each changed method that owns a P0 or P1 finding becomes one row, callers
+    first. The page header shows the first three.
+    """
+    existing = [
+        row for row in (conclusion.get("regression_tests") or [])
+        if isinstance(row, dict) and str(row.get("target") or "").strip()
+    ]
+    if existing:
+        conclusion["regression_tests"] = existing
+        return
+    nodes = _symbol_nodes(pack)
+    callers = _caller_names(pack, nodes)
+    grouped: dict[str, dict] = {}
+    for severity, finding in (
+        (rank, item)
+        for rank, key in ((0, "p0"), (1, "p1"))
+        for item in (conclusion.get(key) or [])
+        if isinstance(item, dict)
+    ):
+        line = finding.get("line")
+        if not isinstance(line, int):
+            continue
+        path = str(finding.get("file") or finding.get("path") or "")
+        method = _method_owning(nodes, path, line)
+        if method is None:
+            continue
+        name = str(method.get("name") or "")
+        if not name or _bean_accessor(name) or _test_name(name):
+            continue
+        got = grouped.get(name)
+        if got is None or severity < got["severity"]:
+            grouped[name] = {"severity": severity, "finding": finding, "method": method}
+
+    def _production_callers(name: str) -> list[str]:
+        return [caller for caller in (callers.get(name) or []) if not _test_name(caller)]
+
+    ranked = sorted(
+        grouped.values(),
+        key=lambda item: (
+            0 if _production_callers(str(item["method"].get("name") or "")) else 1,
+            item["severity"],
+            int(item["method"].get("start_line") or 0),
+        ),
+    )
+    rows = []
+    for item in ranked[:6]:
+        method = item["method"]
+        finding = item["finding"]
+        name = str(method.get("name") or "")
+        title = str(finding.get("title") or "这条失败")
+        caller_list = [caller for caller in (callers.get(name) or []) if not _test_name(caller)]
+        file_path = str(method.get("file_path") or method.get("path") or finding.get("file") or "")
+        line = finding.get("line")
+        risk = _plain_sentence(str(finding.get("risk") or title))
+        if caller_list:
+            target = (
+                f"从 {'、'.join(caller_list[:3])} 进入 {name}，"
+                f"构造会触发「{title}」的输入。期望该入口不再出现这个结果。"
+            )
+        else:
+            target = f"直接调用 {name}，构造会触发「{title}」的输入。期望该入口不再出现这个结果。"
+        rows.append({
+            "target": target,
+            "why": risk or title,
+            "evidence": (
+                f"{file_path} 的 {name} 在第 {line} 行。"
+                + ("调用方：" + "、".join(caller_list) + "。" if caller_list else "图上没有记录其它方法调用它。")
+            ),
+        })
+    if rows:
+        conclusion["regression_tests"] = rows
+
+
 def fill_english(conclusion: dict) -> None:
     """The model writes each sentence once. The English field mirrors it when empty."""
+    for row in conclusion.get("regression_tests") or []:
+        if not isinstance(row, dict):
+            continue
+        for src, dst in (("target", "target_en"), ("why", "why_en"), ("evidence", "evidence_en")):
+            if row.get(src) and not row.get(dst):
+                row[dst] = row[src]
     for finding in findings_of_local(conclusion):
         for src, dst in (
             ("title", "title_en"),
@@ -991,31 +1189,85 @@ def fill_hashes(conclusion: dict, pack: Path, validate) -> None:
         conclusion["coverage_closure"] = list(by_id.values())
 
 
+_GAP_BUCKETS = {"untested-production-symbols", "untested-behavior"}
+
+
+def _node_index(nodes: list[dict]) -> dict:
+    indexed = {}
+    for index, node in enumerate(nodes):
+        indexed[node.get("node_idx", index)] = node
+    return indexed
+
+
+def _is_constructor(node: dict, indexed: dict) -> bool:
+    name = str(node.get("name") or "")
+    parent_idx = node.get("parent_idx")
+    parent = indexed.get(parent_idx) if isinstance(parent_idx, int) else None
+    return bool(parent and parent.get("kind") == "class" and parent.get("name") == name)
+
+
+def _is_private(node: dict) -> bool:
+    modifiers = node.get("modifiers")
+    if isinstance(modifiers, int):
+        return bool(modifiers & 2)
+    if isinstance(modifiers, str):
+        return "private" in modifiers.lower()
+    if isinstance(modifiers, list):
+        return any("private" == str(item).lower() for item in modifiers)
+    return False
+
+
+def _gap_table_name(node: dict, indexed: dict) -> bool:
+    """A row in the HTML test-gap table. Initializers, types, accessors, and private helpers are waived."""
+    if node.get("kind") not in {"method", "function"}:
+        return False
+    name = str(node.get("name") or "")
+    if not name or name in {"static", "<clinit>", "<init>"}:
+        return False
+    if _is_constructor(node, indexed) or _bean_accessor(name) or _is_private(node):
+        return False
+    return True
+
+
 def fill_test_gaps(conclusion: dict, pack: Path, validate) -> None:
     doc = load_json(pack / "05-changed-symbols.json")
     if not isinstance(doc, dict):
         return
-    names = gap_names(conclusion)
-    missing = []
+    nodes = doc.get("nodes") or doc.get("result", {}).get("nodes") or []
+    indexed = _node_index([node for node in nodes if isinstance(node, dict)])
+    shown: list[str] = []
+    waived: list[str] = []
+    seen: set[str] = set()
     for node in validate.production_methods(doc):
         name = str(node.get("name") or "")
-        if name and name not in names:
-            missing.append(name)
-            names.add(name)
-    if not missing:
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        if _gap_table_name(node, indexed):
+            shown.append(name)
+        else:
+            waived.append(name)
+    hand = []
+    for row in conclusion.get("test_gaps") or []:
+        if not isinstance(row, dict):
+            continue
+        if str(row.get("symbol") or "") in _GAP_BUCKETS or row.get("symbols") or row.get("waived_symbols"):
+            continue
+        hand.append(row)
+    if not shown and not waived and not hand:
         return
-    gaps = list(conclusion.get("test_gaps") or [])
-    gaps.append({
-        "symbol": "untested-production-symbols",
-        "symbol_en": "untested-production-symbols",
-        "symbols": missing,
+    bucket = {
+        "symbol": "untested-behavior",
+        "symbol_en": "untested-behavior",
+        "symbols": shown,
+        "waived_symbols": waived,
         "tested_count": "0",
         "tests_reach": "empty",
         "tests_reach_en": "No accepted test edge",
-        "note": "这些生产符号的 tested_count 为 0。",
-        "note_en": "These production symbols have tested_count 0.",
-    })
-    conclusion["test_gaps"] = gaps
+        "note": "这些方法在调用图上没有测试边。初始化块、构造器、访问器和 private 辅助方法不单列。",
+        "note_en": "These methods have no accepted test edge. Initializers, constructors, accessors, and private helpers are not separate rows.",
+    }
+    conclusion["test_gaps"] = hand + ([bucket] if shown or waived else [])
 
 
 def fill_shapes(conclusion: dict, pack: Path, validate) -> None:
@@ -1077,6 +1329,21 @@ def fill_shapes(conclusion: dict, pack: Path, validate) -> None:
         conclusion["rule_coverage"] = coverage
 
 
+def oracle_payload(provided) -> dict | None:
+    """Flags live under oracle. A row that still carries them at the top level is accepted."""
+    if not isinstance(provided, dict):
+        return None
+    nested = provided.get("oracle")
+    if isinstance(nested, dict):
+        return nested
+    if any(key in provided for key in (
+        "unsafe_pass", "boundary_missed", "branch_uncovered",
+        "locks_private", "locks_dependency", "threshold_pass", "observability_asserted",
+    )):
+        return provided
+    return None
+
+
 def oracle_flags(row: dict, provided: dict | None) -> dict:
     flags = {}
     for key in ("unsafe_pass", "boundary_missed", "branch_uncovered"):
@@ -1106,7 +1373,7 @@ def fill_oracle(conclusion: dict, pack: Path, judgment: dict) -> None:
         if not isinstance(line, int):
             continue
         provided = answers.get(line)
-        incoming = provided.get("oracle") if isinstance(provided, dict) else provided
+        incoming = oracle_payload(provided)
         existing = by_line.get(line)
         if existing is None:
             oracle = oracle_flags(row, incoming)
@@ -1120,12 +1387,16 @@ def fill_oracle(conclusion: dict, pack: Path, judgment: dict) -> None:
             continue
         oracle = existing.get("oracle") if isinstance(existing.get("oracle"), dict) else {}
         for key, value in oracle_flags(row, incoming).items():
-            if not isinstance(oracle.get(key), bool):
+            if value is True:
+                oracle[key] = True
+            elif not isinstance(oracle.get(key), bool):
                 oracle[key] = value
         existing["oracle"] = oracle
         result = "hit" if any(value is True for value in oracle.values()) else "skip"
         existing["result"] = result
-        if result == "skip" and not str(existing.get("note") or "").strip():
+        if result == "hit" and str(existing.get("note") or "").startswith("脚本默认跳过"):
+            existing["note"] = str(provided.get("note") or "") if isinstance(provided, dict) else ""
+        elif result == "skip" and not str(existing.get("note") or "").strip():
             existing["note"] = "脚本默认跳过：模型未把这条测试标成 oracle hit。"
     conclusion["test_oracle_coverage"] = coverage
 
@@ -1788,6 +2059,7 @@ def seal(conclusion: dict, skeleton: dict, validate, pack: Path | None = None, j
     if pack is not None:
         fill_hashes(merged, pack, validate)
         fill_callers(merged, pack)
+        fill_regression_tests(merged, pack)
         stamp_change_status(merged, pr_file_status(pack))
     fill_english(merged)
     return merged

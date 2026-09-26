@@ -123,30 +123,12 @@ fi
 mkdir -p "$OUT_DIR/impact" "$OUT_DIR/imports" "$OUT_DIR/diffs"
 LOG="$OUT_DIR/commands.log"
 touch "$LOG"
+# shellcheck source=lib/collect-trace.sh
+source "$SCRIPT_DIR/lib/collect-trace.sh"
 
 if [[ "$BOOTSTRAPPED" -eq 1 && "$KEEP_MINI" -eq 1 ]]; then
   cp -R "$REPO_ABS" "$OUT_DIR/.adhoc-mini-repo"
 fi
-
-run() {
-  echo "+ $*" | tee -a "$LOG"
-  COMMANDS+=("$*")
-  "$@"
-}
-
-run_json() {
-  local out="$1"; shift
-  echo "+ $* > $out" | tee -a "$LOG"
-  COMMANDS+=("$* > $out")
-  if "$@" >"$out" 2>"$OUT_DIR/.last_err"; then
-    return 0
-  fi
-  {
-    echo "{\"error\":true,\"command\":\"$*\",\"stderr\":$(jq -Rs . <"$OUT_DIR/.last_err")}"
-  } >"$out"
-  echo "warn: command failed, wrote error stub to $out" | tee -a "$LOG" >&2
-  return 0
-}
 
 CODEXQA_VERSION="$(codexqa_version_string)"
 STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -296,9 +278,9 @@ for d in derive-design-fit derive-complexity derive-dependencies derive-privacy 
         mode_arg="pr"
         ;;
     esac
-    if ! "$SCRIPT_DIR/lib/${d}.sh" --dir "$OUT_DIR" --mode "$mode_arg" --repo "$REPO_ABS" 2>/dev/null; then
+    if ! "$SCRIPT_DIR/lib/${d}.sh" --dir "$OUT_DIR" --mode "$mode_arg" --repo "$REPO_ABS" >>"$LOG" 2>&1; then
       # design-fit has no --repo
-      if ! "$SCRIPT_DIR/lib/${d}.sh" --dir "$OUT_DIR" --mode "$mode_arg" 2>/dev/null; then
+      if ! "$SCRIPT_DIR/lib/${d}.sh" --dir "$OUT_DIR" --mode "$mode_arg" >>"$LOG" 2>&1; then
         echo "warn: ${d}.sh failed; continuing" >&2
       fi
     fi
@@ -312,7 +294,7 @@ if [[ -f "$SCRIPT_DIR/lib/build-coverage-ledger.py" ]]; then
   else
     LEDGER_PY=(python3)
   fi
-  if ! "${LEDGER_PY[@]}" "$SCRIPT_DIR/lib/build-coverage-ledger.py" --dir "$OUT_DIR" --mode adhoc --repo "$REPO_ABS"; then
+  if ! "${LEDGER_PY[@]}" "$SCRIPT_DIR/lib/build-coverage-ledger.py" --dir "$OUT_DIR" --mode adhoc --repo "$REPO_ABS" >>"$LOG" 2>&1; then
     echo "warn: build-coverage-ledger.py failed; continuing without 24-coverage-ledger.json" >&2
   fi
 else
@@ -331,7 +313,7 @@ if [[ -n "$ADHOC_DIFF_BASE" && -f "$SCRIPT_DIR/lib/build-review-digest.py" ]]; t
     DIGEST_PY=(python3)
   fi
   if ! "${DIGEST_PY[@]}" "$SCRIPT_DIR/lib/build-review-digest.py" \
-      --dir "$OUT_DIR" --repo "$REPO_ABS" --diff-base "$ADHOC_DIFF_BASE"; then
+      --dir "$OUT_DIR" --repo "$REPO_ABS" --diff-base "$ADHOC_DIFF_BASE" >>"$LOG" 2>&1; then
     echo "warn: build-review-digest.py failed; continuing without 26-review-digest.json" >&2
   fi
 elif [[ -z "$ADHOC_DIFF_BASE" ]]; then
@@ -391,7 +373,7 @@ jq -n \
       "20-risk-tier.json","21-performance-signals.json","24-coverage-ledger.json",
       "26-review-digest.json","26-review-digest-detail.json","27-suspect-queue.json",
       "28-symbol-bundle.json","29-judgment-packet.json","30-conclusion-skeleton.json",
-      "31-model-brief.json",
+      "31-model-brief.json","review-conclusion.json",
       "impact/","imports/","commands.log"
     ],
     notes: [
@@ -402,6 +384,7 @@ jq -n \
       "Performance: 21-performance-signals.json (hot-path/N+1/unbounded-alloc; no profiler); hard gate on non-empty signal arrays. unpooled_connections is a hard gate and does not change signals_thin. weak_perf_tests is a test_gaps hard gate. env_config_gaps and uncontrolled_log_sinks are hard gates. magic_numbers and unused_accumulators are maintainability hard gates."
     ]
   }' >"$OUT_DIR/manifest.json"
+collect_write_conclusion_stub
 
 echo "Adhoc evidence pack written: $OUT_DIR"
 

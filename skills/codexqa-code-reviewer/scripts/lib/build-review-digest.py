@@ -529,7 +529,8 @@ def scope_ledger(pack: Path, repo: Path, detail: dict) -> None:
         file_lines = lines_for(rel)
         if file_lines is not None:
             text = span_text(file_lines, row.get("ranges") or [])
-        row["rule_plan"] = rule_plan(text, str(row.get("kind") or ""))
+        file_text = "\n".join(file_lines) if file_lines else None
+        row["rule_plan"] = rule_plan(text, str(row.get("kind") or ""), file_text)
     by_id = {str(row.get("symbol_id")): row for row in symbols if isinstance(row, dict)}
     groups = []
     for group in ledger.get("read_groups") or []:
