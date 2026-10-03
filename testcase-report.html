@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" data-lang="zh">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title data-zh="测试用例生成报告 · inventory-hold" data-en="Test Case Generation Report · inventory-hold">测试用例生成报告 · inventory-hold</title>
+<style>
+:root, html[data-theme="light"] {
+  color-scheme: light;
+  --bg:#f0f3f6; --sheet:#ffffff; --ink:#1a2332; --muted:#5a6578;
+  --line:#d5dde8; --acc:#0f6b4c; --acc-soft:#e6f4ee; --acc-fg:#fff;
+  --web:#0b5cab; --web-bg:#e8f1fb; --web-line:#c5d9f0;
+  --server:#6b3fa0; --server-bg:#f3eafb; --server-line:#e0d0f2;
+  --app:#b45309; --app-bg:#fff4e6; --app-line:#f0d7b5;
+  --p0:#b42318; --p0-bg:#fde8e4;
+  --p1:#c2410c; --p1-bg:#ffedd5;
+  --p2:#9a6700; --p2-bg:#fef3c7;
+  --p3:#475569; --p3-bg:#e2e8f0;
+  --card:#f8fafc; --chip:#fff; --head:#fbfcfd; --code-bg:#eef2f6; --bar-track:#e8edf3;
+  --hero-a:#d9ebe3; --hero-b:#d6e4f5;
+  --toolbar-bg: color-mix(in srgb, var(--sheet) 92%, transparent);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Segoe UI", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#0f141b; --sheet:#1a222c; --ink:#e8edf2; --muted:#9aa7b5;
+  --line:#2f3b49; --acc:#3ecf8e; --acc-soft:#163526; --acc-fg:#0b1a12;
+  --web:#7eb6ff; --web-bg:#1a2a3d; --web-line:#2a4060;
+  --server:#c4a1ff; --server-bg:#2a1f3d; --server-line:#3d2f5c;
+  --app:#ffb074; --app-bg:#3a2718; --app-line:#5a3a22;
+  --p0:#ff8a80; --p0-bg:#3a1d1c;
+  --p1:#ffb074; --p1-bg:#3a2718;
+  --p2:#e6c35c; --p2-bg:#3a3218;
+  --p3:#cbd5e1; --p3-bg:#2a3441;
+  --card:#141b24; --chip:#1f2833; --head:#162029; --code-bg:#24303b; --bar-track:#24303b;
+  --hero-a:#1a2e28; --hero-b:#1a2433;
+  --toolbar-bg: color-mix(in srgb, var(--sheet) 88%, transparent);
+}
+* { box-sizing: border-box; }
+body { margin:0; font:14px/1.55 var(--sans); color:var(--ink); background:
+  radial-gradient(1200px 500px at 10% -10%, var(--hero-a) 0%, transparent 55%),
+  radial-gradient(900px 400px at 100% 0%, var(--hero-b) 0%, transparent 50%),
+  var(--bg); }
+.prefs { position:sticky; top:0; z-index:20; display:flex; justify-content:flex-end; gap:8px;
+  padding:10px 18px; background:var(--toolbar-bg); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line); }
+.prefs .group { display:flex; gap:4px; align-items:center; padding:2px;
+  border:1px solid var(--line); border-radius:999px; background:var(--sheet); }
+.prefs button { appearance:none; border:0; background:transparent; color:var(--muted);
+  font:inherit; font-size:12px; font-weight:600; letter-spacing:.02em; padding:6px 12px;
+  border-radius:999px; cursor:pointer; }
+.prefs button[aria-pressed="true"] { background:var(--acc); color:var(--acc-fg); }
+.wrap { max-width:1180px; margin:0 auto; padding:22px 18px 64px; }
+.hero { background:var(--sheet); border:1px solid var(--line); border-radius:14px;
+  padding:22px 24px; margin-bottom:18px; box-shadow:0 1px 0 rgba(26,35,50,.04); }
+.kicker { margin:0 0 6px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+h1 { margin:0 0 8px; font-size:24px; letter-spacing:-.02em; }
+.sub { color:var(--muted); margin:0 0 14px; }
+.meta-row { display:flex; flex-wrap:wrap; gap:10px 18px; font-size:12.5px; color:var(--muted); }
+.meta-row code { font-family:var(--mono); font-size:11.5px; background:var(--code-bg); padding:1px 5px; border-radius:4px; color:var(--ink); }
+.stats { display:grid; grid-template-columns: 1.2fr 1fr; gap:14px; margin:18px 0 0; }
+@media (max-width:800px) { .stats { grid-template-columns:1fr; } }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+.card h2 { margin:0 0 10px; font-size:13px; color:var(--muted); font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
+.chip-row { display:flex; gap:10px; flex-wrap:wrap; }
+.stat-chip { min-width:88px; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--chip); }
+.stat-chip .n { display:block; font-size:22px; font-weight:700; line-height:1.1; }
+.stat-chip .l { font-size:11px; color:var(--muted); letter-spacing:.06em; }
+.stat-chip.web { background:var(--web-bg); border-color:var(--web-line); }
+.stat-chip.web .n { color:var(--web); }
+.stat-chip.server { background:var(--server-bg); border-color:var(--server-line); }
+.stat-chip.server .n { color:var(--server); }
+.stat-chip.app { background:var(--app-bg); border-color:var(--app-line); }
+.stat-chip.app .n { color:var(--app); }
+.bar-row { display:grid; grid-template-columns:36px 1fr 36px; gap:8px; align-items:center; margin:6px 0; font-size:12px; }
+.bar { height:8px; background:var(--bar-track); border-radius:99px; overflow:hidden; }
+.bar i { display:block; height:100%; background:var(--acc); border-radius:99px; }
+.toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:16px 0;
+  background:var(--sheet); border:1px solid var(--line); border-radius:12px; padding:10px 12px; position:sticky; top:52px; z-index:5; }
+.tabs { display:flex; gap:6px; flex-wrap:wrap; }
+.tab { border:1px solid var(--line); background:var(--chip); color:var(--ink); border-radius:999px;
+  padding:6px 14px; cursor:pointer; font:inherit; font-size:13px; }
+.tab[aria-selected="true"] { background:var(--acc); border-color:var(--acc); color:var(--acc-fg); }
+.filters { display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; align-items:center; }
+.filters input, .filters select { border:1px solid var(--line); border-radius:8px; padding:6px 10px; font:inherit; background:var(--chip); color:var(--ink); }
+.filters input { min-width:180px; }
+.panel { background:var(--sheet); border:1px solid var(--line); border-radius:14px; padding:16px 18px 8px; }
+.panel[hidden] { display:none !important; }
+.panel-head h2 { margin:0; font-size:18px; }
+.panel-head .count { display:inline-block; margin-left:6px; font-size:12px; background:var(--acc-soft); color:var(--acc);
+  padding:2px 8px; border-radius:999px; vertical-align:middle; }
+.panel-head .desc { color:var(--muted); margin:6px 0 12px; font-size:13px; }
+.case { border:1px solid var(--line); border-radius:10px; margin-bottom:10px; overflow:hidden; background:var(--chip); }
+.case[hidden] { display:none !important; }
+.case-head { display:grid; grid-template-columns:auto auto auto 1fr auto auto; gap:8px; align-items:center;
+  padding:10px 12px; cursor:pointer; background:var(--head); }
+@media (max-width:720px) {
+  .case-head { grid-template-columns:auto auto 1fr auto; }
+  .case-head .badge.type { display:none; }
+}
+.case-head h3 { margin:0; font-size:14px; font-weight:600; }
+.meta-id { font-family:var(--mono); font-size:11px; color:var(--muted); }
+.chev { width:8px; height:8px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted);
+  transform:rotate(45deg); transition:transform .15s; margin-right:4px; }
+.case.open .chev { transform:rotate(225deg); }
+.case-body { display:none; padding:4px 14px 14px; border-top:1px solid var(--line); }
+.case.open .case-body { display:block; }
+.badge { display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.04em; padding:2px 7px; border-radius:999px; }
+.badge.client.web { background:var(--web-bg); color:var(--web); }
+.badge.client.server { background:var(--server-bg); color:var(--server); }
+.badge.client.app { background:var(--app-bg); color:var(--app); }
+.badge.pri.p0 { background:var(--p0-bg); color:var(--p0); }
+.badge.pri.p1 { background:var(--p1-bg); color:var(--p1); }
+.badge.pri.p2 { background:var(--p2-bg); color:var(--p2); }
+.badge.pri.p3 { background:var(--p3-bg); color:var(--p3); }
+.badge.pri.px { background:var(--code-bg); color:var(--muted); }
+.badge.type { background:var(--code-bg); color:var(--muted); font-weight:600; }
+.kv { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px 14px; margin:10px 0 12px; }
+.kv dt { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+.kv dd { margin:2px 0 0; }
+.case-body h4 { margin:14px 0 6px; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+.block { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
+.block p { margin:0 0 6px; }
+.block p:last-child { margin:0; }
+.block p.md-heading { margin:10px 0 4px; }
+.block p.md-heading:first-child { margin-top:0; }
+.block ul, .block ol { margin:4px 0 8px; padding-left:18px; }
+.block li { margin:2px 0; }
+.block strong { font-weight:700; color:var(--ink); }
+.block code, .steps code { font-family:var(--mono); font-size:11.5px; background:var(--code-bg); padding:1px 5px; border-radius:4px; }
+.block a { color:var(--acc); }
+.steps { width:100%; border-collapse:collapse; font-size:13px; }
+.steps th, .steps td { border:1px solid var(--line); padding:8px 9px; vertical-align:top; text-align:left; }
+.steps th { background:var(--code-bg); font-size:12px; }
+.steps td.num { width:40px; font-family:var(--mono); color:var(--muted); }
+.steps p { margin:0 0 4px; }
+.empty { padding:28px; text-align:center; color:var(--muted); border:1px dashed var(--line); border-radius:10px; margin-bottom:12px; }
+.muted { color:var(--muted); }
+.footer { margin-top:18px; color:var(--muted); font-size:12px; text-align:center; }
+.total-pill { display:inline-block; background:var(--acc-soft); color:var(--acc); font-weight:700;
+  padding:3px 10px; border-radius:999px; margin-left:6px; font-size:13px; }
+html[data-lang="en"] .unit-zh { display:none; }
+html[data-lang="zh"] .unit-en { display:none; }
+</style>
+<script>
+(function(){
+  try {
+    var t = localStorage.getItem('tcg-report-theme');
+    var l = localStorage.getItem('tcg-report-lang');
+    if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+    if (l === 'en' || l === 'zh') {
+      document.documentElement.setAttribute('data-lang', l);
+      document.documentElement.lang = l === 'en' ? 'en' : 'zh-CN';
+    }
+  } catch (e) {}
+})();
+</script>
+</head>
+<body>
+<div class="prefs" role="toolbar" aria-label="Language and theme">
+  <div class="group" role="group" aria-label="Language">
+    <button type="button" data-set-lang="zh" aria-pressed="true">中文</button>
+    <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+  </div>
+  <div class="group" role="group" aria-label="Theme">
+    <button type="button" data-set-theme="light" aria-pressed="true"><span data-zh="白天" data-en="Light">白天</span></button>
+    <button type="button" data-set-theme="dark" aria-pressed="false"><span data-zh="黑夜" data-en="Dark">黑夜</span></button>
+  </div>
+</div>
+<div class="wrap">
+  <header class="hero">
+    <p class="kicker">codexqa-testcase-generator · V56 · case report v1.1.1</p>
+    <h1><span data-zh="测试用例生成报告" data-en="Test Case Generation Report">测试用例生成报告</span>
+      <span class="total-pill">5 <span class="unit-zh">条</span><span class="unit-en"> cases</span></span>
+    </h1>
+    <p class="sub">inventory-hold · <span data-zh="聚合 Web / 服务端 / APP 三类用例集" data-en="Aggregates Web / Server / APP case sets">聚合 Web / 服务端 / APP 三类用例集</span></p>
+    <div class="meta-row">
+      <span>Run ID: <code>inventory-hold</code></span>
+      <span><span data-zh="运行目录" data-en="Run dir">运行目录</span>: <code>/tmp/inventory-hold</code></span>
+      <span><span data-zh="正式方案" data-en="Formal plan">正式方案</span>: <span data-zh="未找到 test_design.md" data-en="test_design.md not found">未找到 test_design.md</span></span>
+      <span><span data-zh="生成时间" data-en="Generated at">生成时间</span>: 2026-09-21 14:23:28</span>
+      <span><span data-zh="数据源" data-en="Source">数据源</span>: <code>testcase/cases/</code></span>
+    </div>
+    <div class="stats">
+      <div class="card">
+        <h2><span data-zh="按端分布" data-en="By client">按端分布</span></h2>
+        <div class="chip-row"><div class='stat-chip web'><span class='n'>2</span><span class='l'>WEB</span></div><div class='stat-chip server'><span class='n'>2</span><span class='l'>SERVER</span></div><div class='stat-chip app'><span class='n'>1</span><span class='l'>APP</span></div></div>
+      </div>
+      <div class="card">
+        <h2><span data-zh="优先级分布" data-en="By priority">优先级分布</span></h2>
+        <div class='bar-row'><span>P0</span><div class='bar'><i style='width:60.0%'></i></div><b>3</b></div><div class='bar-row'><span>P1</span><div class='bar'><i style='width:40.0%'></i></div><b>2</b></div><div class='bar-row'><span>P2</span><div class='bar'><i style='width:0.0%'></i></div><b>0</b></div><div class='bar-row'><span>P3</span><div class='bar'><i style='width:0.0%'></i></div><b>0</b></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="all" aria-selected="true"><span data-zh="全部" data-en="All">全部</span></button>
+      <button class="tab" role="tab" data-tab="web" aria-selected="false">Web (2)</button>
+      <button class="tab" role="tab" data-tab="server" aria-selected="false"><span data-zh="服务端" data-en="Server">服务端</span> (2)</button>
+      <button class="tab" role="tab" data-tab="app" aria-selected="false">APP (1)</button>
+    </div>
+    <div class="filters">
+      <select id="priFilter" aria-label="Priority">
+        <option value="" data-zh="全部优先级" data-en="All priorities">全部优先级</option>
+        <option>P0</option><option>P1</option><option>P2</option><option>P3</option>
+      </select>
+      <input id="q" type="search" data-zh-placeholder="搜索 ID / 名称 / 模块 / 步骤…" data-en-placeholder="Search ID / name / module / steps…" placeholder="搜索 ID / 名称 / 模块 / 步骤…" aria-label="Search"/>
+      <button class="tab" type="button" id="expandAll"><span data-zh="展开全部" data-en="Expand all">展开全部</span></button>
+      <button class="tab" type="button" id="collapseAll"><span data-zh="收起全部" data-en="Collapse all">收起全部</span></button>
+    </div>
+  </div>
+
+  <section class="panel" id="panel-all" data-panel="all">
+    <div class="panel-head">
+      <h2><span data-zh="全部用例" data-en="All cases">全部用例</span> <span class="count">5</span></h2>
+      <p class="desc"><span data-zh="三端用例聚合视图；点击卡片展开步骤与预期。空端在本运行中显示为空态。" data-en="Aggregated three-end view; expand a card for steps and expected results. Missing ends show an empty state.">三端用例聚合视图；点击卡片展开步骤与预期。空端在本运行中显示为空态。</span></p>
+    </div>
+    <div class="case-list">
+      
+<article class="case" data-client="web" data-pri="P0"
+  data-module="Inventory hold" data-search="hold-w01 hold then expire then buy inventory hold p0 [new][ui] s-01 expiry visible **execution-environment description**
+- environment id: tbd
+- path: `testdesign/test_design.md`
+
+**data-dependency description**
+1）sku with 3 units; create one hold of 1 unit so the storefront cache is warm - prd §6 expiry must be visible immediately" id="case-0">
+  <header class="case-head" onclick="this.parentElement.classList.toggle('open')">
+    <span class="badge client web">WEB</span>
+    <span class="badge pri p0">P0</span>
+    <span class="badge type">[New][UI]</span>
+    <h3>Hold then expire then buy</h3>
+    <span class="meta-id">HOLD-W01</span>
+    <span class="chev" aria-hidden="true"></span>
+  </header>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt><span data-zh="功能模块" data-en="Module">功能模块</span></dt><dd>Inventory hold</dd></div>
+      <div><dt><span data-zh="计划场景" data-en="Plan scenario">计划场景</span></dt><dd>S-01 expiry visible</dd></div>
+      <div><dt><span data-zh="生成时间" data-en="Generated at">生成时间</span></dt><dd>2026-09-21 10:00:00</dd></div>
+      <div><dt><span data-zh="来源文件" data-en="Source file">来源文件</span></dt><dd><code>HOLD-W01.md</code></dd></div>
+    </dl>
+    <h4><span data-zh="前置条件" data-en="Preconditions">前置条件</span></h4>
+    <div class="block"><p class="md-heading"><strong>Execution-environment description</strong></p>
+<ul>
+<li>environment ID: TBD</li>
+<li>path: <code>testdesign/test_design.md</code></li>
+</ul>
+<p class="md-heading"><strong>Data-dependency description</strong></p>
+<ol>
+<li>SKU with 3 units; create one hold of 1 unit so the storefront cache is warm</li>
+</ol></div>
+    <h4><span data-zh="步骤与预期" data-en="Steps &amp; expected">步骤与预期</span></h4>
+    <table class='steps'><thead><tr><th>#</th><th><span data-zh="操作步骤" data-en="Steps">操作步骤</span></th><th><span data-zh="预期结果" data-en="Expected results">预期结果</span></th></tr></thead><tbody><tr><td class='num'>1</td><td><p>Create hold <code>qty=1</code> for SKU A</p></td><td><p>Hold active; availability shows 2</p></td></tr><tr><td class='num'>2</td><td><p>Wait until hold window ends, then run expiry sweep</p></td><td><p>Reserved counter drops; cache must invalidate</p></td></tr><tr><td class='num'>3</td><td><p>Open storefront availability for SKU A</p></td><td><p>Availability is 3, not the held 2</p></td></tr></tbody></table>
+    <h4><span data-zh="溯源" data-en="Provenance">溯源</span></h4>
+    <div class="block"><ul>
+<li>PRD §6 expiry must be visible immediately</li>
+</ul></div>
+    <h4><span data-zh="歧义说明" data-en="Ambiguity">歧义说明</span></h4><div class='block'><p>Hold window length stays TBD until product names minutes.</p></div>
+  </div>
+</article>
+
+<article class="case" data-client="web" data-pri="P0"
+  data-module="Inventory hold" data-search="hold-w02 concurrent last-unit hold inventory hold p0 [new][concurrency] s-02 no oversell available=1; two clients ready - prd §4 no double holding" id="case-1">
+  <header class="case-head" onclick="this.parentElement.classList.toggle('open')">
+    <span class="badge client web">WEB</span>
+    <span class="badge pri p0">P0</span>
+    <span class="badge type">[New][Concurrency]</span>
+    <h3>Concurrent last-unit hold</h3>
+    <span class="meta-id">HOLD-W02</span>
+    <span class="chev" aria-hidden="true"></span>
+  </header>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt><span data-zh="功能模块" data-en="Module">功能模块</span></dt><dd>Inventory hold</dd></div>
+      <div><dt><span data-zh="计划场景" data-en="Plan scenario">计划场景</span></dt><dd>S-02 no oversell</dd></div>
+      <div><dt><span data-zh="生成时间" data-en="Generated at">生成时间</span></dt><dd>2026-09-21 10:00:00</dd></div>
+      <div><dt><span data-zh="来源文件" data-en="Source file">来源文件</span></dt><dd><code>HOLD-W02.md</code></dd></div>
+    </dl>
+    <h4><span data-zh="前置条件" data-en="Preconditions">前置条件</span></h4>
+    <div class="block"><p>available=1; two clients ready</p></div>
+    <h4><span data-zh="步骤与预期" data-en="Steps &amp; expected">步骤与预期</span></h4>
+    <table class='steps'><thead><tr><th>#</th><th><span data-zh="操作步骤" data-en="Steps">操作步骤</span></th><th><span data-zh="预期结果" data-en="Expected results">预期结果</span></th></tr></thead><tbody><tr><td class='num'>1</td><td><p>Two <code>quantity=1</code> holds at the same instant</p></td><td><p>Exactly one 200 and one 409</p></td></tr><tr><td class='num'>2</td><td><p>Read stock</p></td><td><p>Never negative</p></td></tr></tbody></table>
+    <h4><span data-zh="溯源" data-en="Provenance">溯源</span></h4>
+    <div class="block"><ul>
+<li>PRD §4 no double holding</li>
+</ul></div>
+    
+  </div>
+</article>
+
+<article class="case" data-client="app" data-pri="P1"
+  data-module="Reservation commit" data-search="hold-a01 commit then refund in app reservation commit p1 [new][interaction] s-03 commit semantics app session with an open hold - prd §5 commit semantics" id="case-2">
+  <header class="case-head" onclick="this.parentElement.classList.toggle('open')">
+    <span class="badge client app">APP</span>
+    <span class="badge pri p1">P1</span>
+    <span class="badge type">[New][Interaction]</span>
+    <h3>Commit then refund in app</h3>
+    <span class="meta-id">HOLD-A01</span>
+    <span class="chev" aria-hidden="true"></span>
+  </header>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt><span data-zh="功能模块" data-en="Module">功能模块</span></dt><dd>Reservation commit</dd></div>
+      <div><dt><span data-zh="计划场景" data-en="Plan scenario">计划场景</span></dt><dd>S-03 commit semantics</dd></div>
+      <div><dt><span data-zh="生成时间" data-en="Generated at">生成时间</span></dt><dd>2026-09-21 10:00:00</dd></div>
+      <div><dt><span data-zh="来源文件" data-en="Source file">来源文件</span></dt><dd><code>HOLD-A01.md</code></dd></div>
+    </dl>
+    <h4><span data-zh="前置条件" data-en="Preconditions">前置条件</span></h4>
+    <div class="block"><p>app session with an open hold</p></div>
+    <h4><span data-zh="步骤与预期" data-en="Steps &amp; expected">步骤与预期</span></h4>
+    <table class='steps'><thead><tr><th>#</th><th><span data-zh="操作步骤" data-en="Steps">操作步骤</span></th><th><span data-zh="预期结果" data-en="Expected results">预期结果</span></th></tr></thead><tbody><tr><td class='num'>1</td><td><p>Tap commit</p></td><td><p>Status is COMMITTED; hold cannot be replayed</p></td></tr><tr><td class='num'>2</td><td><p>Request refund</p></td><td><p>Order row exists; NPE path does not fire</p></td></tr></tbody></table>
+    <h4><span data-zh="溯源" data-en="Provenance">溯源</span></h4>
+    <div class="block"><ul>
+<li>PRD §5 commit semantics</li>
+</ul></div>
+    
+  </div>
+</article>
+
+<article class="case" data-client="server" data-pri="P0"
+  data-module="Refund cap" data-search="hold-s01 [function-positive] second partial refund refund cap p0 [new][function-positive]  paidamount=100, already refunded 40 prd §11" id="case-3">
+  <header class="case-head" onclick="this.parentElement.classList.toggle('open')">
+    <span class="badge client server">SERVER</span>
+    <span class="badge pri p0">P0</span>
+    <span class="badge type">[New][Function-Positive]</span>
+    <h3>[Function-Positive] second partial refund</h3>
+    <span class="meta-id">HOLD-S01</span>
+    <span class="chev" aria-hidden="true"></span>
+  </header>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt><span data-zh="功能模块" data-en="Module">功能模块</span></dt><dd>Refund cap</dd></div>
+      <div><dt><span data-zh="计划场景" data-en="Plan scenario">计划场景</span></dt><dd>—</dd></div>
+      <div><dt><span data-zh="生成时间" data-en="Generated at">生成时间</span></dt><dd>—</dd></div>
+      <div><dt><span data-zh="来源文件" data-en="Source file">来源文件</span></dt><dd><code>testcase_srv.md</code></dd></div>
+    </dl>
+    <h4><span data-zh="前置条件" data-en="Preconditions">前置条件</span></h4>
+    <div class="block"><p>paidAmount=100, already refunded 40</p></div>
+    <h4><span data-zh="步骤与预期" data-en="Steps &amp; expected">步骤与预期</span></h4>
+    <table class='steps'><thead><tr><th>#</th><th><span data-zh="操作步骤" data-en="Steps">操作步骤</span></th><th><span data-zh="预期结果" data-en="Expected results">预期结果</span></th></tr></thead><tbody><tr><td class='num'>1</td><td><p>POST /refunds amount=70</p></td><td><p>refundedTotal stays ≤ paidAmount; second call clamped or 409</p></td></tr></tbody></table>
+    <h4><span data-zh="溯源" data-en="Provenance">溯源</span></h4>
+    <div class="block"><p>PRD §11</p></div>
+    
+  </div>
+</article>
+
+<article class="case" data-client="server" data-pri="P1"
+  data-module="Pricing" data-search="hold-s02 [function-positive] volume tier at exactly 10 pricing p1 [new][function-positive]  catalog product, units=10 prd §8" id="case-4">
+  <header class="case-head" onclick="this.parentElement.classList.toggle('open')">
+    <span class="badge client server">SERVER</span>
+    <span class="badge pri p1">P1</span>
+    <span class="badge type">[New][Function-Positive]</span>
+    <h3>[Function-Positive] volume tier at exactly 10</h3>
+    <span class="meta-id">HOLD-S02</span>
+    <span class="chev" aria-hidden="true"></span>
+  </header>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt><span data-zh="功能模块" data-en="Module">功能模块</span></dt><dd>Pricing</dd></div>
+      <div><dt><span data-zh="计划场景" data-en="Plan scenario">计划场景</span></dt><dd>—</dd></div>
+      <div><dt><span data-zh="生成时间" data-en="Generated at">生成时间</span></dt><dd>—</dd></div>
+      <div><dt><span data-zh="来源文件" data-en="Source file">来源文件</span></dt><dd><code>testcase_srv.md</code></dd></div>
+    </dl>
+    <h4><span data-zh="前置条件" data-en="Preconditions">前置条件</span></h4>
+    <div class="block"><p>catalog product, units=10</p></div>
+    <h4><span data-zh="步骤与预期" data-en="Steps &amp; expected">步骤与预期</span></h4>
+    <table class='steps'><thead><tr><th>#</th><th><span data-zh="操作步骤" data-en="Steps">操作步骤</span></th><th><span data-zh="预期结果" data-en="Expected results">预期结果</span></th></tr></thead><tbody><tr><td class='num'>1</td><td><p>computeOrderTotal(10)</p></td><td><p>5% discount applied (inclusive bound)</p></td></tr></tbody></table>
+    <h4><span data-zh="溯源" data-en="Provenance">溯源</span></h4>
+    <div class="block"><p>PRD §8</p></div>
+    
+  </div>
+</article>
+
+    </div>
+  </section>
+
+  
+<section class="panel" id="panel-web" data-panel="web" hidden>
+  <div class="panel-head">
+    <h2><span data-zh="Web 端用例集" data-en="Web case set">Web 端用例集</span> <span class="count">2</span></h2>
+    <p class="desc"><span data-zh="来源：testcase_web/testcase_web_index.md + testcases/*.md" data-en="Source: testcase_web/testcase_web_index.md + testcases/*.md">来源：testcase_web/testcase_web_index.md + testcases/*.md</span></p>
+  </div>
+  <div class="case-list">
+<article class="case" data-client="web" data-pri="P0"
+  data-module="Inventory hold" data-search="hold-w01 hold then expire then buy inventory hold p0 [new][ui] s-01 expiry visible **execution-environment description**
+- environment id: tbd
+- path: `testdesign/test_design.md`
+
+**data-dependency description**
+1）sku with 3 units; create one hold of 1 unit so the storefront cache is warm - prd §6 expiry must be visible immediately" id="case-0">
+  <header class="case-head" onclick="this.parentElement.classList.toggle('open')">
+    <span class="badge client web">WEB</span>
+    <span class="badge pri p0">P0</span>
+    <span class="badge type">[New][UI]</span>
+    <h3>Hold then expire then buy</h3>
+    <span class="meta-id">HOLD-W01</span>
+    <span class="chev" aria-hidden="true"></span>
+  </header>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt><span data-zh="功能模块" data-en="Module">功能模块</span></dt><dd>Inventory hold</dd></div>
+      <div><dt><span data-zh="计划场景" data-en="Plan scenario">计划场景</span></dt><dd>S-01 expiry visible</dd></div>
+      <div><dt><span data-zh="生成时间" data-en="Generated at">生成时间</span></dt><dd>2026-09-21 10:00:00</dd></div>
+      <div><dt><span data-zh="来源文件" data-en="Source file">来源文件</span></dt><dd><code>HOLD-W01.md</code></dd></div>
+    </dl>
+    <h4><span data-zh="前置条件" data-en="Preconditions">前置条件</span></h4>
+    <div class="block"><p class="md-heading"><strong>Execution-environment description</strong></p>
+<ul>
+<li>environment ID: TBD</li>
+<li>path: <code>testdesign/test_design.md</code></li>
+</ul>
+<p class="md-heading"><strong>Data-dependency description</strong></p>
+<ol>
+<li>SKU with 3 units; create one hold of 1 unit so the storefront cache is warm</li>
+</ol></div>
+    <h4><span data-zh="步骤与预期" data-en="Steps &amp; expected">步骤与预期</span></h4>
+    <table class='steps'><thead><tr><th>#</th><th><span data-zh="操作步骤" data-en="Steps">操作步骤</span></th><th><span data-zh="预期结果" data-en="Expected results">预期结果</span></th></tr></thead><tbody><tr><td class='num'>1</td><td><p>Create hold <code>qty=1</code> for SKU A</p></td><td><p>Hold active; availability shows 2</p></td></tr><tr><td class='num'>2</td><td><p>Wait until hold window ends, then run expiry sweep</p></td><td><p>Reserved counter drops; cache must invalidate</p></td></tr><tr><td class='num'>3</td><td><p>Open storefront availability for SKU A</p></td><td><p>Availability is 3, not the held 2</p></td></tr></tbody></table>
+    <h4><span data-zh="溯源" data-en="Provenance">溯源</span></h4>
+    <div class="block"><ul>
+<li>PRD §6 expiry must be visible immediately</li>
+</ul></div>
+    <h4><span data-zh="歧义说明" data-en="Ambiguity">歧义说明</span></h4><div class='block'><p>Hold window length stays TBD until product names minutes.</p></div>
+  </div>
+</article>
+
+<article class="case" data-client="web" data-pri="P0"
+  data-module="Inventory hold" data-search="hold-w02 concurrent last-unit hold inventory hold p0 [new][concurrency] s-02 no oversell available=1; two clients ready - prd §4 no double holding" id="case-1">
+  <header class="case-head" onclick="this.parentElement.classList.toggle('open')">
+    <span class="badge client web">WEB</span>
+    <span class="badge pri p0">P0</span>
+    <span class="badge type">[New][Concurrency]</span>
+    <h3>Concurrent last-unit hold</h3>
+    <span class="meta-id">HOLD-W02</span>
+    <span class="chev" aria-hidden="true"></span>
+  </header>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt><span data-zh="功能模块" data-en="Module">功能模块</span></dt><dd>Inventory hold</dd></div>
+      <div><dt><span data-zh="计划场景" data-en="Plan scenario">计划场景</span></dt><dd>S-02 no oversell</dd></div>
+      <div><dt><span data-zh="生成时间" data-en="Generated at">生成时间</span></dt><dd>2026-09-21 10:00:00</dd></div>
+      <div><dt><span data-zh="来源文件" data-en="Source file">来源文件</span></dt><dd><code>HOLD-W02.md</code></dd></div>
+    </dl>
+    <h4><span data-zh="前置条件" data-en="Preconditions">前置条件</span></h4>
+    <div class="block"><p>available=1; two clients ready</p></div>
+    <h4><span data-zh="步骤与预期" data-en="Steps &amp; expected">步骤与预期</span></h4>
+    <table class='steps'><thead><tr><th>#</th><th><span data-zh="操作步骤" data-en="Steps">操作步骤</span></th><th><span data-zh="预期结果" data-en="Expected results">预期结果</span></th></tr></thead><tbody><tr><td class='num'>1</td><td><p>Two <code>quantity=1</code> holds at the same instant</p></td><td><p>Exactly one 200 and one 409</p></td></tr><tr><td class='num'>2</td><td><p>Read stock</p></td><td><p>Never negative</p></td></tr></tbody></table>
+    <h4><span data-zh="溯源" data-en="Provenance">溯源</span></h4>
+    <div class="block"><ul>
+<li>PRD §4 no double holding</li>
+</ul></div>
+    
+  </div>
+</article>
+</div>
+</section>
+
+  
+<section class="panel" id="panel-server" data-panel="server" hidden>
+  <div class="panel-head">
+    <h2><span data-zh="服务端用例集" data-en="Server case set">服务端用例集</span> <span class="count">2</span></h2>
+    <p class="desc"><span data-zh="来源：testcase_srv.md（大表）" data-en="Source: testcase_srv.md (wide table)">来源：testcase_srv.md（大表）</span></p>
+  </div>
+  <div class="case-list">
+<article class="case" data-client="server" data-pri="P0"
+  data-module="Refund cap" data-search="hold-s01 [function-positive] second partial refund refund cap p0 [new][function-positive]  paidamount=100, already refunded 40 prd §11" id="case-3">
+  <header class="case-head" onclick="this.parentElement.classList.toggle('open')">
+    <span class="badge client server">SERVER</span>
+    <span class="badge pri p0">P0</span>
+    <span class="badge type">[New][Function-Positive]</span>
+    <h3>[Function-Positive] second partial refund</h3>
+    <span class="meta-id">HOLD-S01</span>
+    <span class="chev" aria-hidden="true"></span>
+  </header>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt><span data-zh="功能模块" data-en="Module">功能模块</span></dt><dd>Refund cap</dd></div>
+      <div><dt><span data-zh="计划场景" data-en="Plan scenario">计划场景</span></dt><dd>—</dd></div>
+      <div><dt><span data-zh="生成时间" data-en="Generated at">生成时间</span></dt><dd>—</dd></div>
+      <div><dt><span data-zh="来源文件" data-en="Source file">来源文件</span></dt><dd><code>testcase_srv.md</code></dd></div>
+    </dl>
+    <h4><span data-zh="前置条件" data-en="Preconditions">前置条件</span></h4>
+    <div class="block"><p>paidAmount=100, already refunded 40</p></div>
+    <h4><span data-zh="步骤与预期" data-en="Steps &amp; expected">步骤与预期</span></h4>
+    <table class='steps'><thead><tr><th>#</th><th><span data-zh="操作步骤" data-en="Steps">操作步骤</span></th><th><span data-zh="预期结果" data-en="Expected results">预期结果</span></th></tr></thead><tbody><tr><td class='num'>1</td><td><p>POST /refunds amount=70</p></td><td><p>refundedTotal stays ≤ paidAmount; second call clamped or 409</p></td></tr></tbody></table>
+    <h4><span data-zh="溯源" data-en="Provenance">溯源</span></h4>
+    <div class="block"><p>PRD §11</p></div>
+    
+  </div>
+</article>
+
+<article class="case" data-client="server" data-pri="P1"
+  data-module="Pricing" data-search="hold-s02 [function-positive] volume tier at exactly 10 pricing p1 [new][function-positive]  catalog product, units=10 prd §8" id="case-4">
+  <header class="case-head" onclick="this.parentElement.classList.toggle('open')">
+    <span class="badge client server">SERVER</span>
+    <span class="badge pri p1">P1</span>
+    <span class="badge type">[New][Function-Positive]</span>
+    <h3>[Function-Positive] volume tier at exactly 10</h3>
+    <span class="meta-id">HOLD-S02</span>
+    <span class="chev" aria-hidden="true"></span>
+  </header>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt><span data-zh="功能模块" data-en="Module">功能模块</span></dt><dd>Pricing</dd></div>
+      <div><dt><span data-zh="计划场景" data-en="Plan scenario">计划场景</span></dt><dd>—</dd></div>
+      <div><dt><span data-zh="生成时间" data-en="Generated at">生成时间</span></dt><dd>—</dd></div>
+      <div><dt><span data-zh="来源文件" data-en="Source file">来源文件</span></dt><dd><code>testcase_srv.md</code></dd></div>
+    </dl>
+    <h4><span data-zh="前置条件" data-en="Preconditions">前置条件</span></h4>
+    <div class="block"><p>catalog product, units=10</p></div>
+    <h4><span data-zh="步骤与预期" data-en="Steps &amp; expected">步骤与预期</span></h4>
+    <table class='steps'><thead><tr><th>#</th><th><span data-zh="操作步骤" data-en="Steps">操作步骤</span></th><th><span data-zh="预期结果" data-en="Expected results">预期结果</span></th></tr></thead><tbody><tr><td class='num'>1</td><td><p>computeOrderTotal(10)</p></td><td><p>5% discount applied (inclusive bound)</p></td></tr></tbody></table>
+    <h4><span data-zh="溯源" data-en="Provenance">溯源</span></h4>
+    <div class="block"><p>PRD §8</p></div>
+    
+  </div>
+</article>
+</div>
+</section>
+
+  
+<section class="panel" id="panel-app" data-panel="app" hidden>
+  <div class="panel-head">
+    <h2><span data-zh="APP 端用例集" data-en="APP case set">APP 端用例集</span> <span class="count">1</span></h2>
+    <p class="desc"><span data-zh="来源：testcase_app/testcase_app_index.md + testcases/*.md" data-en="Source: testcase_app/testcase_app_index.md + testcases/*.md">来源：testcase_app/testcase_app_index.md + testcases/*.md</span></p>
+  </div>
+  <div class="case-list">
+<article class="case" data-client="app" data-pri="P1"
+  data-module="Reservation commit" data-search="hold-a01 commit then refund in app reservation commit p1 [new][interaction] s-03 commit semantics app session with an open hold - prd §5 commit semantics" id="case-2">
+  <header class="case-head" onclick="this.parentElement.classList.toggle('open')">
+    <span class="badge client app">APP</span>
+    <span class="badge pri p1">P1</span>
+    <span class="badge type">[New][Interaction]</span>
+    <h3>Commit then refund in app</h3>
+    <span class="meta-id">HOLD-A01</span>
+    <span class="chev" aria-hidden="true"></span>
+  </header>
+  <div class="case-body">
+    <dl class="kv">
+      <div><dt><span data-zh="功能模块" data-en="Module">功能模块</span></dt><dd>Reservation commit</dd></div>
+      <div><dt><span data-zh="计划场景" data-en="Plan scenario">计划场景</span></dt><dd>S-03 commit semantics</dd></div>
+      <div><dt><span data-zh="生成时间" data-en="Generated at">生成时间</span></dt><dd>2026-09-21 10:00:00</dd></div>
+      <div><dt><span data-zh="来源文件" data-en="Source file">来源文件</span></dt><dd><code>HOLD-A01.md</code></dd></div>
+    </dl>
+    <h4><span data-zh="前置条件" data-en="Preconditions">前置条件</span></h4>
+    <div class="block"><p>app session with an open hold</p></div>
+    <h4><span data-zh="步骤与预期" data-en="Steps &amp; expected">步骤与预期</span></h4>
+    <table class='steps'><thead><tr><th>#</th><th><span data-zh="操作步骤" data-en="Steps">操作步骤</span></th><th><span data-zh="预期结果" data-en="Expected results">预期结果</span></th></tr></thead><tbody><tr><td class='num'>1</td><td><p>Tap commit</p></td><td><p>Status is COMMITTED; hold cannot be replayed</p></td></tr><tr><td class='num'>2</td><td><p>Request refund</p></td><td><p>Order row exists; NPE path does not fire</p></td></tr></tbody></table>
+    <h4><span data-zh="溯源" data-en="Provenance">溯源</span></h4>
+    <div class="block"><ul>
+<li>PRD §5 commit semantics</li>
+</ul></div>
+    
+  </div>
+</article>
+</div>
+</section>
+
+
+  <p class="footer"><span data-zh="由 codexqa-testcase-generator/scripts/generate_case_report.py 生成 · 仅本地 HTML，不上传用例平台" data-en="Generated by codexqa-testcase-generator/scripts/generate_case_report.py · local HTML only, no case-platform upload">由 codexqa-testcase-generator/scripts/generate_case_report.py 生成 · 仅本地 HTML，不上传用例平台</span></p>
+</div>
+<script>
+(function(){
+  const root = document.documentElement;
+  const LANG_KEY = 'tcg-report-lang';
+  const THEME_KEY = 'tcg-report-theme';
+
+  function applyI18n(lang) {
+    const attr = lang === 'en' ? 'data-en' : 'data-zh';
+    document.querySelectorAll('[data-zh][data-en]').forEach(el => {
+      const v = el.getAttribute(attr);
+      if (v == null) return;
+      if (el.tagName === 'TITLE') { document.title = v; }
+      else if (el.tagName === 'OPTION') { el.textContent = v; }
+      else { el.textContent = v; }
+    });
+    document.querySelectorAll('[data-zh-placeholder][data-en-placeholder]').forEach(el => {
+      el.setAttribute('placeholder', el.getAttribute(lang === 'en' ? 'data-en-placeholder' : 'data-zh-placeholder') || '');
+    });
+  }
+
+  function setLang(lang) {
+    root.setAttribute('data-lang', lang);
+    root.lang = lang === 'en' ? 'en' : 'zh-CN';
+    document.querySelectorAll('[data-set-lang]').forEach(b => {
+      b.setAttribute('aria-pressed', b.getAttribute('data-set-lang') === lang ? 'true' : 'false');
+    });
+    applyI18n(lang);
+    try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
+  }
+
+  function setTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    document.querySelectorAll('[data-set-theme]').forEach(b => {
+      b.setAttribute('aria-pressed', b.getAttribute('data-set-theme') === theme ? 'true' : 'false');
+    });
+    try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+  }
+
+  document.querySelectorAll('[data-set-lang]').forEach(b => {
+    b.addEventListener('click', () => setLang(b.getAttribute('data-set-lang')));
+  });
+  document.querySelectorAll('[data-set-theme]').forEach(b => {
+    b.addEventListener('click', () => setTheme(b.getAttribute('data-set-theme')));
+  });
+
+  let lang = root.getAttribute('data-lang') || 'zh';
+  let theme = root.getAttribute('data-theme') || 'light';
+  try {
+    lang = localStorage.getItem(LANG_KEY) || lang;
+    theme = localStorage.getItem(THEME_KEY) || theme;
+  } catch (e) {}
+  setLang(lang === 'en' ? 'en' : 'zh');
+  setTheme(theme === 'dark' ? 'dark' : 'light');
+
+  const tabs = document.querySelectorAll('.tab[data-tab]');
+  const panels = document.querySelectorAll('[data-panel]');
+  const priFilter = document.getElementById('priFilter');
+  const q = document.getElementById('q');
+
+  function showPanel(name) {
+    tabs.forEach(t => t.setAttribute('aria-selected', t.dataset.tab === name ? 'true' : 'false'));
+    panels.forEach(p => { p.hidden = p.dataset.panel !== name; });
+    applyFilters();
+  }
+  tabs.forEach(t => t.addEventListener('click', () => showPanel(t.dataset.tab)));
+
+  function applyFilters() {
+    const pri = (priFilter.value || '').toUpperCase();
+    const query = (q.value || '').trim().toLowerCase();
+    document.querySelectorAll('.case').forEach(card => {
+      const inPanel = !card.closest('[data-panel]')?.hidden;
+      if (!inPanel) return;
+      const okPri = !pri || (card.dataset.pri || '').toUpperCase() === pri;
+      const okQ = !query || (card.dataset.search || '').includes(query);
+      card.hidden = !(okPri && okQ);
+    });
+  }
+  priFilter.addEventListener('change', applyFilters);
+  q.addEventListener('input', applyFilters);
+  document.getElementById('expandAll').addEventListener('click', () => {
+    document.querySelectorAll('.panel:not([hidden]) .case:not([hidden])').forEach(c => c.classList.add('open'));
+  });
+  document.getElementById('collapseAll').addEventListener('click', () => {
+    document.querySelectorAll('.case').forEach(c => c.classList.remove('open'));
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1015 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="codexqa-code-wiki">
+<title>CodexQA 技能仓库 · Code Wiki</title>
+<script>(function(){var s=null;try{s=localStorage.getItem('codexqa-wiki-theme');}catch(e){}if(s!=='light'&&s!=='dark')s=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',s);})();</script>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f6f7f5;
+  --panel: #ffffff;
+  --sunk: #f0f2ef;
+  --ink: #17201b;
+  --muted: #4f5a53;
+  --faint: #626d66;
+  --line: #e1e5e1;
+  --line-strong: #c8cfca;
+  --acc: #0f6b4c;
+  --acc-ink: #0b5a3f;
+  --acc-soft: #e4f1ea;
+  --warn: #9a4a07;
+  --warn-soft: #fdf1e3;
+  --g-box: #fafbfa;
+  --g-edge: #8a948e;
+  --shadow: 0 1px 2px rgba(23, 32, 27, .06), 0 4px 16px rgba(23, 32, 27, .04);
+  --sans: "Inter", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  --mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+  --top-h: 52px;
+  --side-w: 256px;
+  --main-w: 920px;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0e1311;
+  --panel: #151c19;
+  --sunk: #111815;
+  --ink: #e4ebe7;
+  --muted: #aab5af;
+  --faint: #8e9993;
+  --line: #242e29;
+  --line-strong: #34403a;
+  --acc: #52c48f;
+  --acc-ink: #7dd8ad;
+  --acc-soft: #163126;
+  --warn: #f2b36d;
+  --warn-soft: #2c2114;
+  --g-box: #121916;
+  --g-edge: #6d7a73;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .2);
+}
+
+* { box-sizing: border-box; }
+html { scroll-padding-top: calc(var(--top-h) + 16px); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.7 var(--sans);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--acc-ink); text-underline-offset: 2px; }
+a:hover { color: var(--acc); }
+code, .mono { font-family: var(--mono); font-size: .86em; }
+code { background: var(--sunk); border: 1px solid var(--line); border-radius: 5px; padding: 0 .3em; }
+:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; border-radius: 4px; }
+.muted { color: var(--faint); }
+button { font: inherit; color: inherit; }
+
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 8px 12px; background: var(--acc); color: #fff; border-radius: 6px; }
+.skip:focus { top: 10px; }
+
+/* top bar */
+.topbar {
+  position: sticky; top: 0; z-index: 30;
+  height: var(--top-h);
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 16px;
+  background: color-mix(in srgb, var(--panel) 86%, transparent);
+  backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.brand { font-weight: 650; letter-spacing: -.01em; color: var(--ink); text-decoration: none; white-space: nowrap; }
+.crumb { color: var(--faint); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 0 1 auto; }
+.icon {
+  width: 36px; height: 36px; flex: none;
+  display: inline-grid; place-items: center;
+  border: 1px solid var(--line); border-radius: 9px; background: var(--panel); cursor: pointer;
+}
+.icon:hover { border-color: var(--line-strong); }
+.icon svg { width: 18px; height: 18px; fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-linecap: round; }
+.icon svg .fill { fill: var(--muted); stroke: none; }
+.menu-btn { display: none; }
+
+.search { position: relative; margin-left: auto; flex: 0 1 340px; }
+.search > svg { position: absolute; left: 10px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); fill: none; stroke: var(--faint); stroke-width: 1.7; stroke-linecap: round; pointer-events: none; }
+.search input {
+  width: 100%; height: 36px; padding: 0 34px 0 32px;
+  border: 1px solid var(--line); border-radius: 9px;
+  background: var(--panel); color: var(--ink); font: inherit; font-size: 14px;
+}
+.search input::placeholder { color: var(--faint); }
+.search input:focus { outline: none; border-color: var(--acc); box-shadow: 0 0 0 3px var(--acc-soft); }
+.search input::-webkit-search-cancel-button { display: none; }
+.search kbd {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  font: 11px var(--mono); color: var(--faint);
+  border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; background: var(--sunk);
+}
+#q-results {
+  position: absolute; left: 0; right: 0; top: calc(100% + 6px);
+  margin: 0; padding: 6px; list-style: none;
+  max-height: min(420px, 70vh); overflow: auto;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);
+}
+#q-results li { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; padding: 7px 9px; border-radius: 7px; cursor: pointer; }
+#q-results li[aria-selected="true"], #q-results li:hover { background: var(--acc-soft); }
+#q-results .k { grid-row: span 2; align-self: center; font-size: 11px; color: var(--faint); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+#q-results .l { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#q-results .s { font-size: 12px; color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#q-results .empty { display: block; color: var(--faint); cursor: default; }
+
+/* shell */
+.shell { display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); }
+.side {
+  position: sticky; top: var(--top-h);
+  height: calc(100vh - var(--top-h));
+  overflow: auto; overscroll-behavior: contain;
+  padding: 20px 12px 40px;
+  border-right: 1px solid var(--line);
+  font-size: 14px;
+}
+.side ul { list-style: none; margin: 0; padding: 0; }
+.side a {
+  display: flex; gap: 8px; align-items: baseline;
+  padding: 5px 10px; border-radius: 7px;
+  color: var(--muted); text-decoration: none; line-height: 1.45;
+}
+.side a:hover { background: var(--sunk); color: var(--ink); }
+.side a.active { background: var(--acc-soft); color: var(--acc-ink); font-weight: 550; }
+.side .nav-top > li { margin: 1px 0; }
+.side .nav-top > li > a { color: var(--ink); font-weight: 520; }
+.side .nav-mods > ul, .side .nav-top > li > ul { margin: 2px 0 8px; }
+.side details > summary {
+  list-style: none; cursor: pointer;
+  padding: 6px 10px 4px 22px; position: relative;
+  font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--faint);
+}
+.side details > summary::-webkit-details-marker { display: none; }
+.side details > summary::before { content: ""; position: absolute; left: 10px; top: 13px; border: 4px solid transparent; border-left-color: var(--faint); transition: transform .15s; transform-origin: 2px 4px; }
+.side details[open] > summary::before { transform: rotate(90deg); }
+.side details ul a, .side .nav-top > li > ul a { padding-left: 22px; }
+.side .nid { font: 11px var(--mono); color: var(--faint); flex: none; }
+.side a.active .nid { color: var(--acc); }
+.scrim { display: none; }
+
+main { min-width: 0; width: 100%; max-width: calc(var(--main-w) + 96px); padding: 32px 48px 80px; margin: 0 auto; }
+section, .hero { scroll-margin-top: calc(var(--top-h) + 16px); }
+section { margin-top: 56px; }
+h1, h2, h3, h4 { line-height: 1.3; letter-spacing: -.01em; }
+h2 { font-size: 22px; margin: 0 0 6px; }
+h3 { font-size: 16px; margin: 0; }
+li[tabindex="-1"]:focus { outline: none; }
+.fh { font-size: 12px; margin: 0 0 6px !important; font-weight: 600; color: var(--faint); letter-spacing: .03em; }
+.only-narrow { display: none !important; }
+.lead { color: var(--muted); margin: 0 0 18px; max-width: 70ch; }
+.prose { max-width: 72ch; }
+.prose p { margin: 0 0 12px; }
+.prose p:last-child { margin-bottom: 0; }
+.prose ul { margin: 0 0 12px; padding-left: 1.2em; }
+
+/* hero */
+.hero { padding-top: 8px; }
+.eyebrow { margin: 0 0 8px; font-size: 13px; color: var(--faint); }
+.eyebrow .mono { color: var(--muted); }
+.hero h1 { font-size: clamp(26px, 3.4vw, 34px); margin: 0 0 10px; letter-spacing: -.02em; }
+.tagline { font-size: 17px; color: var(--muted); margin: 0 0 20px; max-width: 60ch; }
+.facts { list-style: none; margin: 0 0 14px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.facts li {
+  display: flex; align-items: baseline; gap: 6px;
+  padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel);
+  font-size: 13px; color: var(--muted);
+}
+.facts b { font-size: 15px; color: var(--ink); font-weight: 650; }
+.meta { margin: 0; font-size: 13px; color: var(--faint); }
+.banner {
+  margin: 14px 0 0; padding: 10px 14px; border-radius: 9px;
+  font-size: 14px; border: 1px solid var(--line); background: var(--panel); color: var(--muted);
+}
+.banner.draft { border-color: color-mix(in srgb, var(--warn) 35%, transparent); background: var(--warn-soft); color: var(--warn); }
+
+/* reading paths */
+.guides { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.guide { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 18px 8px; }
+.guide h3 { margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pill { font-size: 11px; font-weight: 500; color: var(--faint); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; }
+.steps { list-style: none; margin: 0; padding: 0; }
+.step { display: grid; grid-template-columns: 28px 1fr; gap: 12px; position: relative; padding-bottom: 14px; }
+.step:not(:last-child)::before { content: ""; position: absolute; left: 13px; top: 28px; bottom: 2px; width: 2px; background: var(--line); border-radius: 1px; }
+.step-n {
+  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  font: 600 12px var(--mono); color: var(--acc-ink); background: var(--acc-soft);
+}
+.step-body p { margin: 2px 0 0; font-size: 14px; color: var(--muted); }
+.step-body .evidence { font: 12px var(--mono); color: var(--faint); }
+.mref { display: inline-flex; gap: 6px; align-items: baseline; font: 600 12px var(--mono); text-decoration: none; color: var(--acc-ink); }
+.mref .mref-name { font: 600 15px var(--sans); color: var(--ink); }
+.mref:hover .mref-name { color: var(--acc); }
+p .mref .mref-name, li .mref .mref-name { font-size: 14px; }
+
+/* graph */
+.graph { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.graph-scroll { overflow: auto; }
+.graph-svg { display: block; width: 100%; max-width: var(--graph-w); height: auto; margin: 0 auto; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 12px 4px 0; font-size: 12px; color: var(--faint); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.lg { display: inline-block; flex: none; }
+.lg.hub { width: 14px; height: 10px; border: 2px solid var(--acc); border-radius: 3px; }
+.lg.bar { width: 16px; height: 3px; border-radius: 2px; background: var(--acc); opacity: .55; }
+.lg.dashed { width: 18px; border-top: 1.5px dashed var(--g-edge); }
+
+.box rect { fill: var(--g-box); stroke: var(--line); }
+.box.standalone rect { stroke-dasharray: 5 4; }
+.box-title { font: 600 12.5px var(--sans); fill: var(--muted); }
+.node { cursor: pointer; text-decoration: none; }
+.node .card { fill: var(--panel); stroke: var(--line-strong); stroke-width: 1; transition: stroke .15s; }
+.node.hub .card { stroke: var(--acc); stroke-width: 2; }
+.node:hover .card { stroke: var(--acc); }
+.node:focus { outline: none; }
+.node:focus-visible .card { stroke: var(--acc); stroke-width: 3; }
+.nid { font: 600 11px var(--mono); fill: var(--faint); }
+.nhub { font: 600 11px var(--sans); fill: var(--acc); }
+.nsize { font: 11px var(--mono); fill: var(--faint); }
+.nname { font: 500 13px var(--sans); fill: var(--ink); }
+.nbar { fill: var(--acc); opacity: .5; }
+.edge .line { fill: none; stroke: var(--g-edge); opacity: .8; marker-end: url(#wa); transition: opacity .15s; }
+.edge.both .line { marker-start: url(#wa); }
+.edge.unknown .line { stroke-dasharray: 4 4; opacity: .6; }
+.edge.weak .line { opacity: .4; }
+.edge .hit { fill: none; stroke: transparent; stroke-width: 12; pointer-events: stroke; }
+.edge.minor { display: none; }
+.graph-svg.focus .edge.minor.on { display: inline; }
+.graph-svg.focus .edge.minor.on .line { stroke-dasharray: 2 5; }
+.arrow { fill: var(--g-edge); }
+.arrow.on { fill: var(--acc); }
+.graph-svg.focus .node { opacity: .28; transition: opacity .15s; }
+.graph-svg.focus .node.on { opacity: 1; }
+.graph-svg.focus .edge .line { opacity: .1; }
+.graph-svg.focus .edge.on .line { opacity: 1; stroke: var(--acc); marker-end: url(#wa-on); }
+.graph-svg.focus .edge.both.on .line { marker-start: url(#wa-on); }
+
+/* modules */
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.tools { display: flex; gap: 6px; }
+.tools button { border: 1px solid var(--line); background: var(--panel); border-radius: 7px; padding: 3px 10px; font-size: 13px; color: var(--muted); cursor: pointer; }
+.tools button:hover { border-color: var(--line-strong); color: var(--ink); }
+.group { margin-top: 26px; }
+.group-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+.group-sum { margin: 0 0 10px; color: var(--muted); max-width: 72ch; font-size: 14px; }
+details.mod {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 11px;
+  margin: 8px 0; scroll-margin-top: calc(var(--top-h) + 16px);
+  transition: border-color .2s, box-shadow .2s;
+}
+details.mod[open] { border-color: var(--line-strong); box-shadow: var(--shadow); }
+details.mod.flash { box-shadow: 0 0 0 3px var(--acc-soft), 0 0 0 1px var(--acc); }
+details.mod > summary {
+  list-style: none; cursor: pointer;
+  display: grid; grid-template-columns: 3.4rem minmax(0, 1fr) 11rem; column-gap: 12px; row-gap: 2px; align-items: baseline;
+  padding: 12px 16px;
+}
+details.mod > summary::-webkit-details-marker { display: none; }
+details.mod > summary:hover .mname { color: var(--acc-ink); }
+.mid { font: 600 12px var(--mono); color: var(--faint); }
+.mname { font-weight: 600; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+.mrole { grid-column: 2 / 4; color: var(--muted); font-size: 14px; }
+.msize { display: flex; align-items: center; gap: 8px; justify-self: end; width: 100%; }
+.sbar { flex: 1; height: 4px; border-radius: 2px; background: var(--sunk); overflow: hidden; }
+.sbar i { display: block; height: 100%; background: var(--acc); opacity: .55; border-radius: 2px; }
+.msize .num { font: 12px var(--mono); color: var(--faint); min-width: 3.5em; text-align: right; }
+.tag { font-size: 11px; font-weight: 500; padding: 0 7px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--muted); }
+.tag.hub { border-color: var(--acc); color: var(--acc-ink); background: var(--acc-soft); }
+.mbody { padding: 2px 16px 16px calc(3.4rem + 28px); }
+.rule-title { margin: 0 0 10px; color: var(--faint); font-size: 12px; }
+.mbody .prose { margin-bottom: 14px; font-size: 14.5px; }
+.facts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; }
+.facts-grid .wide { grid-column: 1 / -1; }
+.facts-grid ul { list-style: none; margin: 0; padding: 0; }
+.facts-grid p { margin: 0; }
+.rel li { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 2px 0; }
+.w { font: 11.5px var(--mono); color: var(--faint); white-space: nowrap; }
+.sigs li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 3px 0; border-bottom: 1px dashed var(--line); }
+.sigs li:last-child { border-bottom: 0; }
+.sigs code { background: none; border: 0; padding: 0; font-size: 13px; color: var(--ink); overflow-wrap: anywhere; }
+.sigs .kind { font-size: 11.5px; color: var(--faint); }
+.sigs .w { margin-left: auto; }
+.flow { font-size: 13px; line-height: 2; margin: 0 0 4px !important; overflow-wrap: anywhere; }
+.flow .arrow { color: var(--faint); }
+.files li { padding: 1px 0; }
+.file { font: 12.5px var(--mono); overflow-wrap: anywhere; color: var(--muted); }
+a.file { color: var(--acc-ink); }
+details.more > summary { cursor: pointer; font-size: 13px; color: var(--acc-ink); margin-top: 4px; }
+.sigs li.flash, .files li.flash { background: var(--acc-soft); border-radius: 4px; }
+
+/* about */
+#about { font-size: 14px; color: var(--muted); }
+#about h3 { font-size: 13px; color: var(--faint); margin: 18px 0 6px; }
+.glossary { display: grid; gap: 8px; margin: 14px 0 0; }
+.glossary div { display: grid; grid-template-columns: 5.5rem 1fr; gap: 12px; }
+.glossary dt { font-weight: 600; color: var(--ink); }
+.glossary dd { margin: 0; }
+.cmds { margin: 0; padding-left: 1.1em; }
+.cmds code { font-size: 12px; overflow-wrap: anywhere; }
+
+@media (max-width: 960px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .menu-btn { display: inline-grid; }
+  .side {
+    position: fixed; z-index: 40; top: var(--top-h); left: 0; bottom: 0; height: auto;
+    width: min(86vw, 320px); background: var(--panel);
+    transform: translateX(-102%); transition: transform .2s ease; box-shadow: var(--shadow);
+  }
+  body.nav-open .side { transform: none; }
+  .scrim { display: block; position: fixed; inset: var(--top-h) 0 0 0; z-index: 35; background: rgba(0, 0, 0, .32); }
+  .scrim[hidden] { display: none; }
+  main { padding: 24px 24px 64px; }
+}
+@media (max-width: 640px) {
+  body { font-size: 15px; }
+  .topbar { gap: 8px; padding: 0 10px; }
+  .crumb { display: none; }
+  .search { flex: 1 1 auto; }
+  .search kbd { display: none; }
+  main { padding: 20px 16px 56px; }
+  section { margin-top: 44px; }
+  .graph { padding: 8px; margin: 0 -8px; }
+  .graph-svg { min-width: min(var(--graph-w), 560px); }
+  .only-narrow { display: inline-flex !important; }
+  details.mod > summary { grid-template-columns: 3rem minmax(0, 1fr); padding: 12px; }
+  .msize { grid-column: 2; justify-self: start; max-width: 12rem; }
+  .mrole { grid-column: 2; }
+  .mbody { padding: 0 12px 14px; }
+  .facts-grid { grid-template-columns: 1fr; }
+  .glossary div { grid-template-columns: 1fr; gap: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before { transition: none !important; animation: none !important; }
+  html { scroll-behavior: auto; }
+}
+@media print {
+  .topbar, .side, .scrim, .tools, .skip { display: none !important; }
+  .shell { display: block; }
+  main { max-width: none; padding: 0; }
+  details.mod { break-inside: avoid; box-shadow: none; }
+  .graph-scroll { overflow: visible; }
+  a { color: inherit; text-decoration: none; }
+}
+
+</style>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+<header class="topbar">
+  <button type="button" class="icon menu-btn" aria-controls="nav" aria-expanded="false" aria-label="目录"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14"/></svg></button>
+  <a class="brand" href="#top">Code Wiki</a>
+  <span class="crumb mono" title="codexqa">codexqa</span>
+  <div class="search" role="search">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="5.5"/><path d="M13 13l4 4"/></svg>
+    <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="搜索模块、符号、文件" data-short="搜索" aria-label="搜索模块、符号、文件" aria-controls="q-results" aria-expanded="false" role="combobox" aria-autocomplete="list">
+    <kbd aria-hidden="true">/</kbd>
+    <ul id="q-results" role="listbox" hidden></ul>
+  </div>
+  <button type="button" class="icon theme-btn" aria-label="切换白天 / 黑夜" title="切换白天 / 黑夜"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="M10 3.5a6.5 6.5 0 0 1 0 13z" class="fill"/></svg></button>
+</header>
+<div class="shell">
+<nav id="nav" class="side" aria-label="目录">
+  <ul class="nav-top">
+    <li><a href="#top">概览</a></li>
+    <li><a href="#start">从哪读起</a></li>
+    <li><a href="#what">它是什么</a></li>
+    <li><a href="#map">架构图</a></li>
+    <li class="nav-mods"><a href="#modules">模块</a><ul><li><details open><summary>缺陷扫描与诊断</summary><ul><li><a href="#P02" data-mod="P02"><span class="nid">P02</span>缺陷扫描主流程</a></li><li><a href="#P05" data-mod="P05"><span class="nid">P05</span>缺陷扫描 Agent</a></li><li><a href="#P11" data-mod="P11"><span class="nid">P11</span>异常解析与图查询</a></li><li><a href="#P12" data-mod="P12"><span class="nid">P12</span>示例仓库与夹具</a></li></ul></details></li><li><details open><summary>测试数据造数</summary><ul><li><a href="#P04" data-mod="P04"><span class="nid">P04</span>造数配置与适配</a></li><li><a href="#P06" data-mod="P06"><span class="nid">P06</span>造数工具绑定</a></li><li><a href="#P07" data-mod="P07"><span class="nid">P07</span>造数场景校验</a></li></ul></details></li><li><details open><summary>浏览器界面回放</summary><ul><li><a href="#P03" data-mod="P03"><span class="nid">P03</span>回放执行器</a></li><li><a href="#P10" data-mod="P10"><span class="nid">P10</span>回放决策智能体</a></li></ul></details></li><li><details open><summary>用例生成</summary><ul><li><a href="#P08" data-mod="P08"><span class="nid">P08</span>用例知识与报告</a></li><li><a href="#P09" data-mod="P09"><span class="nid">P09</span>增量拉取与冻结</a></li></ul></details></li></ul></li>
+    <li><a href="#standalone">独立模块</a><ul><li><a href="#P01" data-mod="P01"><span class="nid">P01</span>评审规则扫描</a></li></ul></li>
+    <li><a href="#about">关于这份报告</a></li>
+  </ul>
+</nav>
+<div class="scrim" hidden></div>
+<main id="main">
+<header class="hero" id="top" data-section>
+  <p class="eyebrow">架构 Wiki · <span class="mono">codexqa@main</span></p>
+  <h1>CodexQA 技能仓库</h1>
+  <p class="tagline">十个可单独安装的质量验证 skill。每个 skill 是一组脚本，彼此几乎不互相调用。</p>
+  <ul class="facts"><li><b>12</b><span>个模块</span></li><li><b>4</b><span>组互相调用</span></li><li><b>1</b><span>个独立</span></li><li><b>98%</b><span>索引代码已覆盖</span></li></ul>
+  <p class="meta">提交 <a href="https://github.com/openqa-cn/codexqa/commit/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5" target="_blank" rel="noopener"><code>a76bb7f</code></a> · 2026-09-28 · 事实部分未调用模型</p>
+  
+</header>
+<section id="start" data-section>
+  <h2>从哪读起</h2>
+  <p class="lead">每条路径只沿真实存在的调用走：相邻两步之间一定有调用关系。</p>
+  <div class="guides"><article class="guide"><h3>要改浏览器界面回放</h3><ol class="steps"><li class="step"><span class="step-n" aria-hidden="true">1</span><div class="step-body"><a class="mref" href="#P03" data-mod="P03">P03<span class="mref-name">回放执行器</span></a><p>先从 <code>cmdRun</code> 和 <code>runStep</code> 看一次回放怎么走完，页面状态类型也定义在这里。</p><p class="evidence">P10 → P03：1,523 处引用</p></div></li><li class="step"><span class="step-n" aria-hidden="true">2</span><div class="step-body"><a class="mref" href="#P10" data-mod="P10">P10<span class="mref-name">回放决策智能体</span></a><p>再看智能体怎么根据页面状态决定下一步；它读的正是上一步的类型。</p></div></li></ol></article>
+<article class="guide"><h3>要改测试数据造数</h3><ol class="steps"><li class="step"><span class="step-n" aria-hidden="true">1</span><div class="step-body"><a class="mref" href="#P06" data-mod="P06">P06<span class="mref-name">造数工具绑定</span></a><p>从 <code>selectTool</code> 和 <code>runPipeline</code> 看一个造数动作怎么选工具、怎么串起来。</p><p class="evidence">P06 → P04：1,184 处引用</p></div></li><li class="step"><span class="step-n" aria-hidden="true">2</span><div class="step-body"><a class="mref" href="#P04" data-mod="P04">P04<span class="mref-name">造数配置与适配</span></a><p>流水线最终都落到这里的配置和适配器，改接口返回结构先看这里。</p><p class="evidence">P07 → P04：80 处引用</p></div></li><li class="step"><span class="step-n" aria-hidden="true">3</span><div class="step-body"><a class="mref" href="#P07" data-mod="P07">P07<span class="mref-name">造数场景校验</span></a><p>改完跑这里的场景套件，确认端到端还能走通。</p></div></li></ol></article>
+<article class="guide"><h3>要改缺陷扫描或根因诊断</h3><ol class="steps"><li class="step"><span class="step-n" aria-hidden="true">1</span><div class="step-body"><a class="mref" href="#P05" data-mod="P05">P05<span class="mref-name">缺陷扫描 Agent</span></a><p>先看扫描 Agent 怎么装工具、怎么给模型补上下文。</p><p class="evidence">P02 → P05：28 处引用</p></div></li><li class="step"><span class="step-n" aria-hidden="true">2</span><div class="step-body"><a class="mref" href="#P02" data-mod="P02">P02<span class="mref-name">缺陷扫描主流程</span></a><p>再看扫描主流程和报告；这里是枢纽，改动会碰到整组。</p><p class="evidence">P02 → P11：186 处引用</p></div></li><li class="step"><span class="step-n" aria-hidden="true">3</span><div class="step-body"><a class="mref" href="#P11" data-mod="P11">P11<span class="mref-name">异常解析与图查询</span></a><p>根因诊断的异常解析也挂在这里，最后看它怎么按栈帧查图。</p></div></li></ol></article></div>
+</section>
+<section id="what" data-section>
+  <h2>它是什么</h2>
+  <div class="prose"><p>这个仓库不是一个服务，而是一组并排放着的 skill：缺陷扫描、根因诊断、测试数据造数、用例生成、浏览器界面回放等。每个 skill 自带脚本，安装时只复制自己的目录，所以代码天然分成几组互不调用的「岛」。</p>
+<p>规模最大、连接最多的一组是<strong>缺陷扫描与诊断</strong>：<a class="mref" href="#P02" data-mod="P02">P02</a> 是枢纽，既放着缺陷扫描的主流程，也放着 README 预览重建脚本和示例仓库的入口；<a class="mref" href="#P05" data-mod="P05">P05</a> 是扫描用的 Agent 与工具安装，<a class="mref" href="#P11" data-mod="P11">P11</a> 是根因诊断的异常解析。改 <a class="mref" href="#P02" data-mod="P02">P02</a> 会同时碰到这三条线。</p>
+<p><strong>测试数据造数</strong>和<strong>浏览器界面回放</strong>是另外两组：前者从 <a class="mref" href="#P06" data-mod="P06">P06</a> 的工具绑定流水线进来，经 <a class="mref" href="#P04" data-mod="P04">P04</a> 的配置与适配层，再由 <a class="mref" href="#P07" data-mod="P07">P07</a> 的场景套件校验；后者是 <a class="mref" href="#P03" data-mod="P03">P03</a> 执行器和 <a class="mref" href="#P10" data-mod="P10">P10</a> 决策智能体之间的密集往来。<a class="mref" href="#P01" data-mod="P01">P01</a> 是代码评审的规则扫描脚本，和其他模块没有调用关系。</p></div>
+</section>
+<section id="map" data-section>
+  <h2>架构图</h2>
+  <p class="lead">每个框是一组互相调用的模块。箭头从调用方指向被调用方，线越粗引用越多，双箭头表示互相调用。点模块看说明。</p>
+  <figure class="graph" style="--graph-w:688px">
+    <div class="graph-scroll" tabindex="0" aria-label="架构图"><svg class="graph-svg" viewBox="0 0 688 704" width="688" height="704" role="group" aria-label="架构图" xmlns="http://www.w3.org/2000/svg"><defs><marker id="wa" viewBox="0 0 10 10" refX="8.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M0,1.5 L9,5 L0,8.5 z" class="arrow"/></marker><marker id="wa-on" viewBox="0 0 10 10" refX="8.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M0,1.5 L9,5 L0,8.5 z" class="arrow on"/></marker></defs><g class="box group"><rect x="1" y="1" width="652" height="218" rx="12"/><text class="box-title" x="19" y="23">缺陷扫描与诊断</text></g><g class="box group"><rect x="1" y="243" width="438" height="218" rx="12"/><text class="box-title" x="19" y="265">测试数据造数</text></g><g class="box group"><rect x="463" y="243" width="224" height="218" rx="12"/><text class="box-title" x="481" y="265">浏览器界面回放</text></g><g class="box group"><rect x="1" y="485" width="224" height="218" rx="12"/><text class="box-title" x="19" y="507">用例生成</text></g><g class="box standalone"><rect x="249" y="485" width="224" height="108" rx="12"/><text class="box-title" x="267" y="507">独立模块</text></g><g class="edges"><g class="edge both" data-from="P10" data-to="P03"><path class="line" d="M575.0,333.0 C575.0,359.0 575.0,359.0 575.0,385.0" style="stroke-width:4.30px"/><path class="hit" d="M575.0,333.0 C575.0,359.0 575.0,359.0 575.0,385.0"><title>P10 回放决策智能体 → P03 回放执行器：1,523 处引用；反向 242 处</title></path></g><g class="edge both" data-from="P06" data-to="P04"><path class="line" d="M113.0,333.0 C113.0,359.0 209.0,359.0 209.0,385.0" style="stroke-width:4.15px"/><path class="hit" d="M113.0,333.0 C113.0,359.0 209.0,359.0 209.0,385.0"><title>P06 造数工具绑定 → P04 造数配置与适配：1,184 处引用；反向 59 处</title></path></g><g class="edge both" data-from="P02" data-to="P11"><path class="line" d="M327.0,91.0 C327.0,117.0 327.0,117.0 327.0,143.0" style="stroke-width:3.49px"/><path class="hit" d="M327.0,91.0 C327.0,117.0 327.0,117.0 327.0,143.0"><title>P02 缺陷扫描主流程 → P11 异常解析与图查询：186 处引用；反向 80 处</title></path></g><g class="edge both" data-from="P08" data-to="P09"><path class="line" d="M113.0,575.0 C113.0,601.0 113.0,601.0 113.0,627.0" style="stroke-width:3.17px"/><path class="hit" d="M113.0,575.0 C113.0,601.0 113.0,601.0 113.0,627.0"><title>P08 用例知识与报告 → P09 增量拉取与冻结：91 处引用；反向 33 处</title></path></g><g class="edge both" data-from="P07" data-to="P04"><path class="line" d="M327.0,333.0 C327.0,359.0 231.0,359.0 231.0,385.0" style="stroke-width:3.15px"/><path class="hit" d="M327.0,333.0 C327.0,359.0 231.0,359.0 231.0,385.0"><title>P07 造数场景校验 → P04 造数配置与适配：80 处引用；反向 40 处</title></path></g><g class="edge both" data-from="P02" data-to="P12"><path class="line" d="M349.0,91.0 C349.0,117.0 541.0,117.0 541.0,143.0" style="stroke-width:3.14px"/><path class="hit" d="M349.0,91.0 C349.0,117.0 541.0,117.0 541.0,143.0"><title>P02 缺陷扫描主流程 → P12 示例仓库与夹具：70 处引用；反向 47 处</title></path></g><g class="edge both weak" data-from="P02" data-to="P05"><path class="line" d="M305.0,91.0 C305.0,117.0 113.0,117.0 113.0,143.0" style="stroke-width:2.79px"/><path class="hit" d="M305.0,91.0 C305.0,117.0 113.0,117.0 113.0,143.0"><title>P02 缺陷扫描主流程 → P05 缺陷扫描 Agent：28 处引用；反向 23 处</title></path></g></g><g class="nodes"><a class="node hub" href="#P02" data-mod="P02" aria-label="P02 缺陷扫描主流程"><title>P02 缺陷扫描主流程 · 554 个符号</title><rect class="card" x="233" y="35" width="188" height="56" rx="9"/><text class="nid" x="245" y="54">P02<tspan class="nhub" dx="6">枢纽</tspan></text><text class="nsize" x="409" y="54" text-anchor="end">554</text><text class="nname" x="245" y="74">缺陷扫描主流程</text><rect class="nbar" x="245" y="82" width="104" height="3" rx="1.5"/></a><a class="node" href="#P05" data-mod="P05" aria-label="P05 缺陷扫描 Agent"><title>P05 缺陷扫描 Agent · 292 个符号</title><rect class="card" x="19" y="145" width="188" height="56" rx="9"/><text class="nid" x="31" y="164">P05</text><text class="nsize" x="195" y="164" text-anchor="end">292</text><text class="nname" x="31" y="184">缺陷扫描 Agent</text><rect class="nbar" x="31" y="192" width="55" height="3" rx="1.5"/></a><a class="node" href="#P11" data-mod="P11" aria-label="P11 异常解析与图查询"><title>P11 异常解析与图查询 · 123 个符号</title><rect class="card" x="233" y="145" width="188" height="56" rx="9"/><text class="nid" x="245" y="164">P11</text><text class="nsize" x="409" y="164" text-anchor="end">123</text><text class="nname" x="245" y="184">异常解析与图查询</text><rect class="nbar" x="245" y="192" width="23" height="3" rx="1.5"/></a><a class="node" href="#P12" data-mod="P12" aria-label="P12 示例仓库与夹具"><title>P12 示例仓库与夹具 · 109 个符号</title><rect class="card" x="447" y="145" width="188" height="56" rx="9"/><text class="nid" x="459" y="164">P12</text><text class="nsize" x="623" y="164" text-anchor="end">109</text><text class="nname" x="459" y="184">示例仓库与夹具</text><rect class="nbar" x="459" y="192" width="20" height="3" rx="1.5"/></a><a class="node" href="#P06" data-mod="P06" aria-label="P06 造数工具绑定"><title>P06 造数工具绑定 · 271 个符号</title><rect class="card" x="19" y="277" width="188" height="56" rx="9"/><text class="nid" x="31" y="296">P06</text><text class="nsize" x="195" y="296" text-anchor="end">271</text><text class="nname" x="31" y="316">造数工具绑定</text><rect class="nbar" x="31" y="324" width="51" height="3" rx="1.5"/></a><a class="node" href="#P07" data-mod="P07" aria-label="P07 造数场景校验"><title>P07 造数场景校验 · 207 个符号</title><rect class="card" x="233" y="277" width="188" height="56" rx="9"/><text class="nid" x="245" y="296">P07</text><text class="nsize" x="409" y="296" text-anchor="end">207</text><text class="nname" x="245" y="316">造数场景校验</text><rect class="nbar" x="245" y="324" width="39" height="3" rx="1.5"/></a><a class="node hub" href="#P04" data-mod="P04" aria-label="P04 造数配置与适配"><title>P04 造数配置与适配 · 312 个符号</title><rect class="card" x="126" y="387" width="188" height="56" rx="9"/><text class="nid" x="138" y="406">P04<tspan class="nhub" dx="6">枢纽</tspan></text><text class="nsize" x="302" y="406" text-anchor="end">312</text><text class="nname" x="138" y="426">造数配置与适配</text><rect class="nbar" x="138" y="434" width="58" height="3" rx="1.5"/></a><a class="node" href="#P10" data-mod="P10" aria-label="P10 回放决策智能体"><title>P10 回放决策智能体 · 128 个符号</title><rect class="card" x="481" y="277" width="188" height="56" rx="9"/><text class="nid" x="493" y="296">P10</text><text class="nsize" x="657" y="296" text-anchor="end">128</text><text class="nname" x="493" y="316">回放决策智能体</text><rect class="nbar" x="493" y="324" width="24" height="3" rx="1.5"/></a><a class="node" href="#P03" data-mod="P03" aria-label="P03 回放执行器"><title>P03 回放执行器 · 508 个符号</title><rect class="card" x="481" y="387" width="188" height="56" rx="9"/><text class="nid" x="493" y="406">P03</text><text class="nsize" x="657" y="406" text-anchor="end">508</text><text class="nname" x="493" y="426">回放执行器</text><rect class="nbar" x="493" y="434" width="95" height="3" rx="1.5"/></a><a class="node" href="#P08" data-mod="P08" aria-label="P08 用例知识与报告"><title>P08 用例知识与报告 · 185 个符号</title><rect class="card" x="19" y="519" width="188" height="56" rx="9"/><text class="nid" x="31" y="538">P08</text><text class="nsize" x="195" y="538" text-anchor="end">185</text><text class="nname" x="31" y="558">用例知识与报告</text><rect class="nbar" x="31" y="566" width="35" height="3" rx="1.5"/></a><a class="node" href="#P09" data-mod="P09" aria-label="P09 增量拉取与冻结"><title>P09 增量拉取与冻结 · 129 个符号</title><rect class="card" x="19" y="629" width="188" height="56" rx="9"/><text class="nid" x="31" y="648">P09</text><text class="nsize" x="195" y="648" text-anchor="end">129</text><text class="nname" x="31" y="668">增量拉取与冻结</text><rect class="nbar" x="31" y="676" width="24" height="3" rx="1.5"/></a><a class="node alone" href="#P01" data-mod="P01" aria-label="P01 评审规则扫描"><title>P01 评审规则扫描 · 877 个符号</title><rect class="card" x="267" y="519" width="188" height="56" rx="9"/><text class="nid" x="279" y="538">P01</text><text class="nsize" x="443" y="538" text-anchor="end">877</text><text class="nname" x="279" y="558">评审规则扫描</text><rect class="nbar" x="279" y="566" width="164" height="3" rx="1.5"/></a></g></svg></div>
+    <figcaption class="legend">
+      <span><i class="lg hub"></i>枢纽：组内连接最多的模块</span>
+      <span><i class="lg bar"></i>名称下的细条：相对最大模块的规模</span>
+      <span><i class="lg dashed"></i>虚线：导出里列为相关，但没有引用数</span>
+      
+      <span class="only-narrow">左右滑动查看完整的图</span>
+    </figcaption>
+  </figure>
+</section>
+<section id="modules" data-section>
+  <div class="section-head"><h2>模块</h2><div class="tools"><button type="button" data-expand="1">全部展开</button><button type="button" data-expand="0">全部收起</button></div></div>
+  <p class="lead">分组和架构图一致。展开模块看它调用谁、被谁调用、对外接口、关键流程和文件。</p>
+  <div class="group" id="G1">
+  <div class="group-head"><h3>缺陷扫描与诊断</h3><span class="muted">4 个模块</span></div>
+  <p class="group-sum">缺陷扫描主流程、扫描 Agent、根因诊断和示例仓库。<a class="mref" href="#P02" data-mod="P02">P02</a> 把它们连在一起，所以这一组改动的影响面最大。</p>
+  <details class="mod" id="P02" data-mod="P02">
+  <summary>
+    <span class="mid">P02</span>
+    <span class="mname">缺陷扫描主流程<span class="tag hub">枢纽</span><span class="tag">应用</span></span>
+    <span class="msize" title="554 个符号"><span class="sbar"><i style="width:63%"></i></span><span class="num">554</span></span>
+    <span class="mrole">缺陷扫描的全量 / 增量入口和 HTML 报告，同时收着预览重建脚本和示例入口。</span>
+  </summary>
+  <div class="mbody">
+    <p class="rule-title mono">rebuild_previews · ZipReader</p>
+    <div class="prose"><p>社区检测把几类脚本切到了一起：<code>scan_full</code> / <code>scan_incremental</code> / <code>render_html_report</code> 是缺陷扫描，<code>rebuild_previews</code> 和 <code>screenshot.mjs</code> 是 README 预览，<code>examples/</code> 下是样例仓库的入口。读的时候按文件路径分开看。</p>
+<p>它是这一组的枢纽：调用根因诊断的异常解析（<a class="mref" href="#P11" data-mod="P11">P11</a>）、示例夹具（<a class="mref" href="#P12" data-mod="P12">P12</a>）和扫描 Agent（<a class="mref" href="#P05" data-mod="P05">P05</a>），也被它们反向调用。</p></div>
+    <div class="facts-grid">
+      <div><p class="fh">调用</p><ul class="rel"><li><a class="mref" href="#P11" data-mod="P11">P11<span class="mref-name">异常解析与图查询</span></a><span class="w">186 处引用</span></li><li><a class="mref" href="#P12" data-mod="P12">P12<span class="mref-name">示例仓库与夹具</span></a><span class="w">70 处引用</span></li><li><a class="mref" href="#P05" data-mod="P05">P05<span class="mref-name">缺陷扫描 Agent</span></a><span class="w">28 处引用</span></li></ul></div>
+      <div><p class="fh">被调用</p><ul class="rel"><li><a class="mref" href="#P11" data-mod="P11">P11<span class="mref-name">异常解析与图查询</span></a><span class="w">80 处引用</span></li><li><a class="mref" href="#P12" data-mod="P12">P12<span class="mref-name">示例仓库与夹具</span></a><span class="w">47 处引用</span></li><li><a class="mref" href="#P05" data-mod="P05">P05<span class="mref-name">缺陷扫描 Agent</span></a><span class="w">23 处引用</span></li></ul></div>
+      <div class="wide"><p class="fh">对外接口</p><ul class="sigs"><li data-sym="score_request"><code>score_request(text) → Dict[str, Dict[str, Any]]</code><span class="kind">函数</span><span class="w">被 92 处调用</span></li><li data-sym="scan_full"><code>scan_full(args, client)</code><span class="kind">函数</span><span class="w">被 23 处调用</span></li><li data-sym="cmd_submit"><code>cmd_submit(flags) → Promise&lt;void&gt; | void</code><span class="kind">函数</span><span class="w">被 22 处调用</span></li><li data-sym="convertFile"><code>convertFile(input, fromFmt, toFmt, …) → string</code><span class="kind">函数</span><span class="w">被 18 处调用</span></li><li data-sym="scan_incremental"><code>scan_incremental(args, client)</code><span class="kind">函数</span><span class="w">被 18 处调用</span></li><li data-sym="render_html_report"><code>render_html_report(markdown, opts) → string</code><span class="kind">函数</span><span class="w">被 15 处调用</span></li><li data-sym="cmd_finalize"><code>cmd_finalize(args)</code><span class="kind">函数</span><span class="w">被 14 处调用</span></li><li data-sym="extract_facts"><code>extract_facts(parsed, brief) → ReportFacts</code><span class="kind">函数</span><span class="w">被 14 处调用</span></li></ul></div>
+      
+      <div class="wide"><p class="fh">文件 <span class="muted">48</span></p><ul class="files"><li data-file="docs/assets/previews/rebuild_previews"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/docs/assets/previews/rebuild_previews.py" target="_blank" rel="noopener">docs/assets/previews/rebuild_previews.py</a></li><li data-file="docs/assets/previews/render-defect-report.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/docs/assets/previews/render-defect-report.ts" target="_blank" rel="noopener">docs/assets/previews/render-defect-report.ts</a></li><li data-file="docs/assets/previews/screenshot.mjs"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/docs/assets/previews/screenshot.mjs" target="_blank" rel="noopener">docs/assets/previews/screenshot.mjs</a></li><li data-file="examples/inventory-service/head/smoke.mjs"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/head/smoke.mjs" target="_blank" rel="noopener">examples/inventory-service/head/smoke.mjs</a></li><li data-file="examples/inventory-service/head/src/db.js"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/head/src/db.js" target="_blank" rel="noopener">examples/inventory-service/head/src/db.js</a></li><li data-file="examples/inventory-service/head/src/inventory.js"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/head/src/inventory.js" target="_blank" rel="noopener">examples/inventory-service/head/src/inventory.js</a></li></ul><details class="more"><summary>其余 42 个</summary><ul class="files"><li data-file="examples/inventory-service/head/src/pricing.js"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/head/src/pricing.js" target="_blank" rel="noopener">examples/inventory-service/head/src/pricing.js</a></li><li data-file="examples/inventory-service/head/src/refund.js"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/head/src/refund.js" target="_blank" rel="noopener">examples/inventory-service/head/src/refund.js</a></li><li data-file="examples/inventory-service/head/src/reservation.js"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/head/src/reservation.js" target="_blank" rel="noopener">examples/inventory-service/head/src/reservation.js</a></li><li data-file="scripts/check-docs"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/scripts/check-docs.py" target="_blank" rel="noopener">scripts/check-docs.py</a></li><li data-file="scripts/compose-release-notes"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/scripts/compose-release-notes.py" target="_blank" rel="noopener">scripts/compose-release-notes.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/audit_policy_fixtures"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/audit_policy_fixtures.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/audit_policy_fixtures.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/llm_client"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/llm_client.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/llm_client.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/run_scan"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/run_scan.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/run_scan.py</a></li><li data-file="skills/codexqa-requirement-analyzer/scripts/batch_convert_templates.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-requirement-analyzer/scripts/batch_convert_templates.ts" target="_blank" rel="noopener">skills/codexqa-requirement-analyzer/scripts/batch_convert_templates.ts</a></li><li data-file="skills/codexqa-requirement-analyzer/scripts/common_parser.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-requirement-analyzer/scripts/common_parser.ts" target="_blank" rel="noopener">skills/codexqa-requirement-analyzer/scripts/common_parser.ts</a></li><li data-file="skills/codexqa-requirement-analyzer/scripts/convert_formats.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-requirement-analyzer/scripts/convert_formats.ts" target="_blank" rel="noopener">skills/codexqa-requirement-analyzer/scripts/convert_formats.ts</a></li><li data-file="skills/codexqa-requirement-analyzer/scripts/office_io.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-requirement-analyzer/scripts/office_io.ts" target="_blank" rel="noopener">skills/codexqa-requirement-analyzer/scripts/office_io.ts</a></li><li data-file="skills/codexqa-requirement-analyzer/scripts/parse_excel.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-requirement-analyzer/scripts/parse_excel.ts" target="_blank" rel="noopener">skills/codexqa-requirement-analyzer/scripts/parse_excel.ts</a></li><li data-file="skills/codexqa-requirement-analyzer/scripts/parse_formats.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-requirement-analyzer/scripts/parse_formats.ts" target="_blank" rel="noopener">skills/codexqa-requirement-analyzer/scripts/parse_formats.ts</a></li><li data-file="skills/codexqa-requirement-analyzer/scripts/parse_html.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-requirement-analyzer/scripts/parse_html.ts" target="_blank" rel="noopener">skills/codexqa-requirement-analyzer/scripts/parse_html.ts</a></li><li data-file="skills/codexqa-requirement-analyzer/scripts/parse_json.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-requirement-analyzer/scripts/parse_json.ts" target="_blank" rel="noopener">skills/codexqa-requirement-analyzer/scripts/parse_json.ts</a></li><li data-file="skills/codexqa-requirement-analyzer/scripts/parse_markdown.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-requirement-analyzer/scripts/parse_markdown.ts" target="_blank" rel="noopener">skills/codexqa-requirement-analyzer/scripts/parse_markdown.ts</a></li><li data-file="skills/codexqa-requirement-analyzer/scripts/parse_word.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-requirement-analyzer/scripts/parse_word.ts" target="_blank" rel="noopener">skills/codexqa-requirement-analyzer/scripts/parse_word.ts</a></li><li data-file="skills/codexqa-requirement-analyzer/scripts/run_analysis.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-requirement-analyzer/scripts/run_analysis.ts" target="_blank" rel="noopener">skills/codexqa-requirement-analyzer/scripts/run_analysis.ts</a></li><li data-file="skills/codexqa-rootcause-analyzer/scripts/cli_args.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-rootcause-analyzer/scripts/cli_args.ts" target="_blank" rel="noopener">skills/codexqa-rootcause-analyzer/scripts/cli_args.ts</a></li><li data-file="skills/codexqa-rootcause-analyzer/scripts/diagnose.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-rootcause-analyzer/scripts/diagnose.ts" target="_blank" rel="noopener">skills/codexqa-rootcause-analyzer/scripts/diagnose.ts</a></li><li data-file="skills/codexqa-rootcause-analyzer/scripts/draft_report.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-rootcause-analyzer/scripts/draft_report.ts" target="_blank" rel="noopener">skills/codexqa-rootcause-analyzer/scripts/draft_report.ts</a></li><li data-file="skills/codexqa-rootcause-analyzer/scripts/html_report.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-rootcause-analyzer/scripts/html_report.ts" target="_blank" rel="noopener">skills/codexqa-rootcause-analyzer/scripts/html_report.ts</a></li><li data-file="skills/codexqa-rootcause-analyzer/scripts/render_html.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-rootcause-analyzer/scripts/render_html.ts" target="_blank" rel="noopener">skills/codexqa-rootcause-analyzer/scripts/render_html.ts</a></li><li data-file="skills/codexqa-rootcause-analyzer/scripts/report.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-rootcause-analyzer/scripts/report.ts" target="_blank" rel="noopener">skills/codexqa-rootcause-analyzer/scripts/report.ts</a></li><li data-file="skills/codexqa-rootcause-analyzer/scripts/resolve_repo.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-rootcause-analyzer/scripts/resolve_repo.ts" target="_blank" rel="noopener">skills/codexqa-rootcause-analyzer/scripts/resolve_repo.ts</a></li><li data-file="skills/codexqa-rootcause-analyzer/scripts/store.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-rootcause-analyzer/scripts/store.ts" target="_blank" rel="noopener">skills/codexqa-rootcause-analyzer/scripts/store.ts</a></li><li data-file="skills/codexqa-rootcause-analyzer/scripts/timing.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-rootcause-analyzer/scripts/timing.ts" target="_blank" rel="noopener">skills/codexqa-rootcause-analyzer/scripts/timing.ts</a></li><li data-file="skills/codexqa-skill-router/scripts/discover_skills"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-skill-router/scripts/discover_skills.py" target="_blank" rel="noopener">skills/codexqa-skill-router/scripts/discover_skills.py</a></li><li data-file="skills/codexqa-skill-router/scripts/ensure_skill"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-skill-router/scripts/ensure_skill.py" target="_blank" rel="noopener">skills/codexqa-skill-router/scripts/ensure_skill.py</a></li><li data-file="skills/codexqa-skill-router/scripts/refresh_catalog"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-skill-router/scripts/refresh_catalog.py" target="_blank" rel="noopener">skills/codexqa-skill-router/scripts/refresh_catalog.py</a></li><li data-file="skills/codexqa-skill-router/scripts/suggest_route"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-skill-router/scripts/suggest_route.py" target="_blank" rel="noopener">skills/codexqa-skill-router/scripts/suggest_route.py</a></li><li data-file="skills/codexqa-testdata-generator/slots/catalog/scripts/executors/create_limited_product.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/slots/catalog/scripts/executors/create_limited_product.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/slots/catalog/scripts/executors/create_limited_product.ts</a></li><li data-file="skills/codexqa-testdata-generator/slots/catalog/scripts/executors/create_order.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/slots/catalog/scripts/executors/create_order.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/slots/catalog/scripts/executors/create_order.ts</a></li><li data-file="skills/codexqa-testdata-generator/slots/catalog/scripts/executors/create_product.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/slots/catalog/scripts/executors/create_product.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/slots/catalog/scripts/executors/create_product.ts</a></li><li data-file="skills/codexqa-testdata-generator/slots/catalog/scripts/executors/setup_account_credit.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/slots/catalog/scripts/executors/setup_account_credit.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/slots/catalog/scripts/executors/setup_account_credit.ts</a></li><li data-file="skills/codexqa-testdata-generator/slots/common/client.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/slots/common/client.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/slots/common/client.ts</a></li><li data-file="skills/codexqa-testdata-generator/slots/distribution/scripts/executors/bind_inventory.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/slots/distribution/scripts/executors/bind_inventory.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/slots/distribution/scripts/executors/bind_inventory.ts</a></li><li data-file="skills/codexqa-testdata-generator/slots/distribution/scripts/executors/browse_and_quote.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/slots/distribution/scripts/executors/browse_and_quote.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/slots/distribution/scripts/executors/browse_and_quote.ts</a></li><li data-file="skills/codexqa-testdata-generator/slots/distribution/scripts/executors/create_distributor.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/slots/distribution/scripts/executors/create_distributor.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/slots/distribution/scripts/executors/create_distributor.ts</a></li><li data-file="skills/codexqa-testdata-generator/slots/distribution/scripts/executors/set_commission.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/slots/distribution/scripts/executors/set_commission.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/slots/distribution/scripts/executors/set_commission.ts</a></li><li data-file="skills/codexqa-testdata-generator/slots/mock_server.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/slots/mock_server.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/slots/mock_server.ts</a></li></ul></details></div>
+    </div>
+    
+  </div>
+</details>
+<details class="mod" id="P05" data-mod="P05">
+  <summary>
+    <span class="mid">P05</span>
+    <span class="mname">缺陷扫描 Agent</span>
+    <span class="msize" title="292 个符号"><span class="sbar"><i style="width:33%"></i></span><span class="num">292</span></span>
+    <span class="mrole">扫描用的模型调用、扫描工具安装和 RAG 片段检索。</span>
+  </summary>
+  <div class="mbody">
+    <p class="rule-title mono">agent_llm · CodexQAError</p>
+    <div class="prose"><p><code>ensure_scan_tools</code> 负责装好 semgrep 等工具，<code>rag_related_snippets</code> 给模型补上下文，<code>build_scope_plan</code> 决定扫哪些文件。</p></div>
+    <div class="facts-grid">
+      <div><p class="fh">调用</p><ul class="rel"><li><a class="mref" href="#P02" data-mod="P02">P02<span class="mref-name">缺陷扫描主流程</span></a><span class="w">23 处引用</span></li></ul></div>
+      <div><p class="fh">被调用</p><ul class="rel"><li><a class="mref" href="#P02" data-mod="P02">P02<span class="mref-name">缺陷扫描主流程</span></a><span class="w">28 处引用</span></li></ul></div>
+      <div class="wide"><p class="fh">对外接口</p><ul class="sigs"><li data-sym="render_html_report"><code>render_html_report(report)</code><span class="kind">函数</span><span class="w">被 28 处调用</span></li><li data-sym="ensure_scan_tools"><code>ensure_scan_tools(repo, cfg, files, …)</code><span class="kind">函数</span><span class="w">被 27 处调用</span></li><li data-sym="main"><code>main()</code><span class="kind">函数 · 10 处同名定义</span><span class="w">被 25 处调用</span></li><li data-sym="rag_related_snippets"><code>rag_related_snippets(repo, changed_paths, intent, …)</code><span class="kind">函数</span><span class="w">被 23 处调用</span></li><li data-sym="build_scope_plan"><code>build_scope_plan(repo, cfg, code_files, …)</code><span class="kind">函数</span><span class="w">被 21 处调用</span></li><li data-sym="CodexQAError"><code>CodexQAError</code><span class="kind">类</span></li></ul></div>
+      
+      <div class="wide"><p class="fh">文件 <span class="muted">17</span></p><ul class="files"><li data-file="skills/codexqa-defect-analyzer/scripts/agent_llm"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/agent_llm.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/agent_llm.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/choose_scenario"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/choose_scenario.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/choose_scenario.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/codexqa_client"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/codexqa_client.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/codexqa_client.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/collect_full"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/collect_full.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/collect_full.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/collect_incremental"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/collect_incremental.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/collect_incremental.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/context_builder"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/context_builder.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/context_builder.py</a></li></ul><details class="more"><summary>其余 11 个</summary><ul class="files"><li data-file="skills/codexqa-defect-analyzer/scripts/ensure_tools"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/ensure_tools.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/ensure_tools.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/feedback"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/feedback.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/feedback.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/html_chrome"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/html_chrome.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/html_chrome.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/ingest_adhoc"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/ingest_adhoc.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/ingest_adhoc.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/lib"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/lib.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/lib.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/merge_report"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/merge_report.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/merge_report.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/policy_loader"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/policy_loader.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/policy_loader.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/rag_context"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/rag_context.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/rag_context.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/route_model"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/route_model.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/route_model.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/sast_adapters"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/sast_adapters.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/sast_adapters.py</a></li><li data-file="skills/codexqa-defect-analyzer/scripts/scope_planner"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-defect-analyzer/scripts/scope_planner.py" target="_blank" rel="noopener">skills/codexqa-defect-analyzer/scripts/scope_planner.py</a></li></ul></details></div>
+    </div>
+    
+  </div>
+</details>
+<details class="mod" id="P11" data-mod="P11">
+  <summary>
+    <span class="mid">P11</span>
+    <span class="mname">异常解析与图查询</span>
+    <span class="msize" title="123 个符号"><span class="sbar"><i style="width:14%"></i></span><span class="num">123</span></span>
+    <span class="mrole">根因诊断：解析 Java / Node 异常栈，按栈帧切出源码并查调用图。</span>
+  </summary>
+  <div class="mbody">
+    <p class="rule-title mono">ensure_codexqa.ts · StackFrame</p>
+    <div class="prose"><p><code>analyze_frames</code> 去重栈帧后逐帧调用 <code>slice_for_frame</code>；<code>ensure_binary</code> 保证本机有 codexqa 命令。</p></div>
+    <div class="facts-grid">
+      <div><p class="fh">调用</p><ul class="rel"><li><a class="mref" href="#P02" data-mod="P02">P02<span class="mref-name">缺陷扫描主流程</span></a><span class="w">80 处引用</span></li></ul></div>
+      <div><p class="fh">被调用</p><ul class="rel"><li><a class="mref" href="#P02" data-mod="P02">P02<span class="mref-name">缺陷扫描主流程</span></a><span class="w">186 处引用</span></li></ul></div>
+      <div class="wide"><p class="fh">对外接口</p><ul class="sigs"><li data-sym="slice_for_frame"><code>slice_for_frame(local_dir, frame, ready, …) → Promise&lt;Record&lt;string, any&gt;&gt;</code><span class="kind">函数</span><span class="w">被 15 处调用</span></li><li data-sym="analyze_frames"><code>analyze_frames(task_id, local_dir, parsed, …) → Promise&lt;Record&lt;string, any&gt;&gt;</code><span class="kind">函数</span><span class="w">被 13 处调用</span></li><li data-sym="parse_java"><code>parse_java(text) → ParsedException</code><span class="kind">函数</span><span class="w">被 10 处调用</span></li><li data-sym="ensure_binary"><code>ensure_binary(forceInstall) → {
+  ready: boolean;
+  binar…</code><span class="kind">函数</span><span class="w">被 8 处调用</span></li><li data-sym="parse_node"><code>parse_node(text) → ParsedException</code><span class="kind">函数</span><span class="w">被 8 处调用</span></li><li data-sym="ParsedException"><code>ParsedException</code><span class="kind">类型别名</span><span class="w">被 3 处调用</span></li><li data-sym="StackFrame"><code>StackFrame</code><span class="kind">类型别名</span><span class="w">被 1 处调用</span></li><li data-sym="ExceptionCause"><code>ExceptionCause</code><span class="kind">类型别名</span></li></ul></div>
+      <div class="wide"><p class="fh">关键流程</p><p class="flow"><code>slice_for_frame</code> <span class="arrow">→</span> <code>resolve_symbol</code> <span class="arrow">→</span> <code>pick_symbol</code> <span class="arrow">→</span> <code>node_kind</code> <span class="arrow">→</span> <code>clip_source</code> <span class="arrow">→</span> <code>call_path_text</code> <span class="arrow">→</span> <code>compact_node</code> <span class="muted">另有 1 步</span></p><p class="flow"><code>analyze_frames</code> <span class="arrow">→</span> <code>unique_frames</code> <span class="arrow">→</span> <code>map_limit</code> <span class="arrow">→</span> <code>slice_for_frame</code> <span class="arrow">→</span> <code>stack_hints</code> <span class="arrow">→</span> <code>method_keys</code> <span class="arrow">→</span> <code>persist_baseline</code> <span class="muted">另有 2 步</span></p></div>
+      <div class="wide"><p class="fh">文件 <span class="muted">4</span></p><ul class="files"><li data-file="skills/codexqa-rootcause-analyzer/scripts/ensure_codexqa.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-rootcause-analyzer/scripts/ensure_codexqa.ts" target="_blank" rel="noopener">skills/codexqa-rootcause-analyzer/scripts/ensure_codexqa.ts</a></li><li data-file="skills/codexqa-rootcause-analyzer/scripts/materialize_repo.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-rootcause-analyzer/scripts/materialize_repo.ts" target="_blank" rel="noopener">skills/codexqa-rootcause-analyzer/scripts/materialize_repo.ts</a></li><li data-file="skills/codexqa-rootcause-analyzer/scripts/parse_exception.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-rootcause-analyzer/scripts/parse_exception.ts" target="_blank" rel="noopener">skills/codexqa-rootcause-analyzer/scripts/parse_exception.ts</a></li><li data-file="skills/codexqa-rootcause-analyzer/scripts/query_graph.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-rootcause-analyzer/scripts/query_graph.ts" target="_blank" rel="noopener">skills/codexqa-rootcause-analyzer/scripts/query_graph.ts</a></li></ul></div>
+    </div>
+    
+  </div>
+</details>
+<details class="mod" id="P12" data-mod="P12">
+  <summary>
+    <span class="mid">P12</span>
+    <span class="mname">示例仓库与夹具</span>
+    <span class="msize" title="109 个符号"><span class="sbar"><i style="width:12%"></i></span><span class="num">109</span></span>
+    <span class="mrole">checkout-boundary 和 inventory-service 两个示例仓库，以及造 git 夹具的脚本。</span>
+  </summary>
+  <div class="mbody">
+    <p class="rule-title mono">defective.mjs · TtlCache</p>
+    <div class="prose"><p>这里的缺陷是故意埋的，用来验证扫描和评审能不能找出来；不要当成产品代码修。</p></div>
+    <div class="facts-grid">
+      <div><p class="fh">调用</p><ul class="rel"><li><a class="mref" href="#P02" data-mod="P02">P02<span class="mref-name">缺陷扫描主流程</span></a><span class="w">47 处引用</span></li></ul></div>
+      <div><p class="fh">被调用</p><ul class="rel"><li><a class="mref" href="#P02" data-mod="P02">P02<span class="mref-name">缺陷扫描主流程</span></a><span class="w">70 处引用</span></li></ul></div>
+      <div class="wide"><p class="fh">对外接口</p><ul class="sigs"><li data-sym="commitReservation"><code>commitReservation()</code><span class="kind">函数</span><span class="w">被 8 处调用</span></li><li data-sym="check"><code>check()</code><span class="kind">函数</span><span class="w">被 1 处调用</span></li><li data-sym="contract"><code>contract()</code><span class="kind">函数</span><span class="w">被 1 处调用</span></li><li data-sym="git"><code>git(args)</code><span class="kind">函数 · 3 处同名定义</span><span class="w">被 1 处调用</span></li><li data-sym="TtlCache"><code>TtlCache</code><span class="kind">类 · 2 处同名定义</span></li></ul></div>
+      <div class="wide"><p class="fh">关键流程</p><p class="flow"><code>commitReservation</code> <span class="arrow">→</span> <code>withLock</code> <span class="arrow">→</span> <code>getReservation</code> <span class="arrow">→</span> <code>releaseStock</code> <span class="arrow">→</span> <code>consumeStock</code> <span class="arrow">→</span> <code>saveReservation</code> <span class="arrow">→</span> <code>computeOrderTotal</code> <span class="muted">另有 1 步</span></p></div>
+      <div class="wide"><p class="fh">文件 <span class="muted">18</span></p><ul class="files"><li data-file="examples/checkout-boundary/defective.mjs"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/checkout-boundary/defective.mjs" target="_blank" rel="noopener">examples/checkout-boundary/defective.mjs</a></li><li data-file="examples/checkout-boundary/good.mjs"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/checkout-boundary/good.mjs" target="_blank" rel="noopener">examples/checkout-boundary/good.mjs</a></li><li data-file="examples/checkout-boundary/make-git-fixture.mjs"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/checkout-boundary/make-git-fixture.mjs" target="_blank" rel="noopener">examples/checkout-boundary/make-git-fixture.mjs</a></li><li data-file="examples/checkout-boundary/verify.mjs"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/checkout-boundary/verify.mjs" target="_blank" rel="noopener">examples/checkout-boundary/verify.mjs</a></li><li data-file="examples/inventory-service/base/smoke.mjs"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/base/smoke.mjs" target="_blank" rel="noopener">examples/inventory-service/base/smoke.mjs</a></li><li data-file="examples/inventory-service/base/src/cache.js"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/base/src/cache.js" target="_blank" rel="noopener">examples/inventory-service/base/src/cache.js</a></li></ul><details class="more"><summary>其余 12 个</summary><ul class="files"><li data-file="examples/inventory-service/base/src/db.js"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/base/src/db.js" target="_blank" rel="noopener">examples/inventory-service/base/src/db.js</a></li><li data-file="examples/inventory-service/base/src/gateway.js"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/base/src/gateway.js" target="_blank" rel="noopener">examples/inventory-service/base/src/gateway.js</a></li><li data-file="examples/inventory-service/base/src/inventory.js"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/base/src/inventory.js" target="_blank" rel="noopener">examples/inventory-service/base/src/inventory.js</a></li><li data-file="examples/inventory-service/base/src/logger.js"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/base/src/logger.js" target="_blank" rel="noopener">examples/inventory-service/base/src/logger.js</a></li><li data-file="examples/inventory-service/base/src/pricing.js"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/base/src/pricing.js" target="_blank" rel="noopener">examples/inventory-service/base/src/pricing.js</a></li><li data-file="examples/inventory-service/base/src/refund.js"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/base/src/refund.js" target="_blank" rel="noopener">examples/inventory-service/base/src/refund.js</a></li><li data-file="examples/inventory-service/base/src/reservation.js"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/base/src/reservation.js" target="_blank" rel="noopener">examples/inventory-service/base/src/reservation.js</a></li><li data-file="examples/inventory-service/head/src/cache.js"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/head/src/cache.js" target="_blank" rel="noopener">examples/inventory-service/head/src/cache.js</a></li><li data-file="examples/inventory-service/make-git-fixture.mjs"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/make-git-fixture.mjs" target="_blank" rel="noopener">examples/inventory-service/make-git-fixture.mjs</a></li><li data-file="examples/inventory-service/materialize.mjs"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/materialize.mjs" target="_blank" rel="noopener">examples/inventory-service/materialize.mjs</a></li><li data-file="examples/inventory-service/verify.mjs"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/inventory-service/verify.mjs" target="_blank" rel="noopener">examples/inventory-service/verify.mjs</a></li><li data-file="examples/polyglot-service/make-git-fixture.mjs"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/examples/polyglot-service/make-git-fixture.mjs" target="_blank" rel="noopener">examples/polyglot-service/make-git-fixture.mjs</a></li></ul></details></div>
+    </div>
+    
+  </div>
+</details>
+</div>
+<div class="group" id="G2">
+  <div class="group-head"><h3>测试数据造数</h3><span class="muted">3 个模块</span></div>
+  <p class="group-sum">从选工具、调接口到写回用例的造数流水线，外加一组端到端场景校验。</p>
+  <details class="mod" id="P04" data-mod="P04">
+  <summary>
+    <span class="mid">P04</span>
+    <span class="mname">造数配置与适配<span class="tag hub">枢纽</span><span class="tag">存储</span></span>
+    <span class="msize" title="312 个符号"><span class="sbar"><i style="width:36%"></i></span><span class="num">312</span></span>
+    <span class="mrole">读取造数配置，封装接口目录、鉴权和用例写回等适配器。</span>
+  </summary>
+  <div class="mbody">
+    <p class="rule-title mono">cache_tool_binding.ts · JsonObject</p>
+    <div class="prose"><p><code>loadConfig</code> 被两边频繁调用。改适配器的返回结构会同时影响上游的工具绑定流水线（<a class="mref" href="#P06" data-mod="P06">P06</a>）和场景校验（<a class="mref" href="#P07" data-mod="P07">P07</a>）。</p></div>
+    <div class="facts-grid">
+      <div><p class="fh">调用</p><ul class="rel"><li><a class="mref" href="#P06" data-mod="P06">P06<span class="mref-name">造数工具绑定</span></a><span class="w">59 处引用</span></li><li><a class="mref" href="#P07" data-mod="P07">P07<span class="mref-name">造数场景校验</span></a><span class="w">40 处引用</span></li></ul></div>
+      <div><p class="fh">被调用</p><ul class="rel"><li><a class="mref" href="#P06" data-mod="P06">P06<span class="mref-name">造数工具绑定</span></a><span class="w">1,184 处引用</span></li><li><a class="mref" href="#P07" data-mod="P07">P07<span class="mref-name">造数场景校验</span></a><span class="w">80 处引用</span></li></ul></div>
+      <div class="wide"><p class="fh">对外接口</p><ul class="sigs"><li data-sym="main"><code>main() → Promise&lt;number&gt;</code><span class="kind">函数 · 2 处同名定义</span><span class="w">被 18 处调用</span></li><li data-sym="loadConfig"><code>loadConfig(explicit) → Config</code><span class="kind">函数</span><span class="w">被 12 处调用</span></li><li data-sym="cmdAdd"><code>cmdAdd(args) → number</code><span class="kind">函数</span><span class="w">被 8 处调用</span></li><li data-sym="scaffold"><code>scaffold(domain, openapiDir, output) → Promise&lt;void&gt;</code><span class="kind">函数</span><span class="w">被 7 处调用</span></li></ul></div>
+      
+      <div class="wide"><p class="fh">文件 <span class="muted">24</span></p><ul class="files"><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/cache_tool_binding.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/cache_tool_binding.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/cache_tool_binding.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/experience_compat.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/experience_compat.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/experience_compat.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/parallel_search.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/parallel_search.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/parallel_search.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/adapters/api_catalog.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/adapters/api_catalog.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/adapters/api_catalog.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/adapters/auth.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/adapters/auth.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/adapters/auth.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/adapters/case_writeback.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/adapters/case_writeback.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/adapters/case_writeback.ts</a></li></ul><details class="more"><summary>其余 18 个</summary><ul class="files"><li data-file="skills/codexqa-testdata-generator/scripts/adapters/cli.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/adapters/cli.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/adapters/cli.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/adapters/config.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/adapters/config.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/adapters/config.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/adapters/config_store.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/adapters/config_store.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/adapters/config_store.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/adapters/data_store.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/adapters/data_store.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/adapters/data_store.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/adapters/doc_source.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/adapters/doc_source.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/adapters/doc_source.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/adapters/experience_store.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/adapters/experience_store.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/adapters/experience_store.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/adapters/feature_flags.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/adapters/feature_flags.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/adapters/feature_flags.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/adapters/httputil.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/adapters/httputil.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/adapters/httputil.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/adapters/index.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/adapters/index.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/adapters/index.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/adapters/skill_marketplace.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/adapters/skill_marketplace.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/adapters/skill_marketplace.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/adapters/slot_roots.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/adapters/slot_roots.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/adapters/slot_roots.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/adapters/tool_registry.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/adapters/tool_registry.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/adapters/tool_registry.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/adapters/workspace_context.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/adapters/workspace_context.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/adapters/workspace_context.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/experience_client.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/experience_client.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/experience_client.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/favorites.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/favorites.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/favorites.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/search_data_build.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/search_data_build.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/search_data_build.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/sync_slot.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/sync_slot.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/sync_slot.ts</a></li><li data-file="skills/codexqa-testdata-generator/slot-scaffolder/scripts/scaffold_slot.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/slot-scaffolder/scripts/scaffold_slot.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/slot-scaffolder/scripts/scaffold_slot.ts</a></li></ul></details></div>
+    </div>
+    
+  </div>
+</details>
+<details class="mod" id="P06" data-mod="P06">
+  <summary>
+    <span class="mid">P06</span>
+    <span class="mname">造数工具绑定<span class="tag">应用</span></span>
+    <span class="msize" title="271 个符号"><span class="sbar"><i style="width:31%"></i></span><span class="num">271</span></span>
+    <span class="mrole">为每个造数动作选工具、串成流水线并调用实体接口。</span>
+  </summary>
+  <div class="mbody">
+    <p class="rule-title mono">bind_action.ts · InputError</p>
+    <div class="prose"><p><code>selectTool</code> → <code>runPipeline</code> → <code>invokeEntity</code> 是主线。它对 <a class="mref" href="#P04" data-mod="P04">P04</a> 的调用是全仓最重的跨模块关系之一。</p></div>
+    <div class="facts-grid">
+      <div><p class="fh">调用</p><ul class="rel"><li><a class="mref" href="#P04" data-mod="P04">P04<span class="mref-name">造数配置与适配</span></a><span class="w">1,184 处引用</span></li></ul></div>
+      <div><p class="fh">被调用</p><ul class="rel"><li><a class="mref" href="#P04" data-mod="P04">P04<span class="mref-name">造数配置与适配</span></a><span class="w">59 处引用</span></li></ul></div>
+      <div class="wide"><p class="fh">对外接口</p><ul class="sigs"><li data-sym="selectTool"><code>selectTool(manifest, targetType, targetId, …) → Promise&lt;SelectResult&gt;</code><span class="kind">函数</span><span class="w">被 21 处调用</span></li><li data-sym="runPipeline"><code>runPipeline(opts) → Promise&lt;number&gt;</code><span class="kind">函数</span><span class="w">被 20 处调用</span></li><li data-sym="invokeEntity"><code>invokeEntity(manifest, entityId) → Promise&lt;InvokeResult&gt;</code><span class="kind">函数</span><span class="w">被 17 处调用</span></li><li data-sym="callHttp"><code>callHttp(path, body, method, …)</code><span class="kind">函数</span><span class="w">被 2 处调用</span></li><li data-sym="pushAll"><code>pushAll() → void</code><span class="kind">函数</span><span class="w">被 2 处调用</span></li><li data-sym="SelectResult"><code>SelectResult</code><span class="kind">类型别名</span><span class="w">被 2 处调用</span></li><li data-sym="InvokeResult"><code>InvokeResult</code><span class="kind">类型别名</span><span class="w">被 1 处调用</span></li><li data-sym="BindResult"><code>BindResult</code><span class="kind">类型别名</span></li></ul></div>
+      
+      <div class="wide"><p class="fh">文件 <span class="muted">22</span></p><ul class="files"><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/bind_action.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/bind_action.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/bind_action.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/dashboard/server.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/dashboard/server.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/dashboard/server.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/finalize.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/finalize.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/finalize.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/gate_check_cdata.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/gate_check_cdata.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/gate_check_cdata.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/generate_config_commands.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/generate_config_commands.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/generate_config_commands.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/hash_manifest.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/hash_manifest.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/hash_manifest.ts</a></li></ul><details class="more"><summary>其余 16 个</summary><ul class="files"><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/init_manifest.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/init_manifest.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/init_manifest.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/invoke_entity.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/invoke_entity.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/invoke_entity.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/lint_manifest.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/lint_manifest.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/lint_manifest.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/manifest_io.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/manifest_io.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/manifest_io.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/merge_executor_fields.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/merge_executor_fields.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/merge_executor_fields.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/merge_patch.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/merge_patch.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/merge_patch.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/pipeline.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/pipeline.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/pipeline.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/rollback.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/rollback.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/rollback.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/safe_io.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/safe_io.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/safe_io.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/search_data_build_skill.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/search_data_build_skill.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/search_data_build_skill.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/select_tool.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/select_tool.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/select_tool.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/slot_catalog.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/slot_catalog.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/slot_catalog.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/slot_render.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/slot_render.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/slot_render.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/topo_sort_batch.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/topo_sort_batch.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/topo_sort_batch.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/verify_tool_input_list.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/verify_tool_input_list.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/verify_tool_input_list.ts</a></li><li data-file="skills/codexqa-testdata-generator/references/script-template.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/references/script-template.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/references/script-template.ts</a></li></ul></details></div>
+    </div>
+    
+  </div>
+</details>
+<details class="mod" id="P07" data-mod="P07">
+  <summary>
+    <span class="mid">P07</span>
+    <span class="mname">造数场景校验<span class="tag">入口</span></span>
+    <span class="msize" title="207 个符号"><span class="sbar"><i style="width:24%"></i></span><span class="num">207</span></span>
+    <span class="mrole">企业入驻、扩展场景、用户旅程等端到端校验套件。</span>
+  </summary>
+  <div class="mbody">
+    <p class="rule-title mono">_verify_enterprise_onboard.ts · JsonObject</p>
+    <div class="prose"><p>每个 <code>run*Suite</code> 跑一类场景，用来确认造数流水线改动后仍能走通。</p></div>
+    <div class="facts-grid">
+      <div><p class="fh">调用</p><ul class="rel"><li><a class="mref" href="#P04" data-mod="P04">P04<span class="mref-name">造数配置与适配</span></a><span class="w">80 处引用</span></li></ul></div>
+      <div><p class="fh">被调用</p><ul class="rel"><li><a class="mref" href="#P04" data-mod="P04">P04<span class="mref-name">造数配置与适配</span></a><span class="w">40 处引用</span></li></ul></div>
+      <div class="wide"><p class="fh">对外接口</p><ul class="sigs"><li data-sym="runPipelineScenarioSuite"><code>runPipelineScenarioSuite() → Promise&lt;ScenarioResult[]&gt;</code><span class="kind">函数</span><span class="w">被 26 处调用</span></li><li data-sym="main"><code>main() → Promise&lt;number&gt;</code><span class="kind">函数 · 2 处同名定义</span><span class="w">被 21 处调用</span></li><li data-sym="runExtendSceneSuite"><code>runExtendSceneSuite() → Promise&lt;ExtendResult[]&gt;</code><span class="kind">函数</span><span class="w">被 18 处调用</span></li><li data-sym="runEnterpriseOnboardSuite"><code>runEnterpriseOnboardSuite() → Promise&lt;OnboardResult[]&gt;</code><span class="kind">函数</span><span class="w">被 16 处调用</span></li><li data-sym="runUserJourneySuite"><code>runUserJourneySuite() → Promise&lt;JourneyResult[]&gt;</code><span class="kind">函数</span><span class="w">被 16 处调用</span></li><li data-sym="JsonObject"><code>JsonObject</code><span class="kind">类型别名 · 5 处同名定义</span><span class="w">被 1 处调用</span></li><li data-sym="ExtendResult"><code>ExtendResult</code><span class="kind">类型别名</span></li><li data-sym="JourneyResult"><code>JourneyResult</code><span class="kind">类型别名</span></li></ul></div>
+      
+      <div class="wide"><p class="fh">文件 <span class="muted">6</span></p><ul class="files"><li data-file="skills/codexqa-testdata-generator/scripts/_verify_enterprise_onboard.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/_verify_enterprise_onboard.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/_verify_enterprise_onboard.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/_verify_extend_scene.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/_verify_extend_scene.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/_verify_extend_scene.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/_verify_pipeline_scenarios.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/_verify_pipeline_scenarios.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/_verify_pipeline_scenarios.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/_verify_rewrite.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/_verify_rewrite.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/_verify_rewrite.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/_verify_user_journeys.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/_verify_user_journeys.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/_verify_user_journeys.ts</a></li><li data-file="skills/codexqa-testdata-generator/scripts/pack_skills.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testdata-generator/scripts/pack_skills.ts" target="_blank" rel="noopener">skills/codexqa-testdata-generator/scripts/pack_skills.ts</a></li></ul></div>
+    </div>
+    
+  </div>
+</details>
+</div>
+<div class="group" id="G3">
+  <div class="group-head"><h3>浏览器界面回放</h3><span class="muted">2 个模块</span></div>
+  <p class="group-sum">jev-browser 的执行器和决策智能体，两边互相调用非常密集。</p>
+  <details class="mod" id="P03" data-mod="P03">
+  <summary>
+    <span class="mid">P03</span>
+    <span class="mname">回放执行器<span class="tag">入口</span></span>
+    <span class="msize" title="508 个符号"><span class="sbar"><i style="width:58%"></i></span><span class="num">508</span></span>
+    <span class="mrole">jev-browser 的命令行、用例编译、逐步执行、断言和报告。</span>
+  </summary>
+  <div class="mbody">
+    <p class="rule-title mono">act.ts · PageState</p>
+    <div class="prose"><p><code>cmdRun</code> / <code>cmdAuto</code> / <code>cmdGenerate</code> 是命令入口；<code>runStep</code> 是一步回放的核心，依次展开步骤、取控件快照、执行、断言。报告由 <code>renderHtml</code> 和 <code>stepTimesHtml</code> 生成。</p></div>
+    <div class="facts-grid">
+      <div><p class="fh">调用</p><ul class="rel"><li><a class="mref" href="#P10" data-mod="P10">P10<span class="mref-name">回放决策智能体</span></a><span class="w">242 处引用</span></li></ul></div>
+      <div><p class="fh">被调用</p><ul class="rel"><li><a class="mref" href="#P10" data-mod="P10">P10<span class="mref-name">回放决策智能体</span></a><span class="w">1,523 处引用</span></li></ul></div>
+      <div class="wide"><p class="fh">对外接口</p><ul class="sigs"><li data-sym="stepTimesHtml"><code>stepTimesHtml(step) → string</code><span class="kind">函数</span><span class="w">被 33 处调用</span></li><li data-sym="explore"><code>explore(session, writer, url, …) → Promise&lt;{ graph: StateGraph…</code><span class="kind">函数</span><span class="w">被 32 处调用</span></li><li data-sym="cmdGenerate"><code>cmdGenerate(argv, config, screenshots, …) → Promise&lt;number&gt;</code><span class="kind">函数</span><span class="w">被 31 处调用</span></li><li data-sym="formatStepTimes"><code>formatStepTimes(step, lang) → string</code><span class="kind">函数</span><span class="w">被 23 处调用</span></li><li data-sym="renderHtml"><code>renderHtml(report) → string</code><span class="kind">函数</span><span class="w">被 23 处调用</span></li><li data-sym="cmdAuto"><code>cmdAuto(argv, config, screenshots, …) → Promise&lt;number&gt;</code><span class="kind">函数</span><span class="w">被 22 处调用</span></li><li data-sym="cmdRun"><code>cmdRun(paths, argv, config, …) → Promise&lt;number&gt;</code><span class="kind">函数</span><span class="w">被 21 处调用</span></li><li data-sym="assertStep"><code>assertStep(session, page, step, …) → Promise&lt;{ ok: boolean; expe…</code><span class="kind">函数</span><span class="w">被 19 处调用</span></li></ul></div>
+      <div class="wide"><p class="fh">关键流程</p><p class="flow"><code>runStep</code> <span class="arrow">→</span> <code>expandStep</code> <span class="arrow">→</span> <code>targetDisplay</code> <span class="arrow">→</span> <code>controlSnapshot</code> <span class="arrow">→</span> <code>runHttp</code> <span class="arrow">→</span> <code>assertStep</code> <span class="arrow">→</span> <code>PilotError</code> <span class="muted">另有 4 步</span></p><p class="flow"><code>stepTimesHtml</code> <span class="arrow">→</span> <code>isModelCall</code> <span class="arrow">→</span> <code>assertVerdictLabel</code> <span class="arrow">→</span> <code>assertDetail</code> <span class="arrow">→</span> <code>fillNote</code> <span class="arrow">→</span> <code>formatDuration</code> <span class="arrow">→</span> <code>hasUsage</code> <span class="muted">另有 3 步</span></p></div>
+      <div class="wide"><p class="fh">文件 <span class="muted">17</span></p><ul class="files"><li data-file="skills/codexqa-jev-browser/src/act.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/act.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/act.ts</a></li><li data-file="skills/codexqa-jev-browser/src/browser.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/browser.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/browser.ts</a></li><li data-file="skills/codexqa-jev-browser/src/cases.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/cases.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/cases.ts</a></li><li data-file="skills/codexqa-jev-browser/src/cli.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/cli.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/cli.ts</a></li><li data-file="skills/codexqa-jev-browser/src/cloak-install.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/cloak-install.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/cloak-install.ts</a></li><li data-file="skills/codexqa-jev-browser/src/cloak.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/cloak.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/cloak.ts</a></li></ul><details class="more"><summary>其余 11 个</summary><ul class="files"><li data-file="skills/codexqa-jev-browser/src/config.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/config.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/config.ts</a></li><li data-file="skills/codexqa-jev-browser/src/explore.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/explore.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/explore.ts</a></li><li data-file="skills/codexqa-jev-browser/src/generate.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/generate.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/generate.ts</a></li><li data-file="skills/codexqa-jev-browser/src/knowledge-draft.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/knowledge-draft.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/knowledge-draft.ts</a></li><li data-file="skills/codexqa-jev-browser/src/observe/snapshot.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/observe/snapshot.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/observe/snapshot.ts</a></li><li data-file="skills/codexqa-jev-browser/src/record.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/record.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/record.ts</a></li><li data-file="skills/codexqa-jev-browser/src/report.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/report.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/report.ts</a></li><li data-file="skills/codexqa-jev-browser/src/runner.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/runner.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/runner.ts</a></li><li data-file="skills/codexqa-jev-browser/src/types.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/types.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/types.ts</a></li><li data-file="skills/codexqa-jev-browser/src/util.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/util.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/util.ts</a></li><li data-file="skills/codexqa-jev-browser/src/verify.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/verify.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/verify.ts</a></li></ul></details></div>
+    </div>
+    
+  </div>
+</details>
+<details class="mod" id="P10" data-mod="P10">
+  <summary>
+    <span class="mid">P10</span>
+    <span class="mname">回放决策智能体</span>
+    <span class="msize" title="128 个符号"><span class="sbar"><i style="width:15%"></i></span><span class="num">128</span></span>
+    <span class="mrole">决定下一步点哪里：组装模型请求、定位策略和错误类型。</span>
+  </summary>
+  <div class="mbody">
+    <p class="rule-title mono">agent.ts · ActionSpace</p>
+    <div class="prose"><p><code>buildJevRequest</code> 组装请求，<code>DecisionProvider</code> 抽象出不同的模型提供方。它大量读取执行器（<a class="mref" href="#P03" data-mod="P03">P03</a>）的页面状态类型，所以两边几乎总是一起改。</p></div>
+    <div class="facts-grid">
+      <div><p class="fh">调用</p><ul class="rel"><li><a class="mref" href="#P03" data-mod="P03">P03<span class="mref-name">回放执行器</span></a><span class="w">1,523 处引用</span></li></ul></div>
+      <div><p class="fh">被调用</p><ul class="rel"><li><a class="mref" href="#P03" data-mod="P03">P03<span class="mref-name">回放执行器</span></a><span class="w">242 处引用</span></li></ul></div>
+      <div class="wide"><p class="fh">对外接口</p><ul class="sigs"><li data-sym="buildJevRequest"><code>buildJevRequest(config, page, goal, …) → Record&lt;string, unknown&gt;</code><span class="kind">函数</span><span class="w">被 17 处调用</span></li><li data-sym="DecisionProvider"><code>DecisionProvider</code><span class="kind">接口</span><span class="w">被 3 处调用</span></li><li data-sym="ActionSpace"><code>ActionSpace</code><span class="kind">接口</span><span class="w">被 1 处调用</span></li><li data-sym="DecisionError"><code>DecisionError</code><span class="kind">类</span><span class="w">被 1 处调用</span></li><li data-sym="EmptyField"><code>EmptyField</code><span class="kind">类</span><span class="w">被 1 处调用</span></li><li data-sym="JevProvider"><code>JevProvider</code><span class="kind">类</span><span class="w">被 1 处调用</span></li><li data-sym="LocatorMiss"><code>LocatorMiss</code><span class="kind">类</span><span class="w">被 1 处调用</span></li><li data-sym="OpenAIProvider"><code>OpenAIProvider</code><span class="kind">类</span><span class="w">被 1 处调用</span></li></ul></div>
+      
+      <div class="wide"><p class="fh">文件 <span class="muted">6</span></p><ul class="files"><li data-file="skills/codexqa-jev-browser/src/agent.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/agent.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/agent.ts</a></li><li data-file="skills/codexqa-jev-browser/src/errors.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/errors.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/errors.ts</a></li><li data-file="skills/codexqa-jev-browser/src/jev.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/jev.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/jev.ts</a></li><li data-file="skills/codexqa-jev-browser/src/knowledge.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/knowledge.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/knowledge.ts</a></li><li data-file="skills/codexqa-jev-browser/src/model-http.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/model-http.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/model-http.ts</a></li><li data-file="skills/codexqa-jev-browser/src/policy.ts"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-jev-browser/src/policy.ts" target="_blank" rel="noopener">skills/codexqa-jev-browser/src/policy.ts</a></li></ul></div>
+    </div>
+    
+  </div>
+</details>
+</div>
+<div class="group" id="G4">
+  <div class="group-head"><h3>用例生成</h3><span class="muted">2 个模块</span></div>
+  <p class="group-sum">用例知识库、生成报告，以及增量模式下拉取和冻结远程代码。</p>
+  <details class="mod" id="P08" data-mod="P08">
+  <summary>
+    <span class="mid">P08</span>
+    <span class="mname">用例知识与报告</span>
+    <span class="msize" title="185 个符号"><span class="sbar"><i style="width:21%"></i></span><span class="num">185</span></span>
+    <span class="mrole">把需求文档导入用例知识库，检查阶段产物，并渲染用例报告。</span>
+  </summary>
+  <div class="mbody">
+    <p class="rule-title mono">bootstrap_knowledge · CaseRecord</p>
+    <div class="prose"><p><code>render_html</code> 是全模块被调用最多的函数；<code>ingest_one</code> 负责把一篇文档拆成可引用的知识条目。</p></div>
+    <div class="facts-grid">
+      <div><p class="fh">调用</p><ul class="rel"><li><a class="mref" href="#P09" data-mod="P09">P09<span class="mref-name">增量拉取与冻结</span></a><span class="w">91 处引用</span></li></ul></div>
+      <div><p class="fh">被调用</p><ul class="rel"><li><a class="mref" href="#P09" data-mod="P09">P09<span class="mref-name">增量拉取与冻结</span></a><span class="w">33 处引用</span></li></ul></div>
+      <div class="wide"><p class="fh">对外接口</p><ul class="sigs"><li data-sym="render_html"><code>render_html(records, run_dir, meta, …) → str</code><span class="kind">函数</span><span class="w">被 104 处调用</span></li><li data-sym="ingest_one"><code>ingest_one(main_path, output_dir, svg_script, …) → dict</code><span class="kind">函数</span><span class="w">被 29 处调用</span></li><li data-sym="verify_shell_rejections"><code>verify_shell_rejections(root) → Optional[str]</code><span class="kind">函数</span><span class="w">被 29 处调用</span></li><li data-sym="check_stage_artifacts"><code>check_stage_artifacts(run_dir, stage, run_id) → List[Dict[str, str]]</code><span class="kind">函数</span><span class="w">被 14 处调用</span></li><li data-sym="initialize"><code>initialize(args) → Dict</code><span class="kind">函数</span><span class="w">被 11 处调用</span></li><li data-sym="CaseRecord"><code>CaseRecord</code><span class="kind">类</span></li><li data-sym="StepRow"><code>StepRow</code><span class="kind">类</span></li></ul></div>
+      <div class="wide"><p class="fh">关键流程</p><p class="flow"><code>ingest_one</code> <span class="arrow">→</span> <code>read_text</code> <span class="arrow">→</span> <code>strip_strikethrough</code> <span class="arrow">→</span> <code>extract_title</code> <span class="arrow">→</span> <code>collect_markdown_targets</code> <span class="arrow">→</span> <code>is_remote</code> <span class="arrow">→</span> <code>is_data_uri</code> <span class="muted">另有 3 步</span></p></div>
+      <div class="wide"><p class="fh">文件 <span class="muted">11</span></p><ul class="files"><li data-file="skills/codexqa-testcase-generator/scripts/bootstrap_knowledge"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/bootstrap_knowledge.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/bootstrap_knowledge.py</a></li><li data-file="skills/codexqa-testcase-generator/scripts/check_run_gate"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/check_run_gate.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/check_run_gate.py</a></li><li data-file="skills/codexqa-testcase-generator/scripts/close_stage"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/close_stage.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/close_stage.py</a></li><li data-file="skills/codexqa-testcase-generator/scripts/extract_svg_text"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/extract_svg_text.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/extract_svg_text.py</a></li><li data-file="skills/codexqa-testcase-generator/scripts/fetch_knowledge_git"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/fetch_knowledge_git.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/fetch_knowledge_git.py</a></li><li data-file="skills/codexqa-testcase-generator/scripts/generate_case_report"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/generate_case_report.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/generate_case_report.py</a></li></ul><details class="more"><summary>其余 5 个</summary><ul class="files"><li data-file="skills/codexqa-testcase-generator/scripts/incremental/make_ids"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/incremental/make_ids.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/incremental/make_ids.py</a></li><li data-file="skills/codexqa-testcase-generator/scripts/incremental/setup_execution"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/incremental/setup_execution.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/incremental/setup_execution.py</a></li><li data-file="skills/codexqa-testcase-generator/scripts/ingest_local_docs"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/ingest_local_docs.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/ingest_local_docs.py</a></li><li data-file="skills/codexqa-testcase-generator/scripts/py_version"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/py_version.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/py_version.py</a></li><li data-file="skills/codexqa-testcase-generator/scripts/run_gate_lib"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/run_gate_lib.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/run_gate_lib.py</a></li></ul></details></div>
+    </div>
+    
+  </div>
+</details>
+<details class="mod" id="P09" data-mod="P09">
+  <summary>
+    <span class="mid">P09</span>
+    <span class="mname">增量拉取与冻结</span>
+    <span class="msize" title="129 个符号"><span class="sbar"><i style="width:15%"></i></span><span class="num">129</span></span>
+    <span class="mrole">增量用例生成时拉取 PR 代码、冻结输入并归档。</span>
+  </summary>
+  <div class="mbody">
+    <p class="rule-title mono">build_diff_candidates · SkillError</p>
+    <div class="prose"><p><code>fetch_pr</code> 解析来源地址后在本地缓存里建 worktree；<code>archive</code> 把这次运行的输入打包。</p></div>
+    <div class="facts-grid">
+      <div><p class="fh">调用</p><ul class="rel"><li><a class="mref" href="#P08" data-mod="P08">P08<span class="mref-name">用例知识与报告</span></a><span class="w">33 处引用</span></li></ul></div>
+      <div><p class="fh">被调用</p><ul class="rel"><li><a class="mref" href="#P08" data-mod="P08">P08<span class="mref-name">用例知识与报告</span></a><span class="w">91 处引用</span></li></ul></div>
+      <div class="wide"><p class="fh">对外接口</p><ul class="sigs"><li data-sym="fetch_pr"><code>fetch_pr(pr_url, run_dir, run_id, …) → Dict[str, Any]</code><span class="kind">函数</span><span class="w">被 38 处调用</span></li><li data-sym="archive"><code>archive(args) → Dict</code><span class="kind">函数</span><span class="w">被 24 处调用</span></li><li data-sym="parse_source_url"><code>parse_source_url(raw) → Dict[str, Any]</code><span class="kind">函数</span><span class="w">被 23 处调用</span></li><li data-sym="resolve_run_context"><code>resolve_run_context(run_dir, run_id, run_root) → Dict[str, str]</code><span class="kind">函数</span><span class="w">被 22 处调用</span></li><li data-sym="update"><code>update(args) → Dict</code><span class="kind">函数</span><span class="w">被 22 处调用</span></li><li data-sym="SkillError"><code>SkillError</code><span class="kind">类</span></li></ul></div>
+      <div class="wide"><p class="fh">关键流程</p><p class="flow"><code>fetch_pr</code> <span class="arrow">→</span> <code>parse_source_url</code> <span class="arrow">→</span> <code>__init__</code> <span class="arrow">→</span> <code>_resolve_cache_root</code> <span class="arrow">→</span> <code>_cache_repo_dir</code> <span class="arrow">→</span> <code>_unique_urls</code> <span class="arrow">→</span> <code>_ensure_worktree</code> <span class="muted">另有 3 步</span></p><p class="flow"><code>archive</code> <span class="arrow">→</span> <code>__init__</code> <span class="arrow">→</span> <code>_archive_git_source</code> <span class="arrow">→</span> <code>_repository_id</code></p></div>
+      <div class="wide"><p class="fh">文件 <span class="muted">6</span></p><ul class="files"><li data-file="skills/codexqa-testcase-generator/scripts/incremental/build_diff_candidates"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/incremental/build_diff_candidates.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/incremental/build_diff_candidates.py</a></li><li data-file="skills/codexqa-testcase-generator/scripts/incremental/freeze_case_standard"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/incremental/freeze_case_standard.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/incremental/freeze_case_standard.py</a></li><li data-file="skills/codexqa-testcase-generator/scripts/incremental/freeze_inputs"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/incremental/freeze_inputs.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/incremental/freeze_inputs.py</a></li><li data-file="skills/codexqa-testcase-generator/scripts/incremental/inc_common"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/incremental/inc_common.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/incremental/inc_common.py</a></li><li data-file="skills/codexqa-testcase-generator/scripts/incremental/pull_remote_code"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/incremental/pull_remote_code.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/incremental/pull_remote_code.py</a></li><li data-file="skills/codexqa-testcase-generator/scripts/incremental/write_task_status"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-testcase-generator/scripts/incremental/write_task_status.py" target="_blank" rel="noopener">skills/codexqa-testcase-generator/scripts/incremental/write_task_status.py</a></li></ul></div>
+    </div>
+    
+  </div>
+</details>
+</div>
+</section>
+<section id="standalone" data-section>
+  <h2>独立模块</h2>
+  <p class="lead">和这份报告里的其他模块没有调用关系，多半是独立脚本、工具或演示。先读主链路，用到时再看。</p>
+  <details class="mod" id="P01" data-mod="P01">
+  <summary>
+    <span class="mid">P01</span>
+    <span class="mname">评审规则扫描</span>
+    <span class="msize" title="877 个符号"><span class="sbar"><i style="width:100%"></i></span><span class="num">877</span></span>
+    <span class="mrole">code-reviewer 的确定性规则：按文件扫出复杂度、依赖、重复代码等证据。</span>
+  </summary>
+  <div class="mbody">
+    <p class="rule-title mono">_annotation_edges_body · KeyIndex</p>
+    <div class="prose"><p>二十多个 <code>_*_body</code> 脚本各自实现一类规则，入口都是 <code>scan_file</code>。它们只被评审流程按文件名调用，没有统计到和其他模块的代码调用。</p></div>
+    <div class="facts-grid">
+      
+      <div class="wide"><p class="fh">对外接口</p><ul class="sigs"><li data-sym="scan_file"><code>scan_file(rel, lines) → dict</code><span class="kind">函数 · 5 处同名定义</span><span class="w">被 71 处调用</span></li><li data-sym="main"><code>main() → None</code><span class="kind">函数 · 14 处同名定义</span><span class="w">被 42 处调用</span></li><li data-sym="build"><code>build(pack, repo) → tuple[dict, dict]</code><span class="kind">函数 · 2 处同名定义</span><span class="w">被 30 处调用</span></li><li data-sym="write_model_brief"><code>write_model_brief(pack, packet, repo) → None</code><span class="kind">函数</span><span class="w">被 30 处调用</span></li><li data-sym="scan"><code>scan(rel, lines) → dict</code><span class="kind">函数</span><span class="w">被 29 处调用</span></li><li data-sym="merge"><code>merge(baseline, candidates, enrich, …) → tuple[dict, dict]</code><span class="kind">函数</span><span class="w">被 17 处调用</span></li></ul></div>
+      <div class="wide"><p class="fh">关键流程</p><p class="flow"><code>_method_candidates</code> <span class="arrow">→</span> <code>_numbered_lines</code> <span class="arrow">→</span> <code>_shape_closed</code> <span class="arrow">→</span> <code>_quote_line</code> <span class="arrow">→</span> <code>_first_line</code></p><p class="flow"><code>scan_file</code> <span class="arrow">→</span> <code>is_go_path</code> <span class="arrow">→</span> <code>hit</code> <span class="arrow">→</span> <code>window_code</code></p></div>
+      <div class="wide"><p class="fh">文件 <span class="muted">21</span></p><ul class="files"><li data-file="skills/codexqa-code-reviewer/scripts/lib/_annotation_edges_body"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/_annotation_edges_body.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/_annotation_edges_body.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/_complexity_body"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/_complexity_body.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/_complexity_body.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/_dependencies_body"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/_dependencies_body.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/_dependencies_body.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/_det_rules"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/_det_rules.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/_det_rules.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/_identical_copies"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/_identical_copies.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/_identical_copies.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/_line_scan"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/_line_scan.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/_line_scan.py</a></li></ul><details class="more"><summary>其余 15 个</summary><ul class="files"><li data-file="skills/codexqa-code-reviewer/scripts/lib/_performance_body"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/_performance_body.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/_performance_body.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/_privacy_body"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/_privacy_body.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/_privacy_body.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/_resilience_body"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/_resilience_body.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/_resilience_body.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/_risk_tier_body"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/_risk_tier_body.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/_risk_tier_body.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/_rollout_body"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/_rollout_body.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/_rollout_body.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/_rule_router"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/_rule_router.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/_rule_router.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/_sast_body"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/_sast_body.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/_sast_body.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/_secondary_body"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/_secondary_body.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/_secondary_body.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/build-coverage-ledger"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/build-coverage-ledger.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/build-coverage-ledger.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/build-judgment-packet"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/build-judgment-packet.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/build-judgment-packet.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/build-review-digest"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/build-review-digest.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/build-review-digest.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/derive_triage"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/derive_triage.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/derive_triage.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/merge-llm-findings"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/merge-llm-findings.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/merge-llm-findings.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/seal-conclusion"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/seal-conclusion.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/seal-conclusion.py</a></li><li data-file="skills/codexqa-code-reviewer/scripts/lib/validate-conclusion"><a class="file" href="https://github.com/openqa-cn/codexqa/blob/a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5/skills/codexqa-code-reviewer/scripts/lib/validate-conclusion.py" target="_blank" rel="noopener">skills/codexqa-code-reviewer/scripts/lib/validate-conclusion.py</a></li></ul></details></div>
+    </div>
+    
+  </div>
+</details>
+</section>
+<section id="about" data-section>
+  <h2>关于这份报告</h2>
+  <p>页面上的事实（模块、规模、调用、接口、文件）来自本地 CodexQA 索引，导出时没有调用模型。说明文字由 Coding Agent 依据这些事实撰写。</p>
+  <dl class="glossary"><div><dt>模块</dt><dd>在符号调用图上用社区检测（Leiden）聚出的一组联系紧密的代码。不等于目录，也不代表「经常一起修改」。</dd></div><div><dt>引用数</dt><dd>静态分析统计的跨模块调用和引用处数，不是线上调用次数。</dd></div><div><dt>规模</dt><dd>模块里的符号（函数、类、类型等）数量。</dd></div><div><dt>独立</dt><dd>和这里的其他模块没有统计到调用。代码仍可能通过配置、命令行或动态加载被用到。</dd></div></dl>
+  <h3>生成命令</h3><ul class="cmds"><li><code>codexqa index .</code></li><li><code>codexqa wiki inputs .</code></li></ul>
+  <p class="muted">生成于 2026-09-28 18:30 · codexqa 0.1.11 · codexqa-code-wiki</p>
+</section>
+</main>
+</div>
+<script type="application/json" id="wiki-index">[{"k":"m","id":"P01","l":"评审规则扫描","s":"_annotation_edges_body · KeyIndex · code-reviewer 的确定性规则：按文件扫出复杂度、依赖、重复代码等证据。"},{"k":"s","id":"P01","l":"scan_file","s":"P01 评审规则扫描"},{"k":"s","id":"P01","l":"main","s":"P01 评审规则扫描"},{"k":"s","id":"P01","l":"build","s":"P01 评审规则扫描"},{"k":"s","id":"P01","l":"write_model_brief","s":"P01 评审规则扫描"},{"k":"s","id":"P01","l":"scan","s":"P01 评审规则扫描"},{"k":"s","id":"P01","l":"merge","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/_annotation_edges_body","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/_complexity_body","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/_dependencies_body","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/_det_rules","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/_identical_copies","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/_line_scan","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/_performance_body","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/_privacy_body","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/_resilience_body","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/_risk_tier_body","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/_rollout_body","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/_rule_router","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/_sast_body","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/_secondary_body","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/build-coverage-ledger","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/build-judgment-packet","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/build-review-digest","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/derive_triage","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/merge-llm-findings","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/seal-conclusion","s":"P01 评审规则扫描"},{"k":"f","id":"P01","l":"skills/codexqa-code-reviewer/scripts/lib/validate-conclusion","s":"P01 评审规则扫描"},{"k":"m","id":"P02","l":"缺陷扫描主流程","s":"rebuild_previews · ZipReader · 缺陷扫描的全量 / 增量入口和 HTML 报告，同时收着预览重建脚本和示例入口。"},{"k":"s","id":"P02","l":"score_request","s":"P02 缺陷扫描主流程"},{"k":"s","id":"P02","l":"scan_full","s":"P02 缺陷扫描主流程"},{"k":"s","id":"P02","l":"cmd_submit","s":"P02 缺陷扫描主流程"},{"k":"s","id":"P02","l":"convertFile","s":"P02 缺陷扫描主流程"},{"k":"s","id":"P02","l":"scan_incremental","s":"P02 缺陷扫描主流程"},{"k":"s","id":"P02","l":"render_html_report","s":"P02 缺陷扫描主流程"},{"k":"s","id":"P02","l":"cmd_finalize","s":"P02 缺陷扫描主流程"},{"k":"s","id":"P02","l":"extract_facts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"docs/assets/previews/rebuild_previews","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"docs/assets/previews/render-defect-report.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"docs/assets/previews/screenshot.mjs","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"examples/inventory-service/head/smoke.mjs","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"examples/inventory-service/head/src/db.js","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"examples/inventory-service/head/src/inventory.js","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"examples/inventory-service/head/src/pricing.js","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"examples/inventory-service/head/src/refund.js","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"examples/inventory-service/head/src/reservation.js","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"scripts/check-docs","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"scripts/compose-release-notes","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-defect-analyzer/scripts/audit_policy_fixtures","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-defect-analyzer/scripts/llm_client","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-defect-analyzer/scripts/run_scan","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-requirement-analyzer/scripts/batch_convert_templates.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-requirement-analyzer/scripts/common_parser.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-requirement-analyzer/scripts/convert_formats.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-requirement-analyzer/scripts/office_io.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-requirement-analyzer/scripts/parse_excel.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-requirement-analyzer/scripts/parse_formats.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-requirement-analyzer/scripts/parse_html.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-requirement-analyzer/scripts/parse_json.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-requirement-analyzer/scripts/parse_markdown.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-requirement-analyzer/scripts/parse_word.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-requirement-analyzer/scripts/run_analysis.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-rootcause-analyzer/scripts/cli_args.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-rootcause-analyzer/scripts/diagnose.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-rootcause-analyzer/scripts/draft_report.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-rootcause-analyzer/scripts/html_report.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-rootcause-analyzer/scripts/render_html.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-rootcause-analyzer/scripts/report.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-rootcause-analyzer/scripts/resolve_repo.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-rootcause-analyzer/scripts/store.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-rootcause-analyzer/scripts/timing.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-skill-router/scripts/discover_skills","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-skill-router/scripts/ensure_skill","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-skill-router/scripts/refresh_catalog","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-skill-router/scripts/suggest_route","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-testdata-generator/slots/catalog/scripts/executors/create_limited_product.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-testdata-generator/slots/catalog/scripts/executors/create_order.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-testdata-generator/slots/catalog/scripts/executors/create_product.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-testdata-generator/slots/catalog/scripts/executors/setup_account_credit.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-testdata-generator/slots/common/client.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-testdata-generator/slots/distribution/scripts/executors/bind_inventory.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-testdata-generator/slots/distribution/scripts/executors/browse_and_quote.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-testdata-generator/slots/distribution/scripts/executors/create_distributor.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-testdata-generator/slots/distribution/scripts/executors/set_commission.ts","s":"P02 缺陷扫描主流程"},{"k":"f","id":"P02","l":"skills/codexqa-testdata-generator/slots/mock_server.ts","s":"P02 缺陷扫描主流程"},{"k":"m","id":"P03","l":"回放执行器","s":"act.ts · PageState · jev-browser 的命令行、用例编译、逐步执行、断言和报告。"},{"k":"s","id":"P03","l":"stepTimesHtml","s":"P03 回放执行器"},{"k":"s","id":"P03","l":"explore","s":"P03 回放执行器"},{"k":"s","id":"P03","l":"cmdGenerate","s":"P03 回放执行器"},{"k":"s","id":"P03","l":"formatStepTimes","s":"P03 回放执行器"},{"k":"s","id":"P03","l":"renderHtml","s":"P03 回放执行器"},{"k":"s","id":"P03","l":"cmdAuto","s":"P03 回放执行器"},{"k":"s","id":"P03","l":"cmdRun","s":"P03 回放执行器"},{"k":"s","id":"P03","l":"assertStep","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/act.ts","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/browser.ts","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/cases.ts","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/cli.ts","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/cloak-install.ts","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/cloak.ts","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/config.ts","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/explore.ts","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/generate.ts","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/knowledge-draft.ts","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/observe/snapshot.ts","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/record.ts","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/report.ts","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/runner.ts","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/types.ts","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/util.ts","s":"P03 回放执行器"},{"k":"f","id":"P03","l":"skills/codexqa-jev-browser/src/verify.ts","s":"P03 回放执行器"},{"k":"m","id":"P04","l":"造数配置与适配","s":"cache_tool_binding.ts · JsonObject · 读取造数配置，封装接口目录、鉴权和用例写回等适配器。"},{"k":"s","id":"P04","l":"main","s":"P04 造数配置与适配"},{"k":"s","id":"P04","l":"loadConfig","s":"P04 造数配置与适配"},{"k":"s","id":"P04","l":"cmdAdd","s":"P04 造数配置与适配"},{"k":"s","id":"P04","l":"scaffold","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/cache_tool_binding.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/experience_compat.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/parallel_search.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/adapters/api_catalog.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/adapters/auth.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/adapters/case_writeback.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/adapters/cli.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/adapters/config.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/adapters/config_store.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/adapters/data_store.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/adapters/doc_source.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/adapters/experience_store.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/adapters/feature_flags.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/adapters/httputil.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/adapters/index.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/adapters/skill_marketplace.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/adapters/slot_roots.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/adapters/tool_registry.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/adapters/workspace_context.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/experience_client.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/favorites.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/search_data_build.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/scripts/sync_slot.ts","s":"P04 造数配置与适配"},{"k":"f","id":"P04","l":"skills/codexqa-testdata-generator/slot-scaffolder/scripts/scaffold_slot.ts","s":"P04 造数配置与适配"},{"k":"m","id":"P05","l":"缺陷扫描 Agent","s":"agent_llm · CodexQAError · 扫描用的模型调用、扫描工具安装和 RAG 片段检索。"},{"k":"s","id":"P05","l":"render_html_report","s":"P05 缺陷扫描 Agent"},{"k":"s","id":"P05","l":"ensure_scan_tools","s":"P05 缺陷扫描 Agent"},{"k":"s","id":"P05","l":"main","s":"P05 缺陷扫描 Agent"},{"k":"s","id":"P05","l":"rag_related_snippets","s":"P05 缺陷扫描 Agent"},{"k":"s","id":"P05","l":"build_scope_plan","s":"P05 缺陷扫描 Agent"},{"k":"s","id":"P05","l":"CodexQAError","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/agent_llm","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/choose_scenario","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/codexqa_client","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/collect_full","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/collect_incremental","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/context_builder","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/ensure_tools","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/feedback","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/html_chrome","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/ingest_adhoc","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/lib","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/merge_report","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/policy_loader","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/rag_context","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/route_model","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/sast_adapters","s":"P05 缺陷扫描 Agent"},{"k":"f","id":"P05","l":"skills/codexqa-defect-analyzer/scripts/scope_planner","s":"P05 缺陷扫描 Agent"},{"k":"m","id":"P06","l":"造数工具绑定","s":"bind_action.ts · InputError · 为每个造数动作选工具、串成流水线并调用实体接口。"},{"k":"s","id":"P06","l":"selectTool","s":"P06 造数工具绑定"},{"k":"s","id":"P06","l":"runPipeline","s":"P06 造数工具绑定"},{"k":"s","id":"P06","l":"invokeEntity","s":"P06 造数工具绑定"},{"k":"s","id":"P06","l":"callHttp","s":"P06 造数工具绑定"},{"k":"s","id":"P06","l":"pushAll","s":"P06 造数工具绑定"},{"k":"s","id":"P06","l":"SelectResult","s":"P06 造数工具绑定"},{"k":"s","id":"P06","l":"InvokeResult","s":"P06 造数工具绑定"},{"k":"s","id":"P06","l":"BindResult","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/bind_action.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/dashboard/server.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/finalize.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/gate_check_cdata.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/generate_config_commands.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/hash_manifest.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/init_manifest.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/invoke_entity.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/lint_manifest.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/manifest_io.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/merge_executor_fields.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/merge_patch.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/pipeline.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/rollback.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/safe_io.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/search_data_build_skill.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/select_tool.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/slot_catalog.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/slot_render.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/topo_sort_batch.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/verify_tool_input_list.ts","s":"P06 造数工具绑定"},{"k":"f","id":"P06","l":"skills/codexqa-testdata-generator/references/script-template.ts","s":"P06 造数工具绑定"},{"k":"m","id":"P07","l":"造数场景校验","s":"_verify_enterprise_onboard.ts · JsonObject · 企业入驻、扩展场景、用户旅程等端到端校验套件。"},{"k":"s","id":"P07","l":"runPipelineScenarioSuite","s":"P07 造数场景校验"},{"k":"s","id":"P07","l":"main","s":"P07 造数场景校验"},{"k":"s","id":"P07","l":"runExtendSceneSuite","s":"P07 造数场景校验"},{"k":"s","id":"P07","l":"runEnterpriseOnboardSuite","s":"P07 造数场景校验"},{"k":"s","id":"P07","l":"runUserJourneySuite","s":"P07 造数场景校验"},{"k":"s","id":"P07","l":"JsonObject","s":"P07 造数场景校验"},{"k":"s","id":"P07","l":"ExtendResult","s":"P07 造数场景校验"},{"k":"s","id":"P07","l":"JourneyResult","s":"P07 造数场景校验"},{"k":"f","id":"P07","l":"skills/codexqa-testdata-generator/scripts/_verify_enterprise_onboard.ts","s":"P07 造数场景校验"},{"k":"f","id":"P07","l":"skills/codexqa-testdata-generator/scripts/_verify_extend_scene.ts","s":"P07 造数场景校验"},{"k":"f","id":"P07","l":"skills/codexqa-testdata-generator/scripts/_verify_pipeline_scenarios.ts","s":"P07 造数场景校验"},{"k":"f","id":"P07","l":"skills/codexqa-testdata-generator/scripts/_verify_rewrite.ts","s":"P07 造数场景校验"},{"k":"f","id":"P07","l":"skills/codexqa-testdata-generator/scripts/_verify_user_journeys.ts","s":"P07 造数场景校验"},{"k":"f","id":"P07","l":"skills/codexqa-testdata-generator/scripts/pack_skills.ts","s":"P07 造数场景校验"},{"k":"m","id":"P08","l":"用例知识与报告","s":"bootstrap_knowledge · CaseRecord · 把需求文档导入用例知识库，检查阶段产物，并渲染用例报告。"},{"k":"s","id":"P08","l":"render_html","s":"P08 用例知识与报告"},{"k":"s","id":"P08","l":"ingest_one","s":"P08 用例知识与报告"},{"k":"s","id":"P08","l":"verify_shell_rejections","s":"P08 用例知识与报告"},{"k":"s","id":"P08","l":"check_stage_artifacts","s":"P08 用例知识与报告"},{"k":"s","id":"P08","l":"initialize","s":"P08 用例知识与报告"},{"k":"s","id":"P08","l":"CaseRecord","s":"P08 用例知识与报告"},{"k":"s","id":"P08","l":"StepRow","s":"P08 用例知识与报告"},{"k":"f","id":"P08","l":"skills/codexqa-testcase-generator/scripts/bootstrap_knowledge","s":"P08 用例知识与报告"},{"k":"f","id":"P08","l":"skills/codexqa-testcase-generator/scripts/check_run_gate","s":"P08 用例知识与报告"},{"k":"f","id":"P08","l":"skills/codexqa-testcase-generator/scripts/close_stage","s":"P08 用例知识与报告"},{"k":"f","id":"P08","l":"skills/codexqa-testcase-generator/scripts/extract_svg_text","s":"P08 用例知识与报告"},{"k":"f","id":"P08","l":"skills/codexqa-testcase-generator/scripts/fetch_knowledge_git","s":"P08 用例知识与报告"},{"k":"f","id":"P08","l":"skills/codexqa-testcase-generator/scripts/generate_case_report","s":"P08 用例知识与报告"},{"k":"f","id":"P08","l":"skills/codexqa-testcase-generator/scripts/incremental/make_ids","s":"P08 用例知识与报告"},{"k":"f","id":"P08","l":"skills/codexqa-testcase-generator/scripts/incremental/setup_execution","s":"P08 用例知识与报告"},{"k":"f","id":"P08","l":"skills/codexqa-testcase-generator/scripts/ingest_local_docs","s":"P08 用例知识与报告"},{"k":"f","id":"P08","l":"skills/codexqa-testcase-generator/scripts/py_version","s":"P08 用例知识与报告"},{"k":"f","id":"P08","l":"skills/codexqa-testcase-generator/scripts/run_gate_lib","s":"P08 用例知识与报告"},{"k":"m","id":"P09","l":"增量拉取与冻结","s":"build_diff_candidates · SkillError · 增量用例生成时拉取 PR 代码、冻结输入并归档。"},{"k":"s","id":"P09","l":"fetch_pr","s":"P09 增量拉取与冻结"},{"k":"s","id":"P09","l":"archive","s":"P09 增量拉取与冻结"},{"k":"s","id":"P09","l":"parse_source_url","s":"P09 增量拉取与冻结"},{"k":"s","id":"P09","l":"resolve_run_context","s":"P09 增量拉取与冻结"},{"k":"s","id":"P09","l":"update","s":"P09 增量拉取与冻结"},{"k":"s","id":"P09","l":"SkillError","s":"P09 增量拉取与冻结"},{"k":"f","id":"P09","l":"skills/codexqa-testcase-generator/scripts/incremental/build_diff_candidates","s":"P09 增量拉取与冻结"},{"k":"f","id":"P09","l":"skills/codexqa-testcase-generator/scripts/incremental/freeze_case_standard","s":"P09 增量拉取与冻结"},{"k":"f","id":"P09","l":"skills/codexqa-testcase-generator/scripts/incremental/freeze_inputs","s":"P09 增量拉取与冻结"},{"k":"f","id":"P09","l":"skills/codexqa-testcase-generator/scripts/incremental/inc_common","s":"P09 增量拉取与冻结"},{"k":"f","id":"P09","l":"skills/codexqa-testcase-generator/scripts/incremental/pull_remote_code","s":"P09 增量拉取与冻结"},{"k":"f","id":"P09","l":"skills/codexqa-testcase-generator/scripts/incremental/write_task_status","s":"P09 增量拉取与冻结"},{"k":"m","id":"P10","l":"回放决策智能体","s":"agent.ts · ActionSpace · 决定下一步点哪里：组装模型请求、定位策略和错误类型。"},{"k":"s","id":"P10","l":"buildJevRequest","s":"P10 回放决策智能体"},{"k":"s","id":"P10","l":"DecisionProvider","s":"P10 回放决策智能体"},{"k":"s","id":"P10","l":"ActionSpace","s":"P10 回放决策智能体"},{"k":"s","id":"P10","l":"DecisionError","s":"P10 回放决策智能体"},{"k":"s","id":"P10","l":"EmptyField","s":"P10 回放决策智能体"},{"k":"s","id":"P10","l":"JevProvider","s":"P10 回放决策智能体"},{"k":"s","id":"P10","l":"LocatorMiss","s":"P10 回放决策智能体"},{"k":"s","id":"P10","l":"OpenAIProvider","s":"P10 回放决策智能体"},{"k":"f","id":"P10","l":"skills/codexqa-jev-browser/src/agent.ts","s":"P10 回放决策智能体"},{"k":"f","id":"P10","l":"skills/codexqa-jev-browser/src/errors.ts","s":"P10 回放决策智能体"},{"k":"f","id":"P10","l":"skills/codexqa-jev-browser/src/jev.ts","s":"P10 回放决策智能体"},{"k":"f","id":"P10","l":"skills/codexqa-jev-browser/src/knowledge.ts","s":"P10 回放决策智能体"},{"k":"f","id":"P10","l":"skills/codexqa-jev-browser/src/model-http.ts","s":"P10 回放决策智能体"},{"k":"f","id":"P10","l":"skills/codexqa-jev-browser/src/policy.ts","s":"P10 回放决策智能体"},{"k":"m","id":"P11","l":"异常解析与图查询","s":"ensure_codexqa.ts · StackFrame · 根因诊断：解析 Java / Node 异常栈，按栈帧切出源码并查调用图。"},{"k":"s","id":"P11","l":"slice_for_frame","s":"P11 异常解析与图查询"},{"k":"s","id":"P11","l":"analyze_frames","s":"P11 异常解析与图查询"},{"k":"s","id":"P11","l":"parse_java","s":"P11 异常解析与图查询"},{"k":"s","id":"P11","l":"ensure_binary","s":"P11 异常解析与图查询"},{"k":"s","id":"P11","l":"parse_node","s":"P11 异常解析与图查询"},{"k":"s","id":"P11","l":"ParsedException","s":"P11 异常解析与图查询"},{"k":"s","id":"P11","l":"StackFrame","s":"P11 异常解析与图查询"},{"k":"s","id":"P11","l":"ExceptionCause","s":"P11 异常解析与图查询"},{"k":"f","id":"P11","l":"skills/codexqa-rootcause-analyzer/scripts/ensure_codexqa.ts","s":"P11 异常解析与图查询"},{"k":"f","id":"P11","l":"skills/codexqa-rootcause-analyzer/scripts/materialize_repo.ts","s":"P11 异常解析与图查询"},{"k":"f","id":"P11","l":"skills/codexqa-rootcause-analyzer/scripts/parse_exception.ts","s":"P11 异常解析与图查询"},{"k":"f","id":"P11","l":"skills/codexqa-rootcause-analyzer/scripts/query_graph.ts","s":"P11 异常解析与图查询"},{"k":"m","id":"P12","l":"示例仓库与夹具","s":"defective.mjs · TtlCache · checkout-boundary 和 inventory-service 两个示例仓库，以及造 git 夹具的脚本。"},{"k":"s","id":"P12","l":"commitReservation","s":"P12 示例仓库与夹具"},{"k":"s","id":"P12","l":"check","s":"P12 示例仓库与夹具"},{"k":"s","id":"P12","l":"contract","s":"P12 示例仓库与夹具"},{"k":"s","id":"P12","l":"git","s":"P12 示例仓库与夹具"},{"k":"s","id":"P12","l":"TtlCache","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/checkout-boundary/defective.mjs","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/checkout-boundary/good.mjs","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/checkout-boundary/make-git-fixture.mjs","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/checkout-boundary/verify.mjs","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/inventory-service/base/smoke.mjs","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/inventory-service/base/src/cache.js","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/inventory-service/base/src/db.js","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/inventory-service/base/src/gateway.js","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/inventory-service/base/src/inventory.js","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/inventory-service/base/src/logger.js","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/inventory-service/base/src/pricing.js","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/inventory-service/base/src/refund.js","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/inventory-service/base/src/reservation.js","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/inventory-service/head/src/cache.js","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/inventory-service/make-git-fixture.mjs","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/inventory-service/materialize.mjs","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/inventory-service/verify.mjs","s":"P12 示例仓库与夹具"},{"k":"f","id":"P12","l":"examples/polyglot-service/make-git-fixture.mjs","s":"P12 示例仓库与夹具"}]</script>
+<script type="application/json" id="wiki-ui">{"searchEmpty":"没有匹配","kinds":{"m":"模块","s":"符号","f":"文件"}}</script>
+<script>
+(function () {
+  var root = document.documentElement;
+  var body = document.body;
+  var THEME_KEY = 'codexqa-wiki-theme';
+  var narrow = window.matchMedia('(max-width: 960px)');
+
+  function readJson(id) {
+    var el = document.getElementById(id);
+    try { return el ? JSON.parse(el.textContent) : null; } catch (e) { return null; }
+  }
+  var ui = readJson('wiki-ui') || { searchEmpty: '', kinds: {} };
+
+  // Theme: stored choice, else the OS preference.
+  var themeBtn = document.querySelector('.theme-btn');
+  function currentTheme() {
+    var t = root.getAttribute('data-theme');
+    if (t === 'light' || t === 'dark') return t;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  root.setAttribute('data-theme', currentTheme());
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function () {
+      var next = currentTheme() === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem(THEME_KEY, next); } catch (e) { /* private mode */ }
+    });
+  }
+
+  // Drawer navigation on narrow screens.
+  var menuBtn = document.querySelector('.menu-btn');
+  var scrim = document.querySelector('.scrim');
+  function setNav(open) {
+    body.classList.toggle('nav-open', open);
+    if (menuBtn) menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (scrim) scrim.hidden = !open;
+    if (open) {
+      var first = document.querySelector('#nav a');
+      if (first) first.focus({ preventScroll: true });
+    }
+  }
+  if (menuBtn) menuBtn.addEventListener('click', function () { setNav(!body.classList.contains('nav-open')); });
+  if (scrim) scrim.addEventListener('click', function () { setNav(false); });
+
+  // Jump to a section, module, symbol, or file and make sure it is visible.
+  function flash(el) {
+    el.classList.remove('flash');
+    void el.offsetWidth;
+    el.classList.add('flash');
+    setTimeout(function () { el.classList.remove('flash'); }, 1600);
+  }
+  function reveal(el) {
+    for (var p = el; p; p = p.parentElement) {
+      if (p.tagName === 'DETAILS') p.open = true;
+    }
+  }
+  function go(id, opts) {
+    opts = opts || {};
+    var el = id && document.getElementById(id);
+    if (!el) return false;
+    reveal(el);
+    var target = el;
+    if (opts.sym || opts.file) {
+      var items = el.querySelectorAll(opts.sym ? 'li[data-sym]' : 'li[data-file]');
+      for (var i = 0; i < items.length; i += 1) {
+        var hit = opts.sym ? items[i].getAttribute('data-sym') === opts.sym : items[i].getAttribute('data-file') === opts.file;
+        if (hit) { target = items[i]; reveal(target); break; }
+      }
+    }
+    if (opts.history !== false && location.hash !== '#' + id && history.pushState) history.pushState(null, '', '#' + id);
+    var far = Math.abs(target.getBoundingClientRect().top) > window.innerHeight * 1.5;
+    var still = far || matchMedia('(prefers-reduced-motion: reduce)').matches;
+    target.scrollIntoView({ block: target === el ? 'start' : 'center', behavior: still ? 'auto' : 'smooth' });
+    if (target.tagName === 'DETAILS' || target.tagName === 'LI') flash(target);
+    if (narrow.matches) setNav(false);
+    if (opts.focus) {
+      var f = target.tagName === 'DETAILS' ? target.querySelector('summary') : target;
+      if (f.tagName !== 'SUMMARY' && f.tagName !== 'A' && !f.hasAttribute('tabindex')) f.setAttribute('tabindex', '-1');
+      f.focus({ preventScroll: true });
+    }
+    return true;
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    var id = decodeURIComponent(a.getAttribute('href').slice(1));
+    if (!id) return;
+    if (go(id, { focus: !a.closest('.graph-svg') })) e.preventDefault();
+  });
+  function fromLocation() { if (location.hash.length > 1) go(decodeURIComponent(location.hash.slice(1)), { history: false }); }
+  window.addEventListener('popstate', fromLocation);
+  window.addEventListener('hashchange', fromLocation);
+  fromLocation();
+
+  // Expand / collapse all module cards.
+  document.querySelectorAll('[data-expand]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var open = btn.getAttribute('data-expand') === '1';
+      document.querySelectorAll('details.mod').forEach(function (d) { d.open = open; });
+    });
+  });
+
+  // Graph: highlight a module and its direct neighbours.
+  var svg = document.querySelector('.graph-svg');
+  function highlight(id) {
+    if (!svg) return;
+    if (!id) {
+      svg.classList.remove('focus');
+      svg.querySelectorAll('.on').forEach(function (el) { el.classList.remove('on'); });
+      return;
+    }
+    svg.classList.add('focus');
+    var keep = {};
+    keep[id] = true;
+    svg.querySelectorAll('.edge').forEach(function (g) {
+      var hit = g.getAttribute('data-from') === id || g.getAttribute('data-to') === id;
+      g.classList.toggle('on', hit);
+      if (hit) { keep[g.getAttribute('data-from')] = true; keep[g.getAttribute('data-to')] = true; }
+    });
+    svg.querySelectorAll('.node').forEach(function (n) { n.classList.toggle('on', !!keep[n.getAttribute('data-mod')]); });
+  }
+  if (svg) {
+    svg.querySelectorAll('.node').forEach(function (n) {
+      var id = n.getAttribute('data-mod');
+      n.addEventListener('mouseenter', function () { highlight(id); });
+      n.addEventListener('focus', function () { highlight(id); });
+      n.addEventListener('mouseleave', function () { highlight(null); });
+      n.addEventListener('blur', function () { highlight(null); });
+    });
+    svg.querySelectorAll('.edge').forEach(function (g) {
+      g.addEventListener('mouseenter', function () {
+        svg.classList.add('focus');
+        g.classList.add('on');
+        svg.querySelectorAll('.node').forEach(function (n) {
+          var id = n.getAttribute('data-mod');
+          n.classList.toggle('on', id === g.getAttribute('data-from') || id === g.getAttribute('data-to'));
+        });
+      });
+      g.addEventListener('mouseleave', function () { highlight(null); });
+    });
+  }
+  document.querySelectorAll('details.mod > summary').forEach(function (s) {
+    var id = s.parentElement.getAttribute('data-mod');
+    s.addEventListener('mouseenter', function () { highlight(id); });
+    s.addEventListener('mouseleave', function () { highlight(null); });
+  });
+
+  // Current section in the sidebar: the last tracked element whose top has
+  // passed under the top bar; at the very bottom, the last section.
+  var links = {};
+  document.querySelectorAll('.side a[href^="#"]').forEach(function (a) { links[a.getAttribute('href').slice(1)] = a; });
+  var watched = [].slice.call(document.querySelectorAll('[data-section], details.mod')).filter(function (el) { return links[el.id]; });
+  var sections = [].slice.call(document.querySelectorAll('[data-section]'));
+  var current = null;
+  function mark() {
+    var best = watched.length ? watched[0].id : null;
+    var line = 96;
+    for (var i = 0; i < watched.length; i += 1) {
+      if (watched[i].getBoundingClientRect().top <= line) best = watched[i].id;
+    }
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2 && sections.length) {
+      best = sections[sections.length - 1].id;
+    }
+    if (!best || best === current) return;
+    current = best;
+    Object.keys(links).forEach(function (k) {
+      links[k].classList.toggle('active', k === best);
+      if (k === best) links[k].setAttribute('aria-current', 'location');
+      else links[k].removeAttribute('aria-current');
+    });
+    var a = links[best];
+    var side = a && a.closest('.side');
+    if (side && !narrow.matches) {
+      var r = a.getBoundingClientRect();
+      var s = side.getBoundingClientRect();
+      if (r.top < s.top + 8 || r.bottom > s.bottom - 8) side.scrollTop += r.top - s.top - s.height / 3;
+    }
+  }
+  var ticking = false;
+  window.addEventListener('scroll', function () {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () { ticking = false; mark(); });
+  }, { passive: true });
+  mark();
+
+  // Short search placeholder where the box is narrow.
+  var qInput = document.getElementById('q');
+  if (qInput && qInput.getAttribute('data-short')) {
+    var longPh = qInput.getAttribute('placeholder');
+    var small = window.matchMedia('(max-width: 640px)');
+    var setPh = function () { qInput.setAttribute('placeholder', small.matches ? qInput.getAttribute('data-short') : longPh); };
+    setPh();
+    if (small.addEventListener) small.addEventListener('change', setPh);
+  }
+
+  // Search over modules, symbols, and files.
+  var index = readJson('wiki-index') || [];
+  var q = document.getElementById('q');
+  var list = document.getElementById('q-results');
+  var hits = [];
+  var cursor = -1;
+  function norm(s) { return String(s || '').toLowerCase(); }
+  function score(item, terms) {
+    var l = norm(item.l);
+    var hay = l + ' ' + norm(item.s) + ' ' + norm(item.id);
+    var total = 0;
+    for (var i = 0; i < terms.length; i += 1) {
+      var t = terms[i];
+      if (hay.indexOf(t) < 0) return 0;
+      total += l === t ? 6 : l.indexOf(t) === 0 ? 4 : l.indexOf(t) >= 0 ? 2 : 1;
+    }
+    return total + (item.k === 'm' ? 0.3 : item.k === 's' ? 0.2 : 0);
+  }
+  function render() {
+    list.innerHTML = '';
+    if (!hits.length) {
+      var li = document.createElement('li');
+      li.className = 'empty';
+      li.textContent = ui.searchEmpty;
+      list.appendChild(li);
+    }
+    hits.forEach(function (h, i) {
+      var li = document.createElement('li');
+      li.setAttribute('role', 'option');
+      li.id = 'q-opt-' + i;
+      li.setAttribute('aria-selected', i === cursor ? 'true' : 'false');
+      var k = document.createElement('span');
+      k.className = 'k';
+      k.textContent = (ui.kinds && ui.kinds[h.k]) || h.k;
+      var l = document.createElement('span');
+      l.className = 'l';
+      l.textContent = h.k === 'm' ? h.id + '  ' + h.l : h.l;
+      var s = document.createElement('span');
+      s.className = 's';
+      s.textContent = h.s;
+      li.appendChild(k); li.appendChild(l); li.appendChild(s);
+      li.addEventListener('mousedown', function (e) { e.preventDefault(); choose(i); });
+      list.appendChild(li);
+    });
+    list.hidden = false;
+    q.setAttribute('aria-expanded', 'true');
+    q.setAttribute('aria-activedescendant', cursor >= 0 ? 'q-opt-' + cursor : '');
+  }
+  function close() {
+    list.hidden = true;
+    q.setAttribute('aria-expanded', 'false');
+    q.removeAttribute('aria-activedescendant');
+    cursor = -1;
+  }
+  function choose(i) {
+    var h = hits[i];
+    if (!h) return;
+    close();
+    go(h.id, h.k === 's' ? { sym: h.l, focus: true } : h.k === 'f' ? { file: h.l, focus: true } : { focus: true });
+  }
+  if (q && list) {
+    q.addEventListener('input', function () {
+      var terms = norm(q.value).split(/\s+/).filter(Boolean);
+      if (!terms.length) { close(); return; }
+      hits = index.map(function (item) { return { item: item, s: score(item, terms) }; })
+        .filter(function (x) { return x.s > 0; })
+        .sort(function (a, b) { return b.s - a.s || a.item.l.length - b.item.l.length; })
+        .slice(0, 12)
+        .map(function (x) { return x.item; });
+      cursor = hits.length ? 0 : -1;
+      render();
+    });
+    q.addEventListener('keydown', function (e) {
+      if (list.hidden) return;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!hits.length) return;
+        cursor = (cursor + (e.key === 'ArrowDown' ? 1 : -1) + hits.length) % hits.length;
+        render();
+        var opt = document.getElementById('q-opt-' + cursor);
+        if (opt) opt.scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        choose(cursor);
+      } else if (e.key === 'Escape') {
+        close();
+      }
+    });
+    q.addEventListener('blur', function () { setTimeout(close, 120); });
+    q.addEventListener('focus', function () { if (q.value) q.dispatchEvent(new Event('input')); });
+  }
+  document.addEventListener('keydown', function (e) {
+    var tag = (e.target && e.target.tagName) || '';
+    var typing = tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable);
+    if (q && !typing && (e.key === '/' || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k'))) {
+      e.preventDefault();
+      if (narrow.matches) setNav(false);
+      q.focus();
+      q.select();
+    } else if (e.key === 'Escape' && body.classList.contains('nav-open')) {
+      setNav(false);
+      if (menuBtn) menuBtn.focus();
+    }
+  });
+
+  // Print with every card open.
+  var opened = [];
+  window.addEventListener('beforeprint', function () {
+    opened = [];
+    document.querySelectorAll('details').forEach(function (d) { if (!d.open) { opened.push(d); d.open = true; } });
+  });
+  window.addEventListener('afterprint', function () { opened.forEach(function (d) { d.open = false; }); opened = []; });
+})();
+
+</script>
+</body>
+</html>

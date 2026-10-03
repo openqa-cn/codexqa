@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Browser execution report</title>
+  <style>
+    :root, html[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f0f3f6;
+      --sheet: #ffffff;
+      --ink: #1a2332;
+      --muted: #5a6578;
+      --line: #d5dde8;
+      --acc: #0f6b4c;
+      --acc-soft: #e6f4ee;
+      --acc-fg: #fff;
+      --card: #f8fafc;
+      --chip: #fff;
+      --head: #fbfcfd;
+      --code-bg: #eef2f6;
+      --bar-track: #e8edf3;
+      --hero-a: #d9ebe3;
+      --hero-b: #d6e4f5;
+      --toolbar-bg: color-mix(in srgb, var(--sheet) 92%, transparent);
+      --pass: #0f6b4c;
+      --pass-soft: #e6f4ee;
+      --fail: #b42318;
+      --fail-soft: #fde8e4;
+      --skip: #9a6700;
+      --skip-soft: #fef3c7;
+      --blocked: #6b3fa0;
+      --blocked-soft: #f3eafb;
+      --kicker: #5a6578;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --sans: "Segoe UI", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0f141b;
+      --sheet: #1a222c;
+      --ink: #e8edf2;
+      --muted: #9aa7b5;
+      --line: #2f3b49;
+      --acc: #3ecf8e;
+      --acc-soft: #163526;
+      --acc-fg: #0b1a12;
+      --card: #141b24;
+      --chip: #1f2833;
+      --head: #162029;
+      --code-bg: #24303b;
+      --bar-track: #24303b;
+      --hero-a: #1a2e28;
+      --hero-b: #1a2433;
+      --toolbar-bg: color-mix(in srgb, var(--sheet) 88%, transparent);
+      --pass: #3ecf8e;
+      --pass-soft: #163526;
+      --fail: #ff8a80;
+      --fail-soft: #3a1d1c;
+      --skip: #e6c35c;
+      --skip-soft: #3a3218;
+      --blocked: #c4a1ff;
+      --blocked-soft: #2a1f3d;
+      --kicker: #9aa7b5;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      font: 14px/1.55 var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, var(--hero-a) 0%, transparent 55%),
+        radial-gradient(900px 400px at 100% 0%, var(--hero-b) 0%, transparent 50%),
+        var(--bg);
+    }
+    button { font: inherit; }
+    a { color: var(--acc); }
+    .prefs {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; justify-content: flex-end; gap: 8px;
+      padding: 10px 18px;
+      background: var(--toolbar-bg);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+    .prefs .group {
+      display: flex; gap: 4px; align-items: center; padding: 2px;
+      border: 1px solid var(--line); border-radius: 999px; background: var(--sheet);
+    }
+    .prefs button {
+      appearance: none; border: 0; background: transparent; color: var(--muted);
+      font-size: 12px; font-weight: 600; letter-spacing: .02em;
+      padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    }
+    .prefs button[aria-pressed="true"] { background: var(--acc); color: var(--acc-fg); }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 22px 18px 64px; }
+    .hero {
+      background: var(--sheet);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 22px 24px;
+      margin-bottom: 18px;
+      box-shadow: 0 1px 0 rgba(26, 35, 50, .04);
+    }
+    .kicker {
+      margin: 0 0 6px;
+      font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+    }
+    h1 { margin: 0 0 8px; font-size: 24px; letter-spacing: -.02em; }
+    .sub { color: var(--muted); margin: 0 0 14px; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 10px 18px; font-size: 12.5px; color: var(--muted); }
+    .meta-row code, .meta-row b {
+      font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+      background: var(--code-bg); padding: 1px 5px; border-radius: 4px; color: var(--ink);
+    }
+    .stats { display: grid; grid-template-columns: 1.4fr .8fr; gap: 14px; margin: 18px 0 0; }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+    }
+    .card h2 {
+      margin: 0 0 10px; font-size: 13px; color: var(--muted); font-weight: 600;
+      letter-spacing: .04em; text-transform: uppercase;
+    }
+    .chip-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .stat-chip {
+      min-width: 88px; padding: 10px 12px; border-radius: 10px;
+      border: 1px solid var(--line); background: var(--chip);
+    }
+    .stat-chip .n { display: block; font-size: 22px; font-weight: 700; line-height: 1.1; }
+    .stat-chip .l { font-size: 11px; color: var(--muted); letter-spacing: .06em; }
+    .stat-chip.pass { background: var(--pass-soft); border-color: color-mix(in srgb, var(--pass) 35%, var(--line)); }
+    .stat-chip.pass .n { color: var(--pass); }
+    .stat-chip.fail { background: var(--fail-soft); border-color: color-mix(in srgb, var(--fail) 35%, var(--line)); }
+    .stat-chip.fail .n { color: var(--fail); }
+    .bar-row { display: grid; grid-template-columns: 52px 1fr 48px; gap: 8px; align-items: center; margin: 6px 0; font-size: 12px; }
+    .bar { height: 8px; background: var(--bar-track); border-radius: 99px; overflow: hidden; }
+    .bar i { display: block; height: 100%; background: var(--acc); border-radius: 99px; }
+    .panel {
+      background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px 8px;
+    }
+    .panel-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+    .panel-head h2 { margin: 0; font-size: 18px; }
+    .panel-head .count {
+      font-size: 12px; background: var(--acc-soft); color: var(--acc);
+      padding: 2px 8px; border-radius: 999px;
+    }
+    .case-list { display: flex; flex-direction: column; gap: 10px; }
+    details.case {
+      border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--chip);
+    }
+    details.case > summary {
+      list-style: none; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 12px; background: var(--head); user-select: none;
+    }
+    details.case > summary::-webkit-details-marker { display: none; }
+    .case-no {
+      flex: none; font-family: var(--mono); font-size: 11px; color: var(--muted);
+    }
+    .grow { flex: 1; min-width: 0; }
+    details.case h3 {
+      margin: 0; font-size: 14px; font-weight: 600;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    details.case small { color: var(--muted); font-size: 12px; }
+    .pill {
+      display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .04em;
+      padding: 2px 7px; border-radius: 999px;
+    }
+    .pill.pass { background: var(--pass-soft); color: var(--pass); }
+    .pill.fail { background: var(--fail-soft); color: var(--fail); }
+    .pill.skip { background: var(--skip-soft); color: var(--skip); }
+    .pill.blocked { background: var(--blocked-soft); color: var(--blocked); }
+    .time { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .chevron {
+      width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
+      transform: rotate(45deg); margin: 0 4px 4px 2px; transition: transform .15s;
+    }
+    details[open] > summary .chevron { transform: rotate(225deg); margin-bottom: 0; }
+    .body { padding: 4px 14px 14px; border-top: 1px solid var(--line); }
+    .goal {
+      color: var(--muted); font-size: 13px; padding: 10px 12px;
+      background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin: 12px 0;
+    }
+    details.outline {
+      margin: 12px 0; border-radius: 10px;
+      background: var(--card); border: 1px solid var(--line);
+    }
+    details.outline > summary {
+      list-style: none; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; user-select: none;
+    }
+    details.outline > summary::-webkit-details-marker { display: none; }
+    details.outline > summary .kicker { margin: 0; flex: 1; }
+    details.outline ol { margin: 0 14px 10px; padding-left: 18px; }
+    details.outline li { margin: 4px 0; }
+    details.outline p { margin: 0 14px 12px; font-size: 13px; }
+    .steps { display: flex; flex-direction: column; }
+    details.step-row { display: block; padding: 4px 0; border-top: 1px solid var(--line); }
+    details.step-row > summary {
+      list-style: none; cursor: pointer;
+      display: flex; align-items: center; gap: 12px; padding: 8px 0;
+    }
+    details.step-row > summary::-webkit-details-marker { display: none; }
+    details.step-row > summary .grow {
+      display: flex; align-items: baseline; gap: 10px; min-width: 0;
+    }
+    details.step-row > summary b { flex: none; }
+    details.step-row > summary p {
+      margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .step-body {
+      display: grid; grid-template-columns: minmax(0, 1fr) 240px;
+      grid-template-areas: "times shot" "detail detail";
+      gap: 12px 16px; align-items: start; padding: 4px 0 14px;
+    }
+    .step-body > .times { grid-area: times; }
+    .step-body > .card-detail { grid-area: detail; }
+    .step-body > .shot { grid-area: shot; }
+    .step-body > .http, .step-body > .err { grid-column: 1 / -1; }
+    details.step-row.no-shot .step-body {
+      grid-template-columns: 1fr;
+      grid-template-areas: "times" "detail";
+    }
+    .t-item b {
+      display: block; font-size: 11px; letter-spacing: .08em;
+      color: var(--muted); font-weight: 700;
+    }
+    .t-item p { margin: 4px 0 0; font-size: 13px; }
+    details.step-row .times {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+      gap: 8px;
+    }
+    details.step-row .times .phase {
+      display: flex; flex-direction: column; gap: 4px;
+      padding: 10px 12px; border-radius: 10px;
+      background: var(--card); border: 1px solid var(--line);
+    }
+    details.step-row .times .phase em {
+      font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: .04em;
+      line-height: 1.2; color: var(--muted); white-space: nowrap;
+    }
+    details.step-row .times .phase b {
+      display: block; font-size: 13px; font-weight: 650; line-height: 1.2; color: var(--ink);
+      font-variant-numeric: tabular-nums; white-space: nowrap;
+    }
+    details.step-row .times .phase small {
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      margin: 0; color: var(--muted); font-size: 10px; line-height: 1.35;
+      font-variant-numeric: tabular-nums; overflow: hidden;
+    }
+    details.step-row .times .phase small:empty { display: none; }
+    details.step-row .times .phase small span { display: block; color: inherit; font-size: inherit; }
+    details.step-row .times .phase.model { background: var(--acc-soft); }
+    details.step-row .times .phase.can-open { cursor: pointer; }
+    details.step-row .times .phase.can-open.open {
+      border-color: var(--acc);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 22%, transparent);
+    }
+    .card-detail {
+      margin: 0; padding: 0; border-radius: 10px;
+      background: var(--sheet); border: 1px solid var(--line);
+      color: var(--ink); font-size: 12px; line-height: 1.5;
+      max-height: 420px; overflow: auto;
+    }
+    .card-detail[hidden] { display: none; }
+    .card-detail .sec + .sec { border-top: 1px solid var(--line); }
+    .card-detail .sec > header {
+      padding: 10px 14px 0;
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .card-detail .sec-b { padding: 8px 14px 12px; }
+    .card-detail dl { margin: 0; display: grid; gap: 8px; }
+    .card-detail dl > div {
+      display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 8px 12px; align-items: start;
+    }
+    .card-detail dl > div.stack { grid-template-columns: 1fr; gap: 4px; }
+    .card-detail dt { color: var(--muted); font-weight: 650; }
+    .card-detail dd { margin: 0; color: var(--ink); word-break: break-word; }
+    .card-detail .els { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 2px; }
+    .card-detail .els li {
+      display: grid; grid-template-columns: 40px 92px minmax(0, 1fr);
+      gap: 8px; padding: 5px 8px; border-radius: 8px; font-variant-numeric: tabular-nums;
+    }
+    .card-detail .els li:nth-child(odd) { background: var(--card); }
+    .card-detail .els i { color: var(--muted); font-style: normal; font-weight: 650; }
+    .card-detail .els b { font-weight: 650; }
+    .card-detail .els span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card-detail p { margin: 0 0 6px; white-space: pre-wrap; word-break: break-word; }
+    .card-detail p:last-child { margin-bottom: 0; }
+    .shot {
+      width: 100%; max-width: 240px; justify-self: end;
+      border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--sheet);
+      cursor: zoom-in;
+    }
+    .shot img {
+      display: block; width: 100%; height: 148px; object-fit: cover; object-position: top;
+      background: var(--sheet);
+    }
+    .shot i {
+      display: block; padding: 8px 10px; font-style: normal; color: var(--muted); font-size: 11px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .err { color: var(--fail); white-space: pre-wrap; margin: 12px 0 0; font-size: 13px; }
+    .http { color: var(--muted); font-size: 12px; word-break: break-all; }
+    .rec-row {
+      display: inline-flex; flex: none; align-items: center; gap: 6px;
+      margin-right: 4px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px;
+      background: var(--chip); color: var(--ink); font-size: 12px; font-weight: 650; cursor: pointer;
+    }
+    .rec-row:before {
+      content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--fail); flex: none;
+    }
+    dialog { border: 0; padding: 0; background: transparent; }
+    dialog::backdrop { background: rgba(15, 20, 27, .55); }
+    dialog img {
+      display: block; width: auto; height: auto; max-width: 92vw; max-height: 88vh;
+      object-fit: contain; background: var(--sheet); border-radius: 14px;
+    }
+    dialog video {
+      display: block; width: min(92vw, 1120px); max-height: 86vh;
+      background: #0f172a; border-radius: 12px;
+    }
+    .footer { color: var(--muted); font-size: 12px; margin: 18px 2px 0; }
+    @media (max-width: 800px) { .stats { grid-template-columns: 1fr; } }
+    @media (max-width: 860px) {
+      .step-body, details.step-row.no-shot .step-body {
+        grid-template-columns: 1fr;
+        grid-template-areas: "times" "shot" "detail";
+      }
+      .shot { max-width: none; }
+    }
+    @media print {
+      .prefs { display: none; }
+      body { background: #fff; }
+      .hero, details.case { box-shadow: none; }
+    }
+  </style>
+</head>
+<body class="outcome-pass">
+  <div class="prefs" role="toolbar" aria-label="Language and theme">
+    <div class="group" role="group" aria-label="Language">
+      <button type="button" data-set-lang="zh" aria-pressed="false">中文</button>
+      <button type="button" data-set-lang="en" aria-pressed="true">EN</button>
+    </div>
+    <div class="group" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="light" aria-pressed="true"><span data-zh="白天" data-en="Light">Light</span></button>
+      <button type="button" data-set-theme="dark" aria-pressed="false"><span data-zh="黑夜" data-en="Dark">Dark</span></button>
+    </div>
+  </div>
+  <div class="wrap">
+    <header class="hero">
+      <p class="kicker">codexqa-jev-browser</p>
+      <h1><span data-en="Browser execution report" data-zh="浏览器执行报告">Browser execution report</span></h1>
+      <div class="meta-row">
+        <span>Run ID: <code>20260923-150451</code></span>
+        <span><span data-en="Duration" data-zh="耗时">Duration</span>: <b>1m 12s</b></span>
+        <span><span data-en="Steps" data-zh="步骤">Steps</span>: <b>10</b></span>
+        <span><span data-en="Start" data-zh="开始">Start</span>: <b title="2026-09-23 15:04:51">15:04:51</b></span>
+        <span><span data-en="End" data-zh="结束">End</span>: <b title="2026-09-23 15:06:02">15:06:02</b></span>
+        <span>Cloak</span>
+        <span>1120x780</span>
+      </div>
+      <div class="stats">
+        <div class="card">
+          <h2><span data-en="Result" data-zh="结果">Result</span></h2>
+          <div class="chip-row">
+            <div class="stat-chip"><span class="n">1</span><span class="l" data-en="CASES" data-zh="用例">CASES</span></div>
+            <div class="stat-chip pass"><span class="n">1</span><span class="l" data-en="PASSED" data-zh="通过">PASSED</span></div>
+            <div class="stat-chip "><span class="n">0</span><span class="l" data-en="FAILED" data-zh="失败">FAILED</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2><span data-en="Pass rate" data-zh="通过率">Pass rate</span></h2>
+          <div class="bar-row">
+            <span data-en="Pass" data-zh="通过">Pass</span>
+            <div class="bar"><i style="width:100%"></i></div>
+            <b>100%</b>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2 data-en="Cases" data-zh="用例执行">Cases</h2>
+        <span class="count">1</span>
+      </div>
+      <div class="case-list">
+    <details class="case status-pass">
+      <summary>
+        <span class="case-no">01</span>
+        <span class="grow">
+          <h3 title="在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。">在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页</h3>
+          <small title="auto">auto · <span data-en="10 steps" data-zh="10 步">10 steps</span></small>
+        </span>
+        <button type="button" class="rec-row" data-video="jev-report/recording.mp4"><span data-en="Recording" data-zh="录屏">录屏</span></button>
+        <span class="pill pass">PASS</span>
+        <span class="time">24.2s</span>
+        <span class="chevron"></span>
+      </summary>
+      <div class="body">
+        
+        <details class="outline">
+    <summary>
+      <span class="kicker" data-en="Task breakdown" data-zh="任务拆解">Task breakdown</span>
+      <span class="chevron"></span>
+    </summary>
+    <ol><li>打开百度首页。</li><li>在百度搜索框输入“携程”，点击“百度一下”。</li><li>在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。</li><li>在携程首页点击“机票”入口，进入机票查询页。</li><li>在机票查询页确认并保持“国内机票”和“往返”选项。</li><li>确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。</li><li>在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。</li><li>在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。</li><li>在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。</li><li>核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。</li><li>等待结果页加载，直到出现北京到昆明航线的航班列表或报价。</li></ol>
+    <p data-en="Done when: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。" data-zh="结束：结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。">Done when: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。</p>
+  </details>
+        <div class="steps"><details class="step-row">
+    <summary class="t-item pass">
+      <span class="grow">
+        <b>01 OPEN</b>
+        <p data-en="Open https://www.baidu.com/" data-zh="打开 https://www.baidu.com/">Open https://www.baidu.com/</p>
+      </span>
+      <span class="time">87 ms</span>
+      <span class="chevron"></span>
+    </summary>
+    <div class="step-body">
+      <div class="times"><span class="phase capture can-open" data-detail-en="https://www.baidu.com/&#10;百度一下，你就知道&#10;&#10;Page&#10;  [1] link 新闻 · CLICK&#10;  [2] link hao123 · CLICK&#10;  [3] link 地图 · CLICK&#10;  [4] link 贴吧 · CLICK&#10;  [5] link 视频 · CLICK&#10;  [6] link 图片 · CLICK&#10;  [7] link 网盘 · CLICK&#10;  [8] link 库库AI · CLICK&#10;  [9] link 文心 · CLICK&#10;  [10] link 百度搭子 · CLICK&#10;  [11] link 更多 · CLICK&#10;  [12] link 登录 · CLICK&#10;  [13] textbox (unnamed) · TYPE, CLICK&#10;  [14] button 百度一下 · CLICK&#10;  [15] link 一句话搞定PPT、清C盘、搞投资、整理数据  · CLICK&#10;  [16] link 跨越山海续写“鼓岭情缘” · CLICK&#10;  [17] link 5教育部：督促学校把“2115”排进课表 · CLICK&#10;  [18] link 1年轻人开始花钱找“替身” · CLICK&#10;  [19] link 6闲鱼公布涉黄调查结果 · CLICK&#10;  [20] link 2“黑老大”黄大发被判死刑立即执行 · CLICK&#10;  [21] link 7核载31吨装了123吨 司机叫冤 · CLICK&#10;  [22] link 3中国民企500强彰显韧性活力 · CLICK&#10;  [23] link 8安徽、河南、福建省委书记调整 · CLICK&#10;  [24] link 4女子过敏就诊被护士公主抱进抢救室 · CLICK&#10;  [25] link 9国庆将至 各地节日氛围陆续“上线” · CLICK" data-detail-zh="https://www.baidu.com/&#10;百度一下，你就知道&#10;&#10;页面&#10;  [1] link 新闻 · CLICK&#10;  [2] link hao123 · CLICK&#10;  [3] link 地图 · CLICK&#10;  [4] link 贴吧 · CLICK&#10;  [5] link 视频 · CLICK&#10;  [6] link 图片 · CLICK&#10;  [7] link 网盘 · CLICK&#10;  [8] link 库库AI · CLICK&#10;  [9] link 文心 · CLICK&#10;  [10] link 百度搭子 · CLICK&#10;  [11] link 更多 · CLICK&#10;  [12] link 登录 · CLICK&#10;  [13] textbox (未命名) · TYPE, CLICK&#10;  [14] button 百度一下 · CLICK&#10;  [15] link 一句话搞定PPT、清C盘、搞投资、整理数据  · CLICK&#10;  [16] link 跨越山海续写“鼓岭情缘” · CLICK&#10;  [17] link 5教育部：督促学校把“2115”排进课表 · CLICK&#10;  [18] link 1年轻人开始花钱找“替身” · CLICK&#10;  [19] link 6闲鱼公布涉黄调查结果 · CLICK&#10;  [20] link 2“黑老大”黄大发被判死刑立即执行 · CLICK&#10;  [21] link 7核载31吨装了123吨 司机叫冤 · CLICK&#10;  [22] link 3中国民企500强彰显韧性活力 · CLICK&#10;  [23] link 8安徽、河南、福建省委书记调整 · CLICK&#10;  [24] link 4女子过敏就诊被护士公主抱进抢救室 · CLICK&#10;  [25] link 9国庆将至 各地节日氛围陆续“上线” · CLICK" role="button" tabindex="0"><em data-en="Page elements" data-zh="获取页面元素">Page elements</em><b>16 ms</b><small></small></span><span class="phase"><em data-en="Screenshot" data-zh="截图">Screenshot</em><b>71 ms</b><small></small></span></div><div class="card-detail" hidden></div>
+      <div class="shot">
+    <img class="shot" src="jev-report/cases/auto/steps/001-open.png" alt="01 OPEN · Open https://www.baidu.com/">
+    <i data-en="01 OPEN · Open https://www.baidu.com/" data-zh="01 OPEN · 打开 https://www.baidu.com/">01 OPEN · Open https://www.baidu.com/</i>
+  </div>
+      
+    </div>
+  </details><details class="step-row">
+    <summary class="t-item pass">
+      <span class="grow">
+        <b>02 TYPE</b>
+        <p data-en="Type “携程”" data-zh="输入「携程」">Type “携程”</p>
+      </span>
+      <span class="time">1.42s</span>
+      <span class="chevron"></span>
+    </summary>
+    <div class="step-body">
+      <div class="times"><span class="phase capture can-open" data-detail-en="https://www.baidu.com/&#10;百度一下，你就知道&#10;&#10;Page&#10;  [1] link 新闻 · CLICK&#10;  [2] link hao123 · CLICK&#10;  [3] link 地图 · CLICK&#10;  [4] link 贴吧 · CLICK&#10;  [5] link 视频 · CLICK&#10;  [6] link 图片 · CLICK&#10;  [7] link 网盘 · CLICK&#10;  [8] link 库库AI · CLICK&#10;  [9] link 文心 · CLICK&#10;  [10] link 百度搭子 · CLICK&#10;  [11] link 更多 · CLICK&#10;  [12] link 登录 · CLICK&#10;  [13] textbox (unnamed) · TYPE, CLICK&#10;  [14] button 百度一下 · CLICK&#10;  [15] link 一句话搞定PPT、清C盘、搞投资、整理数据  · CLICK&#10;  [16] link 跨越山海续写“鼓岭情缘” · CLICK&#10;  [17] link 5教育部：督促学校把“2115”排进课表 · CLICK&#10;  [18] link 1年轻人开始花钱找“替身” · CLICK&#10;  [19] link 6闲鱼公布涉黄调查结果 · CLICK&#10;  [20] link 2“黑老大”黄大发被判死刑立即执行 · CLICK&#10;  [21] link 7核载31吨装了123吨 司机叫冤 · CLICK&#10;  [22] link 3中国民企500强彰显韧性活力 · CLICK&#10;  [23] link 8安徽、河南、福建省委书记调整 · CLICK&#10;  [24] link 4女子过敏就诊被护士公主抱进抢救室 · CLICK&#10;  [25] link 9国庆将至 各地节日氛围陆续“上线” · CLICK" data-detail-zh="https://www.baidu.com/&#10;百度一下，你就知道&#10;&#10;页面&#10;  [1] link 新闻 · CLICK&#10;  [2] link hao123 · CLICK&#10;  [3] link 地图 · CLICK&#10;  [4] link 贴吧 · CLICK&#10;  [5] link 视频 · CLICK&#10;  [6] link 图片 · CLICK&#10;  [7] link 网盘 · CLICK&#10;  [8] link 库库AI · CLICK&#10;  [9] link 文心 · CLICK&#10;  [10] link 百度搭子 · CLICK&#10;  [11] link 更多 · CLICK&#10;  [12] link 登录 · CLICK&#10;  [13] textbox (未命名) · TYPE, CLICK&#10;  [14] button 百度一下 · CLICK&#10;  [15] link 一句话搞定PPT、清C盘、搞投资、整理数据  · CLICK&#10;  [16] link 跨越山海续写“鼓岭情缘” · CLICK&#10;  [17] link 5教育部：督促学校把“2115”排进课表 · CLICK&#10;  [18] link 1年轻人开始花钱找“替身” · CLICK&#10;  [19] link 6闲鱼公布涉黄调查结果 · CLICK&#10;  [20] link 2“黑老大”黄大发被判死刑立即执行 · CLICK&#10;  [21] link 7核载31吨装了123吨 司机叫冤 · CLICK&#10;  [22] link 3中国民企500强彰显韧性活力 · CLICK&#10;  [23] link 8安徽、河南、福建省委书记调整 · CLICK&#10;  [24] link 4女子过敏就诊被护士公主抱进抢救室 · CLICK&#10;  [25] link 9国庆将至 各地节日氛围陆续“上线” · CLICK" role="button" tabindex="0"><em data-en="Page elements" data-zh="获取页面元素">Page elements</em><b>16 ms</b><small></small></span><span class="phase model can-open" data-detail-en="Input&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://www.baidu.com/&#10;百度一下，你就知道&#10;questions: operation, click_target, type_target, text_13&#10;[1] link 新闻&#10;[2] link hao123&#10;[3] link 地图&#10;[4] link 贴吧&#10;[5] link 视频&#10;[6] link 图片&#10;[7] link 网盘&#10;[8] link 库库AI&#10;[9] link 文心&#10;[10] link 百度搭子&#10;[11] link 更多&#10;[12] link 登录&#10;Reply&#10;operation: TYPE (confidence 0.98)&#10;  TYPE 0.99, CLICK 0.01, SCROLL_DOWN 0.00, BLOCKED 0.00, DONE 0.00&#10;click_target: 13 (confidence 0.99)&#10;  13 0.99, 14 0.01, 1 0.00, 2 0.00, 3 0.00&#10;type_target: 13 (confidence 1)&#10;  13 1.00&#10;text_13: 携程 (confidence 1)&#10;  携程 1.00, 后 0.00, 2026年10月1日 0.00, 昆明 0.00, 2026年10月7日 0.00" data-detail-zh="输入&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://www.baidu.com/&#10;百度一下，你就知道&#10;questions: operation, click_target, type_target, text_13&#10;[1] link 新闻&#10;[2] link hao123&#10;[3] link 地图&#10;[4] link 贴吧&#10;[5] link 视频&#10;[6] link 图片&#10;[7] link 网盘&#10;[8] link 库库AI&#10;[9] link 文心&#10;[10] link 百度搭子&#10;[11] link 更多&#10;[12] link 登录&#10;回复&#10;operation: TYPE (confidence 0.98)&#10;  TYPE 0.99, CLICK 0.01, SCROLL_DOWN 0.00, BLOCKED 0.00, DONE 0.00&#10;click_target: 13 (confidence 0.99)&#10;  13 0.99, 14 0.01, 1 0.00, 2 0.00, 3 0.00&#10;type_target: 13 (confidence 1)&#10;  13 1.00&#10;text_13: 携程 (confidence 1)&#10;  携程 1.00, 后 0.00, 2026年10月1日 0.00, 昆明 0.00, 2026年10月7日 0.00" role="button" tabindex="0"><em data-en="Decide" data-zh="Jev 决策">Decide</em><b>1.27s</b><small><span data-en="in 11,316" data-zh="输入 11,316">in 11,316</span><span data-en="out 383" data-zh="输出 383">out 383</span></small></span><span class="phase"><em data-en="Fill" data-zh="填字">Fill</em><b>0.0 ms</b><small><span data-en="from decision" data-zh="决策已给出">from decision</span></small></span><span class="phase act can-open" data-detail-en="Action&#10;Type “携程”" data-detail-zh="动作&#10;输入「携程」" role="button" tabindex="0"><em data-en="Act" data-zh="执行">Act</em><b>100 ms</b><small><span data-en="Type “携程”" data-zh="输入「携程」">Type “携程”</span></small></span><span class="phase can-open" data-detail-en="As expected&#10;verdict: pass (confidence 1)&#10;  pass 1.00, fail 0.00&#10;Expected “携程” to appear&#10;Actual: 百度一下，你就知道 → 百度一下，你就知道" data-detail-zh="符合预期&#10;verdict: pass (confidence 1)&#10;  pass 1.00, fail 0.00&#10;预期：页面出现「携程」&#10;实际：百度一下，你就知道 → 百度一下，你就知道" role="button" tabindex="0"><em data-en="Assert" data-zh="Jev 断言">Assert</em><b>6 ms</b><small><span data-en="As expected" data-zh="符合预期">As expected</span></small></span><span class="phase"><em data-en="Screenshot" data-zh="截图">Screenshot</em><b>44 ms</b><small></small></span></div><div class="card-detail" hidden></div>
+      <div class="shot">
+    <img class="shot" src="jev-report/cases/auto/steps/002-type.png" alt="02 TYPE · Type “携程”">
+    <i data-en="02 TYPE · Type “携程”" data-zh="02 TYPE · 输入「携程」">02 TYPE · Type “携程”</i>
+  </div>
+      
+    </div>
+  </details><details class="step-row">
+    <summary class="t-item pass">
+      <span class="grow">
+        <b>03 CLICK</b>
+        <p data-en="Click “百度一下”" data-zh="点击「百度一下」">Click “百度一下”</p>
+      </span>
+      <span class="time">2.08s</span>
+      <span class="chevron"></span>
+    </summary>
+    <div class="step-body">
+      <div class="times"><span class="phase capture can-open" data-detail-en="https://www.baidu.com/&#10;百度一下，你就知道&#10;&#10;Page&#10;  [1] link 百度首页 · CLICK&#10;  [2] link 设置 · CLICK&#10;  [3] link 登录 · CLICK&#10;  [4] link 到百度首页 · CLICK&#10;  [5] textbox (unnamed) = 携程 · TYPE, CLICK&#10;  [6] button 百度一下 · CLICK&#10;  [7] link 图片 · CLICK&#10;  [8] link 资讯 · CLICK&#10;  [9] link 视频 · CLICK&#10;  [10] link 笔记 · CLICK&#10;  [11] link 地图 · CLICK&#10;  [12] link 贴吧 · CLICK&#10;  [13] link 文库 · CLICK&#10;  [14] link 更多 · CLICK" data-detail-zh="https://www.baidu.com/&#10;百度一下，你就知道&#10;&#10;页面&#10;  [1] link 百度首页 · CLICK&#10;  [2] link 设置 · CLICK&#10;  [3] link 登录 · CLICK&#10;  [4] link 到百度首页 · CLICK&#10;  [5] textbox (未命名) = 携程 · TYPE, CLICK&#10;  [6] button 百度一下 · CLICK&#10;  [7] link 图片 · CLICK&#10;  [8] link 资讯 · CLICK&#10;  [9] link 视频 · CLICK&#10;  [10] link 笔记 · CLICK&#10;  [11] link 地图 · CLICK&#10;  [12] link 贴吧 · CLICK&#10;  [13] link 文库 · CLICK&#10;  [14] link 更多 · CLICK" role="button" tabindex="0"><em data-en="Page elements" data-zh="获取页面元素">Page elements</em><b>6 ms</b><small></small></span><span class="phase model can-open" data-detail-en="Input&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://www.baidu.com/&#10;百度一下，你就知道&#10;questions: operation, click_target, type_target, text_5&#10;[1] link 百度首页&#10;[2] link 设置&#10;[3] link 登录&#10;[4] link 到百度首页&#10;[5] textbox&#10;[6] button 百度一下&#10;[7] link 图片&#10;[8] link 资讯&#10;[9] link 视频&#10;[10] link 笔记&#10;[11] link 地图&#10;[12] link 贴吧&#10;Reply&#10;operation: CLICK (confidence 0.92)&#10;  CLICK 0.93, WAIT 0.05, BLOCKED 0.01, SCROLL_DOWN 0.00, DONE 0.00&#10;click_target: 6 (confidence 1)&#10;  6 1.00, 1 0.00, 2 0.00, 3 0.00, 4 0.00&#10;type_target: 5 (confidence 1)&#10;  5 1.00&#10;text_5: 携程 (confidence 0.92)&#10;  携程 0.93, 北京 0.04, 后 0.01, 昆明 0.01, 2026年10月7日 0.00" data-detail-zh="输入&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://www.baidu.com/&#10;百度一下，你就知道&#10;questions: operation, click_target, type_target, text_5&#10;[1] link 百度首页&#10;[2] link 设置&#10;[3] link 登录&#10;[4] link 到百度首页&#10;[5] textbox&#10;[6] button 百度一下&#10;[7] link 图片&#10;[8] link 资讯&#10;[9] link 视频&#10;[10] link 笔记&#10;[11] link 地图&#10;[12] link 贴吧&#10;回复&#10;operation: CLICK (confidence 0.92)&#10;  CLICK 0.93, WAIT 0.05, BLOCKED 0.01, SCROLL_DOWN 0.00, DONE 0.00&#10;click_target: 6 (confidence 1)&#10;  6 1.00, 1 0.00, 2 0.00, 3 0.00, 4 0.00&#10;type_target: 5 (confidence 1)&#10;  5 1.00&#10;text_5: 携程 (confidence 0.92)&#10;  携程 0.93, 北京 0.04, 后 0.01, 昆明 0.01, 2026年10月7日 0.00" role="button" tabindex="0"><em data-en="Decide" data-zh="Jev 决策">Decide</em><b>1.15s</b><small><span data-en="in 10,113" data-zh="输入 10,113">in 10,113</span><span data-en="out 291" data-zh="输出 291">out 291</span></small></span><span class="phase act can-open" data-detail-en="Action&#10;Click “百度一下”" data-detail-zh="动作&#10;点击「百度一下」" role="button" tabindex="0"><em data-en="Act" data-zh="执行">Act</em><b>881 ms</b><small><span data-en="Click “百度一下”" data-zh="点击「百度一下」">Click “百度一下”</span></small></span><span class="phase can-open" data-detail-en="As expected&#10;verdict: pass (confidence 0.69)&#10;  pass 0.85, fail 0.15&#10;Expected the page to change after the click&#10;Actual: 百度一下，你就知道 → 百度一下，你就知道" data-detail-zh="符合预期&#10;verdict: pass (confidence 0.69)&#10;  pass 0.85, fail 0.15&#10;预期：点击后页面发生变化&#10;实际：百度一下，你就知道 → 百度一下，你就知道" role="button" tabindex="0"><em data-en="Assert" data-zh="Jev 断言">Assert</em><b>5 ms</b><small><span data-en="As expected" data-zh="符合预期">As expected</span></small></span><span class="phase"><em data-en="Screenshot" data-zh="截图">Screenshot</em><b>45 ms</b><small></small></span></div><div class="card-detail" hidden></div>
+      <div class="shot">
+    <img class="shot" src="jev-report/cases/auto/steps/003-click.png" alt="03 CLICK · Click “百度一下”">
+    <i data-en="03 CLICK · Click “百度一下”" data-zh="03 CLICK · 点击「百度一下」">03 CLICK · Click “百度一下”</i>
+  </div>
+      
+    </div>
+  </details><details class="step-row">
+    <summary class="t-item pass">
+      <span class="grow">
+        <b>04 WAIT</b>
+        <p data-en="Wait for the page" data-zh="等待页面">Wait for the page</p>
+      </span>
+      <span class="time">1.43s</span>
+      <span class="chevron"></span>
+    </summary>
+    <div class="step-body">
+      <div class="times"><span class="phase capture can-open" data-detail-en="https://www.baidu.com/s?ie=utf-8&amp;f=8&amp;rsv_bp=1&amp;rsv_idx=1&amp;tn=baidu&amp;wd=%E6%90%BA%E7%A8%8B&amp;fenlei=256&amp;rsv_pq=0x90d2eb7f02665e12&amp;rsv_t=f3f4JueAJ4ushJf1VedOUf0H7datCSnT9ucYtwd3a%2FLFOM50MkDmQKiAyu9l&amp;rqlang=en&amp;rsv_dl=tb_click&amp;rsv_enter=1&amp;rsv_sug3=2&amp;rsv_sug1=1&amp;rsv_sug7=100&amp;rsv_btype=i&amp;prefixsug=%25E6%2590%25BA%25E7%25A8%258B&amp;rsp=4&amp;inputT=30707&amp;rsv_sug4=30707&amp;rsv_sug=1&#10;百度一下，你就知道&#10;&#10;Page&#10;  [1] link 百度首页 · CLICK&#10;  [2] link 设置 · CLICK&#10;  [3] link 登录 · CLICK&#10;  [4] link 到百度首页 · CLICK&#10;  [5] textbox (unnamed) = 携程 · TYPE, CLICK&#10;  [6] button 百度一下 · CLICK&#10;  [7] link 图片 · CLICK&#10;  [8] link 资讯 · CLICK&#10;  [9] link 视频 · CLICK&#10;  [10] link 笔记 · CLICK&#10;  [11] link 地图 · CLICK&#10;  [12] link 贴吧 · CLICK&#10;  [13] link 文库 · CLICK&#10;  [14] link 更多 · CLICK" data-detail-zh="https://www.baidu.com/s?ie=utf-8&amp;f=8&amp;rsv_bp=1&amp;rsv_idx=1&amp;tn=baidu&amp;wd=%E6%90%BA%E7%A8%8B&amp;fenlei=256&amp;rsv_pq=0x90d2eb7f02665e12&amp;rsv_t=f3f4JueAJ4ushJf1VedOUf0H7datCSnT9ucYtwd3a%2FLFOM50MkDmQKiAyu9l&amp;rqlang=en&amp;rsv_dl=tb_click&amp;rsv_enter=1&amp;rsv_sug3=2&amp;rsv_sug1=1&amp;rsv_sug7=100&amp;rsv_btype=i&amp;prefixsug=%25E6%2590%25BA%25E7%25A8%258B&amp;rsp=4&amp;inputT=30707&amp;rsv_sug4=30707&amp;rsv_sug=1&#10;百度一下，你就知道&#10;&#10;页面&#10;  [1] link 百度首页 · CLICK&#10;  [2] link 设置 · CLICK&#10;  [3] link 登录 · CLICK&#10;  [4] link 到百度首页 · CLICK&#10;  [5] textbox (未命名) = 携程 · TYPE, CLICK&#10;  [6] button 百度一下 · CLICK&#10;  [7] link 图片 · CLICK&#10;  [8] link 资讯 · CLICK&#10;  [9] link 视频 · CLICK&#10;  [10] link 笔记 · CLICK&#10;  [11] link 地图 · CLICK&#10;  [12] link 贴吧 · CLICK&#10;  [13] link 文库 · CLICK&#10;  [14] link 更多 · CLICK" role="button" tabindex="0"><em data-en="Page elements" data-zh="获取页面元素">Page elements</em><b>5 ms</b><small></small></span><span class="phase model can-open" data-detail-en="Input&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://www.baidu.com/s?ie=utf-8&amp;f=8&amp;rsv_bp=1&amp;rsv_idx=1&amp;tn=baidu&amp;wd=%E6%90%BA%E7%A8%8B&amp;fenlei=256&amp;rsv_pq=0x90d2eb7f02665e12&amp;rsv_t=f3f4JueAJ4ushJf1VedOUf0H7datCSnT9ucYtwd3a%2FLFOM50MkDmQKiAyu9l&amp;rqlang=en&amp;rsv_dl=tb_click&amp;rsv_enter=1&amp;rsv_sug3=2&amp;rsv_sug1=1&amp;rsv_sug7=100&amp;rsv_btype=i&amp;prefixsug=%25E6%2590%25BA%25E7%25A8%258B&amp;rsp=4&amp;inputT=30707&amp;rsv_sug4=30707&amp;rsv_sug=1&#10;百度一下，你就知道&#10;questions: operation, click_target, type_target, text_5&#10;[1] link 百度首页&#10;[2] link 设置&#10;[3] link 登录&#10;[4] link 到百度首页&#10;[5] textbox&#10;[6] button 百度一下&#10;[7] link 图片&#10;[8] link 资讯&#10;[9] link 视频&#10;[10] link 笔记&#10;[11] link 地图&#10;[12] link 贴吧&#10;Reply&#10;operation: WAIT (confidence 0.47)&#10;  WAIT 0.54, CLICK 0.19, BLOCKED 0.14, SCROLL_DOWN 0.11, SCROLL_UP 0.01&#10;click_target: 6 (confidence 0.66)&#10;  6 0.69, 4 0.11, 1 0.09, 14 0.05, 5 0.02&#10;type_target: 5 (confidence 1)&#10;  5 1.00&#10;text_5: 携程 (confidence 0.88)&#10;  携程 0.91, 北京 0.07, 昆明 0.02, 2026年10月1日 0.00, 2026年10月7日 0.00" data-detail-zh="输入&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://www.baidu.com/s?ie=utf-8&amp;f=8&amp;rsv_bp=1&amp;rsv_idx=1&amp;tn=baidu&amp;wd=%E6%90%BA%E7%A8%8B&amp;fenlei=256&amp;rsv_pq=0x90d2eb7f02665e12&amp;rsv_t=f3f4JueAJ4ushJf1VedOUf0H7datCSnT9ucYtwd3a%2FLFOM50MkDmQKiAyu9l&amp;rqlang=en&amp;rsv_dl=tb_click&amp;rsv_enter=1&amp;rsv_sug3=2&amp;rsv_sug1=1&amp;rsv_sug7=100&amp;rsv_btype=i&amp;prefixsug=%25E6%2590%25BA%25E7%25A8%258B&amp;rsp=4&amp;inputT=30707&amp;rsv_sug4=30707&amp;rsv_sug=1&#10;百度一下，你就知道&#10;questions: operation, click_target, type_target, text_5&#10;[1] link 百度首页&#10;[2] link 设置&#10;[3] link 登录&#10;[4] link 到百度首页&#10;[5] textbox&#10;[6] button 百度一下&#10;[7] link 图片&#10;[8] link 资讯&#10;[9] link 视频&#10;[10] link 笔记&#10;[11] link 地图&#10;[12] link 贴吧&#10;回复&#10;operation: WAIT (confidence 0.47)&#10;  WAIT 0.54, CLICK 0.19, BLOCKED 0.14, SCROLL_DOWN 0.11, SCROLL_UP 0.01&#10;click_target: 6 (confidence 0.66)&#10;  6 0.69, 4 0.11, 1 0.09, 14 0.05, 5 0.02&#10;type_target: 5 (confidence 1)&#10;  5 1.00&#10;text_5: 携程 (confidence 0.88)&#10;  携程 0.91, 北京 0.07, 昆明 0.02, 2026年10月1日 0.00, 2026年10月7日 0.00" role="button" tabindex="0"><em data-en="Decide" data-zh="Jev 决策">Decide</em><b>1.18s</b><small><span data-en="in 10,384" data-zh="输入 10,384">in 10,384</span><span data-en="out 291" data-zh="输出 291">out 291</span></small></span><span class="phase act can-open" data-detail-en="Action&#10;Wait for the page" data-detail-zh="动作&#10;等待页面" role="button" tabindex="0"><em data-en="Act" data-zh="执行">Act</em><b>100 ms</b><small><span data-en="Wait for the page" data-zh="等待页面">Wait for the page</span></small></span><span class="phase can-open" data-detail-en="As expected&#10;verdict: pass (confidence 0.71)&#10;  pass 0.86, fail 0.14&#10;Expected the wait to finish&#10;Actual: 百度一下，你就知道 → 携程_百度搜索" data-detail-zh="符合预期&#10;verdict: pass (confidence 0.71)&#10;  pass 0.86, fail 0.14&#10;预期：等待结束&#10;实际：百度一下，你就知道 → 携程_百度搜索" role="button" tabindex="0"><em data-en="Assert" data-zh="Jev 断言">Assert</em><b>22 ms</b><small><span data-en="As expected" data-zh="符合预期">As expected</span></small></span><span class="phase"><em data-en="Screenshot" data-zh="截图">Screenshot</em><b>123 ms</b><small></small></span></div><div class="card-detail" hidden></div>
+      <div class="shot">
+    <img class="shot" src="jev-report/cases/auto/steps/004-wait.png" alt="04 WAIT · Wait for the page">
+    <i data-en="04 WAIT · Wait for the page" data-zh="04 WAIT · 等待页面">04 WAIT · Wait for the page</i>
+  </div>
+      
+    </div>
+  </details><details class="step-row">
+    <summary class="t-item pass">
+      <span class="grow">
+        <b>05 CLICK</b>
+        <p data-en="Click “携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理”" data-zh="点击「携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理」">Click “携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理”</p>
+      </span>
+      <span class="time">2.19s</span>
+      <span class="chevron"></span>
+    </summary>
+    <div class="step-body">
+      <div class="times"><span class="phase capture can-open" data-detail-en="https://www.baidu.com/s?ie=utf-8&amp;f=8&amp;rsv_bp=1&amp;rsv_idx=1&amp;tn=baidu&amp;wd=%E6%90%BA%E7%A8%8B&amp;fenlei=256&amp;rsv_pq=0x90d2eb7f02665e12&amp;rsv_t=f3f4JueAJ4ushJf1VedOUf0H7datCSnT9ucYtwd3a%2FLFOM50MkDmQKiAyu9l&amp;rqlang=en&amp;rsv_dl=tb_click&amp;rsv_enter=1&amp;rsv_sug3=2&amp;rsv_sug1=1&amp;rsv_sug7=100&amp;rsv_btype=i&amp;prefixsug=%25E6%2590%25BA%25E7%25A8%258B&amp;rsp=4&amp;inputT=30707&amp;rsv_sug4=30707&amp;rsv_sug=1&#10;携程_百度搜索&#10;&#10;Page&#10;  [1] link 百度首页 · CLICK&#10;  [2] link 设置 · CLICK&#10;  [3] link 登录 · CLICK&#10;  [4] link 到百度首页 · CLICK&#10;  [5] textbox (unnamed) = 携程 · TYPE, CLICK&#10;  [6] button 百度一下 · CLICK&#10;  [7] link 图片 · CLICK&#10;  [8] link 资讯 · CLICK&#10;  [9] link 视频 · CLICK&#10;  [10] link 笔记 · CLICK&#10;  [11] link 地图 · CLICK&#10;  [12] link 贴吧 · CLICK&#10;  [13] link 文库 · CLICK&#10;  [14] link 更多 · CLICK&#10;  [15] link 携程官网 · CLICK&#10;  [16] link 携程飞机票 · CLICK&#10;  [17] link 携程app · CLICK&#10;  [18] link 携程旅行网 · CLICK&#10;  [19] link 携程出行官网 · CLICK&#10;  [20] link 携程官网订票入口 · CLICK&#10;  [21] link  · CLICK&#10;  [22] link 跨越山海续写“鼓岭情缘” · CLICK&#10;  [23] link 年轻人开始花钱找“替身” · CLICK&#10;  [24] link “黑老大”黄大发被判死刑立即执行 · CLICK&#10;  [25] link 中国民企500强彰显韧性活力 · CLICK&#10;  [26] link 女子过敏就诊被护士公主抱进抢救室 · CLICK&#10;  [27] link 教育部：督促学校把“2115”排进课表 · CLICK&#10;  [28] link 闲鱼公布涉黄调查结果 · CLICK&#10;  [29] link 核载31吨装了123吨 司机叫冤 · CLICK&#10;  [30] link 安徽、河南、福建省委书记调整 · CLICK&#10;  [31] link 国庆将至 各地节日氛围陆续“上线” · CLICK&#10;  [32] link 北京 徽州旅游网-黄山旅游需要注意的几个事项... · CLICK&#10;  [33] link 上周刚从徽州旅游网 旅游回来,给大家分享下经验,希望可以帮到去徽州旅游网的朋友.2026年全新徽州旅游网攻略,让你看尽奇松怪石,云海日出,徽州旅游网温泉,徽派古 · CLICK&#10;  [34] link 收录4年 · CLICK&#10;  [35] link 云南中旺国际旅行社 · CLICK&#10;  [36] link 2026-09 · CLICK&#10;  [37] link  · CLICK&#10;  [38] link 广告 · CLICK&#10;  [39] link 携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理 · CLICK&#10;  [40] link 官方 · CLICK&#10;  [41] link 携程旅行 · CLICK&#10;  [42] link 携程旅行网 · CLICK&#10;  [43] button 参考文档，单指双击即可执行 · CLICK" data-detail-zh="https://www.baidu.com/s?ie=utf-8&amp;f=8&amp;rsv_bp=1&amp;rsv_idx=1&amp;tn=baidu&amp;wd=%E6%90%BA%E7%A8%8B&amp;fenlei=256&amp;rsv_pq=0x90d2eb7f02665e12&amp;rsv_t=f3f4JueAJ4ushJf1VedOUf0H7datCSnT9ucYtwd3a%2FLFOM50MkDmQKiAyu9l&amp;rqlang=en&amp;rsv_dl=tb_click&amp;rsv_enter=1&amp;rsv_sug3=2&amp;rsv_sug1=1&amp;rsv_sug7=100&amp;rsv_btype=i&amp;prefixsug=%25E6%2590%25BA%25E7%25A8%258B&amp;rsp=4&amp;inputT=30707&amp;rsv_sug4=30707&amp;rsv_sug=1&#10;携程_百度搜索&#10;&#10;页面&#10;  [1] link 百度首页 · CLICK&#10;  [2] link 设置 · CLICK&#10;  [3] link 登录 · CLICK&#10;  [4] link 到百度首页 · CLICK&#10;  [5] textbox (未命名) = 携程 · TYPE, CLICK&#10;  [6] button 百度一下 · CLICK&#10;  [7] link 图片 · CLICK&#10;  [8] link 资讯 · CLICK&#10;  [9] link 视频 · CLICK&#10;  [10] link 笔记 · CLICK&#10;  [11] link 地图 · CLICK&#10;  [12] link 贴吧 · CLICK&#10;  [13] link 文库 · CLICK&#10;  [14] link 更多 · CLICK&#10;  [15] link 携程官网 · CLICK&#10;  [16] link 携程飞机票 · CLICK&#10;  [17] link 携程app · CLICK&#10;  [18] link 携程旅行网 · CLICK&#10;  [19] link 携程出行官网 · CLICK&#10;  [20] link 携程官网订票入口 · CLICK&#10;  [21] link  · CLICK&#10;  [22] link 跨越山海续写“鼓岭情缘” · CLICK&#10;  [23] link 年轻人开始花钱找“替身” · CLICK&#10;  [24] link “黑老大”黄大发被判死刑立即执行 · CLICK&#10;  [25] link 中国民企500强彰显韧性活力 · CLICK&#10;  [26] link 女子过敏就诊被护士公主抱进抢救室 · CLICK&#10;  [27] link 教育部：督促学校把“2115”排进课表 · CLICK&#10;  [28] link 闲鱼公布涉黄调查结果 · CLICK&#10;  [29] link 核载31吨装了123吨 司机叫冤 · CLICK&#10;  [30] link 安徽、河南、福建省委书记调整 · CLICK&#10;  [31] link 国庆将至 各地节日氛围陆续“上线” · CLICK&#10;  [32] link 北京 徽州旅游网-黄山旅游需要注意的几个事项... · CLICK&#10;  [33] link 上周刚从徽州旅游网 旅游回来,给大家分享下经验,希望可以帮到去徽州旅游网的朋友.2026年全新徽州旅游网攻略,让你看尽奇松怪石,云海日出,徽州旅游网温泉,徽派古 · CLICK&#10;  [34] link 收录4年 · CLICK&#10;  [35] link 云南中旺国际旅行社 · CLICK&#10;  [36] link 2026-09 · CLICK&#10;  [37] link  · CLICK&#10;  [38] link 广告 · CLICK&#10;  [39] link 携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理 · CLICK&#10;  [40] link 官方 · CLICK&#10;  [41] link 携程旅行 · CLICK&#10;  [42] link 携程旅行网 · CLICK&#10;  [43] button 参考文档，单指双击即可执行 · CLICK" role="button" tabindex="0"><em data-en="Page elements" data-zh="获取页面元素">Page elements</em><b>22 ms</b><small></small></span><span class="phase model can-open" data-detail-en="Input&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://www.baidu.com/s?ie=utf-8&amp;f=8&amp;rsv_bp=1&amp;rsv_idx=1&amp;tn=baidu&amp;wd=%E6%90%BA%E7%A8%8B&amp;fenlei=256&amp;rsv_pq=0x90d2eb7f02665e12&amp;rsv_t=f3f4JueAJ4ushJf1VedOUf0H7datCSnT9ucYtwd3a%2FLFOM50MkDmQKiAyu9l&amp;rqlang=en&amp;rsv_dl=tb_click&amp;rsv_enter=1&amp;rsv_sug3=2&amp;rsv_sug1=1&amp;rsv_sug7=100&amp;rsv_btype=i&amp;prefixsug=%25E6%2590%25BA%25E7%25A8%258B&amp;rsp=4&amp;inputT=30707&amp;rsv_sug4=30707&amp;rsv_sug=1&#10;携程_百度搜索&#10;questions: operation, click_target, type_target, text_5&#10;[1] link 百度首页&#10;[2] link 设置&#10;[3] link 登录&#10;[4] link 到百度首页&#10;[5] textbox&#10;[6] button 百度一下&#10;[7] link 图片&#10;[8] link 资讯&#10;[9] link 视频&#10;[10] link 笔记&#10;[11] link 地图&#10;[12] link 贴吧&#10;Reply&#10;operation: CLICK (confidence 0.76)&#10;  CLICK 0.80, WAIT 0.08, SCROLL_DOWN 0.06, BLOCKED 0.06, SCROLL_UP 0.00&#10;click_target: 39 (confidence 0.85)&#10;  39 0.86, 42 0.08, 15 0.04, 1 0.01, 41 0.01&#10;type_target: 5 (confidence 1)&#10;  5 1.00&#10;text_5: 携程 (confidence 0.84)&#10;  携程 0.87, 北京 0.10, 昆明 0.03, 后 0.00, 2026年10月7日 0.00" data-detail-zh="输入&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://www.baidu.com/s?ie=utf-8&amp;f=8&amp;rsv_bp=1&amp;rsv_idx=1&amp;tn=baidu&amp;wd=%E6%90%BA%E7%A8%8B&amp;fenlei=256&amp;rsv_pq=0x90d2eb7f02665e12&amp;rsv_t=f3f4JueAJ4ushJf1VedOUf0H7datCSnT9ucYtwd3a%2FLFOM50MkDmQKiAyu9l&amp;rqlang=en&amp;rsv_dl=tb_click&amp;rsv_enter=1&amp;rsv_sug3=2&amp;rsv_sug1=1&amp;rsv_sug7=100&amp;rsv_btype=i&amp;prefixsug=%25E6%2590%25BA%25E7%25A8%258B&amp;rsp=4&amp;inputT=30707&amp;rsv_sug4=30707&amp;rsv_sug=1&#10;携程_百度搜索&#10;questions: operation, click_target, type_target, text_5&#10;[1] link 百度首页&#10;[2] link 设置&#10;[3] link 登录&#10;[4] link 到百度首页&#10;[5] textbox&#10;[6] button 百度一下&#10;[7] link 图片&#10;[8] link 资讯&#10;[9] link 视频&#10;[10] link 笔记&#10;[11] link 地图&#10;[12] link 贴吧&#10;回复&#10;operation: CLICK (confidence 0.76)&#10;  CLICK 0.80, WAIT 0.08, SCROLL_DOWN 0.06, BLOCKED 0.06, SCROLL_UP 0.00&#10;click_target: 39 (confidence 0.85)&#10;  39 0.86, 42 0.08, 15 0.04, 1 0.01, 41 0.01&#10;type_target: 5 (confidence 1)&#10;  5 1.00&#10;text_5: 携程 (confidence 0.84)&#10;  携程 0.87, 北京 0.10, 昆明 0.03, 后 0.00, 2026年10月7日 0.00" role="button" tabindex="0"><em data-en="Decide" data-zh="Jev 决策">Decide</em><b>1.43s</b><small><span data-en="in 13,368" data-zh="输入 13,368">in 13,368</span><span data-en="out 524" data-zh="输出 524">out 524</span></small></span><span class="phase act can-open" data-detail-en="Action&#10;Click “携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理”" data-detail-zh="动作&#10;点击「携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理」" role="button" tabindex="0"><em data-en="Act" data-zh="执行">Act</em><b>655 ms</b><small><span data-en="Click “携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理”" data-zh="点击「携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理」">Click “携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理”</span></small></span><span class="phase can-open" data-detail-en="As expected&#10;verdict: pass (confidence 0.89)&#10;  pass 0.94, fail 0.06&#10;Expected the page to change after the click&#10;Actual: 携程_百度搜索 → 携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理" data-detail-zh="符合预期&#10;verdict: pass (confidence 0.89)&#10;  pass 0.94, fail 0.06&#10;预期：点击后页面发生变化&#10;实际：携程_百度搜索 → 携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理" role="button" tabindex="0"><em data-en="Assert" data-zh="Jev 断言">Assert</em><b>10 ms</b><small><span data-en="As expected" data-zh="符合预期">As expected</span></small></span><span class="phase"><em data-en="Screenshot" data-zh="截图">Screenshot</em><b>96 ms</b><small></small></span></div><div class="card-detail" hidden></div>
+      <div class="shot">
+    <img class="shot" src="jev-report/cases/auto/steps/005-click.png" alt="05 CLICK · Click “携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理”">
+    <i data-en="05 CLICK · Click “携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理”" data-zh="05 CLICK · 点击「携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理」">05 CLICK · Click “携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理”</i>
+  </div>
+      
+    </div>
+  </details><details class="step-row">
+    <summary class="t-item pass">
+      <span class="grow">
+        <b>06 CLICK</b>
+        <p data-en="Click “机票 按回车键打开菜单”" data-zh="点击「机票 按回车键打开菜单」">Click “机票 按回车键打开菜单”</p>
+      </span>
+      <span class="time">2.06s</span>
+      <span class="chevron"></span>
+    </summary>
+    <div class="step-body">
+      <div class="times"><span class="phase capture can-open" data-detail-en="https://www.ctrip.com/&#10;携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理&#10;&#10;Page&#10;  [1] textbox 目的地/酒店名称 请通过键盘输入目的地名，例如：上海市。键入关键词时会展示联想浮层，按下TAB键或SHIFT+TAB键即可关闭联想浮层。 = 上海 · TYPE, CLICK&#10;  [3] button 出发地选择上海 · CLICK&#10;  [4] button 北京 · CLICK&#10;  [5] button 广州 · CLICK&#10;  [6] button 三亚 · CLICK&#10;  [7] button 更多 · CLICK&#10;  [8] link Trip · CLICK&#10;  [9] button 酒店 按回车键打开菜单 · CLICK&#10;  [10] button 机票 按回车键打开菜单 · CLICK&#10;  [11] button 火车票 按回车键打开菜单 · CLICK&#10;  [12] button 旅游 按回车键打开菜单 · CLICK&#10;  [13] button 门票·活动 按回车键打开菜单 · CLICK&#10;  [14] button 汽车·船票 按回车键打开菜单 · CLICK&#10;  [15] button 用车 按回车键打开菜单 · CLICK&#10;  [16] button AI行程助手 按回车键打开菜单 · CLICK&#10;  [17] button 攻略·景点 按回车键打开菜单 · CLICK&#10;  [18] button 旅游地图 按回车键打开菜单 · CLICK&#10;  [19] button 全球购 按回车键打开菜单 · CLICK&#10;  [20] button 礼品卡 按回车键打开菜单 · CLICK&#10;  [21] button 携程金融 按回车键打开菜单 · CLICK&#10;  [22] button 企业商旅 按回车键打开菜单 · CLICK&#10;  [23] link 携程旅行网 · CLICK&#10;  [26] button 登录 · CLICK&#10;  [27] button 注册 · CLICK&#10;  [28] button 我的订单 · CLICK&#10;  [29] button 携程客服 · CLICK&#10;  [30] button 扫码下载携程App或关注微信公众号 · CLICK&#10;  [31] button 无障碍阅读开关 · CLICK&#10;&#10;form&#10;  [2] textbox 请输入关键词（选填），键入关键词时会展示联想浮层，按下TAB键或SHIFT+TAB键即可关闭联想浮层。 · TYPE, CLICK&#10;  [24] textbox 搜旅任何旅行相关... · TYPE, CLICK&#10;  [25] link 搜索 · CLICK" data-detail-zh="https://www.ctrip.com/&#10;携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理&#10;&#10;页面&#10;  [1] textbox 目的地/酒店名称 请通过键盘输入目的地名，例如：上海市。键入关键词时会展示联想浮层，按下TAB键或SHIFT+TAB键即可关闭联想浮层。 = 上海 · TYPE, CLICK&#10;  [3] button 出发地选择上海 · CLICK&#10;  [4] button 北京 · CLICK&#10;  [5] button 广州 · CLICK&#10;  [6] button 三亚 · CLICK&#10;  [7] button 更多 · CLICK&#10;  [8] link Trip · CLICK&#10;  [9] button 酒店 按回车键打开菜单 · CLICK&#10;  [10] button 机票 按回车键打开菜单 · CLICK&#10;  [11] button 火车票 按回车键打开菜单 · CLICK&#10;  [12] button 旅游 按回车键打开菜单 · CLICK&#10;  [13] button 门票·活动 按回车键打开菜单 · CLICK&#10;  [14] button 汽车·船票 按回车键打开菜单 · CLICK&#10;  [15] button 用车 按回车键打开菜单 · CLICK&#10;  [16] button AI行程助手 按回车键打开菜单 · CLICK&#10;  [17] button 攻略·景点 按回车键打开菜单 · CLICK&#10;  [18] button 旅游地图 按回车键打开菜单 · CLICK&#10;  [19] button 全球购 按回车键打开菜单 · CLICK&#10;  [20] button 礼品卡 按回车键打开菜单 · CLICK&#10;  [21] button 携程金融 按回车键打开菜单 · CLICK&#10;  [22] button 企业商旅 按回车键打开菜单 · CLICK&#10;  [23] link 携程旅行网 · CLICK&#10;  [26] button 登录 · CLICK&#10;  [27] button 注册 · CLICK&#10;  [28] button 我的订单 · CLICK&#10;  [29] button 携程客服 · CLICK&#10;  [30] button 扫码下载携程App或关注微信公众号 · CLICK&#10;  [31] button 无障碍阅读开关 · CLICK&#10;&#10;form&#10;  [2] textbox 请输入关键词（选填），键入关键词时会展示联想浮层，按下TAB键或SHIFT+TAB键即可关闭联想浮层。 · TYPE, CLICK&#10;  [24] textbox 搜旅任何旅行相关... · TYPE, CLICK&#10;  [25] link 搜索 · CLICK" role="button" tabindex="0"><em data-en="Page elements" data-zh="获取页面元素">Page elements</em><b>10 ms</b><small></small></span><span class="phase model can-open" data-detail-en="Input&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://www.ctrip.com/&#10;携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理&#10;questions: operation, click_target, type_target, text_1, text_2, text_24&#10;[1] textbox 目的地/酒店名称 请通过键盘输入目的地名，例如：上海市。键入关键词时会展示联想浮&#10;[2] textbox 请输入关键词（选填），键入关键词时会展示联想浮层，按下TAB键或SHIFT+TA&#10;[3] button 出发地选择上海&#10;[4] button 北京&#10;[5] button 广州&#10;[6] button 三亚&#10;[7] button 更多&#10;[8] link Trip&#10;[9] button 酒店 按回车键打开菜单&#10;[10] button 机票 按回车键打开菜单&#10;[11] button 火车票 按回车键打开菜单&#10;[12] button 旅游 按回车键打开菜单&#10;Reply&#10;operation: CLICK (confidence 0.8)&#10;  CLICK 0.84, WAIT 0.15, BLOCKED 0.01, TYPE 0.00, SCROLL_UP 0.00&#10;click_target: 10 (confidence 0.99)&#10;  10 1.00, 1 0.00, 2 0.00, 3 0.00, 4 0.00&#10;type_target: 1 (confidence 0.36)&#10;  1 0.57, 2 0.32, 24 0.11&#10;text_1: 昆明 (confidence 0.85)&#10;  昆明 0.88, 北京 0.09, 携程 0.03, 2026年10月1日 0.00, 2026年10月7日 0.00&#10;text_2: 昆明 (confidence 0.53)&#10;  昆明 0.61, 携程 0.26, 北京 0.13, 2026年10月1日 0.00, 后 0.00&#10;text_24: 携程 (confidence 0.46)&#10;  携程 0.55, 昆明 0.31, 北京 0.12, 后 0.02, 2026年10月7日 0.00" data-detail-zh="输入&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://www.ctrip.com/&#10;携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理&#10;questions: operation, click_target, type_target, text_1, text_2, text_24&#10;[1] textbox 目的地/酒店名称 请通过键盘输入目的地名，例如：上海市。键入关键词时会展示联想浮&#10;[2] textbox 请输入关键词（选填），键入关键词时会展示联想浮层，按下TAB键或SHIFT+TA&#10;[3] button 出发地选择上海&#10;[4] button 北京&#10;[5] button 广州&#10;[6] button 三亚&#10;[7] button 更多&#10;[8] link Trip&#10;[9] button 酒店 按回车键打开菜单&#10;[10] button 机票 按回车键打开菜单&#10;[11] button 火车票 按回车键打开菜单&#10;[12] button 旅游 按回车键打开菜单&#10;回复&#10;operation: CLICK (confidence 0.8)&#10;  CLICK 0.84, WAIT 0.15, BLOCKED 0.01, TYPE 0.00, SCROLL_UP 0.00&#10;click_target: 10 (confidence 0.99)&#10;  10 1.00, 1 0.00, 2 0.00, 3 0.00, 4 0.00&#10;type_target: 1 (confidence 0.36)&#10;  1 0.57, 2 0.32, 24 0.11&#10;text_1: 昆明 (confidence 0.85)&#10;  昆明 0.88, 北京 0.09, 携程 0.03, 2026年10月1日 0.00, 2026年10月7日 0.00&#10;text_2: 昆明 (confidence 0.53)&#10;  昆明 0.61, 携程 0.26, 北京 0.13, 2026年10月1日 0.00, 后 0.00&#10;text_24: 携程 (confidence 0.46)&#10;  携程 0.55, 昆明 0.31, 北京 0.12, 后 0.02, 2026年10月7日 0.00" role="button" tabindex="0"><em data-en="Decide" data-zh="Jev 决策">Decide</em><b>1.3s</b><small><span data-en="in 16,518" data-zh="输入 16,518">in 16,518</span><span data-en="out 602" data-zh="输出 602">out 602</span></small></span><span class="phase act can-open" data-detail-en="Action&#10;Click “机票 按回车键打开菜单”" data-detail-zh="动作&#10;点击「机票 按回车键打开菜单」" role="button" tabindex="0"><em data-en="Act" data-zh="执行">Act</em><b>611 ms</b><small><span data-en="Click “机票 按回车键打开菜单”" data-zh="点击「机票 按回车键打开菜单」">Click “机票 按回车键打开菜单”</span></small></span><span class="phase can-open" data-detail-en="As expected&#10;verdict: pass (confidence 0.92)&#10;  pass 0.96, fail 0.04&#10;Expected the page to change after the click&#10;Actual: 携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理 → 【携程机票】飞机票查询,机票预订,机票价格查询,打折特价机票" data-detail-zh="符合预期&#10;verdict: pass (confidence 0.92)&#10;  pass 0.96, fail 0.04&#10;预期：点击后页面发生变化&#10;实际：携程旅行网:酒店预订,机票预订查询,旅游度假,商旅管理 → 【携程机票】飞机票查询,机票预订,机票价格查询,打折特价机票" role="button" tabindex="0"><em data-en="Assert" data-zh="Jev 断言">Assert</em><b>9 ms</b><small><span data-en="As expected" data-zh="符合预期">As expected</span></small></span><span class="phase"><em data-en="Screenshot" data-zh="截图">Screenshot</em><b>131 ms</b><small></small></span></div><div class="card-detail" hidden></div>
+      <div class="shot">
+    <img class="shot" src="jev-report/cases/auto/steps/006-click.png" alt="06 CLICK · Click “机票 按回车键打开菜单”">
+    <i data-en="06 CLICK · Click “机票 按回车键打开菜单”" data-zh="06 CLICK · 点击「机票 按回车键打开菜单」">06 CLICK · Click “机票 按回车键打开菜单”</i>
+  </div>
+      
+    </div>
+  </details><details class="step-row">
+    <summary class="t-item pass">
+      <span class="grow">
+        <b>07 WAIT</b>
+        <p data-en="Wait for the page" data-zh="等待页面">Wait for the page</p>
+      </span>
+      <span class="time">1.34s</span>
+      <span class="chevron"></span>
+    </summary>
+    <div class="step-body">
+      <div class="times"><span class="phase capture can-open" data-detail-en="https://flights.ctrip.com/online/channel/domestic&#10;【携程机票】飞机票查询,机票预订,机票价格查询,打折特价机票&#10;&#10;Page&#10;  [1] link 携程旅行网 · CLICK&#10;  [4] button 登录 · CLICK&#10;  [5] button 注册 · CLICK&#10;  [6] button 我的订单 · CLICK&#10;  [7] button 携程客服 · CLICK&#10;  [8] button 扫码下载携程App或关注微信公众号 · CLICK&#10;  [9] button 无障碍阅读开关 · CLICK&#10;  [10] button 酒店 按回车键打开菜单 · CLICK&#10;  [11] button 机票 按回车键打开菜单 · CLICK&#10;  [12] link 国内/国际/中国港澳台 · CLICK&#10;  [13] link 特价机票 · CLICK&#10;  [14] link 航班动态 · CLICK&#10;  [15] link 值机选座 · CLICK&#10;  [16] link 退票改签 · CLICK&#10;  [17] link 报销凭证 · CLICK&#10;  [18] link 机场攻略 · CLICK&#10;  [19] link 定制包机 · CLICK&#10;  [20] button 火车票 按回车键打开菜单 · CLICK&#10;  [21] button 旅游 按回车键打开菜单 · CLICK&#10;  [22] button 门票·活动 按回车键打开菜单 · CLICK&#10;  [23] button 汽车·船票 按回车键打开菜单 · CLICK&#10;  [24] button 用车 按回车键打开菜单 · CLICK&#10;  [25] button AI行程助手 按回车键打开菜单 · CLICK&#10;  [26] button 攻略·景点 按回车键打开菜单 · CLICK&#10;&#10;form&#10;  [2] textbox 搜旅任何旅行相关... · TYPE, CLICK&#10;  [3] link 搜索 · CLICK" data-detail-zh="https://flights.ctrip.com/online/channel/domestic&#10;【携程机票】飞机票查询,机票预订,机票价格查询,打折特价机票&#10;&#10;页面&#10;  [1] link 携程旅行网 · CLICK&#10;  [4] button 登录 · CLICK&#10;  [5] button 注册 · CLICK&#10;  [6] button 我的订单 · CLICK&#10;  [7] button 携程客服 · CLICK&#10;  [8] button 扫码下载携程App或关注微信公众号 · CLICK&#10;  [9] button 无障碍阅读开关 · CLICK&#10;  [10] button 酒店 按回车键打开菜单 · CLICK&#10;  [11] button 机票 按回车键打开菜单 · CLICK&#10;  [12] link 国内/国际/中国港澳台 · CLICK&#10;  [13] link 特价机票 · CLICK&#10;  [14] link 航班动态 · CLICK&#10;  [15] link 值机选座 · CLICK&#10;  [16] link 退票改签 · CLICK&#10;  [17] link 报销凭证 · CLICK&#10;  [18] link 机场攻略 · CLICK&#10;  [19] link 定制包机 · CLICK&#10;  [20] button 火车票 按回车键打开菜单 · CLICK&#10;  [21] button 旅游 按回车键打开菜单 · CLICK&#10;  [22] button 门票·活动 按回车键打开菜单 · CLICK&#10;  [23] button 汽车·船票 按回车键打开菜单 · CLICK&#10;  [24] button 用车 按回车键打开菜单 · CLICK&#10;  [25] button AI行程助手 按回车键打开菜单 · CLICK&#10;  [26] button 攻略·景点 按回车键打开菜单 · CLICK&#10;&#10;form&#10;  [2] textbox 搜旅任何旅行相关... · TYPE, CLICK&#10;  [3] link 搜索 · CLICK" role="button" tabindex="0"><em data-en="Page elements" data-zh="获取页面元素">Page elements</em><b>9 ms</b><small></small></span><span class="phase model can-open" data-detail-en="Input&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://flights.ctrip.com/online/channel/domestic&#10;【携程机票】飞机票查询,机票预订,机票价格查询,打折特价机票&#10;questions: operation, click_target, type_target, text_2&#10;[1] link 携程旅行网&#10;[2] textbox 搜旅任何旅行相关...&#10;[3] link 搜索&#10;[4] button 登录&#10;[5] button 注册&#10;[6] button 我的订单&#10;[7] button 携程客服&#10;[8] button 扫码下载携程App或关注微信公众号&#10;[9] button 无障碍阅读开关&#10;[10] button 酒店 按回车键打开菜单&#10;[11] button 机票 按回车键打开菜单&#10;[12] link 国内/国际/中国港澳台&#10;Reply&#10;operation: WAIT (confidence 0.65)&#10;  WAIT 0.69, CLICK 0.11, SCROLL_DOWN 0.08, BLOCKED 0.05, TYPE 0.04&#10;click_target: 12 (confidence 0.56)&#10;  12 0.59, 11 0.28, 2 0.10, 1 0.01, 3 0.01&#10;type_target: 2 (confidence 1)&#10;  2 1.00&#10;text_2: 携程 (confidence 0.31)&#10;  携程 0.44, 北京 0.36, 昆明 0.20, 2026年10月7日 0.00, 2026年10月1日 0.00" data-detail-zh="输入&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://flights.ctrip.com/online/channel/domestic&#10;【携程机票】飞机票查询,机票预订,机票价格查询,打折特价机票&#10;questions: operation, click_target, type_target, text_2&#10;[1] link 携程旅行网&#10;[2] textbox 搜旅任何旅行相关...&#10;[3] link 搜索&#10;[4] button 登录&#10;[5] button 注册&#10;[6] button 我的订单&#10;[7] button 携程客服&#10;[8] button 扫码下载携程App或关注微信公众号&#10;[9] button 无障碍阅读开关&#10;[10] button 酒店 按回车键打开菜单&#10;[11] button 机票 按回车键打开菜单&#10;[12] link 国内/国际/中国港澳台&#10;回复&#10;operation: WAIT (confidence 0.65)&#10;  WAIT 0.69, CLICK 0.11, SCROLL_DOWN 0.08, BLOCKED 0.05, TYPE 0.04&#10;click_target: 12 (confidence 0.56)&#10;  12 0.59, 11 0.28, 2 0.10, 1 0.01, 3 0.01&#10;type_target: 2 (confidence 1)&#10;  2 1.00&#10;text_2: 携程 (confidence 0.31)&#10;  携程 0.44, 北京 0.36, 昆明 0.20, 2026年10月7日 0.00, 2026年10月1日 0.00" role="button" tabindex="0"><em data-en="Decide" data-zh="Jev 决策">Decide</em><b>1.12s</b><small><span data-en="in 11,590" data-zh="输入 11,590">in 11,590</span><span data-en="out 388" data-zh="输出 388">out 388</span></small></span><span class="phase act can-open" data-detail-en="Action&#10;Wait for the page" data-detail-zh="动作&#10;等待页面" role="button" tabindex="0"><em data-en="Act" data-zh="执行">Act</em><b>101 ms</b><small><span data-en="Wait for the page" data-zh="等待页面">Wait for the page</span></small></span><span class="phase can-open" data-detail-en="As expected&#10;verdict: pass (confidence 0.7)&#10;  pass 0.85, fail 0.15&#10;Expected the wait to finish&#10;Actual: 【携程机票】飞机票查询,机票预订,机票价格查询,打折特价机票 → 【携程机票】飞机票查询,机票预订,机票价格查询,打折特价机票" data-detail-zh="符合预期&#10;verdict: pass (confidence 0.7)&#10;  pass 0.85, fail 0.15&#10;预期：等待结束&#10;实际：【携程机票】飞机票查询,机票预订,机票价格查询,打折特价机票 → 【携程机票】飞机票查询,机票预订,机票价格查询,打折特价机票" role="button" tabindex="0"><em data-en="Assert" data-zh="Jev 断言">Assert</em><b>19 ms</b><small><span data-en="As expected" data-zh="符合预期">As expected</span></small></span><span class="phase"><em data-en="Screenshot" data-zh="截图">Screenshot</em><b>105 ms</b><small></small></span></div><div class="card-detail" hidden></div>
+      <div class="shot">
+    <img class="shot" src="jev-report/cases/auto/steps/007-wait.png" alt="07 WAIT · Wait for the page">
+    <i data-en="07 WAIT · Wait for the page" data-zh="07 WAIT · 等待页面">07 WAIT · Wait for the page</i>
+  </div>
+      
+    </div>
+  </details><details class="step-row">
+    <summary class="t-item pass">
+      <span class="grow">
+        <b>08 CLICK</b>
+        <p data-en="Click “搜索”" data-zh="点击「搜索」">Click “搜索”</p>
+      </span>
+      <span class="time">1.88s</span>
+      <span class="chevron"></span>
+    </summary>
+    <div class="step-body">
+      <div class="times"><span class="phase capture can-open" data-detail-en="https://flights.ctrip.com/online/channel/domestic&#10;【携程机票】飞机票查询,机票预订,机票价格查询,打折特价机票&#10;&#10;Page&#10;  [1] link 携程旅行网 · CLICK&#10;  [4] button 登录 · CLICK&#10;  [5] button 注册 · CLICK&#10;  [6] button 我的订单 · CLICK&#10;  [7] button 携程客服 · CLICK&#10;  [8] button 扫码下载携程App或关注微信公众号 · CLICK&#10;  [9] button 无障碍阅读开关 · CLICK&#10;  [10] link 特价机票 · CLICK&#10;  [11] link 航班动态 · CLICK&#10;  [12] link 在线选座 · CLICK&#10;  [13] link 退票改签 · CLICK&#10;  [19] button Go to slide 1 · CLICK&#10;  [20] button Go to slide 2 · CLICK&#10;  [21] textbox 请输入出发地 · TYPE, CLICK&#10;  [22] button 酒店 按回车键打开菜单 · CLICK&#10;  [23] button 机票 按回车键打开菜单 · CLICK&#10;  [24] link 国内/国际/中国港澳台 · CLICK&#10;  [25] link 特价机票 · CLICK&#10;  [26] link 航班动态 · CLICK&#10;  [27] link 值机选座 · CLICK&#10;  [28] link 退票改签 · CLICK&#10;  [29] link 报销凭证 · CLICK&#10;  [30] link 机场攻略 · CLICK&#10;  [31] link 定制包机 · CLICK&#10;  [32] button 火车票 按回车键打开菜单 · CLICK&#10;  [33] button 旅游 按回车键打开菜单 · CLICK&#10;  [34] button 门票·活动 按回车键打开菜单 · CLICK&#10;  [35] button 汽车·船票 按回车键打开菜单 · CLICK&#10;  [36] button 用车 按回车键打开菜单 · CLICK&#10;  [37] button AI行程助手 按回车键打开菜单 · CLICK&#10;  [38] button 攻略·景点 按回车键打开菜单 · CLICK&#10;&#10;form&#10;  [2] textbox 搜旅任何旅行相关... · TYPE, CLICK&#10;  [3] link 搜索 · CLICK&#10;  [14] textbox 出发地 可输入城市或机场 = 北京(BJS) · TYPE, CLICK&#10;  [15] textbox 目的地 可输入城市或机场 = 昆明(KMG) · TYPE, CLICK&#10;  [16] textbox 请选择日期 = 2026-10-01 · TYPE, CLICK&#10;  [17] textbox 请选择日期 = 2026-10-07 · TYPE, CLICK&#10;  [18] button 搜索 · CLICK" data-detail-zh="https://flights.ctrip.com/online/channel/domestic&#10;【携程机票】飞机票查询,机票预订,机票价格查询,打折特价机票&#10;&#10;页面&#10;  [1] link 携程旅行网 · CLICK&#10;  [4] button 登录 · CLICK&#10;  [5] button 注册 · CLICK&#10;  [6] button 我的订单 · CLICK&#10;  [7] button 携程客服 · CLICK&#10;  [8] button 扫码下载携程App或关注微信公众号 · CLICK&#10;  [9] button 无障碍阅读开关 · CLICK&#10;  [10] link 特价机票 · CLICK&#10;  [11] link 航班动态 · CLICK&#10;  [12] link 在线选座 · CLICK&#10;  [13] link 退票改签 · CLICK&#10;  [19] button Go to slide 1 · CLICK&#10;  [20] button Go to slide 2 · CLICK&#10;  [21] textbox 请输入出发地 · TYPE, CLICK&#10;  [22] button 酒店 按回车键打开菜单 · CLICK&#10;  [23] button 机票 按回车键打开菜单 · CLICK&#10;  [24] link 国内/国际/中国港澳台 · CLICK&#10;  [25] link 特价机票 · CLICK&#10;  [26] link 航班动态 · CLICK&#10;  [27] link 值机选座 · CLICK&#10;  [28] link 退票改签 · CLICK&#10;  [29] link 报销凭证 · CLICK&#10;  [30] link 机场攻略 · CLICK&#10;  [31] link 定制包机 · CLICK&#10;  [32] button 火车票 按回车键打开菜单 · CLICK&#10;  [33] button 旅游 按回车键打开菜单 · CLICK&#10;  [34] button 门票·活动 按回车键打开菜单 · CLICK&#10;  [35] button 汽车·船票 按回车键打开菜单 · CLICK&#10;  [36] button 用车 按回车键打开菜单 · CLICK&#10;  [37] button AI行程助手 按回车键打开菜单 · CLICK&#10;  [38] button 攻略·景点 按回车键打开菜单 · CLICK&#10;&#10;form&#10;  [2] textbox 搜旅任何旅行相关... · TYPE, CLICK&#10;  [3] link 搜索 · CLICK&#10;  [14] textbox 出发地 可输入城市或机场 = 北京(BJS) · TYPE, CLICK&#10;  [15] textbox 目的地 可输入城市或机场 = 昆明(KMG) · TYPE, CLICK&#10;  [16] textbox 请选择日期 = 2026-10-01 · TYPE, CLICK&#10;  [17] textbox 请选择日期 = 2026-10-07 · TYPE, CLICK&#10;  [18] button 搜索 · CLICK" role="button" tabindex="0"><em data-en="Page elements" data-zh="获取页面元素">Page elements</em><b>19 ms</b><small></small></span><span class="phase model can-open" data-detail-en="Input&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://flights.ctrip.com/online/channel/domestic&#10;【携程机票】飞机票查询,机票预订,机票价格查询,打折特价机票&#10;questions: operation, click_target, type_target, text_2, text_14, text_15, text_16, text_17, text_21&#10;[1] link 携程旅行网&#10;[2] textbox 搜旅任何旅行相关...&#10;[3] link 搜索&#10;[4] button 登录&#10;[5] button 注册&#10;[6] button 我的订单&#10;[7] button 携程客服&#10;[8] button 扫码下载携程App或关注微信公众号&#10;[9] button 无障碍阅读开关&#10;[10] link 特价机票&#10;[11] link 航班动态&#10;[12] link 在线选座&#10;Reply&#10;operation: CLICK (confidence 0.23)&#10;  CLICK 0.34, DONE 0.30, WAIT 0.29, TYPE 0.05, BLOCKED 0.01&#10;click_target: 18 (confidence 0.92)&#10;  18 0.93, 24 0.03, 14 0.02, 23 0.02, 1 0.00&#10;type_target: 14 (confidence 0.15)&#10;  14 0.28, 17 0.24, 16 0.22, 21 0.16, 2 0.05&#10;text_2: 携程 (confidence 0.78)&#10;  携程 0.82, 北京 0.10, 昆明 0.06, 2026年10月7日 0.01, 后 0.01&#10;text_14: 北京 (confidence 0.77)&#10;  北京 0.81, 后 0.12, 昆明 0.05, 携程 0.01, 2026年10月7日 0.00&#10;text_15: 昆明 (confidence 0.91)&#10;  昆明 0.93, 后 0.07, 2026年10月7日 0.00, 北京 0.00, 携程 0.00&#10;text_16: 2026年10月7日 (confidence 0.73)&#10;  2026年10月7日 0.78, 2026年10月1日 0.21, 后 0.01, 昆明 0.00, 携程 0.00&#10;text_17: 2026年10月7日 (confidence 0.66)&#10;  2026年10月7日 0.72, 2026年10月1日 0.27, 后 0.01, 昆明 0.00, 携程 0.00&#10;text_21: 北京 (confidence 0.88)&#10;  北京 0.90, 携程 0.05, 昆明 0.04, 后 0.01, 2026年10月7日 0.00" data-detail-zh="输入&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://flights.ctrip.com/online/channel/domestic&#10;【携程机票】飞机票查询,机票预订,机票价格查询,打折特价机票&#10;questions: operation, click_target, type_target, text_2, text_14, text_15, text_16, text_17, text_21&#10;[1] link 携程旅行网&#10;[2] textbox 搜旅任何旅行相关...&#10;[3] link 搜索&#10;[4] button 登录&#10;[5] button 注册&#10;[6] button 我的订单&#10;[7] button 携程客服&#10;[8] button 扫码下载携程App或关注微信公众号&#10;[9] button 无障碍阅读开关&#10;[10] link 特价机票&#10;[11] link 航班动态&#10;[12] link 在线选座&#10;回复&#10;operation: CLICK (confidence 0.23)&#10;  CLICK 0.34, DONE 0.30, WAIT 0.29, TYPE 0.05, BLOCKED 0.01&#10;click_target: 18 (confidence 0.92)&#10;  18 0.93, 24 0.03, 14 0.02, 23 0.02, 1 0.00&#10;type_target: 14 (confidence 0.15)&#10;  14 0.28, 17 0.24, 16 0.22, 21 0.16, 2 0.05&#10;text_2: 携程 (confidence 0.78)&#10;  携程 0.82, 北京 0.10, 昆明 0.06, 2026年10月7日 0.01, 后 0.01&#10;text_14: 北京 (confidence 0.77)&#10;  北京 0.81, 后 0.12, 昆明 0.05, 携程 0.01, 2026年10月7日 0.00&#10;text_15: 昆明 (confidence 0.91)&#10;  昆明 0.93, 后 0.07, 2026年10月7日 0.00, 北京 0.00, 携程 0.00&#10;text_16: 2026年10月7日 (confidence 0.73)&#10;  2026年10月7日 0.78, 2026年10月1日 0.21, 后 0.01, 昆明 0.00, 携程 0.00&#10;text_17: 2026年10月7日 (confidence 0.66)&#10;  2026年10月7日 0.72, 2026年10月1日 0.27, 后 0.01, 昆明 0.00, 携程 0.00&#10;text_21: 北京 (confidence 0.88)&#10;  北京 0.90, 携程 0.05, 昆明 0.04, 后 0.01, 2026年10月7日 0.00" role="button" tabindex="0"><em data-en="Decide" data-zh="Jev 决策">Decide</em><b>1.29s</b><small><span data-en="in 23,238" data-zh="输入 23,238">in 23,238</span><span data-en="out 939" data-zh="输出 939">out 939</span></small></span><span class="phase act can-open" data-detail-en="Action&#10;Click “搜索”" data-detail-zh="动作&#10;点击「搜索」" role="button" tabindex="0"><em data-en="Act" data-zh="执行">Act</em><b>527 ms</b><small><span data-en="Click “搜索”" data-zh="点击「搜索」">Click “搜索”</span></small></span><span class="phase can-open" data-detail-en="As expected&#10;verdict: pass (confidence 0.94)&#10;  pass 0.97, fail 0.03&#10;Expected the page to change after the click&#10;Actual: 【携程机票】飞机票查询,机票预订,机票价格查询,打折特价机票 → 北京到昆明机票查询预订-北京到昆明往返机票多少钱-[携程机票]" data-detail-zh="符合预期&#10;verdict: pass (confidence 0.94)&#10;  pass 0.97, fail 0.03&#10;预期：点击后页面发生变化&#10;实际：【携程机票】飞机票查询,机票预订,机票价格查询,打折特价机票 → 北京到昆明机票查询预订-北京到昆明往返机票多少钱-[携程机票]" role="button" tabindex="0"><em data-en="Assert" data-zh="Jev 断言">Assert</em><b>11 ms</b><small><span data-en="As expected" data-zh="符合预期">As expected</span></small></span><span class="phase"><em data-en="Screenshot" data-zh="截图">Screenshot</em><b>49 ms</b><small></small></span></div><div class="card-detail" hidden></div>
+      <div class="shot">
+    <img class="shot" src="jev-report/cases/auto/steps/008-click.png" alt="08 CLICK · Click “搜索”">
+    <i data-en="08 CLICK · Click “搜索”" data-zh="08 CLICK · 点击「搜索」">08 CLICK · Click “搜索”</i>
+  </div>
+      
+    </div>
+  </details><details class="step-row">
+    <summary class="t-item pass">
+      <span class="grow">
+        <b>09 WAIT</b>
+        <p data-en="Wait for the page" data-zh="等待页面">Wait for the page</p>
+      </span>
+      <span class="time">1.36s</span>
+      <span class="chevron"></span>
+    </summary>
+    <div class="step-body">
+      <div class="times"><span class="phase capture can-open" data-detail-en="https://flights.ctrip.com/online/list/round-bjs-kmg?depdate=2026-10-01_2026-10-07&amp;cabin=y_s_c_f&amp;adult=1&amp;child=0&amp;infant=0&#10;北京到昆明机票查询预订-北京到昆明往返机票多少钱-[携程机票]&#10;&#10;Page&#10;  [1] link 携程旅行网 · CLICK&#10;  [4] button 登录 · CLICK&#10;  [5] button 注册 · CLICK&#10;  [6] button 我的订单 · CLICK&#10;  [7] button 携程客服 · CLICK&#10;  [8] button 扫码下载携程App或关注微信公众号 · CLICK&#10;  [9] button 无障碍阅读开关 · CLICK&#10;  [10] button 酒店 按回车键打开菜单 · CLICK&#10;  [11] button 机票 按回车键打开菜单 · CLICK&#10;  [12] button 火车票 按回车键打开菜单 · CLICK&#10;  [13] button 旅游 按回车键打开菜单 · CLICK&#10;  [14] button 门票·活动 按回车键打开菜单 · CLICK&#10;  [15] button 汽车·船票 按回车键打开菜单 · CLICK&#10;  [16] button 用车 按回车键打开菜单 · CLICK&#10;  [17] button AI行程助手 按回车键打开菜单 · CLICK&#10;  [18] button 攻略·景点 按回车键打开菜单 · CLICK&#10;  [19] button 旅游地图 按回车键打开菜单 · CLICK&#10;  [20] button 全球购 按回车键打开菜单 · CLICK&#10;  [21] button 礼品卡 按回车键打开菜单 · CLICK&#10;  [22] button 携程金融 按回车键打开菜单 · CLICK&#10;  [23] button 企业商旅 按回车键打开菜单 · CLICK&#10;&#10;form&#10;  [2] textbox 搜旅任何旅行相关... · TYPE, CLICK&#10;  [3] link 搜索 · CLICK" data-detail-zh="https://flights.ctrip.com/online/list/round-bjs-kmg?depdate=2026-10-01_2026-10-07&amp;cabin=y_s_c_f&amp;adult=1&amp;child=0&amp;infant=0&#10;北京到昆明机票查询预订-北京到昆明往返机票多少钱-[携程机票]&#10;&#10;页面&#10;  [1] link 携程旅行网 · CLICK&#10;  [4] button 登录 · CLICK&#10;  [5] button 注册 · CLICK&#10;  [6] button 我的订单 · CLICK&#10;  [7] button 携程客服 · CLICK&#10;  [8] button 扫码下载携程App或关注微信公众号 · CLICK&#10;  [9] button 无障碍阅读开关 · CLICK&#10;  [10] button 酒店 按回车键打开菜单 · CLICK&#10;  [11] button 机票 按回车键打开菜单 · CLICK&#10;  [12] button 火车票 按回车键打开菜单 · CLICK&#10;  [13] button 旅游 按回车键打开菜单 · CLICK&#10;  [14] button 门票·活动 按回车键打开菜单 · CLICK&#10;  [15] button 汽车·船票 按回车键打开菜单 · CLICK&#10;  [16] button 用车 按回车键打开菜单 · CLICK&#10;  [17] button AI行程助手 按回车键打开菜单 · CLICK&#10;  [18] button 攻略·景点 按回车键打开菜单 · CLICK&#10;  [19] button 旅游地图 按回车键打开菜单 · CLICK&#10;  [20] button 全球购 按回车键打开菜单 · CLICK&#10;  [21] button 礼品卡 按回车键打开菜单 · CLICK&#10;  [22] button 携程金融 按回车键打开菜单 · CLICK&#10;  [23] button 企业商旅 按回车键打开菜单 · CLICK&#10;&#10;form&#10;  [2] textbox 搜旅任何旅行相关... · TYPE, CLICK&#10;  [3] link 搜索 · CLICK" role="button" tabindex="0"><em data-en="Page elements" data-zh="获取页面元素">Page elements</em><b>11 ms</b><small></small></span><span class="phase model can-open" data-detail-en="Input&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://flights.ctrip.com/online/list/round-bjs-kmg?depdate=2026-10-01_2026-10-07&amp;cabin=y_s_c_f&amp;adult=1&amp;child=0&amp;infant=0&#10;北京到昆明机票查询预订-北京到昆明往返机票多少钱-[携程机票]&#10;questions: operation, click_target, type_target, text_2&#10;[1] link 携程旅行网&#10;[2] textbox 搜旅任何旅行相关...&#10;[3] link 搜索&#10;[4] button 登录&#10;[5] button 注册&#10;[6] button 我的订单&#10;[7] button 携程客服&#10;[8] button 扫码下载携程App或关注微信公众号&#10;[9] button 无障碍阅读开关&#10;[10] button 酒店 按回车键打开菜单&#10;[11] button 机票 按回车键打开菜单&#10;[12] button 火车票 按回车键打开菜单&#10;Reply&#10;operation: WAIT (confidence 0.51)&#10;  WAIT 0.59, DONE 0.16, SCROLL_DOWN 0.07, CLICK 0.07, BLOCKED 0.05&#10;click_target: 11 (confidence 0.33)&#10;  11 0.37, 2 0.25, 3 0.16, 18 0.12, 1 0.07&#10;type_target: 2 (confidence 1)&#10;  2 1.00&#10;text_2: 携程 (confidence 0.46)&#10;  携程 0.56, 北京 0.27, 昆明 0.16, 2026年10月1日 0.00, 2026年10月7日 0.00" data-detail-zh="输入&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://flights.ctrip.com/online/list/round-bjs-kmg?depdate=2026-10-01_2026-10-07&amp;cabin=y_s_c_f&amp;adult=1&amp;child=0&amp;infant=0&#10;北京到昆明机票查询预订-北京到昆明往返机票多少钱-[携程机票]&#10;questions: operation, click_target, type_target, text_2&#10;[1] link 携程旅行网&#10;[2] textbox 搜旅任何旅行相关...&#10;[3] link 搜索&#10;[4] button 登录&#10;[5] button 注册&#10;[6] button 我的订单&#10;[7] button 携程客服&#10;[8] button 扫码下载携程App或关注微信公众号&#10;[9] button 无障碍阅读开关&#10;[10] button 酒店 按回车键打开菜单&#10;[11] button 机票 按回车键打开菜单&#10;[12] button 火车票 按回车键打开菜单&#10;回复&#10;operation: WAIT (confidence 0.51)&#10;  WAIT 0.59, DONE 0.16, SCROLL_DOWN 0.07, CLICK 0.07, BLOCKED 0.05&#10;click_target: 11 (confidence 0.33)&#10;  11 0.37, 2 0.25, 3 0.16, 18 0.12, 1 0.07&#10;type_target: 2 (confidence 1)&#10;  2 1.00&#10;text_2: 携程 (confidence 0.46)&#10;  携程 0.56, 北京 0.27, 昆明 0.16, 2026年10月1日 0.00, 2026年10月7日 0.00" role="button" tabindex="0"><em data-en="Decide" data-zh="Jev 决策">Decide</em><b>1.21s</b><small><span data-en="in 11,543" data-zh="输入 11,543">in 11,543</span><span data-en="out 364" data-zh="输出 364">out 364</span></small></span><span class="phase act can-open" data-detail-en="Action&#10;Wait for the page" data-detail-zh="动作&#10;等待页面" role="button" tabindex="0"><em data-en="Act" data-zh="执行">Act</em><b>99 ms</b><small><span data-en="Wait for the page" data-zh="等待页面">Wait for the page</span></small></span><span class="phase can-open" data-detail-en="As expected&#10;verdict: pass (confidence 0.69)&#10;  pass 0.85, fail 0.15&#10;Expected the wait to finish&#10;Actual: 北京到昆明机票查询预订-北京到昆明往返机票多少钱-[携程机票] → 北京到昆明机票查询预订-北京到昆明往返机票多少钱-[携程机票]" data-detail-zh="符合预期&#10;verdict: pass (confidence 0.69)&#10;  pass 0.85, fail 0.15&#10;预期：等待结束&#10;实际：北京到昆明机票查询预订-北京到昆明往返机票多少钱-[携程机票] → 北京到昆明机票查询预订-北京到昆明往返机票多少钱-[携程机票]" role="button" tabindex="0"><em data-en="Assert" data-zh="Jev 断言">Assert</em><b>9 ms</b><small><span data-en="As expected" data-zh="符合预期">As expected</span></small></span><span class="phase"><em data-en="Screenshot" data-zh="截图">Screenshot</em><b>50 ms</b><small></small></span></div><div class="card-detail" hidden></div>
+      <div class="shot">
+    <img class="shot" src="jev-report/cases/auto/steps/009-wait.png" alt="09 WAIT · Wait for the page">
+    <i data-en="09 WAIT · Wait for the page" data-zh="09 WAIT · 等待页面">09 WAIT · Wait for the page</i>
+  </div>
+      
+    </div>
+  </details><details class="step-row">
+    <summary class="t-item pass">
+      <span class="grow">
+        <b>10 DONE</b>
+        <p data-en="Done" data-zh="完成">Done</p>
+      </span>
+      <span class="time">2.38s</span>
+      <span class="chevron"></span>
+    </summary>
+    <div class="step-body">
+      <div class="times"><span class="phase capture can-open" data-detail-en="https://flights.ctrip.com/online/list/round-bjs-kmg?depdate=2026-10-01_2026-10-07&amp;cabin=y_s_c_f&amp;adult=1&amp;child=0&amp;infant=0&#10;北京到昆明机票查询预订-北京到昆明往返机票多少钱-[携程机票]&#10;&#10;Page&#10;  [1] link 携程旅行网 · CLICK&#10;  [4] button 登录 · CLICK&#10;  [5] button 注册 · CLICK&#10;  [6] button 我的订单 · CLICK&#10;  [7] button 携程客服 · CLICK&#10;  [8] button 扫码下载携程App或关注微信公众号 · CLICK&#10;  [9] button 无障碍阅读开关 · CLICK&#10;  [14] link 在线客服 · CLICK&#10;  [15] button 酒店 按回车键打开菜单 · CLICK&#10;  [16] button 机票 按回车键打开菜单 · CLICK&#10;  [17] button 火车票 按回车键打开菜单 · CLICK&#10;  [18] button 旅游 按回车键打开菜单 · CLICK&#10;  [19] button 门票·活动 按回车键打开菜单 · CLICK&#10;  [20] button 汽车·船票 按回车键打开菜单 · CLICK&#10;  [21] button 用车 按回车键打开菜单 · CLICK&#10;  [22] button AI行程助手 按回车键打开菜单 · CLICK&#10;  [23] button 攻略·景点 按回车键打开菜单 · CLICK&#10;  [24] button 旅游地图 按回车键打开菜单 · CLICK&#10;  [25] button 全球购 按回车键打开菜单 · CLICK&#10;  [26] button 礼品卡 按回车键打开菜单 · CLICK&#10;  [27] button 携程金融 按回车键打开菜单 · CLICK&#10;  [28] button 企业商旅 按回车键打开菜单 · CLICK&#10;&#10;form&#10;  [2] textbox 搜旅任何旅行相关... · TYPE, CLICK&#10;  [3] link 搜索 · CLICK&#10;  [10] textbox 出发地 可输入城市或机场 = 北京(BJS) · TYPE, CLICK&#10;  [11] textbox 目的地 可输入城市或机场 = 昆明(KMG) · TYPE, CLICK&#10;  [12] textbox 请选择日期 = 2026-10-01 · TYPE, CLICK&#10;  [13] textbox 请选择日期 = 2026-10-07 · TYPE, CLICK" data-detail-zh="https://flights.ctrip.com/online/list/round-bjs-kmg?depdate=2026-10-01_2026-10-07&amp;cabin=y_s_c_f&amp;adult=1&amp;child=0&amp;infant=0&#10;北京到昆明机票查询预订-北京到昆明往返机票多少钱-[携程机票]&#10;&#10;页面&#10;  [1] link 携程旅行网 · CLICK&#10;  [4] button 登录 · CLICK&#10;  [5] button 注册 · CLICK&#10;  [6] button 我的订单 · CLICK&#10;  [7] button 携程客服 · CLICK&#10;  [8] button 扫码下载携程App或关注微信公众号 · CLICK&#10;  [9] button 无障碍阅读开关 · CLICK&#10;  [14] link 在线客服 · CLICK&#10;  [15] button 酒店 按回车键打开菜单 · CLICK&#10;  [16] button 机票 按回车键打开菜单 · CLICK&#10;  [17] button 火车票 按回车键打开菜单 · CLICK&#10;  [18] button 旅游 按回车键打开菜单 · CLICK&#10;  [19] button 门票·活动 按回车键打开菜单 · CLICK&#10;  [20] button 汽车·船票 按回车键打开菜单 · CLICK&#10;  [21] button 用车 按回车键打开菜单 · CLICK&#10;  [22] button AI行程助手 按回车键打开菜单 · CLICK&#10;  [23] button 攻略·景点 按回车键打开菜单 · CLICK&#10;  [24] button 旅游地图 按回车键打开菜单 · CLICK&#10;  [25] button 全球购 按回车键打开菜单 · CLICK&#10;  [26] button 礼品卡 按回车键打开菜单 · CLICK&#10;  [27] button 携程金融 按回车键打开菜单 · CLICK&#10;  [28] button 企业商旅 按回车键打开菜单 · CLICK&#10;&#10;form&#10;  [2] textbox 搜旅任何旅行相关... · TYPE, CLICK&#10;  [3] link 搜索 · CLICK&#10;  [10] textbox 出发地 可输入城市或机场 = 北京(BJS) · TYPE, CLICK&#10;  [11] textbox 目的地 可输入城市或机场 = 昆明(KMG) · TYPE, CLICK&#10;  [12] textbox 请选择日期 = 2026-10-01 · TYPE, CLICK&#10;  [13] textbox 请选择日期 = 2026-10-07 · TYPE, CLICK" role="button" tabindex="0"><em data-en="Page elements" data-zh="获取页面元素">Page elements</em><b>9 ms</b><small></small></span><span class="phase model can-open" data-detail-en="Input&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://flights.ctrip.com/online/list/round-bjs-kmg?depdate=2026-10-01_2026-10-07&amp;cabin=y_s_c_f&amp;adult=1&amp;child=0&amp;infant=0&#10;北京到昆明机票查询预订-北京到昆明往返机票多少钱-[携程机票]&#10;questions: operation, click_target, type_target, text_2, text_10, text_11, text_12, text_13&#10;[1] link 携程旅行网&#10;[2] textbox 搜旅任何旅行相关...&#10;[3] link 搜索&#10;[4] button 登录&#10;[5] button 注册&#10;[6] button 我的订单&#10;[7] button 携程客服&#10;[8] button 扫码下载携程App或关注微信公众号&#10;[9] button 无障碍阅读开关&#10;[10] textbox 出发地 可输入城市或机场&#10;[11] textbox 目的地 可输入城市或机场&#10;[12] textbox 请选择日期&#10;Reply&#10;operation: DONE (confidence 0.28)&#10;  DONE 0.38, WAIT 0.30, CLICK 0.24, SCROLL_DOWN 0.03, TYPE 0.02&#10;click_target: 3 (confidence 0.6)&#10;  3 0.62, 16 0.10, 1 0.09, 13 0.06, 12 0.04&#10;type_target: 13 (confidence 0.24)&#10;  13 0.38, 2 0.31, 10 0.14, 12 0.10, 11 0.07&#10;text_2: 携程 (confidence 0.84)&#10;  携程 0.87, 北京 0.07, 昆明 0.04, 2026年10月7日 0.01, 后 0.01&#10;text_10: 北京 (confidence 0.87)&#10;  北京 0.90, 后 0.08, 昆明 0.02, 2026年10月1日 0.00, 2026年10月7日 0.00&#10;text_11: 昆明 (confidence 0.96)&#10;  昆明 0.97, 后 0.03, 2026年10月1日 0.00, 2026年10月7日 0.00, 携程 0.00&#10;text_12: 2026年10月7日 (confidence 0.78)&#10;  2026年10月7日 0.82, 2026年10月1日 0.17, 后 0.01, 携程 0.00, 北京 0.00&#10;text_13: 2026年10月7日 (confidence 0.67)&#10;  2026年10月7日 0.73, 2026年10月1日 0.26, 后 0.01, 携程 0.00, 北京 0.00" data-detail-zh="输入&#10;goal: 在百度搜索携程，打开携程官网。进入机票，确认为国内往返。出发地填北京，目的地填昆明。去程日期选2026年10月1日，返程日期选2026年10月7日。点搜索后，页面上出现北京到昆明该航线的航班列表或报价即可结束。不要登录、不要预订、不要支付、不要改日期。&#10;&#10;Planned steps:&#10;1. 打开百度首页。&#10;2. 在百度搜索框输入“携程”，点击“百度一下”。&#10;3. 在搜索结果中点击标题且链接标记为 baidu.com/link 的携程官网结果，进入携程站点。&#10;4. 在携程首页点击“机票”入口，进入机票查询页。&#10;5. 在机票查询页确认并保持“国内机票”和“往返”选项。&#10;6. 确认出发地框（同时含“出发地”和“可输入城市或机场”）为“北京”或“北京(BJS)”；若不是，在该框输入“北京”并选择建议中的北京。&#10;7. 在目的地框（同时含“目的地”和“可输入城市或机场”）输入“昆明”，并点击建议列表中的昆明。&#10;8. 在去程日期控件中找到并点击日期格“2026年10月 1”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;9. 在返程日期控件中找到并点击日期格“2026年10月 7”；若当前未显示该月，先切换到 2026年10月再点该日期格。&#10;10. 核对出发地北京、目的地昆明、去程2026年10月1日、返程2026年10月7日、国内往返后，点击“搜索”。&#10;11. 等待结果页加载，直到出现北京到昆明航线的航班列表或报价。&#10;&#10;Done only when this is visibly true: 结果页上出现北京到昆明航线的航班列表或报价（如航班号、起降时间、票价），即为完成。&#10;Choose DONE only when that evidence is on the current page. Otherwise continue the next unfinished step.&#10;&#10;Business notes (reference only; still choose an observed index):&#10;# 登录弹窗&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 跑任务时如果出现登录弹窗，就停止。弹窗里常见「登录」、手机号、验证码、扫码或密码。选 BLOCKED，不要填手机号、验证码或密码，不要点登录、获取验证码或扫码。&#10;- 只有目标明确要求登录时，才继续登录。&#10;&#10;# 携程国内机票&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 从首页进入「机票」，并核对是国内还是国际、单程还是往返。目标写的是哪一种，就保持哪一种。&#10;- 导航名字里的「按回车键打开菜单」只是读屏说明，不是还要再打开一次。地址已经是 `flights.ctrip.com`，或标题已经是机票查询页时，不要再点「机票」。下一步填出发地、目的地和日期。&#10;- 机票查询条里，左边、名字里同时有「出发地」和「可输入城市或机场」的框才是出发地。目标出发城市是北京、框里已经是「北京」或「北京(BJS)」时，不要再输入，也不要把目的城市填进去。&#10;- 它右边、名字里同时有「目的地」和「可输入城市或机场」的框才是目的地。这里默认常常也是北京，要改成目标里的目的城市。目标写「目的地填昆明」就只在这个框输入「昆明」，再点建议列表里的昆明。点完后出发地仍应是北京，目的地应是昆明。&#10;- 顶栏「搜旅任何旅行相关...」是全站搜索，不是出发地，不要在这里填城市。&#10;- 页面下方低价速报里的「请输入出发地」不是这次查询的出发地。不要在这个框输入，也不要点它带出的城市建议。&#10;- 查询条上的出发地、目的地如果还没出现在控件列表里，选 WAIT，不要往顶栏搜索框或其他框里填城市。&#10;- 日期格的名字是「某年某月」加一个日，例如 `2026年10月 1`。只点这种格子。不要点「2026年10月」「10月」或带翻页符号的月份标题，也不要点「日一二三四五六」这种星期表头。去程和返程都要点目标里的那个月，不要点相邻月里同一个数字。&#10;- 点搜索之后，页面上出现该航线的航班列表或报价就可以结束。不要再改日期。&#10;- 不要登录、预订或支付，除非目标明确要求。&#10;&#10;# 百度搜索&#10;&#10;参考，不是可执行步骤。&#10;&#10;- 搜索框的 placeholder 经常是一条热搜标题，不是这个框的稳定名字。要输入的是目标里点名的查询词，例如目标写「搜索携程」就只输入「携程」。这个查询词只用于搜索框，不要填进后来的城市框或机场框。&#10;- 输入后点「百度一下」。&#10;- 名字像「官网」但链接标记是 `baidu.com/s` 的，是相关搜索，点了只是换一条百度搜索。不要点。&#10;- 带「下载」「广告」「APP」的结果不要点。链接标记是 `e.baidu.com` 的是广告，标题即使像官网也不要点。&#10;- 要打开官网时，点结果标题，而且链接标记是 `baidu.com/link` 的那条。点完地址应离开 baidu.com，落到目标站点，而不是 `e.baidu.com`。&#10;- 标题下面的绿色小字网址（例如 `www.ctrip.com`）经常点不走，还停在百度。不要点这行小字。如果点过一次地址仍是 baidu.com，不要再点它。&#10;- 不要把新闻标题当成搜索框。&#10;page: https://flights.ctrip.com/online/list/round-bjs-kmg?depdate=2026-10-01_2026-10-07&amp;cabin=y_s_c_f&amp;adult=1&amp;child=0&amp;infant=0&#10;北京到昆明机票查询预订-北京到昆明往返机票多少钱-[携程机票]&#10;questions: operation, click_target, type_target, text_2, text_10, text_11, text_12, text_13&#10;[1] link 携程旅行网&#10;[2] textbox 搜旅任何旅行相关...&#10;[3] link 搜索&#10;[4] button 登录&#10;[5] button 注册&#10;[6] button 我的订单&#10;[7] button 携程客服&#10;[8] button 扫码下载携程App或关注微信公众号&#10;[9] button 无障碍阅读开关&#10;[10] textbox 出发地 可输入城市或机场&#10;[11] textbox 目的地 可输入城市或机场&#10;[12] textbox 请选择日期&#10;回复&#10;operation: DONE (confidence 0.28)&#10;  DONE 0.38, WAIT 0.30, CLICK 0.24, SCROLL_DOWN 0.03, TYPE 0.02&#10;click_target: 3 (confidence 0.6)&#10;  3 0.62, 16 0.10, 1 0.09, 13 0.06, 12 0.04&#10;type_target: 13 (confidence 0.24)&#10;  13 0.38, 2 0.31, 10 0.14, 12 0.10, 11 0.07&#10;text_2: 携程 (confidence 0.84)&#10;  携程 0.87, 北京 0.07, 昆明 0.04, 2026年10月7日 0.01, 后 0.01&#10;text_10: 北京 (confidence 0.87)&#10;  北京 0.90, 后 0.08, 昆明 0.02, 2026年10月1日 0.00, 2026年10月7日 0.00&#10;text_11: 昆明 (confidence 0.96)&#10;  昆明 0.97, 后 0.03, 2026年10月1日 0.00, 2026年10月7日 0.00, 携程 0.00&#10;text_12: 2026年10月7日 (confidence 0.78)&#10;  2026年10月7日 0.82, 2026年10月1日 0.17, 后 0.01, 携程 0.00, 北京 0.00&#10;text_13: 2026年10月7日 (confidence 0.67)&#10;  2026年10月7日 0.73, 2026年10月1日 0.26, 后 0.01, 携程 0.00, 北京 0.00" role="button" tabindex="0"><em data-en="Decide" data-zh="Jev 决策">Decide</em><b>1.3s</b><small><span data-en="in 20,487" data-zh="输入 20,487">in 20,487</span><span data-en="out 771" data-zh="输出 771">out 771</span></small></span><span class="phase model"><em data-en="Done check" data-zh="结束确认">Done check</em><b>1s</b><small><span data-en="Jev · in 2,065" data-zh="Jev · 输入 2,065">Jev · in 2,065</span><span data-en="out 32" data-zh="输出 32">out 32</span></small></span><span class="phase"><em data-en="Screenshot" data-zh="截图">Screenshot</em><b>76 ms</b><small></small></span></div><div class="card-detail" hidden></div>
+      <div class="shot">
+    <img class="shot" src="jev-report/cases/auto/steps/010-done.png" alt="10 DONE · Done">
+    <i data-en="10 DONE · Done" data-zh="10 DONE · 完成">10 DONE · Done</i>
+  </div>
+      
+    </div>
+  </details></div>
+      </div>
+    </details></div>
+    </section>
+    <p class="footer"><span data-en="Local HTML from codexqa-jev-browser. Screenshots stay in this run folder." data-zh="由 codexqa-jev-browser 在本地生成。截图留在这次运行的目录里。">Local HTML from codexqa-jev-browser. Screenshots stay in this run folder.</span></p>
+  </div>
+
+  <dialog id="zoom" onclick="this.close()"><img alt=""></dialog>
+  <dialog id="player"><video controls playsinline></video></dialog>
+  <script>
+    const zoom = document.getElementById("zoom");
+    document.querySelectorAll(".shot").forEach((card) => {
+      const img = card.querySelector("img");
+      if (!img) return;
+      card.addEventListener("click", () => {
+        zoom.querySelector("img").src = img.src;
+        zoom.querySelector("img").alt = img.alt || "";
+        zoom.showModal();
+      });
+    });
+    const player = document.getElementById("player");
+    const playerVideo = player.querySelector("video");
+    document.querySelectorAll(".rec-row").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        playerVideo.src = button.dataset.video;
+        player.showModal();
+        playerVideo.play();
+      });
+    });
+    player.addEventListener("click", (event) => {
+      if (event.target === player) player.close();
+    });
+    player.addEventListener("close", () => {
+      playerVideo.pause();
+      playerVideo.removeAttribute("src");
+      playerVideo.load();
+    });
+    const langButtons = [...document.querySelectorAll("[data-set-lang]")];
+    const themeButtons = [...document.querySelectorAll("[data-set-theme]")];
+    function applyLang(lang) {
+      const next = lang === "zh" ? "zh" : "en";
+      document.documentElement.lang = next === "zh" ? "zh-CN" : "en";
+      document.documentElement.dataset.lang = next;
+      document.querySelectorAll("[data-en]").forEach((el) => {
+        el.textContent = next === "zh" ? el.dataset.zh || "" : el.dataset.en || "";
+      });
+      document.querySelectorAll(".phase.open").forEach((card) => {
+        const panel = card.closest(".step-body")?.querySelector(".card-detail");
+        if (panel && !panel.hidden) panel.innerHTML = renderDetail(detailText(card, next));
+      });
+      for (const button of langButtons) button.setAttribute("aria-pressed", String(button.dataset.setLang === next));
+      try { localStorage.setItem("codexqa-jev-browser-report-lang", next); } catch { /* private mode */ }
+    }
+    function applyTheme(theme) {
+      const next = theme === "dark" ? "dark" : "light";
+      document.documentElement.dataset.theme = next;
+      for (const button of themeButtons) button.setAttribute("aria-pressed", String(button.dataset.setTheme === next));
+      try { localStorage.setItem("codexqa-jev-browser-report-theme", next); } catch { /* private mode */ }
+    }
+    function detailText(card, lang) {
+      return lang === "zh" ? card.dataset.detailZh || "" : card.dataset.detailEn || "";
+    }
+    function esc(text) {
+      return String(text).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    }
+    function renderDetail(text) {
+      const headers = new Set(["Input", "Reply", "Thinking", "输入", "回复", "思考", "Action", "动作"]);
+      const sections = [];
+      let current = { title: "", body: [] };
+      for (const line of String(text).split("\n")) {
+        if (headers.has(line.trim())) {
+          if (current.title || current.body.length) sections.push(current);
+          current = { title: line.trim(), body: [] };
+        } else current.body.push(line);
+      }
+      if (current.title || current.body.length) sections.push(current);
+      return sections.map((sec) => {
+        const head = sec.title ? `<header>${esc(sec.title)}</header>` : "";
+        return `<section class="sec">${head}<div class="sec-b">${formatDetailBody(sec.body)}</div></section>`;
+      }).join("");
+    }
+    function formatDetailBody(lines) {
+      const chunks = [];
+      let kv = [];
+      let list = [];
+      let para = [];
+      const flushKv = () => {
+        if (!kv.length) return;
+        chunks.push(`<dl>${kv.join("")}</dl>`);
+        kv = [];
+      };
+      const flushList = () => {
+        if (!list.length) return;
+        chunks.push(`<ul class="els">${list.join("")}</ul>`);
+        list = [];
+      };
+      const flushPara = () => {
+        if (!para.length) return;
+        chunks.push(`<p>${esc(para.join("\n"))}</p>`);
+        para = [];
+      };
+      for (const raw of lines) {
+        const line = raw.replace(/\s+$/, "");
+        if (!line.trim()) { flushKv(); flushList(); flushPara(); continue; }
+        const el = line.match(/^\s*\[([^\]]+)\]\s+(\S+)\s+(.*)$/);
+        if (el) {
+          flushKv(); flushPara();
+          list.push(`<li><i>${esc(el[1])}</i><b>${esc(el[2])}</b><span title="${esc(el[3])}">${esc(el[3])}</span></li>`);
+          continue;
+        }
+        const pair = line.match(/^([\w\u4e00-\u9fff]{1,20})\s*[:：]\s*(.*)$/);
+        if (pair && !/^https?:/.test(line)) {
+          flushList(); flushPara();
+          const stacked = pair[2].length > 80 || pair[1] === "goal";
+          kv.push(`<div${stacked ? ' class="stack"' : ""}><dt>${esc(pair[1])}</dt><dd>${esc(pair[2] || "—")}</dd></div>`);
+          continue;
+        }
+        flushKv(); flushList();
+        para.push(line);
+      }
+      flushKv(); flushList(); flushPara();
+      return chunks.join("") || `<p>${esc(lines.join("\n"))}</p>`;
+    }
+    document.querySelectorAll(".phase.can-open").forEach((card) => {
+      const toggle = () => {
+        const body = card.closest(".step-body");
+        const panel = body?.querySelector(".card-detail");
+        if (!panel) return;
+        const lang = document.documentElement.lang.startsWith("zh") ? "zh" : "en";
+        const same = card.classList.contains("open");
+        body.querySelectorAll(".phase.open").forEach((el) => el.classList.remove("open"));
+        if (same) {
+          panel.hidden = true;
+          return;
+        }
+        panel.hidden = false;
+        panel.innerHTML = renderDetail(detailText(card, lang));
+        card.classList.add("open");
+      };
+      card.addEventListener("click", toggle);
+      card.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          toggle();
+        }
+      });
+    });
+    for (const button of langButtons) button.addEventListener("click", () => applyLang(button.dataset.setLang));
+    for (const button of themeButtons) button.addEventListener("click", () => applyTheme(button.dataset.setTheme));
+    let stored = "en";
+    let theme = "light";
+    try {
+      stored = localStorage.getItem("codexqa-jev-browser-report-lang") || "en";
+      theme = localStorage.getItem("codexqa-jev-browser-report-theme") || "light";
+    } catch { /* private mode */ }
+    applyLang(stored);
+    applyTheme(theme);
+  </script>
+</body>
+</html>

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-lang="en" data-store="ra-report">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title data-zh="需求缺口登记表" data-en="Sample requirements gap register">Sample requirements gap register</title>
+<script>
+(function(){
+  try {
+    var prefix = document.documentElement.getAttribute('data-store') || 'codexqa-report';
+    var t = localStorage.getItem(prefix + '-theme');
+    var l = localStorage.getItem(prefix + '-lang');
+    if (t === 'day') t = 'light';
+    if (t === 'night') t = 'dark';
+    if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+    if (l === 'en' || l === 'zh') {
+      document.documentElement.setAttribute('data-lang', l);
+      document.documentElement.lang = l === 'en' ? 'en' : 'zh-CN';
+    }
+  } catch (e) {}
+})();
+</script>
+<style>
+/* Shared CodexQA HTML report chrome — copied from codexqa-testcase-generator.
+   Keep in sync with skills/codexqa-testcase-generator/scripts/generate_case_report.py */
+:root, html[data-theme="light"] {
+  color-scheme: light;
+  --bg:#f0f3f6; --sheet:#ffffff; --ink:#1a2332; --muted:#5a6578;
+  --line:#d5dde8; --acc:#0f6b4c; --acc-soft:#e6f4ee; --acc-fg:#fff;
+  --web:#0b5cab; --web-bg:#e8f1fb; --web-line:#c5d9f0;
+  --server:#6b3fa0; --server-bg:#f3eafb; --server-line:#e0d0f2;
+  --app:#b45309; --app-bg:#fff4e6; --app-line:#f0d7b5;
+  --p0:#b42318; --p0-bg:#fde8e4;
+  --p1:#c2410c; --p1-bg:#ffedd5;
+  --p2:#9a6700; --p2-bg:#fef3c7;
+  --p3:#475569; --p3-bg:#e2e8f0;
+  --card:#f8fafc; --chip:#fff; --head:#fbfcfd; --code-bg:#eef2f6; --bar-track:#e8edf3;
+  --hero-a:#d9ebe3; --hero-b:#d6e4f5;
+  --ok:#17663a; --ok-bg:#dcfce7;
+  --toolbar-bg: color-mix(in srgb, var(--sheet) 92%, transparent);
+  --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-6:24px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Segoe UI", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#0f141b; --sheet:#1a222c; --ink:#e8edf2; --muted:#9aa7b5;
+  --line:#2f3b49; --acc:#3ecf8e; --acc-soft:#163526; --acc-fg:#0b1a12;
+  --web:#7eb6ff; --web-bg:#1a2a3d; --web-line:#2a4060;
+  --server:#c4a1ff; --server-bg:#2a1f3d; --server-line:#3d2f5c;
+  --app:#ffb074; --app-bg:#3a2718; --app-line:#5a3a22;
+  --p0:#ff8a80; --p0-bg:#3a1d1c;
+  --p1:#ffb074; --p1-bg:#3a2718;
+  --p2:#e6c35c; --p2-bg:#3a3218;
+  --p3:#cbd5e1; --p3-bg:#2a3441;
+  --card:#141b24; --chip:#1f2833; --head:#162029; --code-bg:#24303b; --bar-track:#24303b;
+  --hero-a:#1a2e28; --hero-b:#1a2433;
+  --ok:#7ddea4; --ok-bg:#163526;
+  --toolbar-bg: color-mix(in srgb, var(--sheet) 88%, transparent);
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 120px; }
+body { margin:0; font:14px/1.55 var(--sans); color:var(--ink); background:
+  radial-gradient(1200px 500px at 10% -10%, var(--hero-a) 0%, transparent 55%),
+  radial-gradient(900px 400px at 100% 0%, var(--hero-b) 0%, transparent 50%),
+  var(--bg); }
+.prefs { position:sticky; top:0; z-index:20; display:flex; justify-content:flex-end; gap:var(--space-2);
+  padding:10px 20px; background:var(--toolbar-bg); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line); }
+.prefs .group { display:flex; gap:4px; align-items:center; padding:2px;
+  border:1px solid var(--line); border-radius:999px; background:var(--sheet); }
+.prefs button { appearance:none; border:0; background:transparent; color:var(--muted);
+  font:inherit; font-size:12px; font-weight:600; letter-spacing:.02em; padding:8px 14px;
+  min-height:36px; border-radius:999px; cursor:pointer; }
+.prefs button[aria-pressed="true"] { background:var(--acc); color:var(--acc-fg); }
+.prefs button:focus-visible,
+.tab:focus-visible,
+.case-head:focus-visible,
+.stat-chip:focus-visible {
+  outline:2px solid var(--acc); outline-offset:2px;
+}
+.wrap { max-width:1180px; margin:0 auto; padding:var(--space-6) 20px 72px;
+  display:flex; flex-direction:column; gap:var(--space-5); }
+.hero { background:var(--sheet); border:1px solid var(--line); border-radius:14px;
+  padding:var(--space-6) 28px; margin:0; box-shadow:0 1px 0 rgba(26,35,50,.04); }
+.kicker { margin:0 0 8px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+h1 { margin:0 0 10px; font-size:24px; letter-spacing:-.02em; text-wrap:balance; }
+.sub { color:var(--muted); margin:0 0 var(--space-4); }
+.meta-row { display:flex; flex-wrap:wrap; gap:10px 20px; font-size:12.5px; color:var(--muted); }
+.meta-row code { font-family:var(--mono); font-size:11.5px; background:var(--code-bg); padding:1px 5px; border-radius:4px; color:var(--ink); }
+.stats { display:grid; grid-template-columns: 1.2fr 1fr; gap:var(--space-4); margin:var(--space-5) 0 0; }
+@media (max-width:800px) { .stats { grid-template-columns:1fr; } }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:var(--space-4) 18px; }
+.card h2 { margin:0 0 var(--space-3); font-size:13px; color:var(--muted); font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
+.chip-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(76px, 1fr)); gap:var(--space-3); }
+.chip-row.sources { margin-top:var(--space-3); }
+.stat-chip { min-width:0; width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--line);
+  background:var(--chip); text-decoration:none; color:inherit; display:block; }
+.stat-chip:hover { border-color:var(--acc); box-shadow:0 0 0 1px var(--acc-soft); }
+.stat-chip .n { display:block; font-size:22px; font-weight:700; line-height:1.1; }
+.stat-chip .l { font-size:11px; color:var(--muted); letter-spacing:.06em; }
+.stat-chip.p0 .n, .stat-chip.web .n { color:var(--p0); }
+.stat-chip.p0 { background:var(--p0-bg); border-color:var(--p0-bg); }
+.stat-chip.p1 .n { color:var(--p1); }
+.stat-chip.p1 { background:var(--p1-bg); border-color:var(--p1-bg); }
+.stat-chip.p2 .n { color:var(--p2); }
+.stat-chip.p2 { background:var(--p2-bg); border-color:var(--p2-bg); }
+.stat-chip.p3 .n { color:var(--p3); }
+.stat-chip.p3 { background:var(--p3-bg); border-color:var(--p3-bg); }
+.stat-chip.web { background:var(--web-bg); border-color:var(--web-line); }
+.stat-chip.web .n { color:var(--web); }
+.stat-chip.server { background:var(--server-bg); border-color:var(--server-line); }
+.stat-chip.server .n { color:var(--server); }
+.stat-chip.app { background:var(--app-bg); border-color:var(--app-line); }
+.stat-chip.app .n { color:var(--app); }
+.bar-row { display:grid; grid-template-columns:40px 1fr 40px; gap:var(--space-2); align-items:center; margin:8px 0; font-size:12px; }
+.bar { height:8px; background:var(--bar-track); border-radius:99px; overflow:hidden; }
+.bar i { display:block; height:100%; background:var(--acc); border-radius:99px; }
+.rule-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 28px; margin:4px 0 8px; }
+@media (max-width:800px) { .rule-grid { grid-template-columns:1fr; } }
+.rule-grid .bar-row { grid-template-columns:92px 1fr 28px; margin:0; min-height:28px; }
+.rule-grid .bar-row > span:first-child {
+  font-family:var(--mono); font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.toolbar { display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:center; margin:0;
+  background:var(--sheet); border:1px solid var(--line); border-radius:12px; padding:10px 14px;
+  position:sticky; top:52px; z-index:5; }
+.tabs { display:flex; gap:8px; flex-wrap:wrap; }
+.tab { border:1px solid var(--line); background:var(--chip); color:var(--ink); border-radius:999px;
+  padding:8px 14px; min-height:36px; cursor:pointer; font:inherit; font-size:13px; }
+.tab:hover { border-color:var(--acc); }
+.tab[aria-selected="true"] { background:var(--acc); border-color:var(--acc); color:var(--acc-fg); }
+.filters { display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; align-items:center; }
+.filters input, .filters select { border:1px solid var(--line); border-radius:8px; padding:8px 10px;
+  min-height:36px; font:inherit; background:var(--chip); color:var(--ink); }
+.filters input { min-width:180px; }
+.panel { background:var(--sheet); border:1px solid var(--line); border-radius:14px;
+  padding:20px 22px 16px; margin:0; }
+.panel[hidden] { display:none !important; }
+.panel-head h2 { margin:0; font-size:18px; }
+.panel-head .count { display:inline-block; margin-left:6px; font-size:12px; background:var(--acc-soft); color:var(--acc);
+  padding:2px 8px; border-radius:999px; vertical-align:middle; }
+.panel-head .desc { color:var(--muted); margin:8px 0 14px; font-size:13px; }
+.case-list { display:flex; flex-direction:column; gap:var(--space-3); }
+.case { border:1px solid var(--line); border-radius:10px; margin:0; overflow:hidden; background:var(--chip); }
+.case + .case { margin-top:var(--space-3); }
+.case-list .case + .case { margin-top:0; }
+.case[hidden] { display:none !important; }
+.case-head { display:flex; flex-wrap:wrap; gap:8px 10px; align-items:center;
+  padding:12px 14px; min-height:44px; cursor:pointer; background:var(--head); }
+.case-list .case-head { display:grid; grid-template-columns:auto auto auto minmax(0,1fr) auto auto;
+  align-items:center; }
+@media (max-width:720px) {
+  .case-list .case-head { grid-template-columns:auto auto minmax(0,1fr) auto; }
+  .case-list .case-head .badge.type,
+  .case-list .case-head .meta-id { display:none; }
+}
+.case-head:hover { background:color-mix(in srgb, var(--head) 55%, var(--acc-soft)); }
+.case-head h3 { margin:0; font-size:14px; font-weight:600; flex:1 1 220px; min-width:0;
+  text-wrap:balance; }
+.case-list .case-head h3 { flex:unset; overflow:visible; white-space:normal; text-wrap:balance; }
+.meta-id { font-family:var(--mono); font-size:11px; color:var(--muted); }
+.chev { width:8px; height:8px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted);
+  transform:rotate(45deg); transition:transform .15s ease; margin-right:4px; flex:0 0 auto; }
+.case.open .chev { transform:rotate(225deg); }
+.case-body { display:none; padding:12px 16px 16px; border-top:1px solid var(--line); }
+.case.open .case-body { display:block; }
+.badge { display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.04em; padding:2px 7px; border-radius:999px; }
+.badge.pri.p0 { background:var(--p0-bg); color:var(--p0); }
+.badge.pri.p1 { background:var(--p1-bg); color:var(--p1); }
+.badge.pri.p2 { background:var(--p2-bg); color:var(--p2); }
+.badge.pri.p3 { background:var(--p3-bg); color:var(--p3); }
+.badge.type { background:var(--code-bg); color:var(--muted); font-weight:600; }
+.badge.source.llm { background:var(--server-bg); color:var(--server); }
+.badge.source.sast { background:var(--web-bg); color:var(--web); }
+.badge.source.confirmed { background:var(--ok-bg); color:var(--ok); }
+.kv { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px 16px; margin:4px 0 14px; }
+.kv dt { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+.kv dd { margin:2px 0 0; }
+.case-body h4 { margin:16px 0 8px; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+.case-body h4:first-child { margin-top:4px; }
+.block { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
+.block p { margin:0 0 6px; }
+.block p:last-child { margin:0; }
+.block code, .steps code, code { font-family:var(--mono); font-size:11.5px; background:var(--code-bg); padding:1px 5px; border-radius:4px; color:var(--ink); }
+.block a, a { color:var(--acc); }
+.steps { width:100%; border-collapse:collapse; font-size:13px; }
+.steps th, .steps td { border:1px solid var(--line); padding:8px 9px; vertical-align:top; text-align:left; }
+.steps th { background:var(--code-bg); font-size:12px; }
+.empty { padding:28px; text-align:center; color:var(--muted); border:1px dashed var(--line); border-radius:10px; margin:0; }
+.muted { color:var(--muted); }
+.footer { margin:4px 0 0; color:var(--muted); font-size:12px; text-align:center; }
+.total-pill { display:inline-block; background:var(--acc-soft); color:var(--acc); font-weight:700;
+  padding:3px 10px; border-radius:999px; margin-left:6px; font-size:13px; }
+.alert { padding:12px 14px; border-radius:10px; font-size:13px; margin:0; border:1px solid var(--line); }
+.alert-warn { background:var(--p1-bg); color:var(--p1); border-color:transparent; }
+.alert-drop { background:var(--p0-bg); color:var(--p0); border-color:transparent; }
+html:not([data-lang="en"]) .unit-en { display:none; }
+html[data-lang="en"] .unit-zh { display:none; }
+.was { color:var(--p0); text-decoration:line-through; }
+.now { color:var(--acc); font-weight:600; }
+.figure-frame { background:var(--sheet); border:1px solid var(--line); border-radius:14px; padding:8px; }
+.figure-frame img { width:100%; height:auto; display:block; border-radius:10px; }
+@media (prefers-reduced-motion: reduce) {
+  .chev { transition:none; }
+}
+
+</style>
+</head>
+<body>
+<div class="prefs" role="toolbar" aria-label="Language and theme">
+  <div class="group" role="group" aria-label="Language">
+    <button type="button" data-set-lang="zh" aria-pressed="false">中文</button>
+    <button type="button" data-set-lang="en" aria-pressed="true">EN</button>
+  </div>
+  <div class="group" role="group" aria-label="Theme">
+    <button type="button" data-set-theme="light" aria-pressed="true"><span data-zh="白天" data-en="Light">Light</span></button>
+    <button type="button" data-set-theme="dark" aria-pressed="false"><span data-zh="黑夜" data-en="Dark">Dark</span></button>
+  </div>
+</div>
+<div class="wrap">
+
+  <header class="hero">
+    <p class="kicker">codexqa-requirement-analyzer · gap register</p>
+    <h1>Inventory hold v2 — one register, not three lists</h1>
+    <p class="sub">PRD §3 hold rules · API note <code>POST /v1/holds</code> · no SLA</p>
+    <div class="stats">
+      <div class="card">
+        <h2>By risk</h2>
+        <div class="chip-row">
+          <div class="stat-chip p0"><span class="n">2</span><span class="l">P0</span></div>
+          <div class="stat-chip p1"><span class="n">1</span><span class="l">P1</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Kind</h2>
+        <div class="chip-row">
+          <div class="stat-chip"><span class="n">1</span><span class="l">Conflict</span></div>
+          <div class="stat-chip"><span class="n">2</span><span class="l">Gap</span></div>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="toolbar">
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab" data-sev="all" aria-selected="true">All (3)</button> <button type="button" class="tab" data-sev="p0" aria-selected="false">P0 (2)</button> <button type="button" class="tab" data-sev="p1" aria-selected="false">P1 (1)</button>
+    </div>
+    <div class="filters">
+      <button class="tab" type="button" id="expandAll"><span data-zh="展开全部" data-en="Expand all">展开全部</span></button>
+      <button class="tab" type="button" id="collapseAll"><span data-zh="收起全部" data-en="Collapse all">收起全部</span></button>
+    </div>
+  </div>
+  <section class="panel" data-sev-panel="p0">
+    <div class="panel-head">
+      <h2><span class="badge pri p0">P0</span> Gap register <span class="count">2</span></h2>
+      <p class="desc">Click a card to expand the conflict or gap and the P0 check</p>
+    </div>
+    <div class="case-list">
+      <article class="case" id="ra-01" data-pri="P0">
+      <div class="case-head" role="button" tabindex="0" aria-expanded="false">
+        <span class="badge pri p0">P0</span><span class="badge type">Conflict</span><span class="badge type">RA-01</span>
+        <h3>PRD expiry vs API note until client release</h3>
+        <span class="chev" aria-hidden="true"></span>
+      </div>
+      <div class="case-body"><dl class="kv">
+        <div><dt>ID</dt><dd><code>RA-01</code></dd></div>
+        <div><dt>Kind</dt><dd>Conflict</dd></div>
+      </dl>
+      <h4>What is missing or in conflict</h4>
+      <div class="block"><p>PRD says a hold expires after 15 minutes. The API note says until the client releases it.</p></div>
+      <h4>P0 / P1 check</h4>
+      <div class="block"><p>Create a hold, wait 16 minutes, call get. Fail if the two sources still disagree.</p></div></div>
+    </article>
+      <article class="case" id="ra-02" data-pri="P0">
+      <div class="case-head" role="button" tabindex="0" aria-expanded="false">
+        <span class="badge pri p0">P0</span><span class="badge type">Gap</span><span class="badge type">RA-02</span>
+        <h3>Last-unit race is not specified</h3>
+        <span class="chev" aria-hidden="true"></span>
+      </div>
+      <div class="case-body"><dl class="kv">
+        <div><dt>ID</dt><dd><code>RA-02</code></dd></div>
+        <div><dt>Kind</dt><dd>Gap</dd></div>
+      </dl>
+      <h4>What is missing or in conflict</h4>
+      <div class="block"><p>Over-sell when two holds race on the last unit is not specified.</p></div>
+      <h4>P0 / P1 check</h4>
+      <div class="block"><p>Two concurrent <code>quantity=1</code> requests when available=1. Expect one 200 and one 409.</p></div></div>
+    </article>
+    </div>
+  </section>
+  <section class="panel" data-sev-panel="p1">
+    <div class="panel-head">
+      <h2><span class="badge pri p1">P1</span> Gap register <span class="count">1</span></h2>
+      <p class="desc">Click a card to expand the gap and the check</p>
+    </div>
+    <div class="case-list">
+      <article class="case" id="ra-03" data-pri="P1">
+      <div class="case-head" role="button" tabindex="0" aria-expanded="false">
+        <span class="badge pri p1">P1</span><span class="badge type">Gap</span><span class="badge type">RA-03</span>
+        <h3>No success metric for hold conversion</h3>
+        <span class="chev" aria-hidden="true"></span>
+      </div>
+      <div class="case-body"><dl class="kv">
+        <div><dt>ID</dt><dd><code>RA-03</code></dd></div>
+        <div><dt>Kind</dt><dd>Gap</dd></div>
+      </dl>
+      <h4>What is missing or in conflict</h4>
+      <div class="block"><p>No success metric for hold conversion to order.</p></div>
+      <h4>P0 / P1 check</h4>
+      <div class="block"><p>Marked <code>untestable</code> until product names the metric.</p></div></div>
+    </article>
+    </div>
+  </section>
+  <p class="footer">codexqa-requirement-analyzer · sample register</p>
+
+</div>
+<script>
+(function(){
+  const root = document.documentElement;
+  const prefix = root.getAttribute('data-store') || 'codexqa-report';
+  const LANG_KEY = prefix + '-lang';
+  const THEME_KEY = prefix + '-theme';
+
+  function applyI18n(lang) {
+    const attr = lang === 'en' ? 'data-en' : 'data-zh';
+    document.querySelectorAll('[data-zh][data-en]').forEach(el => {
+      const v = el.getAttribute(attr);
+      if (v == null) return;
+      if (el.tagName === 'TITLE') {
+        document.title = v;
+        return;
+      }
+      if (el.tagName === 'OPTION') {
+        el.textContent = v;
+        return;
+      }
+      if (el.children.length) return;
+      el.textContent = v;
+    });
+    document.querySelectorAll('[data-zh-placeholder][data-en-placeholder]').forEach(el => {
+      el.setAttribute('placeholder', el.getAttribute(lang === 'en' ? 'data-en-placeholder' : 'data-zh-placeholder') || '');
+    });
+    document.querySelectorAll('[data-zh-alt][data-en-alt]').forEach(el => {
+      el.setAttribute('alt', el.getAttribute(lang === 'en' ? 'data-en-alt' : 'data-zh-alt') || '');
+    });
+  }
+
+  function setLang(lang) {
+    root.setAttribute('data-lang', lang);
+    root.lang = lang === 'en' ? 'en' : 'zh-CN';
+    document.querySelectorAll('[data-set-lang]').forEach(b => {
+      b.setAttribute('aria-pressed', b.getAttribute('data-set-lang') === lang ? 'true' : 'false');
+    });
+    applyI18n(lang);
+    try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
+  }
+
+  function normalizeTheme(t) {
+    if (t === 'day' || t === 'light') return 'light';
+    if (t === 'night' || t === 'dark') return 'dark';
+    return 'light';
+  }
+
+  function setTheme(theme) {
+    theme = normalizeTheme(theme);
+    root.setAttribute('data-theme', theme);
+    document.querySelectorAll('[data-set-theme]').forEach(b => {
+      b.setAttribute('aria-pressed', b.getAttribute('data-set-theme') === theme ? 'true' : 'false');
+    });
+    try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+  }
+
+  document.querySelectorAll('[data-set-lang]').forEach(b => {
+    b.addEventListener('click', () => setLang(b.getAttribute('data-set-lang')));
+  });
+  document.querySelectorAll('[data-set-theme]').forEach(b => {
+    b.addEventListener('click', () => setTheme(b.getAttribute('data-set-theme')));
+  });
+
+  let lang = root.getAttribute('data-lang') || 'zh';
+  let theme = root.getAttribute('data-theme') || 'light';
+  try {
+    lang = localStorage.getItem(LANG_KEY) || lang;
+    theme = localStorage.getItem(THEME_KEY) || theme;
+  } catch (e) {}
+  setLang(lang === 'en' ? 'en' : 'zh');
+  setTheme(normalizeTheme(theme));
+
+  function setCaseOpen(card, open) {
+    if (!card) return;
+    card.classList.toggle('open', open);
+    const head = card.querySelector('.case-head');
+    if (head) head.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  document.querySelectorAll('.case-head').forEach(head => {
+    const card = head.closest('.case');
+    if (head.tagName !== 'BUTTON') {
+      if (!head.hasAttribute('role')) head.setAttribute('role', 'button');
+      if (!head.hasAttribute('tabindex')) head.setAttribute('tabindex', '0');
+    }
+    if (!head.hasAttribute('aria-expanded')) {
+      head.setAttribute('aria-expanded', card && card.classList.contains('open') ? 'true' : 'false');
+    }
+    head.addEventListener('click', () => {
+      if (!card || card.classList.contains('empty') || card.classList.contains('is-empty')) return;
+      setCaseOpen(card, !card.classList.contains('open'));
+    });
+    head.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        head.click();
+      }
+    });
+  });
+
+  const expandAll = document.getElementById('expandAll');
+  const collapseAll = document.getElementById('collapseAll');
+  function toggleableCases(expand) {
+    const scoped = document.querySelectorAll(
+      '.panel:not([hidden]) .case:not([hidden]), [data-sev-panel]:not([hidden]) .case:not([hidden])'
+    );
+    const cards = scoped.length ? scoped : document.querySelectorAll('.case:not([hidden])');
+    cards.forEach(c => {
+      if (c.classList.contains('empty') || c.classList.contains('is-empty')) return;
+      setCaseOpen(c, expand);
+    });
+  }
+  if (expandAll) expandAll.addEventListener('click', () => toggleableCases(true));
+  if (collapseAll) collapseAll.addEventListener('click', () => toggleableCases(false));
+
+  const sevTabs = document.querySelectorAll('.tab[data-sev]');
+  const sevPanels = document.querySelectorAll('[data-sev-panel]');
+  function showSev(name) {
+    if (!sevTabs.length) return;
+    sevTabs.forEach(t => t.setAttribute('aria-selected', t.getAttribute('data-sev') === name ? 'true' : 'false'));
+    sevPanels.forEach(p => {
+      p.hidden = name !== 'all' && p.getAttribute('data-sev-panel') !== name;
+    });
+    const matched = name === 'all' || Array.prototype.some.call(
+      sevPanels, p => p.getAttribute('data-sev-panel') === name);
+    const emptyEl = document.getElementById('sev-empty');
+    if (emptyEl) emptyEl.hidden = matched;
+  }
+  sevTabs.forEach(t => t.addEventListener('click', () => showSev(t.getAttribute('data-sev'))));
+
+  function openHash() {
+    if (!location.hash) return;
+    let el;
+    try { el = document.querySelector(location.hash); } catch (e) { return; }
+    if (!el) return;
+    const panel = el.closest('[data-sev-panel]') || (el.hasAttribute('data-sev-panel') ? el : null);
+    if (panel && panel.getAttribute('data-sev-panel')) showSev('all');
+    const card = el.classList && el.classList.contains('case') ? el : el.closest('.case');
+    if (card) setCaseOpen(card, true);
+  }
+  openHash();
+  window.addEventListener('hashchange', openHash);
+})();
+
+</script>
+</body>
+</html>
