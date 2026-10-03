@@ -15,7 +15,7 @@
 - [codexqa-code-reviewer](skills/codexqa-code-reviewer/README.md): CodexQA symbol-graph evidence pack + heuristic dimensions + Agent judgment → bilingual `REVIEW-REPORT.html`.
 - [codexqa-change-analysis](skills/codexqa-change-analysis/README.md): Diff-indexed impact analysis for one change: 7-section HTML report (affected entries, change list, test plan, coverage verdict, sensitive paths) + new runnable test files for uncovered points.
 - [codexqa-code-analyzer](skills/codexqa-code-analyzer/README.md): Symbol-graph queries for local repositories: trace change blast radius, affected HTTP/RPC/MQ entries, call chains, regression scope, and test gaps.
-- [codexqa-code-wiki](skills/codexqa-code-wiki/README.md): Architecture knowledge graph: export Leiden communities with `wiki inputs` (no model needed) and generate DeepWiki-style HTML report.
+- [codexqa-code-wiki](skills/codexqa-code-wiki/README.md): One-page architecture wiki: modules, call counts, a diagram, and reading paths from `wiki inputs` (no model needed), rendered by a script into one self-contained HTML file.
 - [codexqa-rootcause-analyzer](skills/codexqa-rootcause-analyzer/README.md): Exception RCA from stacks, logs, or crash dumps with gated root-cause report.
 - [codexqa-requirement-analyzer](skills/codexqa-requirement-analyzer/README.md): Quality, ambiguity, and conflict analysis of PRD and requirement documents into a gap register.
 - [codexqa-testcase-generator](skills/codexqa-testcase-generator/README.md): Generate manual test plans and cases (Plan / Exec / Incremental) from local PRDs into Markdown + aggregated HTML.

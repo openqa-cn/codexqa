@@ -1,113 +1,105 @@
 ---
 name: codexqa-code-wiki
 description: >
-  Builds a local CodexQA architecture knowledge graph from community
-  detection and `wiki inputs` (no model), then writes a DeepWiki-style
-  HTML wiki report. Use when the user mentions codexqa-code-wiki, code-wiki,
-  wiki, knowledge graph, architecture wiki, module map, reading guide,
-  代码知识图谱, 架构 Wiki, 模块地图, 阅读导览, wiki inputs, --no-llm,
-  community detection, 社区检测, HTML 报告, or asks to map modules /
-  generate a repo wiki without an LLM. Not change review (that is
-  codexqa-code-analyzer), not CodexQA evidence-pack HTML review (that is
-  codexqa-code-reviewer), and not SAST+agent code-risk scan reports (that is
-  codexqa-defect-analyzer). Former skill name: code-wiki.
+  Builds a local architecture wiki for a repository from the CodexQA symbol
+  graph (no model needed): modules, who calls whom and how often, reading
+  paths, and one self-contained HTML page. Use when the user mentions
+  codexqa-code-wiki, code-wiki, wiki, knowledge graph, architecture wiki,
+  module map, reading guide, 代码知识图谱, 架构 Wiki, 模块地图, 阅读导览,
+  wiki inputs, --no-llm, community detection, 社区检测, HTML 报告, or asks
+  to map modules / generate a repo wiki without an LLM. Not change review
+  (that is codexqa-code-analyzer), not CodexQA evidence-pack HTML review
+  (that is codexqa-code-reviewer), and not SAST+agent code-risk scan reports
+  (that is codexqa-defect-analyzer). Former skill name: code-wiki.
 license: Apache-2.0
 compatibility: >
   Requires Node.js >= 18 and the `codexqa` CLI
-  (`npm i -g @openqa-cn/codexqa`) on PATH. Index, `wiki --no-llm`, and
-  `wiki inputs` need no LLM. Data lives in ~/.codexqa/.
+  (`npm i -g @openqa-cn/codexqa`) on PATH. Index and `wiki inputs` need no
+  LLM. Data lives in ~/.codexqa/.
 metadata:
   author: open-source
-  version: "1.2.0"
+  version: "2.0.0"
   open-standard: agentskills
 ---
 
 # Code Wiki
 
-Local **architecture knowledge graph**: index first, then export community
-digests with `wiki inputs` and write a DeepWiki-style HTML wiki
-report (sidebar + article + on-this-page TOC, module map, reading guides).
-
-There is **no** `codexqa wiki` without `--no-llm` in this skill, and no
-`wiki embed` / `query wiki`. Those call a model or need an embedded wiki.
-The graph facts are already in `wiki inputs` JSON:
+Three commands, one file to write:
 
 ```text
-index  →  wiki inputs (architecture / overview / page / visualization)  →  HTML report
+node <skill>/scripts/wiki.mjs brief <repo>   # index + export facts + print the brief
+  → you write .codexqa-wiki/<repo>/notes.json  # names and sentences only
+node <skill>/scripts/wiki.mjs build <repo>   # validate + render one HTML file
 ```
 
-Pick the scenario before acting. Do not run wiki commands until an index
-exists. Do not send `system` / `user` prompt strings to another model.
-`README.md` / `README.zh-CN.md` are human-facing. Do not load them at runtime.
+The script owns every fact on the page: modules, sizes, call counts, groups,
+the architecture diagram, public symbols, files, links, search. You own the
+words: what the repo is, what each module does, and which reading path fits
+which task. You never edit HTML, CSS, or diagrams.
+
+`<skill>` is this skill's directory. `<repo>` is a local checkout (preferred).
+`README.md` / `README.zh-CN.md` are for humans; do not load them.
 
 ## Documents (load on demand)
 
-Read this file first. Read another file only when the row below applies. Do not preload the whole tree.
-
 | File | Load when |
 |---|---|
-| `SKILL.md` (this file) | always: routing, report contract, reject conditions |
-| [references/playbook.md](references/playbook.md) | entering a scenario (index health / map / module / guide / persist) |
-| [references/report.md](references/report.md) | before writing the HTML file |
-| [assets/report-template.html](assets/report-template.html) | copy this file; do not invent a new layout |
-| [references/diagrams.md](references/diagrams.md) | before drawing; copy `init` and `classDef` verbatim |
-| [references/cli.md](references/cli.md) | CLI missing, PATH, or maintenance |
-| `README.md`, `README.zh-CN.md` | human-facing; not needed by the agent |
+| `SKILL.md` (this file) | always |
+| [references/notes.md](references/notes.md) | before writing `notes.json` |
+| [references/playbook.md](references/playbook.md) | one module only, index problems, persisting for the Web UI |
+| [references/cli.md](references/cli.md) | `codexqa` missing, PATH, repo ids, maintenance |
+
+## Default flow
+
+1. **Brief.** Run `node <skill>/scripts/wiki.mjs brief <repo>`. It indexes
+   incrementally, exports `codexqa wiki inputs`, and writes
+   `.codexqa-wiki/<repo>/` with `inputs.json`, `meta.json`, `brief.md`, and a
+   `notes.json` scaffold (kept if it already exists). Read the printed brief:
+   groups, suggested paths, and per module its files, calls, callers, public
+   symbols, and key flows.
+2. **Notes.** Read [references/notes.md](references/notes.md), then fill
+   `notes.json`. Every `P01`-style id and group id in it must exist in the
+   brief. Write 简体中文 unless the user asked for English (`"lang": "en"`).
+3. **Build.** Run `node <skill>/scripts/wiki.mjs build <repo>`. If it prints
+   `error:` lines, fix those fields and rerun; they name the field and the fix.
+   `check <repo>` validates without writing HTML.
+4. **Deliver.** Tell the user the printed file path plus two or three lines on
+   what the wiki says. Do not paste the HTML or open it in chat.
+
+The user only wants a quick look → `build <repo> --draft` right after
+`brief`. The page uses rule-based names and says it is a draft. Offer to
+write the notes afterwards.
+
+Useful flags: `brief --limit 8` (large repos), `brief --lang en`,
+`brief --skip-index` (index is fresh), `build --out FILE`,
+`build --source-url 'https://host/repo/blob/{commit}/{path}'` (file links
+when the remote is not GitHub / GitLab / Gitee / Bitbucket).
 
 ## Scenario routing
 
-Open [references/playbook.md](references/playbook.md) and jump to the named section.
-
-| User is asking… | Playbook section |
+| User is asking… | Do |
 |---|---|
-| What is this repo / module map / knowledge graph | **Map the repository** (index health first) |
-| How is the system organized / architecture wiki | **Map the repository** |
-| What does this module do / who does it talk to | **Explain one module** |
-| Where should I start reading / guided path | **Reading guide** |
-| Persist a rule-only wiki for the UI | **Persist rule-only wiki** |
-| Empty results / missing index / wiki failed | **Index health** / **Wiki blockers** |
+| What is this repo / module map / architecture wiki / knowledge graph | Default flow |
+| Where should I start reading / onboarding path | Default flow; put the effort into `guides` |
+| What does module X do / who does it talk to | Answer from `brief.md`; deeper digest in [playbook](references/playbook.md) **Explain one module** |
+| Store a rule-only wiki for the CodexQA Web UI | [playbook](references/playbook.md) **Persist rule-only wiki** |
+| `brief` failed / empty export / wrong branch | [playbook](references/playbook.md) **Index health** |
 
-Change review, callers, test gaps, and stack traces belong to `codexqa-code-analyzer`.
+Change review, callers of a symbol, test gaps, and stack traces belong to
+`codexqa-code-analyzer`.
 
-## Report contract
+## Rules
 
-Deliver a **self-contained HTML knowledge-graph report** in DeepWiki
-wiki layout (left sidebar tree, article, on-this-page TOC) using the same
-daytime HTML chrome as `codexqa-testcase-generator` (light default, 中文/EN
-and 白天/黑夜 toggles, green accent `#0f6b4c`).
-Copy [assets/report-template.html](assets/report-template.html)
-into the working directory, then fill slots with Edit (do not rewrite CSS).
-**Default the filled report to Simplified Chinese** (headings, overview, guides, notes). Show community aliases as `P01` (capitalize the leading p). Keep symbol names as-is. Write for a
-newcomer: what the system is, where to start, which module is the hub,
-which pages are standalone. Not a product brochure, and not an Archify /
-architecture canvas.
-Read [references/report.md](references/report.md) before writing the file.
-Read [references/diagrams.md](references/diagrams.md) before drawing. A diagram that misses the quality bar fails the report.
-
-Report body (HTML slots) is only these blocks:
-
-- How the system works (from `overview` / `architecture` `input`, in plain language)
-- Module map (community ids, human titles, real `deps`)
-- Layers / data flow (same modules, grouped Entry → Storage; no invented edges)
-- Reading path (only steps backed by a real dependency)
-- Module notes (responsibility / public API / internal calls / cross-module traffic)
-- Peripheral modules (empty `deps` — do not force them into a layer)
-- **Architecture diagram**: at least one Mermaid block in `.diagram`, and it must pass the quality bar
-- Fill the sidebar tree (`#nav-entry` / `#nav-app` / `#nav-domain` / `#nav-storage` / `#nav-modules` / `#nav-peripheral`) so it looks like a DeepWiki wiki, not 8 flat links
-
-Trust only the `input` object on each `wiki inputs` row. `system` / `user` are prompt templates, not evidence. `page` rows carry the digest; `visualization` / `architecture` / `overview` use rule titles and have no model-written body.
-
-Reject the whole report and rewrite if any of these hold:
-
-- Written as a generic project review (product intro, use cases, scored pros/cons)
-- Evidence comes from README / a website / guesswork, not this run of `wiki inputs`
-- Invented a module, group, or edge that is not in `communities` / `deps` / `cross_community` / visualization `candidates`
-- Put an isolated module (empty `deps`) into a functional layer
-- Ran `codexqa wiki` without `--no-llm`, or ran `wiki embed` / `query wiki`
-- Mermaid is missing the paper `init`, the three `classDef` lines, or a core module that should be `risk` has no `class ... risk`
-- Architecture `subgraph` titles are package names (Renderer / Compiler / Shared) instead of **Entry → Application → Domain → Storage**
-- HTML is missing the bundled wiki chrome (sidebar + article + TOC), or was written from scratch instead of copying the template
-- Report was delivered as Markdown-only / chat-only with no HTML file
-- Archify / grouped-swimlane architecture canvas was generated (this skill does not ask for that)
-- Chrome or body left in English when the user did not ask for English (overview / pages selected)
-- Overview dumps field names (`deps`, `cross_community`, `wiki inputs`) instead of responsibility / dependency / reading order
+- Facts come only from this run's export. Do not add modules, calls, or
+  responsibilities that the brief does not support; do not use the README or
+  a website as evidence for a module's role.
+- A reading path follows real calls: each step must call or be called by the
+  next. `build` rejects anything else and lists the valid neighbours.
+- Standalone modules (no calls to or from other modules) get a name and a
+  role, never a layer.
+- Write for someone who just cloned the repo. No internal field names
+  (`deps`, `cross_community`, `called_by`, `wiki inputs`); `build` rejects
+  them.
+- Do not run `codexqa wiki` without `--no-llm`, `wiki embed`, or `query wiki`.
+  Those call a model or need model-written pages.
+- Do not hand-edit the generated HTML. Change `notes.json` and rebuild.

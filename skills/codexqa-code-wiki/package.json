@@ -1,0 +1,12 @@
+{
+  "name": "codexqa-code-wiki",
+  "private": true,
+  "description": "Dev-only metadata. Do not ship this file in the skill zip.",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  }
+}

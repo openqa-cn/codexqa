@@ -6,22 +6,19 @@
 
 </div>
 
-**把仓库变成本地架构知识图谱：模块地图、真实依赖、阅读导览，全程不调模型。**
+**把仓库变成一页架构 Wiki：有哪些模块、谁调用谁、调用多少次、从哪读起。事实部分不需要模型。**
 
-CodexQA 先建索引，再用 `wiki inputs` 把 Leiden 社区和 digest 导出成 JSON。Cursor / Claude Code 读 [`SKILL.md`](SKILL.md)，只凭这份 JSON 写出默认中文、面向上手的 HTML Wiki 报告。
+CodexQA 先给仓库建索引，再把符号调用图切成模块。本技能的脚本把导出结果整理成一份简报，Agent 只往 `notes.json` 里写简短的名字和句子，脚本再渲染出一个自包含的 HTML 页面。Agent 不画图、不改 HTML，所以页面不会和代码对不上。
 
-- **模块地图** —— 社区（`p01`…）、规则标题、真实 `deps`
-- **模块笔记** —— 符号签名、社区内 `call_chain`、`method_flows`、`cross_community`
-- **阅读导览** —— 相邻步骤必须有列出的依赖
-- **可选落库** —— `wiki --no-llm` 把规则页写入 Web UI
+- **从哪读起** —— 例如「要改支付回调：P06 → P04 → P07」，相邻两步之间一定有真实调用
+- **架构图** —— 按调用关系分组，线宽代表调用次数，标出枢纽；悬停可看一个模块的全部调用
+- **模块卡片** —— 做什么、调用和被调用（带次数）、对外接口、关键流程、可点到源码的文件
+- **搜索** —— 模块、符号、文件；按 `/` 聚焦
+- **离线可用** —— 单个 HTML 文件，白天 / 黑夜主题，手机可读，可打印
 
-`codexqa-code-wiki` 回答的是**架构和上手路径**。它不审 PR、不圈回归、不打 P0 / P1 / P2。变更影响用 `codexqa-code-analyzer`，代码风险扫描报告用 `codexqa-defect-analyzer`，CodexQA 证据包 HTML 评审用 `codexqa-code-reviewer`。
+`codexqa-code-wiki` 回答的是**架构和上手**问题。它不审 PR、不圈回归、不打 P0 / P1 / P2。变更影响用 `codexqa-code-analyzer`，代码风险扫描报告用 `codexqa-defect-analyzer`，CodexQA 证据包 HTML 评审用 `codexqa-code-reviewer`。
 
-Skill 与 playbook 发布在本仓库；依赖的 `@openqa-cn/codexqa` 是单独分发的闭源本地引擎。建索引和 `wiki inputs` 在本机完成，不需要 LLM。边界见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。
-
-```bash
-npm install -g @openqa-cn/codexqa --registry https://registry.npmjs.org/
-```
+Skill 和脚本发布在本仓库；依赖的 `@openqa-cn/codexqa` 是单独分发的闭源本地引擎。建索引和导出都在本机完成，不需要 LLM。边界见[已知边界](KNOWN_LIMITATIONS.zh-CN.md)。
 
 ---
 
@@ -37,66 +34,54 @@ npm install -g @openqa-cn/codexqa --registry https://registry.npmjs.org/
 codexqa --help
 ```
 
-命令找不到时，把 `$(npm prefix -g)/bin` 加进 PATH。已安装则不要重装。
+命令找不到时，把 `$(npm prefix -g)/bin` 加进 `PATH`。
 
-**Cursor / Claude Code：** 把 [`SKILL.md`](SKILL.md) 放到对应 skills 目录。用户要知识图谱、架构 Wiki、模块地图或阅读导览时，按 SKILL 走无模型 wiki 命令。
-
-### 2. 先建索引，再导出 wiki inputs
-
-```bash
-codexqa index /path/to/repo
-codexqa wiki inputs /path/to/repo --kind architecture --limit 8
-codexqa wiki inputs /path/to/repo --kind overview
-codexqa wiki inputs /path/to/repo --kind page --id p01
-```
-
-也可以直接说：
+### 2. 直接说
 
 ```text
-给这个仓库建代码知识图谱。只用 wiki inputs，不要跑 LLM wiki。
-先出架构地图，再讲核心模块和一条阅读路径。
+给这个仓库做一份代码 Wiki。
 ```
 
-### 3. 在对话里细调
+Agent 会跑三步：
 
-继续说：`只看存储相关社区`、`打开 p03`、`导览里去掉孤立模块`。Agent 应保留已建索引，用 `--kind` / `--id` / `--limit` 补查，不要改写成产品介绍。
+```bash
+node <skill>/scripts/wiki.mjs brief .     # 建索引、导出、打印简报
+# … 填写 .codexqa-wiki/<repo>/notes.json
+node <skill>/scripts/wiki.mjs build .     # 校验 notes，生成 HTML
+```
+
+最后给你 `codexqa-code-wiki-<repo>-YYYYMMDD-HHMM.html`。
+
+### 3. 继续细调
+
+`加一条改存储层的阅读路径`、`P04 改个名字`、`换成英文`。Agent 改 `notes.json` 再重新 build，索引和事实不变。
+
+想先看个样子？`brief` 之后直接 `build . --draft`，用规则生成的名字出一版，页面顶部会标明是草稿。
 
 ---
 
-## 选择合适的场景
+## 页面上有什么
 
-| 场景 | 最适合 | 对话里应包含 |
-| --- | --- | --- |
-| **整仓地图** | 仓库是什么、模块地图、架构 Wiki | 仓库路径、要几页 |
-| **单个模块** | 这个社区做什么、和谁往来 | `p01` / community id / 模块名 |
-| **阅读导览** | 从哪读起、上手路径 | 目标（接口 / 存储 / 某功能） |
-| **落库规则 Wiki** | 不调模型，给 Web UI 存页 | 是否持久化 |
-| **索引自检** | inputs 为空、找不到仓 | 仓库路径或 `repo_id` |
+| 区块 | 来源 |
+|---|---|
+| 标题、一句话介绍、概览 | `notes.json` |
+| 模块 / 分组 / 独立模块数，导出覆盖了多少索引代码，提交号 | 导出 + git |
+| 从哪读起（每一步标出调用次数） | `notes.json` 的步骤，按真实调用校验 |
+| 架构图 | 导出，脚本排版 |
+| 模块卡片：名字、职责、说明 | `notes.json` |
+| 模块卡片：规模、调用、被调用、对外接口、关键流程、文件 | 导出 |
+| 术语、用过的命令、生成时间 | 脚本 |
 
-审变更、查调用、测试缺口、追堆栈：用 `codexqa-code-analyzer`。
+导出被截断、覆盖率低、工作区有未提交改动、草稿，都会在页面顶部标出来。
 
 ---
 
 ## 为什么用这个技能
 
-- **社区就是知识图谱的节点** —— Leiden + 目录亲和，再加页数上限。Agent 不得编造模块
-- **`deps` 和 `cross_community` 就是边** —— 从符号图计数。`deps` 为空是孤立模块，不是「塞进 Domain」
-- **`wiki inputs` 才是证据导出** —— 和正式生成同一条建图链路，不调模型、不写 wiki 表。读 `inputs[].input`，不要读 prompt 字符串
-- **`--no-llm` 只是可选落库** —— 只有规则标题；后面不要再跑 `wiki embed`
-
----
-
-## 工作原理
-
-```text
-index
-  → wiki inputs --kind architecture / overview / page / visualization
-  → 按 Entry → Application → Domain → Storage 分组
-  → 沿真实 deps 写阅读导览
-  → DeepWiki 风格 HTML Wiki 报告（侧栏 + 正文 + 本页目录，内嵌 Mermaid）
-```
-
-可选：`wiki --no-llm` 落规则页。Agent 报告仍然以 `wiki inputs` 为准。
+- **事实和文字分开。** 次数、连线、架构图都来自导出。Agent 只写名字和句子；`build` 会拒绝不存在的模块、相邻两步没有调用的路径、占位符和内部字段名。
+- **结果确定。** 同一份导出，分组、枢纽、建议路径和布局都一样。
+- **快。** 首次建索引之后，`brief` 几秒完成，`build` 不到一秒。
+- **不依赖 CDN 和服务器。** 页面就是一个文件，可以发邮件、当附件、本地直接打开。
 
 ---
 
@@ -104,12 +89,12 @@ index
 
 | 命令 | 用途 |
 | --- | --- |
-| `index` | 建符号图，wiki 读这份库 |
-| `repos` / `stats` / `query summary` | 确认索引在 |
-| `wiki inputs --kind …` | 导出社区 / digest / 依赖 JSON（不调模型） |
-| `wiki --no-llm` | 落库或空跑规则 Wiki |
+| `wiki.mjs brief <repo>` | 增量建索引、导出 `wiki inputs`、写简报和 `notes.json` 骨架 |
+| `wiki.mjs build <repo>` | 校验 `notes.json` 并生成 HTML；没写 notes 时加 `--draft` |
+| `wiki.mjs check <repo>` | 只校验 |
+| `codexqa wiki --no-llm` | 可选：把规则页存进 CodexQA Web UI |
 
-不要跑不带 `--no-llm` 的 `codexqa wiki`。不要跑 `wiki embed` 或 `query wiki`。
+参数和退出码见 [`references/cli.md`](references/cli.md)。本技能不跑不带 `--no-llm` 的 `codexqa wiki`，也不跑 `wiki embed` 或 `query wiki`。
 
 ---
 
@@ -117,11 +102,9 @@ index
 
 | 使用位置 | 安装位置或方法 | 能力 |
 | --- | --- | --- |
-| **CLI** | `npm install -g @openqa-cn/codexqa` | 建索引、`wiki inputs`、`wiki --no-llm` |
-| **Cursor** | 把 `codexqa-code-wiki/` 放到 `~/.cursor/skills/` 或 `.cursor/skills/` | 知识图谱工作流 |
-| **Claude Code** | `~/.claude/skills/` 或 `.claude/skills/` | 知识图谱工作流 |
-
-维护见 [`references/cli.md`](references/cli.md)。
+| **CLI** | `npm install -g @openqa-cn/codexqa` | 建索引、`wiki inputs` |
+| **Cursor** | 把 `codexqa-code-wiki/` 放到 `~/.cursor/skills/` 或 `.cursor/skills/` | Wiki 工作流 |
+| **Claude Code** | `~/.claude/skills/` 或 `.claude/skills/` | Wiki 工作流 |
 
 ---
 
@@ -129,14 +112,20 @@ index
 
 ```text
 codexqa-code-wiki/
-├── README.md                 # English
-├── README.zh-CN.md           # 本文件
-├── SKILL.md                  # Agent 路由 + 报告合同
+├── README.md / README.zh-CN.md
+├── SKILL.md                  # Agent 流程与规则
+├── KNOWN_LIMITATIONS(.zh-CN).md
+├── scripts/
+│   ├── wiki.mjs              # brief / build / check
+│   └── lib/                  # 数据模型、notes 校验、布局、渲染
 ├── assets/
-│   └── report-template.html  # DeepWiki 布局 + 用例报告皮肤（默认中文）
-└── references/
-    ├── playbook.md           # 场景步骤（按需加载）
-    ├── report.md             # HTML 报告填写说明
-    ├── diagrams.md           # 报告图规范与模板
-    └── cli.md                # 安装 / 仓库 / 无模型 wiki 命令
+│   ├── wiki.css              # 页面样式（内联进 HTML）
+│   └── wiki.js               # 搜索、架构图高亮、主题、导航
+├── references/
+│   ├── notes.md              # notes.json 怎么写
+│   ├── playbook.md           # 单个模块、索引自检、落库
+│   └── cli.md                # 安装 / 仓库标识 / 命令
+└── tests/                    # node --test；夹具取自本仓库
 ```
+
+在技能目录下运行 `npm test` 跑测试。

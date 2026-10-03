@@ -6,33 +6,40 @@
 
 ## 分发边界
 
-本仓库公开发布 skill 文件、playbook 和示例。`codexqa` 命令来自单独分发的闭源 npm 包 `@openqa-cn/codexqa`，分析引擎源码不包含在本仓库中。
+本仓库公开发布 skill 文件、脚本和测试。`codexqa` 命令来自单独分发的闭源 npm 包 `@openqa-cn/codexqa`，分析引擎源码不包含在本仓库中。
 
 建索引、`wiki inputs` 和 `wiki --no-llm` 在本地完成，不需要 LLM。安装过程会从 npm 下载包。本地索引存放在 `~/.codexqa/`；卸载 CLI 不会自动删除这些数据。
 
 ## 兼容性与验证状态
 
-- 本仓库 CI 当前不会安装或执行这个闭源 CLI。
+- CI 会跑技能自带的测试（`npm test`）：数据模型、notes 校验、转义、布局、渲染，以及 `brief` / `build` / `check` 三个命令；命令测试用一个回放本仓库真实导出的替身 `codexqa`。
+- CI 不安装、不执行闭源 CLI。脚本已在 4 个仓库上用 `codexqa` 0.1.11 手工验证。
 - `codexqa-code-wiki` 目前没有公开的宿主 Agent 运行记录或独立质量 benchmark。
-- 示例图用于说明报告契约，不是对某个公开仓库的真实分析记录。
-- 目前还没有正式发布 Skill 与 CLI 的版本兼容矩阵。反馈问题时请附上 `codexqa --version`。
+- 目前还没有正式发布 Skill 与 CLI 的版本兼容矩阵。`meta.json` 会记录 `codexqa --version`，反馈问题时请附上。
 
-## 图与社区完整性
+## 图与模块完整性
 
-社区来自 Leiden 聚类、目录 / 模块先验和页数上限。切割可能拆开真实包，也可能把无关文件并在一起。stub 节点和符号碰撞也会降低置信度。把地图当成完整结论前，应先看 `stats` / `summary` 以及 `communities` 与 `selected` 是否一致。
+模块是符号调用图上的 Leiden 社区，加上目录先验和页数上限，不是文件夹：一个模块可能混着几类调用同一批工具函数、但彼此无关的脚本，一个包也可能被拆到几个模块。stub 节点和符号碰撞会降低置信度；stub 比例高时 `brief` 会提示。
 
-不调模型时，页面标题是规则标题（常常像目录名）。这是预期行为。除非签名能支撑，否则不要改写成产品名。
-
-`visualization` / `architecture` / `overview` 的 `wiki inputs` 只用规则标题，没有模型正文。`（无摘要）` 不是一条发现。
+- 导出只保留有限个社区（测过的仓库都是 12 个，由引擎的页数上限决定；`--limit N` 可以更少）。页面会写出这些模块覆盖了多少索引代码，导出被截断时会标出来。
+- 导出里的模块标题是规则生成的（`目录 · 最常用的符号`）。人话名字只来自 `notes.json`。
+- 导出自带的概览分组和它的调用计数对不上；页面不用那份分组，而是按调用计数自己分组。
+- 导出里的符号没有文件位置，所以对外接口不能跳到具体行；同名定义（每个脚本一个 `main`）会合并成一行并标出个数。
+- 导出有时只列出相关模块而没有次数。这类关系画成虚线，方向按导出列出的方向（列出对方的模块依赖对方），不标次数。
 
 ## 信号代表什么
 
-- `deps` 和 `cross_community` 是社区之间的静态图关系，不是运行时耦合。
-- `deps` 为空表示“没有计入的跨社区边”，不等于“这段代码没人用”。
-- `call_chain` / `method_flows` 是 token 预算下的 digest 摘录，不是完整方法体。
-- 签名上的 `called_by` 是 digest 里的 fan-in，不是线上流量。
-- 阅读导览是沿着已列出依赖的路径，不证明新人只该读这些文件。
+- 调用次数是符号图里模块之间的静态引用，不是线上流量。
+- 箭头指向调用更多的一方；双箭头表示两边互相调用。没有箭头的模块只是没有统计到跨模块调用，不等于没人用。
+- 枢纽是三个及以上模块的组里连接最多的那个。
+- 连线很密的组只画最强的调用；图例会写出隐藏了几条，每张模块卡片都列出全部调用。
+- 阅读路径沿互相调用的模块走，是合理的阅读顺序，不证明新人只需要读这些。
+
+## 已知引擎问题
+
+- 对 git 仓库的子目录（例如 `examples/inventory-service`）建索引后，`wiki inputs` 找不到这份索引。请对 git 根目录建索引；`brief` 检测到这种情况会给出提示。
+- `codexqa repos` 默认只列 20 条且静默截断；请用 `--filter` 加 `--limit 200`。
 
 ## 工作流边界
 
-`codexqa-code-wiki` 画社区、真实依赖和上手路径。它不跑不带 `--no-llm` 的 `codexqa wiki`，不跑 `wiki embed` 或 `query wiki`，不审变更，不打 P0 / P1 / P2。影响面和测试缺口用 `codexqa-code-analyzer`，代码风险扫描报告用 `codexqa-defect-analyzer`，CodexQA 证据包 HTML 评审用 `codexqa-code-reviewer`。
+`codexqa-code-wiki` 画模块、真实调用和上手路径。它不跑不带 `--no-llm` 的 `codexqa wiki`，不跑 `wiki embed` 或 `query wiki`，不审变更，不打 P0 / P1 / P2。影响面和测试缺口用 `codexqa-code-analyzer`，代码风险扫描报告用 `codexqa-defect-analyzer`，CodexQA 证据包 HTML 评审用 `codexqa-code-reviewer`。

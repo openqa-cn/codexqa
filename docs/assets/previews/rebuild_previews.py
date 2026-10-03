@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Rebuild README preview HTML with the shared testcase-generator chrome."""
 from pathlib import Path
+import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -175,15 +176,8 @@ def write_defect():
 
 
 def write_wiki():
-    """README preview uses the DeepWiki report chrome, not the case-list illustration."""
-    src = ROOT / "codexqa-code-wiki-codexqa-20260921-2229.html"
-    if not src.is_file():
-        raise SystemExit("missing %s (fill a wiki report first)" % src)
-    html = src.read_text(encoding="utf-8")
-    html = html.replace("/root/come_here/codexqa@leviacicig-dev", "openqa-cn/codexqa@leviacicig-dev")
-    html = html.replace("/root/come_here/codexqa", "openqa-cn/codexqa")
-    (PREVIEWS / "code-wiki.html").write_text(html, encoding="utf-8")
-    print("code-wiki.html")
+    """Rendered by the skill itself from its test fixture (a real export of this repository)."""
+    subprocess.run(["node", str(PREVIEWS / "render-code-wiki.mjs")], check=True)
 
 
 def write_analyzer():

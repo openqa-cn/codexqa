@@ -6,22 +6,19 @@
 
 </div>
 
-**Turn a repository into a local architecture knowledge graph — module map, real dependencies, and reading guides — without calling a model.**
+**Turn a repository into a one-page architecture wiki: modules, who calls whom and how often, and where to start reading. No model is needed for the facts.**
 
-CodexQA indexes the repo, then `wiki inputs` exports Leiden communities and digests as JSON. Cursor / Claude Code read [`SKILL.md`](SKILL.md) and write a DeepWiki-style HTML wiki report from that JSON.
+CodexQA indexes the repo and splits its symbol graph into modules. This skill's script turns that export into a brief, your agent writes short names and sentences into `notes.json`, and the script renders one self-contained HTML page. The agent never draws diagrams or edits HTML, so the page cannot disagree with the code.
 
-- **Module map** — communities (`p01`…) with rule titles and real `deps`
-- **Module notes** — signatures, in-community `call_chain`, `method_flows`, `cross_community`
-- **Reading guides** — only steps backed by a listed dependency
-- **Optional persist** — `wiki --no-llm` writes rule-only pages for the Web UI
+- **Reading paths** — "要改支付回调: P06 → P04 → P07", where every step really calls the next
+- **Architecture diagram** — modules grouped by who calls whom, line width by call count, hub marked; hover to trace a module's calls
+- **Module cards** — what it does, calls and callers with counts, public API, key flows, files linked to the source
+- **Search** — modules, symbols, and files; `/` to focus
+- **Works offline** — one HTML file, light and dark themes, phone layout, print
 
-`codexqa-code-wiki` answers **architecture and onboarding** questions from wiki-pipeline facts. It does not review a PR, bound regression, or score P0 / P1 / P2 findings. Use `codexqa-code-analyzer` for change impact, `codexqa-defect-analyzer` for SAST+agent code-risk scan reports, and `codexqa-code-reviewer` for CodexQA evidence-pack HTML review.
+`codexqa-code-wiki` answers **architecture and onboarding** questions. It does not review a PR, bound regression, or score P0 / P1 / P2 findings. Use `codexqa-code-analyzer` for change impact, `codexqa-defect-analyzer` for SAST+agent code-risk scan reports, and `codexqa-code-reviewer` for CodexQA evidence-pack HTML review.
 
-The Skill, playbook, and examples are published in this repository. The required `@openqa-cn/codexqa` package is a separately distributed, closed-source local analysis engine. Index and `wiki inputs` run on the user's machine without an LLM. See [known limitations](KNOWN_LIMITATIONS.md).
-
-```bash
-npm install -g @openqa-cn/codexqa --registry https://registry.npmjs.org/
-```
+The skill and its scripts are published in this repository. The required `@openqa-cn/codexqa` package is a separately distributed, closed-source local analysis engine. Indexing and export run on your machine without an LLM. See [known limitations](KNOWN_LIMITATIONS.md).
 
 ---
 
@@ -37,66 +34,54 @@ npm install -g @openqa-cn/codexqa --registry https://registry.npmjs.org/
 codexqa --help
 ```
 
-If the command is missing, add `$(npm prefix -g)/bin` to `PATH`. Do not reinstall when it is already present.
+If the command is missing, add `$(npm prefix -g)/bin` to `PATH`.
 
-**Cursor / Claude Code:** put [`SKILL.md`](SKILL.md) in the agent skills directory. When the user asks for a knowledge graph, architecture wiki, module map, or reading guide, follow the SKILL and use the no-LLM wiki commands.
-
-### 2. Index, then export wiki inputs
-
-```bash
-codexqa index /path/to/repo
-codexqa wiki inputs /path/to/repo --kind architecture --limit 8
-codexqa wiki inputs /path/to/repo --kind overview
-codexqa wiki inputs /path/to/repo --kind page --id p01
-```
-
-Or say it in conversation:
+### 2. Ask
 
 ```text
-Build a code knowledge graph for this repo. Use wiki inputs only — no LLM wiki.
-Start with the architecture map, then explain the core modules and a reading path.
+Make a code wiki for this repo.
 ```
 
-### 3. Refine in conversation
+The agent runs three steps:
 
-Keep going with: `only the storage communities`, `open p03`, `drop isolated modules from the guide`. The agent should keep the existing index, rerun `wiki inputs` with `--kind` / `--id` / `--limit`, and not regenerate a product brochure.
+```bash
+node <skill>/scripts/wiki.mjs brief .     # index, export, print the brief
+# … writes .codexqa-wiki/<repo>/notes.json
+node <skill>/scripts/wiki.mjs build .     # validate notes, write the HTML
+```
+
+and gives you `codexqa-code-wiki-<repo>-YYYYMMDD-HHMM.html`.
+
+### 3. Refine
+
+`Add a reading path for changing the storage layer`, `rename P04`, `write it in English`. The agent edits `notes.json` and rebuilds; the index and facts stay as they are.
+
+Want a look before any writing? `build . --draft` renders right after `brief` with rule-based names and a draft banner.
 
 ---
 
-## Choose the right scenario
+## What the page shows
 
-| Scenario | Best for | Include in the prompt |
-| --- | --- | --- |
-| **Repository map** | What this repo is, module map, architecture wiki | Repo path, how many pages |
-| **One module** | What a community does and who it talks to | `p01` / community id / module name |
-| **Reading guide** | Where to start, onboarding path | Goal (API / storage / a feature) |
-| **Persist rule-only wiki** | Store pages for the Web UI without a model | Whether to persist |
-| **Index health** | Empty inputs, missing repo | Repo path or `repo_id` |
+| Section | From |
+|---|---|
+| Title, one-line summary, overview | `notes.json` |
+| Module, group, and standalone counts; share of indexed code covered; commit | export + git |
+| Where to start (reading paths with call counts per step) | `notes.json` steps, checked against real calls |
+| Architecture diagram | export, laid out by the script |
+| Module cards: name, role, notes | `notes.json` |
+| Module cards: size, calls, callers, public API, key flows, files | export |
+| Glossary, commands used, generation time | script |
 
-Change review, callers, test gaps, and stack traces: use `codexqa-code-analyzer`.
+Truncated exports, low coverage, uncommitted changes, and drafts are flagged at the top of the page.
 
 ---
 
 ## Why this skill
 
-- **Communities are the knowledge-graph nodes** — Leiden + directory affinity, then a hard page cap. The agent does not invent modules
-- **`deps` and `cross_community` are the edges** — counted from the symbol graph. Empty `deps` means isolated, not “put it in Domain”
-- **`wiki inputs` is the evidence export** — same pipeline as generation, no model, no wiki tables. Read `inputs[].input`, not the prompt strings
-- **`--no-llm` is optional persist** — rule titles only; do not follow it with `wiki embed`
-
----
-
-## How it works
-
-```text
-index
-  → wiki inputs --kind architecture / overview / page / visualization
-  → group pages (Entry → Application → Domain → Storage)
-  → reading guides along real deps
-  → DeepWiki-style HTML wiki report (sidebar + article + TOC, Mermaid inside)
-```
-
-Optional: `wiki --no-llm` persists rule-only pages. The agent report still comes from `wiki inputs`.
+- **Facts and words are separate.** Counts, edges, and the diagram come from the export. The agent writes only names and sentences, and `build` rejects unknown modules, paths through modules that do not call each other, placeholders, and internal field names.
+- **Deterministic.** The same export gives the same groups, hub, suggested paths, and layout.
+- **Fast.** `brief` takes seconds after the first index; `build` takes well under a second.
+- **No CDN, no server.** The page is a single file you can mail, attach, or open from disk.
 
 ---
 
@@ -104,12 +89,12 @@ Optional: `wiki --no-llm` persists rule-only pages. The agent report still comes
 
 | Command | Use |
 | --- | --- |
-| `index` | Build the symbol graph wiki reads |
-| `repos` / `stats` / `query summary` | Confirm the index exists |
-| `wiki inputs --kind …` | Export community / digest / dep JSON (no model) |
-| `wiki --no-llm` | Persist or dry-run rule-only wiki |
+| `wiki.mjs brief <repo>` | Index (incremental), export `wiki inputs`, write the brief and a `notes.json` scaffold |
+| `wiki.mjs build <repo>` | Validate `notes.json` and write the HTML; `--draft` for no notes |
+| `wiki.mjs check <repo>` | Validate only |
+| `codexqa wiki --no-llm` | Optional: store rule-only pages for the CodexQA Web UI |
 
-Do not run `codexqa wiki` without `--no-llm`. Do not run `wiki embed` or `query wiki`.
+Options and exit codes: [`references/cli.md`](references/cli.md). The skill never runs `codexqa wiki` without `--no-llm`, `wiki embed`, or `query wiki`.
 
 ---
 
@@ -117,11 +102,9 @@ Do not run `codexqa wiki` without `--no-llm`. Do not run `wiki embed` or `query 
 
 | Surface | Where / how | Capability |
 | --- | --- | --- |
-| **CLI** | `npm install -g @openqa-cn/codexqa` | Index, `wiki inputs`, `wiki --no-llm` |
-| **Cursor** | Put `codexqa-code-wiki/` in `~/.cursor/skills/` or `.cursor/skills/` | Knowledge-graph workflow |
-| **Claude Code** | `~/.claude/skills/` or `.claude/skills/` | Knowledge-graph workflow |
-
-Maintenance: [`references/cli.md`](references/cli.md).
+| **CLI** | `npm install -g @openqa-cn/codexqa` | Index and `wiki inputs` |
+| **Cursor** | Put `codexqa-code-wiki/` in `~/.cursor/skills/` or `.cursor/skills/` | Wiki workflow |
+| **Claude Code** | `~/.claude/skills/` or `.claude/skills/` | Wiki workflow |
 
 ---
 
@@ -129,14 +112,20 @@ Maintenance: [`references/cli.md`](references/cli.md).
 
 ```text
 codexqa-code-wiki/
-├── README.md                 # this file
-├── README.zh-CN.md           # Chinese
-├── SKILL.md                  # agent routing + report contract
+├── README.md / README.zh-CN.md
+├── SKILL.md                  # agent flow and rules
+├── KNOWN_LIMITATIONS(.zh-CN).md
+├── scripts/
+│   ├── wiki.mjs              # brief / build / check
+│   └── lib/                  # model, notes validation, layout, rendering
 ├── assets/
-│   └── report-template.html  # DeepWiki layout + testcase-generator chrome (default 简体中文)
-└── references/
-    ├── playbook.md           # scenario steps (load on demand)
-    ├── report.md             # how to fill the HTML report
-    ├── diagrams.md           # report diagram rules and templates
-    └── cli.md                # install / repos / no-LLM wiki commands
+│   ├── wiki.css              # page styles (inlined into the HTML)
+│   └── wiki.js               # search, diagram focus, theme, navigation
+├── references/
+│   ├── notes.md              # how to write notes.json
+│   ├── playbook.md           # one module, index health, persist
+│   └── cli.md                # install / repo ids / commands
+└── tests/                    # node --test; fixtures from this repository
 ```
+
+Run the tests with `npm test` inside the skill directory.

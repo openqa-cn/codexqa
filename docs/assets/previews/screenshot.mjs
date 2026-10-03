@@ -63,20 +63,8 @@ const shots = [
     png: "code-wiki.png",
     prepare: `
       document.documentElement.setAttribute('data-theme','light');
-      document.documentElement.setAttribute('data-lang','zh');
-      document.documentElement.lang='zh-CN';
-      document.querySelectorAll('[data-set-theme]').forEach(function(b){
-        b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
-      });
-      document.querySelectorAll('[data-set-lang]').forEach(function(b){
-        b.setAttribute('aria-pressed', b.getAttribute('data-set-lang')==='zh' ? 'true' : 'false');
-      });
-      var first=document.querySelector('#takeaways details.take');
-      if(first) first.open=true;
       window.scrollTo(0,0);
     `,
-    waitMs: 2500,
-    waitMermaid: true,
   },
   {
     html: "code-analyzer.html",

@@ -6,7 +6,7 @@ Sample HTML used as screenshots in the repository README. Most are **illustratio
 |---|---|---|
 | `defect-report.html` / `.png` | `codexqa-defect-analyzer` | `merge_report.render_html_report` (testcase-generator chrome; canned inventory-service findings) |
 | `review-report.html` / `.png` | `codexqa-code-reviewer` | `scripts/render-review-html.sh` on `evals/fixtures/conclusion/with-llm-judgment.json` |
-| `code-wiki.html` / `.png` | `codexqa-code-wiki` | DeepWiki HTML from a filled architecture wiki (`wiki inputs` on this repo); PNG is a **4:3** crop (`1280×960`) |
+| `code-wiki.html` / `.png` | `codexqa-code-wiki` | `render-code-wiki.mjs`: the skill's own renderer on its test fixture (a real `wiki inputs` export of this repo plus written `notes.json`); PNG is a **4:3** crop (`1280×960`) |
 | `code-analyzer.html` / `.png` | `codexqa-code-analyzer` | Wrapper around published `checkout-change-impact.svg` |
 | `rootcause.html` / `.png` | `codexqa-rootcause-analyzer` | Bilingual RCA sample (English `report.md` headings + Chinese twins); native delivery is Markdown + `report.html` |
 | `ra-register.html` / `.png` | `codexqa-requirement-analyzer` | Sample gap/conflict register |

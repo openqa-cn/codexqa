@@ -78,7 +78,8 @@ def parse_frontmatter(text: str) -> Dict[str, str]:
         key, buf, folded = None, [], False
 
     for line in block.splitlines():
-        if key and (line.startswith("  ") or line.startswith("\t") or (folded and line.strip())):
+        # A value continues only on indented or blank lines; an unindented line starts the next key.
+        if key and (line[:1] in (" ", "\t") or not line.strip()):
             buf.append(line.strip())
             continue
         flush()

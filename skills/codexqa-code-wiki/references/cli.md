@@ -48,7 +48,30 @@ codexqa repos --limit 200
 
 When the repo is unclear, use `--filter` + `--limit 200` above. Do not run bare `codexqa repos`.
 
-## Wiki commands this skill uses
+## The skill's own script
+
+`scripts/wiki.mjs` wraps the commands below; agents normally run only this.
+
+```bash
+node <skill>/scripts/wiki.mjs brief <repo> [--limit N] [--lang zh|en] [--skip-index] [--inputs FILE] [--dir DIR]
+node <skill>/scripts/wiki.mjs build <repo> [--draft] [--out FILE] [--source-url TEMPLATE] [--dir DIR]
+node <skill>/scripts/wiki.mjs check <repo> [--dir DIR]
+```
+
+| Step | Runs |
+|---|---|
+| `brief` | `codexqa --version`, `codexqa index <repo>` (skipped with `--skip-index`), `codexqa wiki inputs <repo> [--limit N]`, `codexqa stats <repo> --format json` |
+| `build` / `check` | nothing; they read `<dir>/inputs.json`, `meta.json`, `notes.json` |
+
+- `<dir>` defaults to `./.codexqa-wiki/<repo-name>`. Add it to `.gitignore` or pass `--dir`.
+- `--inputs FILE` reads a saved `wiki inputs` export instead of calling `codexqa` (no `--limit`; export with it instead).
+- One work dir belongs to one repo. `brief` and `build` refuse a work dir written for another path; pass `--dir`.
+- Tokens in a remote URL (`https://user:token@host/…`) are stripped from every file and page the script writes.
+- `CODEXQA_BIN=/path/to/codexqa` uses a binary that is not on PATH.
+- Exit codes: `0` done, `1` notes or export problems (printed as `error:` lines), `2` usage or setup problems.
+- `--source-url` must be `http(s)` and contain `{path}`; `{commit}` is filled with the indexed commit.
+
+## Wiki commands underneath
 
 Index first. These three families need **no LLM**:
 
@@ -107,6 +130,7 @@ State the scope first and wait for confirmation.
 |---|---|
 | `command not found` | Add `$(npm prefix -g)/bin` to PATH; install only if it is truly missing |
 | resolve db / 先 index 建库 | Run `codexqa index` on that checkout, then retry `wiki inputs` |
+| Indexing a subfolder of a git repo leaves `wiki inputs` unable to find the DB | Index the git root instead; `brief` prints this hint |
 | Indexing or wiki inputs is slow | First full index of a large repo, then Leiden + digest, is expected; add `--limit` |
 
 Full subcommands: `codexqa --help` and `codexqa wiki --help`.

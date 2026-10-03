@@ -1,0 +1,5073 @@
+{
+ "communities": 12,
+ "selected": 12,
+ "inputs": [
+  {
+   "kind": "page",
+   "id": "p01",
+   "community_id": "03202638-244b-438c-e539-48a2ad1bd1db",
+   "input": {
+    "cross_community": [],
+    "method_flows": [
+     {
+      "called_by": 80,
+      "method": "_method_candidates",
+      "steps": [
+       {
+        "kind": "calls",
+        "line": 2774,
+        "receiver": "",
+        "target": "_numbered_lines"
+       },
+       {
+        "kind": "calls",
+        "line": 2783,
+        "receiver": "",
+        "target": "_shape_closed"
+       },
+       {
+        "kind": "calls",
+        "line": 2803,
+        "receiver": "",
+        "target": "_quote_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2810,
+        "receiver": "",
+        "target": "_first_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2812,
+        "receiver": "",
+        "target": "_first_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2815,
+        "receiver": "",
+        "target": "_first_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2817,
+        "receiver": "",
+        "target": "_first_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2824,
+        "receiver": "",
+        "target": "_first_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2829,
+        "receiver": "",
+        "target": "_first_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2832,
+        "receiver": "",
+        "target": "_first_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2835,
+        "receiver": "",
+        "target": "_first_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2841,
+        "receiver": "",
+        "target": "_first_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2843,
+        "receiver": "",
+        "target": "_first_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2846,
+        "receiver": "",
+        "target": "_first_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2849,
+        "receiver": "",
+        "target": "_first_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2850,
+        "receiver": "",
+        "target": "_first_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2854,
+        "receiver": "",
+        "target": "_first_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2856,
+        "receiver": "",
+        "target": "_first_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2859,
+        "receiver": "",
+        "target": "_first_line"
+       },
+       {
+        "kind": "calls",
+        "line": 2863,
+        "receiver": "",
+        "target": "_first_line"
+       }
+      ]
+     },
+     {
+      "anchor": "scan_file#4",
+      "called_by": 71,
+      "method": "scan_file",
+      "steps": [
+       {
+        "kind": "calls",
+        "line": 272,
+        "receiver": "",
+        "target": "is_go_path"
+       },
+       {
+        "kind": "uses",
+        "line": 280,
+        "target": "IMPORT_LINE"
+       },
+       {
+        "kind": "uses",
+        "line": 282,
+        "target": "SECURITY_OWNED"
+       },
+       {
+        "kind": "uses",
+        "line": 283,
+        "target": "REMOTE_CALL"
+       },
+       {
+        "kind": "uses",
+        "line": 283,
+        "target": "RETRY_HINT"
+       },
+       {
+        "kind": "uses",
+        "line": 288,
+        "target": "PAY_SURFACE"
+       },
+       {
+        "kind": "uses",
+        "line": 290,
+        "target": "MQ_SURFACE"
+       },
+       {
+        "kind": "uses",
+        "line": 292,
+        "target": "IDEMPOT_NEED"
+       },
+       {
+        "kind": "uses",
+        "line": 294,
+        "target": "IDEMPOT_CLUE"
+       },
+       {
+        "kind": "uses",
+        "line": 298,
+        "target": "EMPTY_CATCH_BODY"
+       },
+       {
+        "kind": "uses",
+        "line": 298,
+        "target": "SWALLOW_HINT"
+       },
+       {
+        "kind": "calls",
+        "line": 299,
+        "receiver": "",
+        "target": "hit"
+       },
+       {
+        "kind": "uses",
+        "line": 300,
+        "target": "CATCH_OPEN"
+       },
+       {
+        "kind": "uses",
+        "line": 311,
+        "target": "HANDLE_CLUE"
+       },
+       {
+        "kind": "calls",
+        "line": 312,
+        "receiver": "",
+        "target": "hit"
+       },
+       {
+        "kind": "uses",
+        "line": 321,
+        "target": "GO_IGN_ERR"
+       },
+       {
+        "kind": "calls",
+        "line": 322,
+        "receiver": "",
+        "target": "window_code"
+       },
+       {
+        "kind": "uses",
+        "line": 323,
+        "target": "GO_CHECK_ERR"
+       },
+       {
+        "kind": "calls",
+        "line": 324,
+        "receiver": "",
+        "target": "hit"
+       },
+       {
+        "kind": "calls",
+        "line": 329,
+        "receiver": "",
+        "target": "window_code"
+       }
+      ]
+     },
+     {
+      "anchor": "scan_file#5",
+      "called_by": 46,
+      "method": "scan_file",
+      "steps": [
+       {
+        "kind": "uses",
+        "line": 242,
+        "target": "MIGRATION_PATH"
+       },
+       {
+        "kind": "uses",
+        "line": 249,
+        "target": "ANNOUNCE_PATH"
+       },
+       {
+        "kind": "calls",
+        "line": 256,
+        "receiver": "",
+        "target": "hit"
+       },
+       {
+        "kind": "uses",
+        "line": 267,
+        "target": "SECURITY_OWNED"
+       },
+       {
+        "kind": "uses",
+        "line": 268,
+        "target": "FEATURE_FLAG"
+       },
+       {
+        "kind": "uses",
+        "line": 268,
+        "target": "MIGRATION_HINT"
+       },
+       {
+        "kind": "uses",
+        "line": 273,
+        "target": "MONEY_SURFACE"
+       },
+       {
+        "kind": "uses",
+        "line": 275,
+        "target": "PRIMARY_STORE"
+       },
+       {
+        "kind": "calls",
+        "line": 280,
+        "receiver": "",
+        "target": "hit"
+       },
+       {
+        "kind": "uses",
+        "line": 282,
+        "target": "DESTRUCTIVE_DDL"
+       },
+       {
+        "kind": "calls",
+        "line": 285,
+        "receiver": "",
+        "target": "hit"
+       },
+       {
+        "kind": "uses",
+        "line": 287,
+        "target": "DUAL_WRITE_CLUE"
+       },
+       {
+        "kind": "uses",
+        "line": 290,
+        "target": "STORAGE_SWITCH"
+       },
+       {
+        "kind": "calls",
+        "line": 295,
+        "receiver": "",
+        "target": "hit"
+       },
+       {
+        "kind": "uses",
+        "line": 297,
+        "target": "BREAKING_HINT"
+       },
+       {
+        "kind": "calls",
+        "line": 299,
+        "receiver": "",
+        "target": "window_code"
+       },
+       {
+        "kind": "uses",
+        "line": 300,
+        "target": "COMPAT_CLUE"
+       },
+       {
+        "kind": "calls",
+        "line": 302,
+        "receiver": "",
+        "target": "hit"
+       },
+       {
+        "kind": "uses",
+        "line": 310,
+        "target": "ROLLBACK_CLUE"
+       },
+       {
+        "kind": "uses",
+        "line": 314,
+        "target": "ANNOUNCE_CLUE"
+       }
+      ]
+     }
+    ],
+    "signatures": [
+     {
+      "anchor": "scan_file#4",
+      "annotations": [],
+      "called_by": 71,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "scan_file",
+      "params": "[{\"name\":\"rel\",\"type\":\"str\"},{\"name\":\"lines\",\"type\":\"list[str]\"}]",
+      "parent": null,
+      "returns": "dict",
+      "tags": []
+     },
+     {
+      "anchor": "scan_file#5",
+      "annotations": [],
+      "called_by": 46,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "scan_file",
+      "params": "[{\"name\":\"rel\",\"type\":\"str\"},{\"name\":\"lines\",\"type\":\"list[str]\"}]",
+      "parent": null,
+      "returns": "dict",
+      "tags": []
+     },
+     {
+      "anchor": "scan_file#2",
+      "annotations": [],
+      "called_by": 45,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "scan_file",
+      "params": "[{\"name\":\"rel\",\"type\":\"str\"},{\"name\":\"lines\",\"type\":\"list[str]\"},{\"name\":\"entry_hot\",\"type\":\"bool\"}]",
+      "parent": null,
+      "returns": "dict",
+      "tags": []
+     },
+     {
+      "anchor": "main#5",
+      "annotations": [],
+      "called_by": 42,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "None",
+      "tags": []
+     },
+     {
+      "anchor": "scan_file#3",
+      "annotations": [],
+      "called_by": 41,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "scan_file",
+      "params": "[{\"name\":\"rel\",\"type\":\"str\"},{\"name\":\"lines\",\"type\":\"list[str]\"}]",
+      "parent": null,
+      "returns": "dict",
+      "tags": []
+     },
+     {
+      "anchor": "main#2",
+      "annotations": [],
+      "called_by": 35,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "None",
+      "tags": []
+     },
+     {
+      "anchor": "build#2",
+      "annotations": [],
+      "called_by": 30,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "build",
+      "params": "[{\"name\":\"pack\",\"type\":\"Path\"},{\"name\":\"repo\",\"type\":\"Path\"}]",
+      "parent": null,
+      "returns": "tuple[dict, dict]",
+      "tags": []
+     },
+     {
+      "anchor": "write_model_brief",
+      "annotations": [],
+      "called_by": 30,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "write_model_brief",
+      "params": "[{\"name\":\"pack\",\"type\":\"Path\"},{\"name\":\"packet\",\"type\":\"dict\"},{\"default\":true,\"name\":\"repo\",\"type\":\"Path | None\"}]",
+      "parent": null,
+      "returns": "None",
+      "tags": []
+     },
+     {
+      "anchor": "scan",
+      "annotations": [],
+      "called_by": 29,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "scan",
+      "params": "[{\"name\":\"rel\",\"type\":\"str\"},{\"name\":\"lines\",\"type\":\"list[str]\"}]",
+      "parent": null,
+      "returns": "dict",
+      "tags": []
+     },
+     {
+      "anchor": "build",
+      "annotations": [],
+      "called_by": 27,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "build",
+      "params": "[{\"name\":\"pack\",\"type\":\"Path\"},{\"name\":\"mode\",\"type\":\"str\"},{\"default\":true,\"name\":\"source_root\",\"type\":\"str\"}]",
+      "parent": null,
+      "returns": "dict",
+      "tags": []
+     },
+     {
+      "anchor": "main#7",
+      "annotations": [],
+      "called_by": 25,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "None",
+      "tags": []
+     },
+     {
+      "anchor": "main#3",
+      "annotations": [],
+      "called_by": 22,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "None",
+      "tags": []
+     },
+     {
+      "anchor": "main#6",
+      "annotations": [],
+      "called_by": 20,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "None",
+      "tags": []
+     },
+     {
+      "anchor": "main#8",
+      "annotations": [],
+      "called_by": 18,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "None",
+      "tags": []
+     },
+     {
+      "anchor": "merge",
+      "annotations": [],
+      "called_by": 17,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "merge",
+      "params": "[{\"name\":\"baseline\",\"type\":\"dict\"},{\"name\":\"candidates\",\"type\":\"dict\"},{\"default\":true,\"name\":\"enrich\",\"type\":\"bool\"},{\"default\":true,\"name\":\"sast_policy\",\"type\":\"dict | None\"},{\"default\":true,\"name\":\"suspect_ids\",\"type\":\"set[str] | None\"},{\"default\":true,\"name\":\"spans\",\"type\":\"list[tuple[int, int]] | None\"},{\"default\":true,\"name\":\"diffs\",\"type\":\"dict[str, str] | None\"}]",
+      "parent": null,
+      "returns": "tuple[dict, dict]",
+      "tags": []
+     },
+     {
+      "anchor": "main#4",
+      "annotations": [],
+      "called_by": 14,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "None",
+      "tags": []
+     },
+     {
+      "anchor": "main#16",
+      "annotations": [],
+      "called_by": 13,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "int",
+      "tags": []
+     },
+     {
+      "anchor": "main#12",
+      "annotations": [],
+      "called_by": 11,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "int",
+      "tags": []
+     },
+     {
+      "anchor": "main",
+      "annotations": [],
+      "called_by": 9,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "None",
+      "tags": []
+     },
+     {
+      "anchor": "main#15",
+      "annotations": [],
+      "called_by": 9,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "int",
+      "tags": []
+     },
+     {
+      "anchor": "main#14",
+      "annotations": [],
+      "called_by": 8,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "None",
+      "tags": []
+     },
+     {
+      "anchor": "scan_file",
+      "annotations": [],
+      "called_by": 7,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "scan_file",
+      "params": "[{\"name\":\"rel\",\"type\":\"str\"},{\"name\":\"lines\",\"type\":\"list[str]\"}]",
+      "parent": null,
+      "returns": "list[dict]",
+      "tags": []
+     },
+     {
+      "anchor": "main#13",
+      "annotations": [],
+      "called_by": 6,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "None",
+      "tags": []
+     },
+     {
+      "anchor": "main#11",
+      "annotations": [],
+      "called_by": 5,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "int",
+      "tags": []
+     }
+    ],
+    "stats": {
+     "block_count": 21,
+     "file_count": 21,
+     "languages": [
+      "python"
+     ],
+     "namespaces": [
+      "skills/codexqa-code-reviewer/scripts/lib/_annotation_edges_body",
+      "skills/codexqa-code-reviewer/scripts/lib/_complexity_body",
+      "skills/codexqa-code-reviewer/scripts/lib/_dependencies_body",
+      "skills/codexqa-code-reviewer/scripts/lib/_det_rules",
+      "skills/codexqa-code-reviewer/scripts/lib/_identical_copies",
+      "skills/codexqa-code-reviewer/scripts/lib/_line_scan",
+      "skills/codexqa-code-reviewer/scripts/lib/_performance_body",
+      "skills/codexqa-code-reviewer/scripts/lib/_privacy_body",
+      "skills/codexqa-code-reviewer/scripts/lib/_resilience_body",
+      "skills/codexqa-code-reviewer/scripts/lib/_risk_tier_body",
+      "skills/codexqa-code-reviewer/scripts/lib/_rollout_body",
+      "skills/codexqa-code-reviewer/scripts/lib/_rule_router",
+      "skills/codexqa-code-reviewer/scripts/lib/_sast_body",
+      "skills/codexqa-code-reviewer/scripts/lib/_secondary_body",
+      "skills/codexqa-code-reviewer/scripts/lib/build-coverage-ledger",
+      "skills/codexqa-code-reviewer/scripts/lib/build-judgment-packet",
+      "skills/codexqa-code-reviewer/scripts/lib/build-review-digest",
+      "skills/codexqa-code-reviewer/scripts/lib/derive_triage",
+      "skills/codexqa-code-reviewer/scripts/lib/merge-llm-findings",
+      "skills/codexqa-code-reviewer/scripts/lib/seal-conclusion",
+      "skills/codexqa-code-reviewer/scripts/lib/validate-conclusion"
+     ],
+     "node_count": 877
+    },
+    "tentative_title": "_annotation_edges_body · KeyIndex"
+   },
+   "token_est": 8230
+  },
+  {
+   "kind": "page",
+   "id": "p02",
+   "community_id": "10ce00da-a4a4-f973-aa25-10be068b07c1",
+   "input": {
+    "cross_community": [
+     {
+      "direction": "outgoing",
+      "kinds": [
+       "calls",
+       "uses"
+      ],
+      "other": "ensure_codexqa.ts · StackFrame",
+      "weight": 186
+     },
+     {
+      "direction": "incoming",
+      "kinds": [
+       "calls"
+      ],
+      "other": "ensure_codexqa.ts · StackFrame",
+      "weight": 80
+     },
+     {
+      "direction": "outgoing",
+      "kinds": [
+       "calls"
+      ],
+      "other": "defective.mjs · TtlCache",
+      "weight": 70
+     },
+     {
+      "direction": "incoming",
+      "kinds": [],
+      "other": "defective.mjs · TtlCache",
+      "weight": 47
+     },
+     {
+      "direction": "outgoing",
+      "kinds": [],
+      "other": "agent_llm · CodexQAError",
+      "weight": 28
+     }
+    ],
+    "method_flows": [],
+    "signatures": [
+     {
+      "anchor": "score_request",
+      "annotations": [],
+      "called_by": 92,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "score_request",
+      "params": "[{\"name\":\"text\",\"type\":\"str\"}]",
+      "parent": null,
+      "returns": "Dict[str, Dict[str, Any]]",
+      "tags": []
+     },
+     {
+      "anchor": "scan_full",
+      "annotations": [],
+      "called_by": 23,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "scan_full",
+      "params": "[{\"name\":\"args\"},{\"name\":\"client\"}]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "cmd_submit",
+      "annotations": [],
+      "called_by": 22,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "cmd_submit",
+      "params": "[{\"name\":\"flags\",\"type\":\"Record<string, any>\"}]",
+      "parent": null,
+      "returns": "Promise<void> | void",
+      "tags": []
+     },
+     {
+      "anchor": "convertFile",
+      "annotations": [],
+      "called_by": 18,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "convertFile",
+      "params": "[{\"name\":\"input\",\"type\":\"string\"},{\"name\":\"fromFmt\",\"type\":\"string\"},{\"name\":\"toFmt\",\"type\":\"string\"},{\"default\":true,\"name\":\"output\",\"type\":\"string\"}]",
+      "parent": null,
+      "returns": "string",
+      "tags": []
+     },
+     {
+      "anchor": "scan_incremental",
+      "annotations": [],
+      "called_by": 18,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "scan_incremental",
+      "params": "[{\"name\":\"args\"},{\"name\":\"client\"}]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "render_html_report",
+      "annotations": [],
+      "called_by": 15,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "render_html_report",
+      "params": "[{\"name\":\"markdown\",\"type\":\"string\"},{\"name\":\"opts\",\"type\":\"HtmlReportOpts\"}]",
+      "parent": null,
+      "returns": "string",
+      "tags": []
+     },
+     {
+      "anchor": "cmd_finalize",
+      "annotations": [],
+      "called_by": 14,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "cmd_finalize",
+      "params": "[{\"name\":\"args\"}]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "extract_facts",
+      "annotations": [],
+      "called_by": 14,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "extract_facts",
+      "params": "[{\"name\":\"parsed\",\"type\":\"ParsedException\"},{\"name\":\"brief\",\"type\":\"BriefItem[]\"}]",
+      "parent": null,
+      "returns": "ReportFacts",
+      "tags": []
+     },
+     {
+      "anchor": "cmd_write_report",
+      "annotations": [],
+      "called_by": 13,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "cmd_write_report",
+      "params": "[{\"name\":\"flags\",\"type\":\"Record<string, any>\"}]",
+      "parent": null,
+      "returns": "void",
+      "tags": []
+     },
+     {
+      "anchor": "capture",
+      "annotations": [],
+      "called_by": 12,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "javascript",
+      "name": "capture",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "cmd_agent_stage2",
+      "annotations": [],
+      "called_by": 11,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "cmd_agent_stage2",
+      "params": "[{\"name\":\"args\"}]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "main",
+      "annotations": [],
+      "called_by": 9,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[{\"default\":true,\"name\":\"argv\"}]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "main#3",
+      "annotations": [],
+      "called_by": 9,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "commitReservation",
+      "annotations": [],
+      "called_by": 8,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "javascript",
+      "name": "commitReservation",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "main#22",
+      "annotations": [],
+      "called_by": 8,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "number",
+      "tags": []
+     },
+     {
+      "anchor": "main#2",
+      "annotations": [],
+      "called_by": 6,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "main#10",
+      "annotations": [],
+      "called_by": 6,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[{\"default\":true,\"name\":\"argv\",\"type\":\"Optional[List[str]]\"}]",
+      "parent": null,
+      "returns": "int",
+      "tags": []
+     },
+     {
+      "anchor": "main#13",
+      "annotations": [],
+      "called_by": 6,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[{\"default\":true,\"name\":\"argv\",\"type\":\"Optional[List[str]]\"}]",
+      "parent": null,
+      "returns": "int",
+      "tags": []
+     },
+     {
+      "anchor": "main#9",
+      "annotations": [],
+      "called_by": 5,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "Promise<void>",
+      "tags": []
+     },
+     {
+      "anchor": "callHttp",
+      "annotations": [],
+      "called_by": 3,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "callHttp",
+      "params": "[{\"name\":\"path\",\"type\":\"string\"},{\"name\":\"body\",\"type\":\"unknown\"},{\"name\":\"method\"},{\"name\":\"timeout\"}]",
+      "parent": null,
+      "returns": "Promise<CallHttpResult>",
+      "tags": []
+     },
+     {
+      "anchor": "main#4",
+      "annotations": [],
+      "called_by": 2,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "main",
+      "params": "[{\"name\":\"argvIn\",\"type\":\"string[]\"}]",
+      "parent": null,
+      "returns": "void",
+      "tags": []
+     },
+     {
+      "anchor": "main#5",
+      "annotations": [],
+      "called_by": 2,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "main",
+      "params": "[{\"name\":\"argvIn\",\"type\":\"string[]\"}]",
+      "parent": null,
+      "returns": "void",
+      "tags": []
+     },
+     {
+      "anchor": "main#6",
+      "annotations": [],
+      "called_by": 2,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "main",
+      "params": "[{\"name\":\"argvIn\",\"type\":\"string[]\"}]",
+      "parent": null,
+      "returns": "void",
+      "tags": []
+     },
+     {
+      "anchor": "main#7",
+      "annotations": [],
+      "called_by": 2,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "main",
+      "params": "[{\"name\":\"argvIn\",\"type\":\"string[]\"}]",
+      "parent": null,
+      "returns": "void",
+      "tags": []
+     }
+    ],
+    "stats": {
+     "block_count": 48,
+     "file_count": 48,
+     "languages": [
+      "javascript",
+      "python",
+      "typescript"
+     ],
+     "namespaces": [
+      "docs/assets/previews/rebuild_previews",
+      "docs/assets/previews/render-defect-report.ts",
+      "docs/assets/previews/screenshot.mjs",
+      "examples/inventory-service/head/smoke.mjs",
+      "examples/inventory-service/head/src/db.js",
+      "examples/inventory-service/head/src/inventory.js",
+      "examples/inventory-service/head/src/pricing.js",
+      "examples/inventory-service/head/src/refund.js",
+      "examples/inventory-service/head/src/reservation.js",
+      "scripts/check-docs",
+      "scripts/compose-release-notes",
+      "skills/codexqa-defect-analyzer/scripts/audit_policy_fixtures",
+      "skills/codexqa-defect-analyzer/scripts/llm_client",
+      "skills/codexqa-defect-analyzer/scripts/run_scan",
+      "skills/codexqa-requirement-analyzer/scripts/batch_convert_templates.ts",
+      "skills/codexqa-requirement-analyzer/scripts/common_parser.ts",
+      "skills/codexqa-requirement-analyzer/scripts/convert_formats.ts",
+      "skills/codexqa-requirement-analyzer/scripts/office_io.ts",
+      "skills/codexqa-requirement-analyzer/scripts/parse_excel.ts",
+      "skills/codexqa-requirement-analyzer/scripts/parse_formats.ts",
+      "skills/codexqa-requirement-analyzer/scripts/parse_html.ts",
+      "skills/codexqa-requirement-analyzer/scripts/parse_json.ts",
+      "skills/codexqa-requirement-analyzer/scripts/parse_markdown.ts",
+      "skills/codexqa-requirement-analyzer/scripts/parse_word.ts",
+      "skills/codexqa-requirement-analyzer/scripts/run_analysis.ts",
+      "skills/codexqa-rootcause-analyzer/scripts/cli_args.ts",
+      "skills/codexqa-rootcause-analyzer/scripts/diagnose.ts",
+      "skills/codexqa-rootcause-analyzer/scripts/draft_report.ts",
+      "skills/codexqa-rootcause-analyzer/scripts/html_report.ts",
+      "skills/codexqa-rootcause-analyzer/scripts/render_html.ts",
+      "skills/codexqa-rootcause-analyzer/scripts/report.ts",
+      "skills/codexqa-rootcause-analyzer/scripts/resolve_repo.ts",
+      "skills/codexqa-rootcause-analyzer/scripts/store.ts",
+      "skills/codexqa-rootcause-analyzer/scripts/timing.ts",
+      "skills/codexqa-skill-router/scripts/discover_skills",
+      "skills/codexqa-skill-router/scripts/ensure_skill",
+      "skills/codexqa-skill-router/scripts/refresh_catalog",
+      "skills/codexqa-skill-router/scripts/suggest_route",
+      "skills/codexqa-testdata-generator/slots/catalog/scripts/executors/create_limited_product.ts",
+      "skills/codexqa-testdata-generator/slots/catalog/scripts/executors/create_order.ts",
+      "skills/codexqa-testdata-generator/slots/catalog/scripts/executors/create_product.ts",
+      "skills/codexqa-testdata-generator/slots/catalog/scripts/executors/setup_account_credit.ts",
+      "skills/codexqa-testdata-generator/slots/common/client.ts",
+      "skills/codexqa-testdata-generator/slots/distribution/scripts/executors/bind_inventory.ts",
+      "skills/codexqa-testdata-generator/slots/distribution/scripts/executors/browse_and_quote.ts",
+      "skills/codexqa-testdata-generator/slots/distribution/scripts/executors/create_distributor.ts",
+      "skills/codexqa-testdata-generator/slots/distribution/scripts/executors/set_commission.ts",
+      "skills/codexqa-testdata-generator/slots/mock_server.ts"
+     ],
+     "node_count": 554
+    },
+    "tentative_title": "rebuild_previews · ZipReader"
+   },
+   "token_est": 10234
+  },
+  {
+   "kind": "page",
+   "id": "p03",
+   "community_id": "4d1ef177-0a81-d40b-8e32-0b0f2d00af27",
+   "input": {
+    "cross_community": [
+     {
+      "direction": "incoming",
+      "kinds": [
+       "calls",
+       "uses"
+      ],
+      "other": "agent.ts · ActionSpace",
+      "weight": 1523
+     },
+     {
+      "direction": "outgoing",
+      "kinds": [
+       "calls",
+       "uses"
+      ],
+      "other": "agent.ts · ActionSpace",
+      "weight": 242
+     }
+    ],
+    "method_flows": [
+     {
+      "anchor": "runStep",
+      "called_by": 37,
+      "method": "runStep",
+      "steps": [
+       {
+        "kind": "calls",
+        "line": 80,
+        "target": "expandStep"
+       },
+       {
+        "kind": "calls",
+        "line": 87,
+        "target": "targetDisplay"
+       },
+       {
+        "kind": "uses",
+        "line": 87,
+        "receiver": "step",
+        "target": "url"
+       },
+       {
+        "kind": "uses",
+        "line": 88,
+        "receiver": "step",
+        "target": "value"
+       },
+       {
+        "kind": "calls",
+        "line": 94,
+        "target": "controlSnapshot"
+       },
+       {
+        "kind": "uses",
+        "line": 94,
+        "receiver": "record",
+        "target": "observed"
+       },
+       {
+        "kind": "calls",
+        "line": 96,
+        "target": "runHttp"
+       },
+       {
+        "kind": "uses",
+        "line": 98,
+        "receiver": "record",
+        "target": "http"
+       },
+       {
+        "kind": "calls",
+        "line": 105,
+        "target": "assertStep"
+       },
+       {
+        "kind": "uses",
+        "line": 106,
+        "receiver": "record",
+        "target": "expected"
+       },
+       {
+        "kind": "uses",
+        "line": 107,
+        "receiver": "record",
+        "target": "actual"
+       },
+       {
+        "kind": "calls",
+        "line": 120,
+        "target": "PilotError"
+       },
+       {
+        "kind": "calls",
+        "line": 121,
+        "target": "resolveTarget"
+       },
+       {
+        "kind": "calls",
+        "line": 122,
+        "target": "asCandidate"
+       },
+       {
+        "kind": "uses",
+        "line": 122,
+        "receiver": "record",
+        "target": "matched"
+       },
+       {
+        "kind": "calls",
+        "line": 123,
+        "target": "actionMarkLabel"
+       },
+       {
+        "kind": "calls",
+        "line": 124,
+        "target": "act"
+       },
+       {
+        "kind": "uses",
+        "line": 128,
+        "receiver": "record",
+        "target": "url"
+       },
+       {
+        "kind": "uses",
+        "line": 129,
+        "receiver": "record",
+        "target": "title"
+       },
+       {
+        "kind": "uses",
+        "line": 134,
+        "target": "LocatorMiss"
+       }
+      ]
+     },
+     {
+      "anchor": "stepTimesHtml",
+      "called_by": 33,
+      "method": "stepTimesHtml",
+      "steps": [
+       {
+        "kind": "uses",
+        "line": 320,
+        "target": "COPY"
+       },
+       {
+        "kind": "uses",
+        "line": 337,
+        "receiver": "step",
+        "target": "model"
+       },
+       {
+        "kind": "calls",
+        "line": 364,
+        "target": "isModelCall"
+       },
+       {
+        "kind": "calls",
+        "line": 400,
+        "target": "assertVerdictLabel"
+       },
+       {
+        "kind": "uses",
+        "target": "StepResult"
+       },
+       {
+        "kind": "uses",
+        "target": "actMs"
+       },
+       {
+        "kind": "calls",
+        "target": "assertDetail"
+       },
+       {
+        "kind": "uses",
+        "target": "assertVerdict"
+       },
+       {
+        "kind": "uses",
+        "target": "confirmModel"
+       },
+       {
+        "kind": "uses",
+        "target": "confirmMs"
+       },
+       {
+        "kind": "uses",
+        "target": "confirmUsage"
+       },
+       {
+        "kind": "calls",
+        "target": "fillNote"
+       },
+       {
+        "kind": "calls",
+        "target": "formatDuration"
+       },
+       {
+        "kind": "calls",
+        "target": "hasUsage"
+       },
+       {
+        "kind": "calls",
+        "target": "langLabel"
+       },
+       {
+        "kind": "calls",
+        "target": "modelConsumeLabel"
+       },
+       {
+        "kind": "calls",
+        "target": "modelDetail"
+       },
+       {
+        "kind": "uses",
+        "target": "modelInput"
+       },
+       {
+        "kind": "uses",
+        "target": "modelMs"
+       },
+       {
+        "kind": "uses",
+        "target": "modelReply"
+       }
+      ]
+     },
+     {
+      "anchor": "explore",
+      "called_by": 32,
+      "method": "explore",
+      "steps": [
+       {
+        "kind": "uses",
+        "line": 67,
+        "target": "DEFAULT_DENY"
+       },
+       {
+        "kind": "calls",
+        "line": 70,
+        "target": "emptyCase"
+       },
+       {
+        "kind": "calls",
+        "line": 71,
+        "receiver": "session",
+        "target": "goto"
+       },
+       {
+        "kind": "uses",
+        "line": 78,
+        "receiver": "graph",
+        "target": "nodes"
+       },
+       {
+        "kind": "calls",
+        "line": 80,
+        "target": "nextTarget"
+       },
+       {
+        "kind": "calls",
+        "line": 82,
+        "target": "stateKey"
+       },
+       {
+        "kind": "uses",
+        "line": 88,
+        "receiver": "session",
+        "target": "lastObserveMs"
+       },
+       {
+        "kind": "calls",
+        "line": 89,
+        "target": "controlSnapshot"
+       },
+       {
+        "kind": "calls",
+        "line": 91,
+        "target": "execute"
+       },
+       {
+        "kind": "uses",
+        "line": 101,
+        "target": "StalePage"
+       },
+       {
+        "kind": "calls",
+        "line": 114,
+        "receiver": "writer",
+        "target": "saveScreenshot"
+       },
+       {
+        "kind": "calls",
+        "line": 118,
+        "target": "actionMarkLabel"
+       },
+       {
+        "kind": "uses",
+        "line": 118,
+        "receiver": "target",
+        "target": "node"
+       },
+       {
+        "kind": "calls",
+        "line": 118,
+        "receiver": "session",
+        "target": "screenshot"
+       },
+       {
+        "kind": "calls",
+        "line": 132,
+        "target": "asCandidate"
+       },
+       {
+        "kind": "calls",
+        "line": 135,
+        "target": "elapsedMs"
+       },
+       {
+        "kind": "uses",
+        "line": 141,
+        "receiver": "result",
+        "target": "durationMs"
+       },
+       {
+        "kind": "calls",
+        "line": 157,
+        "target": "compileCase"
+       },
+       {
+        "kind": "uses",
+        "target": "BrowserSession"
+       },
+       {
+        "kind": "uses",
+        "target": "CanonicalCase"
+       }
+      ]
+     }
+    ],
+    "signatures": [
+     {
+      "anchor": "runStep",
+      "annotations": [],
+      "called_by": 37,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "runStep",
+      "params": "[{\"name\":\"caseId\",\"type\":\"string\"},{\"name\":\"index\",\"type\":\"number\"},{\"name\":\"raw\",\"type\":\"Step\"},{\"name\":\"vars\",\"type\":\"Record<string, unknown>\"}]",
+      "parent": "assessActionEffect",
+      "returns": "Promise<StepResult>",
+      "tags": []
+     },
+     {
+      "anchor": "stepTimesHtml",
+      "annotations": [],
+      "called_by": 33,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "stepTimesHtml",
+      "params": "[{\"name\":\"step\",\"type\":\"StepResult\"}]",
+      "parent": null,
+      "returns": "string",
+      "tags": []
+     },
+     {
+      "anchor": "explore",
+      "annotations": [],
+      "called_by": 32,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "explore",
+      "params": "[{\"name\":\"session\",\"type\":\"BrowserSession\"},{\"name\":\"writer\",\"type\":\"ReportWriter\"},{\"name\":\"url\",\"type\":\"string\"},{\"name\":\"options\",\"type\":\"{ maxStates?: number; maxSteps?: number; maxMinutes?: number; deny?: string[]; allow?: string[] }\"}]",
+      "parent": null,
+      "returns": "Promise<{ graph: StateGraph; result: CaseResult; compiled: CanonicalCase[] }>",
+      "tags": []
+     },
+     {
+      "anchor": "cmdGenerate",
+      "annotations": [],
+      "called_by": 31,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "cmdGenerate",
+      "params": "[{\"name\":\"argv\",\"type\":\"string[]\"},{\"name\":\"config\",\"type\":\"PilotConfig\"},{\"name\":\"screenshots\",\"type\":\"boolean\"},{\"name\":\"headed\",\"type\":\"boolean\"}]",
+      "parent": null,
+      "returns": "Promise<number>",
+      "tags": []
+     },
+     {
+      "anchor": "formatStepTimes",
+      "annotations": [],
+      "called_by": 23,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "formatStepTimes",
+      "params": "[{\"name\":\"step\",\"type\":\"StepResult\"},{\"name\":\"lang\",\"type\":\"ReportLang\"}]",
+      "parent": null,
+      "returns": "string",
+      "tags": []
+     },
+     {
+      "anchor": "renderHtml",
+      "annotations": [],
+      "called_by": 23,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "renderHtml",
+      "params": "[{\"name\":\"report\",\"type\":\"SuiteReport\"}]",
+      "parent": null,
+      "returns": "string",
+      "tags": []
+     },
+     {
+      "anchor": "cmdAuto",
+      "annotations": [],
+      "called_by": 22,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "cmdAuto",
+      "params": "[{\"name\":\"argv\",\"type\":\"string[]\"},{\"name\":\"config\",\"type\":\"PilotConfig\"},{\"name\":\"screenshots\",\"type\":\"boolean\"},{\"name\":\"headed\",\"type\":\"boolean\"}]",
+      "parent": null,
+      "returns": "Promise<number>",
+      "tags": []
+     },
+     {
+      "anchor": "cmdRun",
+      "annotations": [],
+      "called_by": 21,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "cmdRun",
+      "params": "[{\"name\":\"paths\",\"type\":\"string[]\"},{\"name\":\"argv\",\"type\":\"string[]\"},{\"name\":\"config\",\"type\":\"PilotConfig\"},{\"name\":\"screenshots\",\"type\":\"boolean\"},{\"name\":\"headed\",\"type\":\"boolean\"}]",
+      "parent": null,
+      "returns": "Promise<number>",
+      "tags": []
+     },
+     {
+      "anchor": "runCase",
+      "annotations": [],
+      "called_by": 19,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "runCase",
+      "params": "[{\"name\":\"caseItem\",\"type\":\"CanonicalCase\"}]",
+      "parent": "assessActionEffect",
+      "returns": "Promise<CaseResult>",
+      "tags": []
+     },
+     {
+      "anchor": "assertStep",
+      "annotations": [],
+      "called_by": 19,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "assertStep",
+      "params": "[{\"name\":\"session\",\"type\":\"BrowserSession\"},{\"name\":\"page\",\"type\":\"PageState\"},{\"name\":\"step\",\"type\":\"Step\"},{\"default\":true,\"name\":\"httpLast\",\"type\":\"Record<string, unknown> | null\"}]",
+      "parent": null,
+      "returns": "Promise<{ ok: boolean; expected: Record<string, unknown>; actual: Record<string, unknown>; failures: string[] }>",
+      "tags": []
+     },
+     {
+      "anchor": "cmdExplore",
+      "annotations": [],
+      "called_by": 18,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "cmdExplore",
+      "params": "[{\"name\":\"argv\",\"type\":\"string[]\"},{\"name\":\"config\",\"type\":\"PilotConfig\"},{\"name\":\"screenshots\",\"type\":\"boolean\"},{\"name\":\"headed\",\"type\":\"boolean\"}]",
+      "parent": null,
+      "returns": "Promise<number>",
+      "tags": []
+     },
+     {
+      "anchor": "caseHtml",
+      "annotations": [],
+      "called_by": 18,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "caseHtml",
+      "params": "[{\"name\":\"item\",\"type\":\"CaseResult\"},{\"name\":\"index\",\"type\":\"number\"},{\"name\":\"open\",\"type\":\"boolean\"},{\"default\":true,\"name\":\"recording\",\"type\":\"string\"}]",
+      "parent": null,
+      "returns": "string",
+      "tags": []
+     },
+     {
+      "anchor": "mergeConfig",
+      "annotations": [],
+      "called_by": 14,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "mergeConfig",
+      "params": "[{\"name\":\"base\",\"type\":\"PilotConfig\"},{\"name\":\"raw\",\"type\":\"Record<string, unknown>\"}]",
+      "parent": null,
+      "returns": "PilotConfig",
+      "tags": []
+     },
+     {
+      "anchor": "compileCase",
+      "annotations": [],
+      "called_by": 14,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "compileCase",
+      "params": "[{\"name\":\"result\",\"type\":\"CaseResult\"},{\"name\":\"startUrl\",\"type\":\"string\"},{\"default\":true,\"name\":\"goal\",\"type\":\"string\"},{\"default\":true,\"name\":\"caseId\",\"type\":\"string\"}]",
+      "parent": null,
+      "returns": "CanonicalCase",
+      "tags": []
+     },
+     {
+      "anchor": "asCandidate",
+      "annotations": [],
+      "called_by": 10,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "asCandidate",
+      "params": "[{\"name\":\"item\",\"type\":\"ObservedElement\"}]",
+      "parent": null,
+      "returns": "Record<string, unknown>",
+      "tags": []
+     },
+     {
+      "anchor": "StateGraph",
+      "annotations": [],
+      "called_by": 2,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "interface",
+      "language": "typescript",
+      "name": "StateGraph",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "CanonicalCase",
+      "annotations": [],
+      "called_by": 2,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "interface",
+      "language": "typescript",
+      "name": "CanonicalCase",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "StepResult",
+      "annotations": [],
+      "called_by": 2,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "interface",
+      "language": "typescript",
+      "name": "StepResult",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "CaseResult",
+      "annotations": [],
+      "called_by": 2,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "interface",
+      "language": "typescript",
+      "name": "CaseResult",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "Decision",
+      "annotations": [],
+      "called_by": 2,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "interface",
+      "language": "typescript",
+      "name": "Decision",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "Step",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "interface",
+      "language": "typescript",
+      "name": "Step",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "ObservedElement",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "interface",
+      "language": "typescript",
+      "name": "ObservedElement",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "ControlSnapshot",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "interface",
+      "language": "typescript",
+      "name": "ControlSnapshot",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "PageState",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "interface",
+      "language": "typescript",
+      "name": "PageState",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     }
+    ],
+    "stats": {
+     "block_count": 17,
+     "file_count": 17,
+     "languages": [
+      "typescript"
+     ],
+     "namespaces": [
+      "skills/codexqa-jev-browser/src/act.ts",
+      "skills/codexqa-jev-browser/src/browser.ts",
+      "skills/codexqa-jev-browser/src/cases.ts",
+      "skills/codexqa-jev-browser/src/cli.ts",
+      "skills/codexqa-jev-browser/src/cloak-install.ts",
+      "skills/codexqa-jev-browser/src/cloak.ts",
+      "skills/codexqa-jev-browser/src/config.ts",
+      "skills/codexqa-jev-browser/src/explore.ts",
+      "skills/codexqa-jev-browser/src/generate.ts",
+      "skills/codexqa-jev-browser/src/knowledge-draft.ts",
+      "skills/codexqa-jev-browser/src/observe/snapshot.ts",
+      "skills/codexqa-jev-browser/src/record.ts",
+      "skills/codexqa-jev-browser/src/report.ts",
+      "skills/codexqa-jev-browser/src/runner.ts",
+      "skills/codexqa-jev-browser/src/types.ts",
+      "skills/codexqa-jev-browser/src/util.ts",
+      "skills/codexqa-jev-browser/src/verify.ts"
+     ],
+     "node_count": 508
+    },
+    "tentative_title": "act.ts · PageState"
+   },
+   "token_est": 9505
+  },
+  {
+   "kind": "page",
+   "id": "p04",
+   "community_id": "225dc87a-f2f9-f116-3c5f-c530ed24a96d",
+   "input": {
+    "cross_community": [
+     {
+      "direction": "incoming",
+      "kinds": [
+       "calls",
+       "uses"
+      ],
+      "other": "bind_action.ts · InputError",
+      "weight": 1184
+     },
+     {
+      "direction": "incoming",
+      "kinds": [],
+      "other": "_verify_enterprise_onboard.ts · JsonObject",
+      "weight": 80
+     },
+     {
+      "direction": "outgoing",
+      "kinds": [],
+      "other": "bind_action.ts · InputError",
+      "weight": 59
+     },
+     {
+      "direction": "outgoing",
+      "kinds": [],
+      "other": "_verify_enterprise_onboard.ts · JsonObject",
+      "weight": 40
+     }
+    ],
+    "method_flows": [],
+    "signatures": [
+     {
+      "anchor": "constructor#10",
+      "annotations": [],
+      "called_by": 24,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "constructor",
+      "params": "[{\"name\":\"cfg\",\"type\":\"Config\"}]",
+      "parent": "executorStub",
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "main",
+      "annotations": [],
+      "called_by": 18,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "Promise<number>",
+      "tags": []
+     },
+     {
+      "anchor": "loadConfig",
+      "annotations": [],
+      "called_by": 12,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "loadConfig",
+      "params": "[{\"default\":true,\"name\":\"explicit\",\"type\":\"string | null\"}]",
+      "parent": null,
+      "returns": "Config",
+      "tags": []
+     },
+     {
+      "anchor": "cmdAdd",
+      "annotations": [],
+      "called_by": 8,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "cmdAdd",
+      "params": "[{\"name\":\"args\",\"type\":\"Record<string, unknown>\"}]",
+      "parent": null,
+      "returns": "number",
+      "tags": []
+     },
+     {
+      "anchor": "scaffold",
+      "annotations": [],
+      "called_by": 7,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "scaffold",
+      "params": "[{\"name\":\"domain\",\"type\":\"string\"},{\"name\":\"openapiDir\",\"type\":\"string\"},{\"name\":\"output\",\"type\":\"string\"}]",
+      "parent": null,
+      "returns": "Promise<void>",
+      "tags": []
+     },
+     {
+      "anchor": "constructor",
+      "annotations": [],
+      "called_by": 6,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "constructor",
+      "params": "[{\"name\":\"cfg\",\"type\":\"Config\"},{\"name\":\"auth\",\"type\":\"AuthAdapter\"}]",
+      "parent": "executorStub",
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "constructor#3",
+      "annotations": [],
+      "called_by": 6,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "constructor",
+      "params": "[{\"name\":\"cfg\",\"type\":\"Config\"},{\"name\":\"auth\",\"type\":\"AuthAdapter\"}]",
+      "parent": "executorStub",
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "constructor#5",
+      "annotations": [],
+      "called_by": 6,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "constructor",
+      "params": "[{\"name\":\"cfg\",\"type\":\"Config\"},{\"name\":\"auth\",\"type\":\"AuthAdapter\"}]",
+      "parent": "executorStub",
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "constructor#7",
+      "annotations": [],
+      "called_by": 6,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "constructor",
+      "params": "[{\"name\":\"cfg\",\"type\":\"Config\"},{\"name\":\"auth\",\"type\":\"AuthAdapter\"}]",
+      "parent": "executorStub",
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "constructor#8",
+      "annotations": [],
+      "called_by": 6,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "constructor",
+      "params": "[{\"name\":\"cfg\",\"type\":\"Config\"},{\"name\":\"auth\",\"type\":\"AuthAdapter\"}]",
+      "parent": "openapiFiles",
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "constructor#9",
+      "annotations": [],
+      "called_by": 6,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "constructor",
+      "params": "[{\"name\":\"cfg\",\"type\":\"Config\"},{\"name\":\"auth\",\"type\":\"AuthAdapter\"}]",
+      "parent": "executorStub",
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "constructor#11",
+      "annotations": [],
+      "called_by": 6,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "constructor",
+      "params": "[{\"name\":\"cfg\",\"type\":\"Config\"},{\"name\":\"auth\",\"type\":\"AuthAdapter\"}]",
+      "parent": "executorStub",
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "constructor#12",
+      "annotations": [],
+      "called_by": 6,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "constructor",
+      "params": "[{\"name\":\"cfg\",\"type\":\"Config\"},{\"name\":\"auth\",\"type\":\"AuthAdapter\"}]",
+      "parent": "executorStub",
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "constructor#13",
+      "annotations": [],
+      "called_by": 6,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "constructor",
+      "params": "[{\"name\":\"cfg\",\"type\":\"Config\"},{\"name\":\"auth\",\"type\":\"AuthAdapter\"}]",
+      "parent": "executorStub",
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "main#4",
+      "annotations": [],
+      "called_by": 6,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "Promise<number>",
+      "tags": []
+     }
+    ],
+    "stats": {
+     "block_count": 24,
+     "file_count": 24,
+     "languages": [
+      "typescript"
+     ],
+     "namespaces": [
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/cache_tool_binding.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/experience_compat.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/parallel_search.ts",
+      "skills/codexqa-testdata-generator/scripts/adapters/api_catalog.ts",
+      "skills/codexqa-testdata-generator/scripts/adapters/auth.ts",
+      "skills/codexqa-testdata-generator/scripts/adapters/case_writeback.ts",
+      "skills/codexqa-testdata-generator/scripts/adapters/cli.ts",
+      "skills/codexqa-testdata-generator/scripts/adapters/config.ts",
+      "skills/codexqa-testdata-generator/scripts/adapters/config_store.ts",
+      "skills/codexqa-testdata-generator/scripts/adapters/data_store.ts",
+      "skills/codexqa-testdata-generator/scripts/adapters/doc_source.ts",
+      "skills/codexqa-testdata-generator/scripts/adapters/experience_store.ts",
+      "skills/codexqa-testdata-generator/scripts/adapters/feature_flags.ts",
+      "skills/codexqa-testdata-generator/scripts/adapters/httputil.ts",
+      "skills/codexqa-testdata-generator/scripts/adapters/index.ts",
+      "skills/codexqa-testdata-generator/scripts/adapters/skill_marketplace.ts",
+      "skills/codexqa-testdata-generator/scripts/adapters/slot_roots.ts",
+      "skills/codexqa-testdata-generator/scripts/adapters/tool_registry.ts",
+      "skills/codexqa-testdata-generator/scripts/adapters/workspace_context.ts",
+      "skills/codexqa-testdata-generator/scripts/experience_client.ts",
+      "skills/codexqa-testdata-generator/scripts/favorites.ts",
+      "skills/codexqa-testdata-generator/scripts/search_data_build.ts",
+      "skills/codexqa-testdata-generator/scripts/sync_slot.ts",
+      "skills/codexqa-testdata-generator/slot-scaffolder/scripts/scaffold_slot.ts"
+     ],
+     "node_count": 312
+    },
+    "tentative_title": "cache_tool_binding.ts · JsonObject"
+   },
+   "token_est": 3976
+  },
+  {
+   "kind": "page",
+   "id": "p05",
+   "community_id": "6dadd28d-d45e-ba32-5db3-7e9fcf2a1a33",
+   "input": {
+    "cross_community": [
+     {
+      "direction": "incoming",
+      "kinds": [],
+      "other": "rebuild_previews · ZipReader",
+      "weight": 28
+     },
+     {
+      "direction": "outgoing",
+      "kinds": [],
+      "other": "rebuild_previews · ZipReader",
+      "weight": 23
+     }
+    ],
+    "method_flows": [],
+    "signatures": [
+     {
+      "anchor": "render_html_report",
+      "annotations": [],
+      "called_by": 28,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "render_html_report",
+      "params": "[{\"name\":\"report\"}]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "ensure_scan_tools",
+      "annotations": [],
+      "called_by": 27,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "ensure_scan_tools",
+      "params": "[{\"default\":true,\"name\":\"repo\"},{\"default\":true,\"name\":\"cfg\"},{\"default\":true,\"name\":\"files\"},{\"default\":true,\"name\":\"full\"},{\"default\":true,\"name\":\"auto_install\"},{\"default\":true,\"name\":\"strict\"},{\"default\":true,\"name\":\"max_repair\"}]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "main#2",
+      "annotations": [],
+      "called_by": 25,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "rag_related_snippets",
+      "annotations": [],
+      "called_by": 23,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "rag_related_snippets",
+      "params": "[{\"name\":\"repo\"},{\"name\":\"changed_paths\"},{\"default\":true,\"name\":\"intent\"},{\"default\":true,\"name\":\"max_items\"},{\"default\":true,\"name\":\"max_chars\"},{\"default\":true,\"name\":\"use_changed_symbols\"}]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "build_scope_plan",
+      "annotations": [],
+      "called_by": 21,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "build_scope_plan",
+      "params": "[{\"name\":\"repo\"},{\"default\":true,\"name\":\"cfg\"},{\"default\":true,\"name\":\"code_files\"},{\"default\":true,\"name\":\"fan_map\"},{\"default\":true,\"name\":\"policy\"}]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "main#3",
+      "annotations": [],
+      "called_by": 20,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "main#8",
+      "annotations": [],
+      "called_by": 11,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "main#4",
+      "annotations": [],
+      "called_by": 6,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "main#6",
+      "annotations": [],
+      "called_by": 6,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "main",
+      "annotations": [],
+      "called_by": 4,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "main#5",
+      "annotations": [],
+      "called_by": 3,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "main#9",
+      "annotations": [],
+      "called_by": 2,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "main#7",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "main#10",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "CodexQAError",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "class",
+      "language": "python",
+      "name": "CodexQAError",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": [
+       "py.bases"
+      ]
+     }
+    ],
+    "stats": {
+     "block_count": 17,
+     "file_count": 17,
+     "languages": [
+      "python"
+     ],
+     "namespaces": [
+      "skills/codexqa-defect-analyzer/scripts/agent_llm",
+      "skills/codexqa-defect-analyzer/scripts/choose_scenario",
+      "skills/codexqa-defect-analyzer/scripts/codexqa_client",
+      "skills/codexqa-defect-analyzer/scripts/collect_full",
+      "skills/codexqa-defect-analyzer/scripts/collect_incremental",
+      "skills/codexqa-defect-analyzer/scripts/context_builder",
+      "skills/codexqa-defect-analyzer/scripts/ensure_tools",
+      "skills/codexqa-defect-analyzer/scripts/feedback",
+      "skills/codexqa-defect-analyzer/scripts/html_chrome",
+      "skills/codexqa-defect-analyzer/scripts/ingest_adhoc",
+      "skills/codexqa-defect-analyzer/scripts/lib",
+      "skills/codexqa-defect-analyzer/scripts/merge_report",
+      "skills/codexqa-defect-analyzer/scripts/policy_loader",
+      "skills/codexqa-defect-analyzer/scripts/rag_context",
+      "skills/codexqa-defect-analyzer/scripts/route_model",
+      "skills/codexqa-defect-analyzer/scripts/sast_adapters",
+      "skills/codexqa-defect-analyzer/scripts/scope_planner"
+     ],
+     "node_count": 292
+    },
+    "tentative_title": "agent_llm · CodexQAError"
+   },
+   "token_est": 3309
+  },
+  {
+   "kind": "page",
+   "id": "p06",
+   "community_id": "7bf98416-7a28-aa79-b1fc-0837048c24fb",
+   "input": {
+    "cross_community": [
+     {
+      "direction": "outgoing",
+      "kinds": [
+       "calls",
+       "uses"
+      ],
+      "other": "cache_tool_binding.ts · JsonObject",
+      "weight": 1184
+     },
+     {
+      "direction": "incoming",
+      "kinds": [],
+      "other": "cache_tool_binding.ts · JsonObject",
+      "weight": 59
+     }
+    ],
+    "method_flows": [],
+    "signatures": [
+     {
+      "anchor": "selectTool",
+      "annotations": [],
+      "called_by": 21,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "selectTool",
+      "params": "[{\"name\":\"manifest\",\"type\":\"JsonObject\"},{\"name\":\"targetType\",\"type\":\"\\\"entity\\\" | \\\"action\\\"\"},{\"name\":\"targetId\",\"type\":\"string\"},{\"name\":\"cachePath\",\"type\":\"string | null\"},{\"name\":\"contextPath\",\"type\":\"string | null\"}]",
+      "parent": null,
+      "returns": "Promise<SelectResult>",
+      "tags": []
+     },
+     {
+      "anchor": "runPipeline",
+      "annotations": [],
+      "called_by": 20,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "runPipeline",
+      "params": "[{\"name\":\"opts\",\"type\":\"PipelineOptions\"}]",
+      "parent": null,
+      "returns": "Promise<number>",
+      "tags": []
+     },
+     {
+      "anchor": "invokeEntity",
+      "annotations": [],
+      "called_by": 17,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "invokeEntity",
+      "params": "[{\"name\":\"manifest\",\"type\":\"JsonObject\"},{\"name\":\"entityId\",\"type\":\"string\"}]",
+      "parent": null,
+      "returns": "Promise<InvokeResult>",
+      "tags": []
+     },
+     {
+      "anchor": "pushAll",
+      "annotations": [],
+      "called_by": 2,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "pushAll",
+      "params": "[]",
+      "parent": null,
+      "returns": "void",
+      "tags": []
+     },
+     {
+      "anchor": "SelectResult",
+      "annotations": [],
+      "called_by": 2,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "SelectResult",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "callHttp",
+      "annotations": [],
+      "called_by": 2,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "callHttp",
+      "params": "[{\"name\":\"path\",\"type\":\"string\"},{\"name\":\"body\",\"type\":\"unknown\"},{\"name\":\"method\"},{\"name\":\"extraHeaders\",\"type\":\"Record<string, string> | null\"},{\"name\":\"timeout\"}]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "InvokeResult",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "InvokeResult",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "BindResult",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "BindResult",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "FieldPerm",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "FieldPerm",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "PipelineOptions",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "PipelineOptions",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "InputError",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "class",
+      "language": "typescript",
+      "name": "InputError",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": [
+       "ts.extends"
+      ]
+     },
+     {
+      "anchor": "SlotEntityRule",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "SlotEntityRule",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "SlotActionRule",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "SlotActionRule",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "Location",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "Location",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     }
+    ],
+    "stats": {
+     "block_count": 22,
+     "file_count": 22,
+     "languages": [
+      "typescript"
+     ],
+     "namespaces": [
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/bind_action.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/dashboard/server.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/finalize.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/gate_check_cdata.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/generate_config_commands.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/hash_manifest.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/init_manifest.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/invoke_entity.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/lint_manifest.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/manifest_io.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/merge_executor_fields.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/merge_patch.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/pipeline.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/rollback.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/safe_io.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/search_data_build_skill.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/select_tool.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/slot_catalog.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/slot_render.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/topo_sort_batch.ts",
+      "skills/codexqa-testdata-generator/references/case-data-material-planner/scripts/verify_tool_input_list.ts",
+      "skills/codexqa-testdata-generator/references/script-template.ts"
+     ],
+     "node_count": 271
+    },
+    "tentative_title": "bind_action.ts · InputError"
+   },
+   "token_est": 4014
+  },
+  {
+   "kind": "page",
+   "id": "p07",
+   "community_id": "089b4b86-ca36-038a-0a47-25245fd2c1cb",
+   "input": {
+    "cross_community": [
+     {
+      "direction": "outgoing",
+      "kinds": [],
+      "other": "cache_tool_binding.ts · JsonObject",
+      "weight": 80
+     },
+     {
+      "direction": "incoming",
+      "kinds": [],
+      "other": "cache_tool_binding.ts · JsonObject",
+      "weight": 40
+     }
+    ],
+    "method_flows": [],
+    "signatures": [
+     {
+      "anchor": "runPipelineScenarioSuite",
+      "annotations": [],
+      "called_by": 26,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "runPipelineScenarioSuite",
+      "params": "[]",
+      "parent": null,
+      "returns": "Promise<ScenarioResult[]>",
+      "tags": []
+     },
+     {
+      "anchor": "main",
+      "annotations": [],
+      "called_by": 21,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "Promise<number>",
+      "tags": []
+     },
+     {
+      "anchor": "runExtendSceneSuite",
+      "annotations": [],
+      "called_by": 18,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "runExtendSceneSuite",
+      "params": "[]",
+      "parent": null,
+      "returns": "Promise<ExtendResult[]>",
+      "tags": []
+     },
+     {
+      "anchor": "runEnterpriseOnboardSuite",
+      "annotations": [],
+      "called_by": 16,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "runEnterpriseOnboardSuite",
+      "params": "[]",
+      "parent": null,
+      "returns": "Promise<OnboardResult[]>",
+      "tags": []
+     },
+     {
+      "anchor": "runUserJourneySuite",
+      "annotations": [],
+      "called_by": 16,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "runUserJourneySuite",
+      "params": "[]",
+      "parent": null,
+      "returns": "Promise<JourneyResult[]>",
+      "tags": []
+     },
+     {
+      "anchor": "main#2",
+      "annotations": [],
+      "called_by": 4,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "main",
+      "params": "[]",
+      "parent": null,
+      "returns": "Promise<number>",
+      "tags": []
+     },
+     {
+      "anchor": "JsonObject",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "JsonObject",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "JsonObject#2",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "JsonObject",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "JsonObject#3",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "JsonObject",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "JsonObject#4",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "JsonObject",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "JsonObject#5",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "JsonObject",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "ExtendResult",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "ExtendResult",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "JourneyResult",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "JourneyResult",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "Json",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "Json",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "Json#2",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "Json",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     }
+    ],
+    "stats": {
+     "block_count": 6,
+     "file_count": 6,
+     "languages": [
+      "typescript"
+     ],
+     "namespaces": [
+      "skills/codexqa-testdata-generator/scripts/_verify_enterprise_onboard.ts",
+      "skills/codexqa-testdata-generator/scripts/_verify_extend_scene.ts",
+      "skills/codexqa-testdata-generator/scripts/_verify_pipeline_scenarios.ts",
+      "skills/codexqa-testdata-generator/scripts/_verify_rewrite.ts",
+      "skills/codexqa-testdata-generator/scripts/_verify_user_journeys.ts",
+      "skills/codexqa-testdata-generator/scripts/pack_skills.ts"
+     ],
+     "node_count": 207
+    },
+    "tentative_title": "_verify_enterprise_onboard.ts · JsonObject"
+   },
+   "token_est": 3288
+  },
+  {
+   "kind": "page",
+   "id": "p08",
+   "community_id": "e2058857-a317-168d-61db-3c400948e00f",
+   "input": {
+    "cross_community": [
+     {
+      "direction": "outgoing",
+      "kinds": [
+       "calls"
+      ],
+      "other": "build_diff_candidates · SkillError",
+      "weight": 91
+     },
+     {
+      "direction": "incoming",
+      "kinds": [],
+      "other": "build_diff_candidates · SkillError",
+      "weight": 33
+     }
+    ],
+    "method_flows": [
+     {
+      "anchor": "render_html",
+      "called_by": 104,
+      "method": "render_html",
+      "steps": [
+       {
+        "kind": "uses",
+        "line": 492,
+        "target": "ambiguity"
+       },
+       {
+        "kind": "uses",
+        "line": 492,
+        "target": "case_id"
+       },
+       {
+        "kind": "uses",
+        "line": 492,
+        "target": "case_id"
+       },
+       {
+        "kind": "uses",
+        "line": 492,
+        "target": "case_type"
+       },
+       {
+        "kind": "uses",
+        "line": 492,
+        "target": "case_type"
+       },
+       {
+        "kind": "uses",
+        "line": 492,
+        "target": "client"
+       },
+       {
+        "kind": "uses",
+        "line": 492,
+        "target": "client"
+       },
+       {
+        "kind": "uses",
+        "line": 492,
+        "target": "client"
+       },
+       {
+        "kind": "uses",
+        "line": 492,
+        "target": "expected_block"
+       },
+       {
+        "kind": "uses",
+        "line": 492,
+        "target": "expected_block"
+       }
+      ]
+     },
+     {
+      "anchor": "ingest_one",
+      "called_by": 29,
+      "method": "ingest_one",
+      "steps": [
+       {
+        "kind": "calls",
+        "line": 235,
+        "receiver": "",
+        "target": "read_text"
+       },
+       {
+        "kind": "calls",
+        "line": 236,
+        "receiver": "",
+        "target": "strip_strikethrough"
+       },
+       {
+        "kind": "calls",
+        "line": 237,
+        "receiver": "",
+        "target": "extract_title"
+       },
+       {
+        "kind": "calls",
+        "line": 238,
+        "receiver": "",
+        "target": "collect_markdown_targets"
+       },
+       {
+        "kind": "calls",
+        "line": 249,
+        "receiver": "",
+        "target": "is_remote"
+       },
+       {
+        "kind": "calls",
+        "line": 257,
+        "receiver": "",
+        "target": "is_data_uri"
+       },
+       {
+        "kind": "calls",
+        "line": 263,
+        "receiver": "",
+        "target": "is_remote"
+       },
+       {
+        "kind": "calls",
+        "line": 270,
+        "receiver": "",
+        "target": "resolve_local"
+       },
+       {
+        "kind": "calls",
+        "line": 279,
+        "receiver": "",
+        "target": "classify_flow_asset"
+       },
+       {
+        "kind": "calls",
+        "line": 282,
+        "receiver": "",
+        "target": "run_svg_extract"
+       }
+      ]
+     },
+     {
+      "anchor": "verify_shell_rejections",
+      "called_by": 29,
+      "method": "verify_shell_rejections",
+      "steps": [
+       {
+        "kind": "calls",
+        "line": 801,
+        "receiver": "",
+        "target": "write_passing_run"
+       },
+       {
+        "kind": "uses",
+        "line": 802,
+        "target": "STAGE_REPORTS"
+       },
+       {
+        "kind": "calls",
+        "line": 803,
+        "receiver": "",
+        "target": "evaluate_gate"
+       },
+       {
+        "kind": "calls",
+        "line": 804,
+        "receiver": "",
+        "target": "_codes"
+       },
+       {
+        "kind": "calls",
+        "line": 807,
+        "receiver": "",
+        "target": "write_passing_run"
+       },
+       {
+        "kind": "uses",
+        "line": 808,
+        "target": "STAGE_INDEX_GLOBS"
+       },
+       {
+        "kind": "calls",
+        "line": 810,
+        "receiver": "",
+        "target": "evaluate_gate"
+       },
+       {
+        "kind": "calls",
+        "line": 811,
+        "receiver": "",
+        "target": "_codes"
+       },
+       {
+        "kind": "calls",
+        "line": 814,
+        "receiver": "",
+        "target": "write_passing_run"
+       },
+       {
+        "kind": "calls",
+        "line": 816,
+        "receiver": "",
+        "target": "evaluate_gate"
+       }
+      ]
+     }
+    ],
+    "signatures": [
+     {
+      "anchor": "render_html",
+      "annotations": [],
+      "called_by": 104,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "render_html",
+      "params": "[{\"name\":\"records\",\"type\":\"List[CaseRecord]\"},{\"name\":\"run_dir\",\"type\":\"Path\"},{\"name\":\"meta\",\"type\":\"Dict[str, str]\"},{\"default\":true,\"name\":\"project_name\",\"type\":\"str\"}]",
+      "parent": null,
+      "returns": "str",
+      "tags": []
+     },
+     {
+      "anchor": "ingest_one",
+      "annotations": [],
+      "called_by": 29,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "ingest_one",
+      "params": "[{\"name\":\"main_path\",\"type\":\"Path\"},{\"name\":\"output_dir\",\"type\":\"Path\"},{\"name\":\"svg_script\",\"type\":\"Path\"},{\"name\":\"merge\",\"type\":\"bool\"}]",
+      "parent": null,
+      "returns": "dict",
+      "tags": []
+     },
+     {
+      "anchor": "verify_shell_rejections",
+      "annotations": [],
+      "called_by": 29,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "verify_shell_rejections",
+      "params": "[{\"name\":\"root\",\"type\":\"Path\"}]",
+      "parent": null,
+      "returns": "Optional[str]",
+      "tags": []
+     },
+     {
+      "anchor": "check_stage_artifacts",
+      "annotations": [],
+      "called_by": 14,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "check_stage_artifacts",
+      "params": "[{\"name\":\"run_dir\",\"type\":\"Path\"},{\"name\":\"stage\",\"type\":\"str\"},{\"default\":true,\"name\":\"run_id\",\"type\":\"Optional[str]\"}]",
+      "parent": null,
+      "returns": "List[Dict[str, str]]",
+      "tags": []
+     },
+     {
+      "anchor": "initialize",
+      "annotations": [],
+      "called_by": 11,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "initialize",
+      "params": "[{\"name\":\"args\",\"type\":\"argparse.Namespace\"}]",
+      "parent": null,
+      "returns": "Dict",
+      "tags": []
+     },
+     {
+      "anchor": "StepRow",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "class",
+      "language": "python",
+      "name": "StepRow",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": [
+       "py.dataclass"
+      ]
+     },
+     {
+      "anchor": "CaseRecord",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "class",
+      "language": "python",
+      "name": "CaseRecord",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": [
+       "py.dataclass"
+      ]
+     }
+    ],
+    "stats": {
+     "block_count": 11,
+     "file_count": 11,
+     "languages": [
+      "python"
+     ],
+     "namespaces": [
+      "skills/codexqa-testcase-generator/scripts/bootstrap_knowledge",
+      "skills/codexqa-testcase-generator/scripts/check_run_gate",
+      "skills/codexqa-testcase-generator/scripts/close_stage",
+      "skills/codexqa-testcase-generator/scripts/extract_svg_text",
+      "skills/codexqa-testcase-generator/scripts/fetch_knowledge_git",
+      "skills/codexqa-testcase-generator/scripts/generate_case_report",
+      "skills/codexqa-testcase-generator/scripts/incremental/make_ids",
+      "skills/codexqa-testcase-generator/scripts/incremental/setup_execution",
+      "skills/codexqa-testcase-generator/scripts/ingest_local_docs",
+      "skills/codexqa-testcase-generator/scripts/py_version",
+      "skills/codexqa-testcase-generator/scripts/run_gate_lib"
+     ],
+     "node_count": 185
+    },
+    "tentative_title": "bootstrap_knowledge · CaseRecord"
+   },
+   "token_est": 2668
+  },
+  {
+   "kind": "page",
+   "id": "p09",
+   "community_id": "756b2f01-5241-e261-c4c3-2ae64cb0e0de",
+   "input": {
+    "cross_community": [
+     {
+      "direction": "incoming",
+      "kinds": [
+       "calls"
+      ],
+      "other": "bootstrap_knowledge · CaseRecord",
+      "weight": 91
+     },
+     {
+      "direction": "outgoing",
+      "kinds": [],
+      "other": "bootstrap_knowledge · CaseRecord",
+      "weight": 33
+     }
+    ],
+    "method_flows": [
+     {
+      "anchor": "fetch_pr",
+      "called_by": 38,
+      "method": "fetch_pr",
+      "steps": [
+       {
+        "kind": "calls",
+        "line": 734,
+        "receiver": "",
+        "target": "parse_source_url"
+       },
+       {
+        "kind": "calls",
+        "line": 736,
+        "receiver": "",
+        "target": "parse_source_url"
+       },
+       {
+        "kind": "calls",
+        "line": 738,
+        "receiver": "SkillError",
+        "target": "__init__"
+       },
+       {
+        "kind": "calls",
+        "line": 747,
+        "receiver": "",
+        "target": "_resolve_cache_root"
+       },
+       {
+        "kind": "calls",
+        "line": 748,
+        "receiver": "",
+        "target": "_cache_repo_dir"
+       },
+       {
+        "kind": "calls",
+        "line": 749,
+        "receiver": "",
+        "target": "_unique_urls"
+       },
+       {
+        "kind": "calls",
+        "line": 753,
+        "receiver": "",
+        "target": "_ensure_worktree"
+       },
+       {
+        "kind": "calls",
+        "line": 764,
+        "receiver": "",
+        "target": "_bind_source_remote"
+       },
+       {
+        "kind": "calls",
+        "line": 770,
+        "receiver": "",
+        "target": "_has_commit"
+       },
+       {
+        "kind": "calls",
+        "line": 772,
+        "receiver": "",
+        "target": "_materialize_sha"
+       }
+      ]
+     },
+     {
+      "anchor": "archive",
+      "called_by": 24,
+      "method": "archive",
+      "steps": [
+       {
+        "kind": "calls",
+        "line": 274,
+        "receiver": "SkillError",
+        "target": "__init__"
+       },
+       {
+        "kind": "calls",
+        "line": 280,
+        "receiver": "SkillError",
+        "target": "__init__"
+       },
+       {
+        "kind": "calls",
+        "line": 298,
+        "receiver": "SkillError",
+        "target": "__init__"
+       },
+       {
+        "kind": "calls",
+        "line": 304,
+        "receiver": "SkillError",
+        "target": "__init__"
+       },
+       {
+        "kind": "calls",
+        "line": 313,
+        "receiver": "SkillError",
+        "target": "__init__"
+       },
+       {
+        "kind": "calls",
+        "line": 321,
+        "receiver": "SkillError",
+        "target": "__init__"
+       },
+       {
+        "kind": "calls",
+        "line": 329,
+        "receiver": "SkillError",
+        "target": "__init__"
+       },
+       {
+        "kind": "calls",
+        "line": 338,
+        "receiver": "",
+        "target": "_archive_git_source"
+       },
+       {
+        "kind": "calls",
+        "line": 341,
+        "receiver": "",
+        "target": "_repository_id"
+       },
+       {
+        "kind": "calls",
+        "line": 370,
+        "receiver": "SkillError",
+        "target": "__init__"
+       }
+      ]
+     },
+     {
+      "anchor": "parse_source_url",
+      "called_by": 23,
+      "method": "parse_source_url",
+      "steps": [
+       {
+        "kind": "calls",
+        "line": 238,
+        "receiver": "",
+        "target": "_split_git_ref"
+       },
+       {
+        "kind": "calls",
+        "line": 239,
+        "receiver": "",
+        "target": "_normalize_raw"
+       },
+       {
+        "kind": "uses",
+        "line": 241,
+        "target": "GIT_SCP_RE"
+       },
+       {
+        "kind": "calls",
+        "line": 244,
+        "receiver": "",
+        "target": "_git_remote_payload"
+       },
+       {
+        "kind": "uses",
+        "line": 251,
+        "target": "SSH_URL_RE"
+       },
+       {
+        "kind": "calls",
+        "line": 253,
+        "receiver": "",
+        "target": "_git_remote_payload"
+       },
+       {
+        "kind": "calls",
+        "line": 263,
+        "receiver": "SkillError",
+        "target": "__init__"
+       },
+       {
+        "kind": "calls",
+        "line": 265,
+        "receiver": "SkillError",
+        "target": "__init__"
+       },
+       {
+        "kind": "calls",
+        "line": 270,
+        "receiver": "SkillError",
+        "target": "__init__"
+       },
+       {
+        "kind": "calls",
+        "line": 272,
+        "receiver": "SkillError",
+        "target": "__init__"
+       }
+      ]
+     }
+    ],
+    "signatures": [
+     {
+      "anchor": "fetch_pr",
+      "annotations": [],
+      "called_by": 38,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "fetch_pr",
+      "params": "[{\"name\":\"pr_url\",\"type\":\"str\"},{\"name\":\"run_dir\",\"type\":\"Path\"},{\"name\":\"run_id\",\"type\":\"str\"},{\"name\":\"cache_dir\",\"type\":\"Optional[Path]\"},{\"name\":\"local_repo\",\"type\":\"Optional[Path]\"},{\"name\":\"git_url\",\"type\":\"Optional[str]\"},{\"name\":\"base_sha\",\"type\":\"Optional[str]\"},{\"name\":\"head_sha\",\"type\":\"Optional[str]\"},{\"name\":\"head_ref\",\"type\":\"Optional[str]\"}]",
+      "parent": null,
+      "returns": "Dict[str, Any]",
+      "tags": []
+     },
+     {
+      "anchor": "archive",
+      "annotations": [],
+      "called_by": 24,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "archive",
+      "params": "[{\"name\":\"args\",\"type\":\"argparse.Namespace\"}]",
+      "parent": null,
+      "returns": "Dict",
+      "tags": []
+     },
+     {
+      "anchor": "parse_source_url",
+      "annotations": [],
+      "called_by": 23,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "parse_source_url",
+      "params": "[{\"name\":\"raw\",\"type\":\"str\"}]",
+      "parent": null,
+      "returns": "Dict[str, Any]",
+      "tags": []
+     },
+     {
+      "anchor": "resolve_run_context",
+      "annotations": [],
+      "called_by": 22,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "resolve_run_context",
+      "params": "[{\"name\":\"run_dir\",\"type\":\"Union[str, Path]\"},{\"name\":\"run_id\",\"type\":\"str\"},{\"default\":true,\"name\":\"run_root\",\"type\":\"Union[str, Path, None]\"}]",
+      "parent": null,
+      "returns": "Dict[str, str]",
+      "tags": []
+     },
+     {
+      "anchor": "update",
+      "annotations": [],
+      "called_by": 22,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "python",
+      "name": "update",
+      "params": "[{\"name\":\"args\",\"type\":\"argparse.Namespace\"}]",
+      "parent": null,
+      "returns": "Dict",
+      "tags": []
+     },
+     {
+      "anchor": "SkillError",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "class",
+      "language": "python",
+      "name": "SkillError",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": [
+       "py.bases"
+      ]
+     }
+    ],
+    "stats": {
+     "block_count": 6,
+     "file_count": 6,
+     "languages": [
+      "python"
+     ],
+     "namespaces": [
+      "skills/codexqa-testcase-generator/scripts/incremental/build_diff_candidates",
+      "skills/codexqa-testcase-generator/scripts/incremental/freeze_case_standard",
+      "skills/codexqa-testcase-generator/scripts/incremental/freeze_inputs",
+      "skills/codexqa-testcase-generator/scripts/incremental/inc_common",
+      "skills/codexqa-testcase-generator/scripts/incremental/pull_remote_code",
+      "skills/codexqa-testcase-generator/scripts/incremental/write_task_status"
+     ],
+     "node_count": 129
+    },
+    "tentative_title": "build_diff_candidates · SkillError"
+   },
+   "token_est": 2610
+  },
+  {
+   "kind": "page",
+   "id": "p10",
+   "community_id": "d666da19-a1fe-b4ad-32e3-c5899f7a6ee3",
+   "input": {
+    "cross_community": [
+     {
+      "direction": "outgoing",
+      "kinds": [
+       "calls",
+       "uses"
+      ],
+      "other": "act.ts · PageState",
+      "weight": 1523
+     },
+     {
+      "direction": "incoming",
+      "kinds": [
+       "calls",
+       "uses"
+      ],
+      "other": "act.ts · PageState",
+      "weight": 242
+     }
+    ],
+    "method_flows": [],
+    "signatures": [
+     {
+      "anchor": "run",
+      "annotations": [],
+      "called_by": 32,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "run",
+      "params": "[{\"name\":\"url\",\"type\":\"string\"},{\"name\":\"goal\",\"type\":\"string\"},{\"name\":\"caseId\"},{\"name\":\"hooks\",\"type\":\"{ onStep?: (result: CaseResult) => void }\"}]",
+      "parent": "operations",
+      "returns": "Promise<{ result: CaseResult; history: Record<string, unknown>[] }>",
+      "tags": []
+     },
+     {
+      "anchor": "choose#4",
+      "annotations": [],
+      "called_by": 27,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "choose",
+      "params": "[{\"name\":\"page\",\"type\":\"PageState\"},{\"name\":\"goal\",\"type\":\"string\"},{\"name\":\"history\",\"type\":\"Record<string, unknown>[]\"},{\"name\":\"space\",\"type\":\"ActionSpace\"}]",
+      "parent": "OpenAIProvider",
+      "returns": "Promise<Decision>",
+      "tags": []
+     },
+     {
+      "anchor": "choose",
+      "annotations": [],
+      "called_by": 22,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "choose",
+      "params": "[{\"name\":\"page\",\"type\":\"{ url: string; title: string }\"},{\"name\":\"goal\",\"type\":\"string\"},{\"name\":\"history\",\"type\":\"Record<string, unknown>[]\"},{\"name\":\"space\",\"type\":\"ActionSpace\"}]",
+      "parent": "operations",
+      "returns": "Promise<Decision>",
+      "tags": []
+     },
+     {
+      "anchor": "buildJevRequest",
+      "annotations": [],
+      "called_by": 17,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "buildJevRequest",
+      "params": "[{\"name\":\"config\",\"type\":\"PilotConfig\"},{\"name\":\"page\",\"type\":\"{ url: string; title: string }\"},{\"name\":\"goal\",\"type\":\"string\"},{\"name\":\"history\",\"type\":\"Record<string, unknown>[]\"},{\"name\":\"space\",\"type\":\"ActionSpace\"}]",
+      "parent": null,
+      "returns": "Record<string, unknown>",
+      "tags": []
+     },
+     {
+      "anchor": "choose#3",
+      "annotations": [],
+      "called_by": 15,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "choose",
+      "params": "[{\"name\":\"page\",\"type\":\"PageState\"},{\"name\":\"_goal\",\"type\":\"string\"},{\"name\":\"_history\",\"type\":\"Record<string, unknown>[]\"},{\"name\":\"_space\",\"type\":\"ActionSpace\"}]",
+      "parent": "ScriptedProvider",
+      "returns": "Decision",
+      "tags": []
+     },
+     {
+      "anchor": "DecisionProvider",
+      "annotations": [],
+      "called_by": 3,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "interface",
+      "language": "typescript",
+      "name": "DecisionProvider",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "choose#2",
+      "annotations": [],
+      "called_by": 3,
+      "depth": 1,
+      "doc": null,
+      "is_public": true,
+      "kind": "method",
+      "language": "typescript",
+      "name": "choose",
+      "params": "[{\"name\":\"page\",\"type\":\"PageState\"},{\"name\":\"goal\",\"type\":\"string\"},{\"name\":\"history\",\"type\":\"Record<string, unknown>[]\"},{\"name\":\"space\",\"type\":\"ActionSpace\"}]",
+      "parent": "DecisionProvider",
+      "returns": "Promise<Decision> | Decision",
+      "tags": []
+     },
+     {
+      "anchor": "StalePage",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "class",
+      "language": "typescript",
+      "name": "StalePage",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": [
+       "ts.extends"
+      ]
+     },
+     {
+      "anchor": "LocatorMiss",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "class",
+      "language": "typescript",
+      "name": "LocatorMiss",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": [
+       "ts.extends"
+      ]
+     },
+     {
+      "anchor": "DecisionError",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "class",
+      "language": "typescript",
+      "name": "DecisionError",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": [
+       "ts.extends"
+      ]
+     },
+     {
+      "anchor": "EmptyField",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "class",
+      "language": "typescript",
+      "name": "EmptyField",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": [
+       "ts.extends"
+      ]
+     },
+     {
+      "anchor": "JevProvider",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "class",
+      "language": "typescript",
+      "name": "JevProvider",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": [
+       "ts.implements"
+      ]
+     },
+     {
+      "anchor": "ActionSpace",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "interface",
+      "language": "typescript",
+      "name": "ActionSpace",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "ScriptedProvider",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "class",
+      "language": "typescript",
+      "name": "ScriptedProvider",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": [
+       "ts.implements"
+      ]
+     },
+     {
+      "anchor": "OpenAIProvider",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "class",
+      "language": "typescript",
+      "name": "OpenAIProvider",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": [
+       "ts.implements"
+      ]
+     }
+    ],
+    "stats": {
+     "block_count": 6,
+     "file_count": 6,
+     "languages": [
+      "typescript"
+     ],
+     "namespaces": [
+      "skills/codexqa-jev-browser/src/agent.ts",
+      "skills/codexqa-jev-browser/src/errors.ts",
+      "skills/codexqa-jev-browser/src/jev.ts",
+      "skills/codexqa-jev-browser/src/knowledge.ts",
+      "skills/codexqa-jev-browser/src/model-http.ts",
+      "skills/codexqa-jev-browser/src/policy.ts"
+     ],
+     "node_count": 128
+    },
+    "tentative_title": "agent.ts · ActionSpace"
+   },
+   "token_est": 3265
+  },
+  {
+   "kind": "page",
+   "id": "p11",
+   "community_id": "9a0cb405-f0c2-7e76-d4a4-83e0ffdf5b59",
+   "input": {
+    "cross_community": [
+     {
+      "direction": "incoming",
+      "kinds": [
+       "calls",
+       "uses"
+      ],
+      "other": "rebuild_previews · ZipReader",
+      "weight": 186
+     },
+     {
+      "direction": "outgoing",
+      "kinds": [
+       "calls"
+      ],
+      "other": "rebuild_previews · ZipReader",
+      "weight": 80
+     }
+    ],
+    "method_flows": [
+     {
+      "anchor": "slice_for_frame",
+      "called_by": 15,
+      "method": "slice_for_frame",
+      "steps": [
+       {
+        "kind": "calls",
+        "line": 373,
+        "target": "resolve_symbol"
+       },
+       {
+        "kind": "calls",
+        "line": 374,
+        "target": "pick_symbol"
+       },
+       {
+        "kind": "calls",
+        "line": 376,
+        "target": "node_kind"
+       },
+       {
+        "kind": "calls",
+        "line": 439,
+        "target": "clip_source"
+       },
+       {
+        "kind": "calls",
+        "line": 441,
+        "target": "call_path_text"
+       },
+       {
+        "kind": "uses",
+        "target": "REACH_DEPTH"
+       },
+       {
+        "kind": "uses",
+        "target": "StackFrame"
+       },
+       {
+        "kind": "calls",
+        "target": "compact_node"
+       },
+       {
+        "kind": "uses",
+        "target": "compact_node"
+       },
+       {
+        "kind": "calls",
+        "target": "compact_slice"
+       }
+      ]
+     },
+     {
+      "anchor": "analyze_frames",
+      "called_by": 13,
+      "method": "analyze_frames",
+      "steps": [
+       {
+        "kind": "uses",
+        "line": 528,
+        "target": "MAX_APP_FRAMES"
+       },
+       {
+        "kind": "calls",
+        "line": 528,
+        "target": "unique_frames"
+       },
+       {
+        "kind": "uses",
+        "line": 531,
+        "target": "QUERY_CONCURRENCY"
+       },
+       {
+        "kind": "calls",
+        "line": 531,
+        "target": "map_limit"
+       },
+       {
+        "kind": "calls",
+        "line": 532,
+        "target": "slice_for_frame"
+       },
+       {
+        "kind": "calls",
+        "line": 532,
+        "target": "stack_hints"
+       },
+       {
+        "kind": "calls",
+        "line": 536,
+        "target": "method_keys"
+       },
+       {
+        "kind": "calls",
+        "line": 544,
+        "target": "persist_baseline"
+       },
+       {
+        "kind": "calls",
+        "line": 557,
+        "target": "analysis_brief"
+       },
+       {
+        "kind": "calls",
+        "line": 558,
+        "target": "analysis_path"
+       }
+      ]
+     },
+     {
+      "anchor": "parse_java",
+      "called_by": 10,
+      "method": "parse_java",
+      "steps": [
+       {
+        "kind": "uses",
+        "line": 224,
+        "target": "ExceptionCause"
+       },
+       {
+        "kind": "uses",
+        "line": 225,
+        "target": "StackFrame"
+       },
+       {
+        "kind": "uses",
+        "line": 231,
+        "target": "JAVA_HEADER"
+       },
+       {
+        "kind": "uses",
+        "line": 244,
+        "target": "JAVA_FRAME"
+       },
+       {
+        "kind": "calls",
+        "line": 248,
+        "target": "parse_java_location"
+       },
+       {
+        "kind": "calls",
+        "line": 250,
+        "target": "make_frame"
+       },
+       {
+        "kind": "calls",
+        "line": 257,
+        "target": "is_java_library"
+       },
+       {
+        "kind": "calls",
+        "line": 264,
+        "target": "collapse_truncated_java_frames"
+       },
+       {
+        "kind": "calls",
+        "line": 264,
+        "target": "finalize"
+       },
+       {
+        "kind": "uses",
+        "target": "ParsedException"
+       }
+      ]
+     }
+    ],
+    "signatures": [
+     {
+      "anchor": "slice_for_frame",
+      "annotations": [],
+      "called_by": 15,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "slice_for_frame",
+      "params": "[{\"name\":\"local_dir\",\"type\":\"string\"},{\"name\":\"frame\",\"type\":\"StackFrame\"},{\"name\":\"ready\",\"type\":\"boolean\"},{\"name\":\"cache\",\"type\":\"Map<string, any[]>\"},{\"name\":\"hints\",\"type\":\"string[]\"}]",
+      "parent": null,
+      "returns": "Promise<Record<string, any>>",
+      "tags": []
+     },
+     {
+      "anchor": "analyze_frames",
+      "annotations": [],
+      "called_by": 13,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "analyze_frames",
+      "params": "[{\"name\":\"task_id\",\"type\":\"number\"},{\"name\":\"local_dir\",\"type\":\"string\"},{\"name\":\"parsed\",\"type\":\"ParsedException\"},{\"name\":\"ready\",\"type\":\"boolean\"}]",
+      "parent": null,
+      "returns": "Promise<Record<string, any>>",
+      "tags": []
+     },
+     {
+      "anchor": "parse_java",
+      "annotations": [],
+      "called_by": 10,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "parse_java",
+      "params": "[{\"name\":\"text\",\"type\":\"string\"}]",
+      "parent": null,
+      "returns": "ParsedException",
+      "tags": []
+     },
+     {
+      "anchor": "ensure_binary",
+      "annotations": [],
+      "called_by": 8,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "ensure_binary",
+      "params": "[{\"name\":\"forceInstall\"}]",
+      "parent": null,
+      "returns": "{\n  ready: boolean;\n  binary: string | null;\n  install: Record<string, any> | null;\n  error?: string;\n}",
+      "tags": []
+     },
+     {
+      "anchor": "parse_node",
+      "annotations": [],
+      "called_by": 8,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "typescript",
+      "name": "parse_node",
+      "params": "[{\"name\":\"text\",\"type\":\"string\"}]",
+      "parent": null,
+      "returns": "ParsedException",
+      "tags": []
+     },
+     {
+      "anchor": "ParsedException",
+      "annotations": [],
+      "called_by": 3,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "ParsedException",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "StackFrame",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "StackFrame",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "RunResult",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "RunResult",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "MaterializeResult",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "MaterializeResult",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "FrameLanguage",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "FrameLanguage",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "ExceptionCause",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "type_alias",
+      "language": "typescript",
+      "name": "ExceptionCause",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     }
+    ],
+    "stats": {
+     "block_count": 4,
+     "file_count": 4,
+     "languages": [
+      "typescript"
+     ],
+     "namespaces": [
+      "skills/codexqa-rootcause-analyzer/scripts/ensure_codexqa.ts",
+      "skills/codexqa-rootcause-analyzer/scripts/materialize_repo.ts",
+      "skills/codexqa-rootcause-analyzer/scripts/parse_exception.ts",
+      "skills/codexqa-rootcause-analyzer/scripts/query_graph.ts"
+     ],
+     "node_count": 123
+    },
+    "tentative_title": "ensure_codexqa.ts · StackFrame"
+   },
+   "token_est": 3346
+  },
+  {
+   "kind": "page",
+   "id": "p12",
+   "community_id": "0fe809be-3475-8f9c-af60-739b55087055",
+   "input": {
+    "cross_community": [
+     {
+      "direction": "incoming",
+      "kinds": [
+       "calls"
+      ],
+      "other": "rebuild_previews · ZipReader",
+      "weight": 70
+     },
+     {
+      "direction": "outgoing",
+      "kinds": [],
+      "other": "rebuild_previews · ZipReader",
+      "weight": 47
+     }
+    ],
+    "method_flows": [
+     {
+      "anchor": "commitReservation",
+      "called_by": 8,
+      "method": "commitReservation",
+      "steps": [
+       {
+        "kind": "calls",
+        "line": 61,
+        "receiver": "db",
+        "target": "withLock"
+       },
+       {
+        "kind": "calls",
+        "line": 62,
+        "receiver": "db",
+        "target": "getReservation"
+       },
+       {
+        "kind": "calls",
+        "line": 71,
+        "receiver": "inventory",
+        "target": "releaseStock"
+       },
+       {
+        "kind": "calls",
+        "line": 72,
+        "receiver": "inventory",
+        "target": "consumeStock"
+       },
+       {
+        "kind": "calls",
+        "line": 77,
+        "receiver": "db",
+        "target": "saveReservation"
+       },
+       {
+        "kind": "calls",
+        "line": 79,
+        "target": "computeOrderTotal"
+       },
+       {
+        "kind": "calls",
+        "line": 80,
+        "receiver": "db",
+        "target": "saveOrder"
+       },
+       {
+        "kind": "uses",
+        "line": 91,
+        "target": "log"
+       }
+      ]
+     },
+     {
+      "anchor": "reset",
+      "called_by": 8,
+      "method": "reset",
+      "steps": [
+       {
+        "kind": "uses",
+        "line": 32,
+        "receiver": "state",
+        "target": "stock"
+       },
+       {
+        "kind": "uses",
+        "line": 33,
+        "receiver": "state",
+        "target": "orders"
+       },
+       {
+        "kind": "uses",
+        "line": 34,
+        "receiver": "state",
+        "target": "reservations"
+       },
+       {
+        "kind": "uses",
+        "line": 35,
+        "receiver": "state",
+        "target": "audit"
+       },
+       {
+        "kind": "uses",
+        "line": 36,
+        "target": "heldLocks"
+       },
+       {
+        "kind": "uses",
+        "line": 37,
+        "target": "lockWaiters"
+       },
+       {
+        "kind": "uses",
+        "line": 38,
+        "target": "sequence"
+       },
+       {
+        "kind": "uses",
+        "target": "state"
+       }
+      ]
+     },
+     {
+      "anchor": "createReservation",
+      "called_by": 6,
+      "method": "createReservation",
+      "steps": [
+       {
+        "kind": "calls",
+        "line": 22,
+        "receiver": "db",
+        "target": "withLock"
+       },
+       {
+        "kind": "calls",
+        "line": 26,
+        "receiver": "inventory",
+        "target": "holdStock"
+       },
+       {
+        "kind": "calls",
+        "line": 29,
+        "receiver": "inventory",
+        "target": "releaseStock"
+       },
+       {
+        "kind": "calls",
+        "line": 39,
+        "receiver": "db",
+        "target": "nextId"
+       },
+       {
+        "kind": "calls",
+        "line": 48,
+        "receiver": "db",
+        "target": "saveReservation"
+       },
+       {
+        "kind": "uses",
+        "target": "log"
+       }
+      ]
+     }
+    ],
+    "signatures": [
+     {
+      "anchor": "commitReservation",
+      "annotations": [],
+      "called_by": 8,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "javascript",
+      "name": "commitReservation",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "set#2",
+      "annotations": [],
+      "called_by": 2,
+      "depth": 1,
+      "doc": "[{\"start_line\":44,\"start_col\":2,\"end_line\":51,\"end_col\":5}]",
+      "is_public": true,
+      "kind": "method",
+      "language": "javascript",
+      "name": "set",
+      "params": "[]",
+      "parent": "write",
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "git",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "javascript",
+      "name": "git",
+      "params": "[{\"name\":\"args\",\"variadic\":true}]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "contract",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "javascript",
+      "name": "contract",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "check",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "javascript",
+      "name": "check",
+      "params": "[]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "set",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 1,
+      "doc": "[{\"start_line\":42,\"start_col\":2,\"end_line\":45,\"end_col\":5}]",
+      "is_public": true,
+      "kind": "method",
+      "language": "javascript",
+      "name": "set",
+      "params": "[]",
+      "parent": "git",
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "git#2",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "javascript",
+      "name": "git",
+      "params": "[{\"name\":\"args\",\"variadic\":true}]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "git#3",
+      "annotations": [],
+      "called_by": 1,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "function",
+      "language": "javascript",
+      "name": "git",
+      "params": "[{\"name\":\"args\",\"variadic\":true}]",
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "TtlCache",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "class",
+      "language": "javascript",
+      "name": "TtlCache",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     },
+     {
+      "anchor": "TtlCache#2",
+      "annotations": [],
+      "called_by": 0,
+      "depth": 0,
+      "doc": null,
+      "is_public": true,
+      "kind": "class",
+      "language": "javascript",
+      "name": "TtlCache",
+      "params": null,
+      "parent": null,
+      "returns": null,
+      "tags": []
+     }
+    ],
+    "stats": {
+     "block_count": 18,
+     "file_count": 18,
+     "languages": [
+      "javascript"
+     ],
+     "namespaces": [
+      "examples/checkout-boundary/defective.mjs",
+      "examples/checkout-boundary/good.mjs",
+      "examples/checkout-boundary/make-git-fixture.mjs",
+      "examples/checkout-boundary/verify.mjs",
+      "examples/inventory-service/base/smoke.mjs",
+      "examples/inventory-service/base/src/cache.js",
+      "examples/inventory-service/base/src/db.js",
+      "examples/inventory-service/base/src/gateway.js",
+      "examples/inventory-service/base/src/inventory.js",
+      "examples/inventory-service/base/src/logger.js",
+      "examples/inventory-service/base/src/pricing.js",
+      "examples/inventory-service/base/src/refund.js",
+      "examples/inventory-service/base/src/reservation.js",
+      "examples/inventory-service/head/src/cache.js",
+      "examples/inventory-service/make-git-fixture.mjs",
+      "examples/inventory-service/materialize.mjs",
+      "examples/inventory-service/verify.mjs",
+      "examples/polyglot-service/make-git-fixture.mjs"
+     ],
+     "node_count": 109
+    },
+    "tentative_title": "defective.mjs · TtlCache"
+   },
+   "token_est": 3129
+  },
+  {
+   "kind": "architecture",
+   "input": [
+    {
+     "deps": [],
+     "id": "p01",
+     "node_count": 877,
+     "summary": "（无摘要）\n真实依赖：",
+     "title": "_annotation_edges_body · KeyIndex"
+    },
+    {
+     "deps": [
+      "p12",
+      "p05",
+      "p11"
+     ],
+     "id": "p02",
+     "node_count": 554,
+     "summary": "（无摘要）\n真实依赖：p12 -> p02, p02 -> p12, p02 -> p05, p02 -> p11, p05 -> p02, p11 -> p02",
+     "title": "rebuild_previews · ZipReader"
+    },
+    {
+     "deps": [
+      "p10"
+     ],
+     "id": "p03",
+     "node_count": 508,
+     "summary": "（无摘要）\n真实依赖：p03 -> p10, p10 -> p03",
+     "title": "act.ts · PageState"
+    },
+    {
+     "deps": [
+      "p07",
+      "p06"
+     ],
+     "id": "p04",
+     "node_count": 312,
+     "summary": "（无摘要）\n真实依赖：p07 -> p04, p04 -> p07, p04 -> p06, p06 -> p04",
+     "title": "cache_tool_binding.ts · JsonObject"
+    },
+    {
+     "deps": [
+      "p02"
+     ],
+     "id": "p05",
+     "node_count": 292,
+     "summary": "（无摘要）\n真实依赖：p02 -> p05, p05 -> p02",
+     "title": "agent_llm · CodexQAError"
+    },
+    {
+     "deps": [
+      "p04"
+     ],
+     "id": "p06",
+     "node_count": 271,
+     "summary": "（无摘要）\n真实依赖：p04 -> p06, p06 -> p04",
+     "title": "bind_action.ts · InputError"
+    },
+    {
+     "deps": [
+      "p04"
+     ],
+     "id": "p07",
+     "node_count": 207,
+     "summary": "（无摘要）\n真实依赖：p07 -> p04, p04 -> p07",
+     "title": "_verify_enterprise_onboard.ts · JsonObject"
+    },
+    {
+     "deps": [
+      "p09"
+     ],
+     "id": "p08",
+     "node_count": 185,
+     "summary": "（无摘要）\n真实依赖：p09 -> p08, p08 -> p09",
+     "title": "bootstrap_knowledge · CaseRecord"
+    },
+    {
+     "deps": [
+      "p08"
+     ],
+     "id": "p09",
+     "node_count": 129,
+     "summary": "（无摘要）\n真实依赖：p09 -> p08, p08 -> p09",
+     "title": "build_diff_candidates · SkillError"
+    },
+    {
+     "deps": [
+      "p03"
+     ],
+     "id": "p10",
+     "node_count": 128,
+     "summary": "（无摘要）\n真实依赖：p03 -> p10, p10 -> p03",
+     "title": "agent.ts · ActionSpace"
+    },
+    {
+     "deps": [
+      "p02"
+     ],
+     "id": "p11",
+     "node_count": 123,
+     "summary": "（无摘要）\n真实依赖：p02 -> p11, p11 -> p02",
+     "title": "ensure_codexqa.ts · StackFrame"
+    },
+    {
+     "deps": [
+      "p02"
+     ],
+     "id": "p12",
+     "node_count": 109,
+     "summary": "（无摘要）\n真实依赖：p12 -> p02, p02 -> p12",
+     "title": "defective.mjs · TtlCache"
+    }
+   ],
+   "token_est": 9518
+  },
+  {
+   "kind": "overview",
+   "input": {
+    "groups": [
+     {
+      "description": "围绕PageState、ActionSpace、JsonObject形成的模块协作域",
+      "modules": [
+       "act.ts · PageState",
+       "agent.ts · ActionSpace",
+       "cache_tool_binding.ts · JsonObject",
+       "bind_action.ts · InputError"
+      ],
+      "title": "PageState相关能力"
+     },
+     {
+      "description": "围绕CaseRecord、SkillError、CodexQAError形成的模块协作域",
+      "modules": [
+       "agent_llm · CodexQAError",
+       "_verify_enterprise_onboard.ts · JsonObject",
+       "bootstrap_knowledge · CaseRecord",
+       "build_diff_candidates · SkillError"
+      ],
+      "title": "CaseRecord相关能力"
+     },
+     {
+      "description": "围绕ZipReader、StackFrame、TtlCache形成的模块协作域",
+      "modules": [
+       "rebuild_previews · ZipReader",
+       "ensure_codexqa.ts · StackFrame",
+       "defective.mjs · TtlCache"
+      ],
+      "title": "ZipReader相关能力"
+     },
+     {
+      "description": "KeyIndex等 1 个模块彼此无代码依赖（独立脚本、单文件工具或 ABI 头文件定义），不参与核心协作链路",
+      "modules": [
+       "_annotation_edges_body · KeyIndex"
+      ],
+      "title": "独立模块集合"
+     }
+    ],
+    "modules": [
+     {
+      "summary": "",
+      "title": "_annotation_edges_body · KeyIndex"
+     },
+     {
+      "summary": "",
+      "title": "rebuild_previews · ZipReader"
+     },
+     {
+      "summary": "",
+      "title": "act.ts · PageState"
+     },
+     {
+      "summary": "",
+      "title": "cache_tool_binding.ts · JsonObject"
+     },
+     {
+      "summary": "",
+      "title": "agent_llm · CodexQAError"
+     },
+     {
+      "summary": "",
+      "title": "bind_action.ts · InputError"
+     },
+     {
+      "summary": "",
+      "title": "_verify_enterprise_onboard.ts · JsonObject"
+     },
+     {
+      "summary": "",
+      "title": "bootstrap_knowledge · CaseRecord"
+     },
+     {
+      "summary": "",
+      "title": "build_diff_candidates · SkillError"
+     },
+     {
+      "summary": "",
+      "title": "agent.ts · ActionSpace"
+     },
+     {
+      "summary": "",
+      "title": "ensure_codexqa.ts · StackFrame"
+     },
+     {
+      "summary": "",
+      "title": "defective.mjs · TtlCache"
+     }
+    ],
+    "relations": [
+     {
+      "count": 176,
+      "from": "agent.ts · ActionSpace",
+      "to": "act.ts · PageState"
+     },
+     {
+      "count": 135,
+      "from": "bind_action.ts · InputError",
+      "to": "cache_tool_binding.ts · JsonObject"
+     },
+     {
+      "count": 21,
+      "from": "act.ts · PageState",
+      "to": "agent.ts · ActionSpace"
+     },
+     {
+      "count": 18,
+      "from": "rebuild_previews · ZipReader",
+      "to": "ensure_codexqa.ts · StackFrame"
+     },
+     {
+      "count": 7,
+      "from": "ensure_codexqa.ts · StackFrame",
+      "to": "rebuild_previews · ZipReader"
+     },
+     {
+      "count": 6,
+      "from": "bootstrap_knowledge · CaseRecord",
+      "to": "build_diff_candidates · SkillError"
+     },
+     {
+      "count": 1,
+      "from": "rebuild_previews · ZipReader",
+      "to": "defective.mjs · TtlCache"
+     },
+     {
+      "count": 0,
+      "from": "_verify_enterprise_onboard.ts · JsonObject",
+      "to": "cache_tool_binding.ts · JsonObject"
+     },
+     {
+      "count": 0,
+      "from": "defective.mjs · TtlCache",
+      "to": "rebuild_previews · ZipReader"
+     },
+     {
+      "count": 0,
+      "from": "rebuild_previews · ZipReader",
+      "to": "agent_llm · CodexQAError"
+     },
+     {
+      "count": 0,
+      "from": "cache_tool_binding.ts · JsonObject",
+      "to": "_verify_enterprise_onboard.ts · JsonObject"
+     },
+     {
+      "count": 0,
+      "from": "cache_tool_binding.ts · JsonObject",
+      "to": "bind_action.ts · InputError"
+     },
+     {
+      "count": 0,
+      "from": "agent_llm · CodexQAError",
+      "to": "rebuild_previews · ZipReader"
+     },
+     {
+      "count": 0,
+      "from": "build_diff_candidates · SkillError",
+      "to": "bootstrap_knowledge · CaseRecord"
+     }
+    ]
+   },
+   "token_est": 9787
+  }
+ ]
+}

@@ -114,7 +114,7 @@ After install, start a new agent session and point it at the skill. Inputs diffe
 - `codexqa-skill-router` needs a user request to route (and Python 3.10+). It matches the bundled/live catalog and can run `ensure_skill.py` to fetch a worker beside the router. See its [README](../skills/codexqa-skill-router/README.md).
 - `codexqa-code-analyzer` needs a local repository. For change review, index it with a baseline such as `origin/main`; indexes live under `~/.codexqa/`. See its [README](../skills/codexqa-code-analyzer/README.md).
 - `codexqa-change-analysis` needs a local repository and one git baseline (for example `origin/main`). It writes an HTML change-impact report at the repo root and adds new test files for uncovered points; existing tests are not edited. See its [README](../skills/codexqa-change-analysis/README.md).
-- `codexqa-code-wiki` needs a local repository and an existing index. It exports `wiki inputs` and writes an HTML architecture report; it does not review a change. See its [README](../skills/codexqa-code-wiki/README.md).
+- `codexqa-code-wiki` needs a local repository; its `brief` step indexes it. It writes a one-page HTML architecture wiki; it does not review a change. See its [README](../skills/codexqa-code-wiki/README.md).
 - `codexqa-rootcause-analyzer` needs exception evidence (stack / log / dump) plus a git URL, local dir, file, or already-open workspace. See its [README](../skills/codexqa-rootcause-analyzer/README.md).
 - `codexqa-defect-analyzer` needs a diff, repo, upload, or paste for a code-risk scan. See its [README](../skills/codexqa-defect-analyzer/README.md).
 - `codexqa-code-reviewer` needs a local checkout, `codexqa` + `jq` on PATH, and (for PR mode) `--diff-base`. See [codexqa-code-reviewer README](../skills/codexqa-code-reviewer/README.md).
@@ -136,7 +136,7 @@ Method write-ups: [How it works index](HOW_IT_WORKS.md). What to bring: [FAQ](FA
 | Unknown `.ts` extension | Node runtime and TypeScript stripping environment |
 | Missing plan | Provide repository/branch and business materials; degraded loading does not mean sufficient materials |
 | Static/call-graph analysis unavailable | Tool installation result, PATH, permissions, and network access |
-| `codexqa` command not found or graph query is empty | Install `@openqa-cn/codexqa`, check PATH, confirm the repository was indexed, and use `--diff-base` for change review. For `codexqa-code-wiki`, run `wiki inputs` (not `wiki` without `--no-llm`) |
+| `codexqa` command not found or graph query is empty | Install `@openqa-cn/codexqa`, check PATH, confirm the repository was indexed, and use `--diff-base` for change review. For `codexqa-code-wiki`, run its `scripts/wiki.mjs brief`, which indexes and exports for you |
 | Local report link does not open | Open the returned HTML file in a browser |
 
 For support include the commit, Node version, OS, agent/version, command, and sanitized error. Do not upload source or task directories containing private data.

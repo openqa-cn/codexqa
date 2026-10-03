@@ -15,7 +15,7 @@ The ten worker skills cover different parts of the delivery lifecycle, plus [`co
 | [`codexqa-skill-router`](../skills/codexqa-skill-router/README.md) | Discover live siblings + bundled catalog; on-demand install; hand off to the matched skill |
 | [`codexqa-code-analyzer`](../skills/codexqa-code-analyzer/README.md) | Index a local repository, then trace change impact, regression scope, test gaps, entries, and errors through its symbol graph |
 | [`codexqa-change-analysis`](../skills/codexqa-change-analysis/README.md) | Diff-index one change, then write one HTML report (affected entries, change list, test plan, coverage verdict, sensitive paths) and add runnable test files for uncovered points |
-| [`codexqa-code-wiki`](../skills/codexqa-code-wiki/README.md) | Index a local repository, export community digests with `wiki inputs` (no model), and write an architecture knowledge-graph HTML report |
+| [`codexqa-code-wiki`](../skills/codexqa-code-wiki/README.md) | Index a local repository, export community digests with `wiki inputs` (no model), and build a one-page HTML architecture wiki with reading paths |
 | [`codexqa-rootcause-analyzer`](../skills/codexqa-rootcause-analyzer/README.md) | Exception RCA from stacks/logs on top of the CodexQA CLI; gated English root-cause report |
 | [`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.md) | SAST/lint/secrets/SCA + Agent LLM Detection → `report_scan.*` (P0–P3, deduped) |
 | [`codexqa-code-reviewer`](../skills/codexqa-code-reviewer/README.md) | CodexQA evidence pack + heuristic dims + Agent LLM judgment → bilingual `REVIEW-REPORT.html` |
@@ -63,7 +63,7 @@ They do not share one input. Several skills take Git, but not the same way:
 | `codexqa-skill-router` | A request to route (optionally consent to on-demand install); Python 3.10+ | Doing the worker task itself — it only selects, may fetch, then follows another skill |
 | `codexqa-code-analyzer` | A local repository; for change review, the baseline ref | Requirements or a clone task. It indexes the checkout already on disk and queries its symbol graph |
 | `codexqa-change-analysis` | A local repository and one baseline ref (for example `origin/main`); the repo must start to run generated tests | Whole-repo analysis with no diff (use `codexqa-code-analyzer`). It adds test files and does not edit existing ones |
-| `codexqa-code-wiki` | A local repository with an existing index | A change set, requirements, or a clone task. It exports `wiki inputs` and writes an architecture report |
+| `codexqa-code-wiki` | A local repository (it indexes it) | A change set, requirements, or a clone task. It writes a one-page architecture wiki |
 | `codexqa-rootcause-analyzer` | Exception evidence (stack / log / dump) plus git URL, local dir, file, or open workspace | A PRD or P0/P1/P2 review request. It diagnoses exceptions, not requirement gaps or graph-evidence HTML review |
 | `codexqa-defect-analyzer` | Diff / repo / upload / paste for a code-risk scan | Exception stacks as the primary goal (use `codexqa-rootcause-analyzer`) or graph-evidence HTML review (use `codexqa-code-reviewer`) |
 | `codexqa-code-reviewer` | Local checkout + `codexqa`/`jq`; `--diff-base` for PR mode | Structure/impact Q&A alone (use `codexqa-code-analyzer`) or SAST scan reports (use `codexqa-defect-analyzer`) |

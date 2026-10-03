@@ -34,6 +34,9 @@ jobs:
         run: node examples/inventory-service/verify.mjs
       - name: Build polyglot fixture
         run: node examples/polyglot-service/make-git-fixture.mjs
+      - name: Run codexqa-code-wiki tests
+        working-directory: skills/codexqa-code-wiki
+        run: npm test
       - name: Run codexqa-defect-analyzer Python checks
         working-directory: skills/codexqa-defect-analyzer
         run: npm test

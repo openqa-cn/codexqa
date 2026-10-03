@@ -15,7 +15,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 | [`codexqa-skill-router`](../skills/codexqa-skill-router/README.zh-CN.md) | 发现现场兄弟 + 内置目录；按需安装；交接给匹配 skill |
 | [`codexqa-code-analyzer`](../skills/codexqa-code-analyzer/README.zh-CN.md) | 给本地仓库建符号图，再分析变更影响、回归范围、测试缺口、入口和报错 |
 | [`codexqa-change-analysis`](../skills/codexqa-change-analysis/README.zh-CN.md) | 对一次变更做 diff 索引，写一份 HTML 报告（影响入口、变更清单、测试方案、覆盖结论、敏感路径），并为未覆盖的点新增可运行的测试文件 |
-| [`codexqa-code-wiki`](../skills/codexqa-code-wiki/README.zh-CN.md) | 给本地仓库建索引，用 `wiki inputs`（不调模型）导出社区 digest，写出架构知识图谱 HTML 报告 |
+| [`codexqa-code-wiki`](../skills/codexqa-code-wiki/README.zh-CN.md) | 给本地仓库建索引，用 `wiki inputs`（不调模型）导出社区 digest，生成带阅读路径的一页 HTML 架构 Wiki |
 | [`codexqa-rootcause-analyzer`](../skills/codexqa-rootcause-analyzer/README.zh-CN.md) | 在 CodexQA CLI 之上做异常根因诊断；带门禁的英文 RCA 报告 |
 | [`codexqa-defect-analyzer`](../skills/codexqa-defect-analyzer/README.zh-CN.md) | SAST/lint/secrets/SCA + Agent LLM Detection → `report_scan.*`（P0–P3，去重合并） |
 | [`codexqa-code-reviewer`](../skills/codexqa-code-reviewer/README.zh-CN.md) | CodexQA 证据包 + 启发式维度 + Agent LLM judgment → 双语 `REVIEW-REPORT.html` |
@@ -63,7 +63,7 @@ codexqa 是面向 Cursor、Claude Code、Codex、OpenClaw 的公开、本地优�
 | `codexqa-skill-router` | 待路由的请求（可选：同意按需安装）；Python 3.10+ | 干活本身——它只选型，必要时拉取，再跟随其它 skill |
 | `codexqa-code-analyzer` | 本地仓库；审变更时再给基线 ref | 需求文档或克隆任务。它给磁盘上的现有 checkout 建索引并查询符号图 |
 | `codexqa-change-analysis` | 本地仓库和一个基线 ref（如 `origin/main`）；要跑生成的测试，被测仓库需能启动 | 没有 diff 的全仓分析（用 `codexqa-code-analyzer`）。它只新增测试文件，不改已有测试 |
-| `codexqa-code-wiki` | 已建索引的本地仓库 | 变更集、需求文档或克隆任务。它导出 `wiki inputs` 并写架构报告 |
+| `codexqa-code-wiki` | 本地仓库（会自动建索引） | 变更集、需求文档或克隆任务。它写一页架构 Wiki |
 | `codexqa-rootcause-analyzer` | 异常证据（堆栈 / 日志 / dump），外加 git 地址、本地目录、文件或已打开工作区 | PRD 或 P0/P1/P2 审查请求。它诊断异常，不做需求缺口或图证据 HTML 评审 |
 | `codexqa-defect-analyzer` | Diff / 仓库 / 上传 / 粘贴，用于代码风险扫描 | 以异常堆栈为主（用 `codexqa-rootcause-analyzer`）或以图证据 HTML 评审为主（用 `codexqa-code-reviewer`） |
 | `codexqa-code-reviewer` | 本地 checkout + `codexqa`/`jq`；PR 模式需要 `--diff-base` | 只要结构/影响面问答用 `codexqa-code-analyzer`；只要 SAST 扫描报告用 `codexqa-defect-analyzer` |

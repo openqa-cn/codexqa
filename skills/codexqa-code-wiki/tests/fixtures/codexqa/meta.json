@@ -1,0 +1,21 @@
+{
+  "repo": "codexqa",
+  "target": ".",
+  "path": ".",
+  "gitRoot": ".",
+  "branch": "main",
+  "commit": "a76bb7f6dbc44c9c9c9f2beea72cade693bfa4f5",
+  "commitDate": "2026-09-28T18:11:08+08:00",
+  "dirty": false,
+  "remote": "https://github.com/openqa-cn/codexqa",
+  "generatedAt": "2026-09-28 18:30",
+  "cliVersion": "codexqa 0.1.11",
+  "limit": null,
+  "localNodes": 3784,
+  "stubShare": 0.11298640412564463,
+  "collisions": 0,
+  "commands": [
+    "codexqa index .",
+    "codexqa wiki inputs ."
+  ]
+}

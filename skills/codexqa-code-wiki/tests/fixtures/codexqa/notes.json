@@ -1,0 +1,132 @@
+{
+  "lang": "zh",
+  "title": "CodexQA 技能仓库",
+  "tagline": "十个可单独安装的质量验证 skill。每个 skill 是一组脚本，彼此几乎不互相调用。",
+  "overview": "这个仓库不是一个服务，而是一组并排放着的 skill：缺陷扫描、根因诊断、测试数据造数、用例生成、浏览器界面回放等。每个 skill 自带脚本，安装时只复制自己的目录，所以代码天然分成几组互不调用的「岛」。\n\n规模最大、连接最多的一组是**缺陷扫描与诊断**：P02 是枢纽，既放着缺陷扫描的主流程，也放着 README 预览重建脚本和示例仓库的入口；P05 是扫描用的 Agent 与工具安装，P11 是根因诊断的异常解析。改 P02 会同时碰到这三条线。\n\n**测试数据造数**和**浏览器界面回放**是另外两组：前者从 P06 的工具绑定流水线进来，经 P04 的配置与适配层，再由 P07 的场景套件校验；后者是 P03 执行器和 P10 决策智能体之间的密集往来。P01 是代码评审的规则扫描脚本，和其他模块没有调用关系。",
+  "groups": {
+    "G1": {
+      "name": "缺陷扫描与诊断",
+      "summary": "缺陷扫描主流程、扫描 Agent、根因诊断和示例仓库。P02 把它们连在一起，所以这一组改动的影响面最大。",
+      "members": ["P02", "P05", "P11", "P12"]
+    },
+    "G2": {
+      "name": "测试数据造数",
+      "summary": "从选工具、调接口到写回用例的造数流水线，外加一组端到端场景校验。",
+      "members": ["P04", "P06", "P07"]
+    },
+    "G3": {
+      "name": "浏览器界面回放",
+      "summary": "jev-browser 的执行器和决策智能体，两边互相调用非常密集。",
+      "members": ["P03", "P10"]
+    },
+    "G4": {
+      "name": "用例生成",
+      "summary": "用例知识库、生成报告，以及增量模式下拉取和冻结远程代码。",
+      "members": ["P08", "P09"]
+    }
+  },
+  "modules": {
+    "P01": {
+      "name": "评审规则扫描",
+      "role": "code-reviewer 的确定性规则：按文件扫出复杂度、依赖、重复代码等证据。",
+      "detail": "二十多个 `_*_body` 脚本各自实现一类规则，入口都是 `scan_file`。它们只被评审流程按文件名调用，没有统计到和其他模块的代码调用。",
+      "source": "_annotation_edges_body · KeyIndex"
+    },
+    "P02": {
+      "name": "缺陷扫描主流程",
+      "role": "缺陷扫描的全量 / 增量入口和 HTML 报告，同时收着预览重建脚本和示例入口。",
+      "detail": "社区检测把几类脚本切到了一起：`scan_full` / `scan_incremental` / `render_html_report` 是缺陷扫描，`rebuild_previews` 和 `screenshot.mjs` 是 README 预览，`examples/` 下是样例仓库的入口。读的时候按文件路径分开看。\n\n它是这一组的枢纽：调用根因诊断的异常解析（P11）、示例夹具（P12）和扫描 Agent（P05），也被它们反向调用。",
+      "layer": "应用",
+      "source": "rebuild_previews · ZipReader"
+    },
+    "P03": {
+      "name": "回放执行器",
+      "role": "jev-browser 的命令行、用例编译、逐步执行、断言和报告。",
+      "detail": "`cmdRun` / `cmdAuto` / `cmdGenerate` 是命令入口；`runStep` 是一步回放的核心，依次展开步骤、取控件快照、执行、断言。报告由 `renderHtml` 和 `stepTimesHtml` 生成。",
+      "layer": "入口",
+      "source": "act.ts · PageState"
+    },
+    "P04": {
+      "name": "造数配置与适配",
+      "role": "读取造数配置，封装接口目录、鉴权和用例写回等适配器。",
+      "detail": "`loadConfig` 被两边频繁调用。改适配器的返回结构会同时影响上游的工具绑定流水线（P06）和场景校验（P07）。",
+      "layer": "存储",
+      "source": "cache_tool_binding.ts · JsonObject"
+    },
+    "P05": {
+      "name": "缺陷扫描 Agent",
+      "role": "扫描用的模型调用、扫描工具安装和 RAG 片段检索。",
+      "detail": "`ensure_scan_tools` 负责装好 semgrep 等工具，`rag_related_snippets` 给模型补上下文，`build_scope_plan` 决定扫哪些文件。",
+      "source": "agent_llm · CodexQAError"
+    },
+    "P06": {
+      "name": "造数工具绑定",
+      "role": "为每个造数动作选工具、串成流水线并调用实体接口。",
+      "detail": "`selectTool` → `runPipeline` → `invokeEntity` 是主线。它对 P04 的调用是全仓最重的跨模块关系之一。",
+      "layer": "应用",
+      "source": "bind_action.ts · InputError"
+    },
+    "P07": {
+      "name": "造数场景校验",
+      "role": "企业入驻、扩展场景、用户旅程等端到端校验套件。",
+      "detail": "每个 `run*Suite` 跑一类场景，用来确认造数流水线改动后仍能走通。",
+      "layer": "入口",
+      "source": "_verify_enterprise_onboard.ts · JsonObject"
+    },
+    "P08": {
+      "name": "用例知识与报告",
+      "role": "把需求文档导入用例知识库，检查阶段产物，并渲染用例报告。",
+      "detail": "`render_html` 是全模块被调用最多的函数；`ingest_one` 负责把一篇文档拆成可引用的知识条目。",
+      "source": "bootstrap_knowledge · CaseRecord"
+    },
+    "P09": {
+      "name": "增量拉取与冻结",
+      "role": "增量用例生成时拉取 PR 代码、冻结输入并归档。",
+      "detail": "`fetch_pr` 解析来源地址后在本地缓存里建 worktree；`archive` 把这次运行的输入打包。",
+      "source": "build_diff_candidates · SkillError"
+    },
+    "P10": {
+      "name": "回放决策智能体",
+      "role": "决定下一步点哪里：组装模型请求、定位策略和错误类型。",
+      "detail": "`buildJevRequest` 组装请求，`DecisionProvider` 抽象出不同的模型提供方。它大量读取执行器（P03）的页面状态类型，所以两边几乎总是一起改。",
+      "source": "agent.ts · ActionSpace"
+    },
+    "P11": {
+      "name": "异常解析与图查询",
+      "role": "根因诊断：解析 Java / Node 异常栈，按栈帧切出源码并查调用图。",
+      "detail": "`analyze_frames` 去重栈帧后逐帧调用 `slice_for_frame`；`ensure_binary` 保证本机有 codexqa 命令。",
+      "source": "ensure_codexqa.ts · StackFrame"
+    },
+    "P12": {
+      "name": "示例仓库与夹具",
+      "role": "checkout-boundary 和 inventory-service 两个示例仓库，以及造 git 夹具的脚本。",
+      "detail": "这里的缺陷是故意埋的，用来验证扫描和评审能不能找出来；不要当成产品代码修。",
+      "source": "defective.mjs · TtlCache"
+    }
+  },
+  "guides": [
+    {
+      "title": "要改浏览器界面回放",
+      "steps": [
+        { "module": "P03", "note": "先从 `cmdRun` 和 `runStep` 看一次回放怎么走完，页面状态类型也定义在这里。" },
+        { "module": "P10", "note": "再看智能体怎么根据页面状态决定下一步；它读的正是上一步的类型。" }
+      ]
+    },
+    {
+      "title": "要改测试数据造数",
+      "steps": [
+        { "module": "P06", "note": "从 `selectTool` 和 `runPipeline` 看一个造数动作怎么选工具、怎么串起来。" },
+        { "module": "P04", "note": "流水线最终都落到这里的配置和适配器，改接口返回结构先看这里。" },
+        { "module": "P07", "note": "改完跑这里的场景套件，确认端到端还能走通。" }
+      ]
+    },
+    {
+      "title": "要改缺陷扫描或根因诊断",
+      "steps": [
+        { "module": "P05", "note": "先看扫描 Agent 怎么装工具、怎么给模型补上下文。" },
+        { "module": "P02", "note": "再看扫描主流程和报告；这里是枢纽，改动会碰到整组。" },
+        { "module": "P11", "note": "根因诊断的异常解析也挂在这里，最后看它怎么按栈帧查图。" }
+      ]
+    }
+  ]
+}

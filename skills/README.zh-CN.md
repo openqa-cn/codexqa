@@ -17,7 +17,7 @@
 - [`codexqa-code-analyzer`](codexqa-code-analyzer/README.zh-CN.md)：本机符号图质量保障——先给仓库建索引，再审变更、圈回归、找测试缺口、追报错，走 `codexqa` CLI。[Skill 手册](codexqa-code-analyzer/README.zh-CN.md)。
 - [`codexqa-change-analysis`](codexqa-change-analysis/README.md)：一次变更的影响分析——可信 `index --diff-base --full`，一份 7 节 HTML 报告（入口、变更方法、测试方案、覆盖判定、敏感路径），并为未覆盖点新增可运行测试文件（只新增）。不是通用符号图问答（`codexqa-code-analyzer`）。正文为英文。[Skill 手册](codexqa-change-analysis/README.md)。
 - [`codexqa-rootcause-analyzer`](codexqa-rootcause-analyzer/README.zh-CN.md)：在 CodexQA CLI 分析之上做异常根因诊断（堆栈/日志 → 带门禁的英文报告）。不是结构/影响面（`codexqa-code-analyzer`），也不是代码风险扫描（`codexqa-defect-analyzer`）。[工作原理](codexqa-rootcause-analyzer/HOW_IT_WORKS.zh-CN.md)。
-- [`codexqa-code-wiki`](codexqa-code-wiki/README.zh-CN.md)：本机架构知识图谱——先建索引，再用 `wiki inputs`（不调模型）导出社区 digest，写出 DeepWiki 风格的 HTML Wiki（侧栏 + 正文 + 本页目录）。[Skill 手册](codexqa-code-wiki/README.zh-CN.md)。
+- [`codexqa-code-wiki`](codexqa-code-wiki/README.zh-CN.md)：一页架构 Wiki——有哪些模块、谁调用谁、调用多少次、从哪读起。事实来自 `wiki inputs`（不调模型），Agent 只写名字和句子。[Skill 手册](codexqa-code-wiki/README.zh-CN.md)。
 - [`codexqa-jev-browser`](codexqa-jev-browser/README.zh-CN.md)：Jev 浏览器自动化。用页面索引代替 GUI 模型识图，默认使用 Playwright Chromium，生成的 YAML 回放不再调用决策模型。报告写在 `reports/<run-id>/report.html`。[Skill 手册](codexqa-jev-browser/README.zh-CN.md)。
 
 提新 skill 时用 [SKILL_TEMPLATE.md](SKILL_TEMPLATE.md)。一个够格的贡献要解决一个独立的验证问题、带验收标准、并给出可复现的证据。

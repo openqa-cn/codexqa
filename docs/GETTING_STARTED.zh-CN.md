@@ -117,7 +117,7 @@ codexqa wiki inputs /path/to/repo --kind architecture --limit 8
 - `codexqa-skill-router` 需要待路由的用户请求（以及 Python 3.10+）。它对照内置/现场目录匹配，并可运行 `ensure_skill.py` 把干活 skill 拉到路由旁边。见其 [README](../skills/codexqa-skill-router/README.zh-CN.md)。
 - `codexqa-code-analyzer` 需要本地仓库。审变更时用 `origin/main` 等基线建索引；索引写在 `~/.codexqa/`。见其 [README](../skills/codexqa-code-analyzer/README.zh-CN.md)。
 - `codexqa-change-analysis` 需要本地仓库和一个 git 基线（如 `origin/main`）。它在仓库根目录写一份 HTML 变更影响报告，并为未覆盖的点新增测试文件，不改已有测试。见其 [README](../skills/codexqa-change-analysis/README.zh-CN.md)。
-- `codexqa-code-wiki` 需要本地仓库和已有索引。它导出 `wiki inputs` 并写 HTML 架构报告，不审变更。见其 [README](../skills/codexqa-code-wiki/README.zh-CN.md)。
+- `codexqa-code-wiki` 需要本地仓库；它的 `brief` 步骤会自动建索引。产出是一页 HTML 架构 Wiki，不审变更。见其 [README](../skills/codexqa-code-wiki/README.zh-CN.md)。
 - `codexqa-rootcause-analyzer` 需要异常证据（堆栈 / 日志 / dump），外加 git 地址、本地目录、文件，或已打开的工作区。见其 [README](../skills/codexqa-rootcause-analyzer/README.zh-CN.md)。
 - `codexqa-defect-analyzer` 需要对 diff / 仓库 / 上传 / 粘贴做代码风险扫描。见其 [README](../skills/codexqa-defect-analyzer/README.zh-CN.md)。
 - `codexqa-code-reviewer` 需要本地 checkout、`PATH` 上的 `codexqa` + `jq`，以及（PR 模式）`--diff-base`。见 [codexqa-code-reviewer README](../skills/codexqa-code-reviewer/README.zh-CN.md)。
@@ -139,7 +139,7 @@ codexqa wiki inputs /path/to/repo --kind architecture --limit 8
 | 报 `.ts` 扩展名无法识别 | 该命令的 Node 版本和 TypeScript stripping 环境 |
 | 没有检测计划 | 补上仓库 / 分支和业务材料；降级加载成功不等于材料够 |
 | 静态分析或调用图不可用 | 工具安装结果、PATH、权限和网络 |
-| 找不到 `codexqa` 或图查询为空 | 安装 `@openqa-cn/codexqa`、检查 PATH、确认仓库已建索引；审变更时要加 `--diff-base`。跑 `codexqa-code-wiki` 用 `wiki inputs`（不要裸跑 `wiki`） |
+| 找不到 `codexqa` 或图查询为空 | 安装 `@openqa-cn/codexqa`、检查 PATH、确认仓库已建索引；审变更时要加 `--diff-base`。`codexqa-code-wiki` 直接跑它的 `scripts/wiki.mjs brief`，会自动建索引并导出 |
 | 本地报告链接打不开 | 直接用浏览器打开返回的 HTML 文件 |
 
 求助时请附上 commit、Node 版本、操作系统、Agent 及版本、命令和脱敏后的报错。不要上传源码或含私有数据的任务目录。
