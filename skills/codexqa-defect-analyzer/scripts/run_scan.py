@@ -373,9 +373,8 @@ def _plan_shard_workload(shard, shard_files, coll, thr):
 
 
 def _ensure_global_rag_cache(coll, coll_f, workloads, cfg):
+    """One CodexQA RAG pass for all shards; context_builder filters it per shard."""
     cqa = cfg.get('codexqa') or {}
-    if cqa.get('rag_cache_enabled') is False:
-        return coll
     from rag_context import build_rag_cache_for_workloads, resolve_rag_intent
     rag_intent = coll.get('rag_intent') or resolve_rag_intent(coll.get('intent') or '')
     workers = max(1, int(cqa.get('rag_max_workers') or 1))
