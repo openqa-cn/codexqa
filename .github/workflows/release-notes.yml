@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   ensure-docs-url:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
