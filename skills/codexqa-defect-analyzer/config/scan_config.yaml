@@ -32,7 +32,6 @@ codexqa:
   auto_install: true
   require_for_scan: true
   polyglot_mandate: true    # all languages → CodexQA for underlying code analysis
-  rag_cache_enabled: true       # one CodexQA RAG pass for all shards; per-shard filter by prefix
   rag_cache_max_items: 32
   rag_shard_max_items: 8
   rag_max_workers: 3            # parallel context_builder --rag (ThreadPoolExecutor)
