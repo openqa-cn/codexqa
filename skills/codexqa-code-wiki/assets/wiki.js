@@ -9,6 +9,15 @@
     try { return el ? JSON.parse(el.textContent) : null; } catch (e) { return null; }
   }
   var ui = readJson('wiki-ui') || { searchEmpty: '', kinds: {} };
+  function uiLang() { return root.getAttribute('data-lang') === 'en' ? 'en' : 'zh'; }
+  function uiCopy() {
+    var lang = uiLang();
+    var empty = ui.searchEmpty;
+    var kinds = ui.kinds;
+    if (empty && typeof empty === 'object') empty = empty[lang] || '';
+    if (kinds && (kinds.zh || kinds.en)) kinds = kinds[lang] || {};
+    return { searchEmpty: empty || '', kinds: kinds || {} };
+  }
 
   // Theme: stored choice, else the OS preference.
   var themeBtn = document.querySelector('.theme-btn');
@@ -185,10 +194,24 @@
 
   // Short search placeholder where the box is narrow.
   var qInput = document.getElementById('q');
-  if (qInput && qInput.getAttribute('data-short')) {
-    var longPh = qInput.getAttribute('placeholder');
-    var small = window.matchMedia('(max-width: 640px)');
-    var setPh = function () { qInput.setAttribute('placeholder', small.matches ? qInput.getAttribute('data-short') : longPh); };
+  var small = window.matchMedia('(max-width: 640px)');
+  function searchCopy() {
+    if (!qInput) return { long: '', short: '', label: '' };
+    var en = uiLang() === 'en';
+    return {
+      long: qInput.getAttribute(en ? 'data-en-placeholder' : 'data-zh-placeholder') || qInput.getAttribute('placeholder') || '',
+      short: qInput.getAttribute(en ? 'data-en-short' : 'data-zh-short') || qInput.getAttribute('data-short') || '',
+      label: qInput.getAttribute(en ? 'data-en-aria' : 'data-zh-aria') || '',
+    };
+  }
+  function setPh() {
+    if (!qInput) return;
+    var copy = searchCopy();
+    if (copy.short) qInput.setAttribute('data-short', copy.short);
+    qInput.setAttribute('placeholder', small.matches && copy.short ? copy.short : copy.long);
+    if (copy.label) qInput.setAttribute('aria-label', copy.label);
+  }
+  if (qInput) {
     setPh();
     if (small.addEventListener) small.addEventListener('change', setPh);
   }
@@ -212,11 +235,12 @@
     return total + (item.k === 'm' ? 0.3 : item.k === 's' ? 0.2 : 0);
   }
   function render() {
+    var copy = uiCopy();
     list.innerHTML = '';
     if (!hits.length) {
       var li = document.createElement('li');
       li.className = 'empty';
-      li.textContent = ui.searchEmpty;
+      li.textContent = copy.searchEmpty;
       list.appendChild(li);
     }
     hits.forEach(function (h, i) {
@@ -226,7 +250,7 @@
       li.setAttribute('aria-selected', i === cursor ? 'true' : 'false');
       var k = document.createElement('span');
       k.className = 'k';
-      k.textContent = (ui.kinds && ui.kinds[h.k]) || h.k;
+      k.textContent = (copy.kinds && copy.kinds[h.k]) || h.k;
       var l = document.createElement('span');
       l.className = 'l';
       l.textContent = h.k === 'm' ? h.id + '  ' + h.l : h.l;
@@ -297,6 +321,46 @@
       if (menuBtn) menuBtn.focus();
     }
   });
+
+  // Language: same 中文 / EN control as the other CodexQA HTML reports.
+  // Chrome (nav, headings, counts, graph labels) follows the choice.
+  // Sentences written in notes.json stay in the language they were written.
+  var LANG_KEY = 'codexqa-wiki-lang';
+  function applyLang(lang) {
+    lang = lang === 'en' ? 'en' : 'zh';
+    root.setAttribute('data-lang', lang);
+    root.lang = lang === 'en' ? 'en' : 'zh-CN';
+    document.querySelectorAll('[data-set-lang]').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.getAttribute('data-set-lang') === lang ? 'true' : 'false');
+    });
+    document.querySelectorAll('[data-zh][data-en]').forEach(function (el) {
+      if (el.children && el.children.length) return;
+      var v = el.getAttribute(lang === 'en' ? 'data-en' : 'data-zh');
+      if (v != null) el.textContent = v;
+    });
+    document.querySelectorAll('[data-zh-aria][data-en-aria]').forEach(function (el) {
+      if (el === qInput) return;
+      el.setAttribute('aria-label', el.getAttribute(lang === 'en' ? 'data-en-aria' : 'data-zh-aria') || '');
+    });
+    document.querySelectorAll('[data-zh-title][data-en-title]').forEach(function (el) {
+      el.setAttribute('title', el.getAttribute(lang === 'en' ? 'data-en-title' : 'data-zh-title') || '');
+    });
+    setPh();
+    if (q && list && !list.hidden && q.value) q.dispatchEvent(new Event('input'));
+  }
+  function setLang(lang) {
+    applyLang(lang);
+    try { localStorage.setItem(LANG_KEY, root.getAttribute('data-lang')); } catch (e) { /* private mode */ }
+  }
+  document.querySelectorAll('[data-set-lang]').forEach(function (b) {
+    b.addEventListener('click', function () { setLang(b.getAttribute('data-set-lang')); });
+  });
+  var initialLang = uiLang();
+  try {
+    var storedLang = localStorage.getItem(LANG_KEY);
+    if (storedLang === 'en' || storedLang === 'zh') initialLang = storedLang;
+  } catch (e) { /* private mode */ }
+  applyLang(initialLang);
 
   // Print with every card open.
   var opened = [];

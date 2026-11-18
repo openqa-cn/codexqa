@@ -142,7 +142,7 @@ function placeGrid(members) {
   };
 }
 
-export function layoutGraph(model, { label, groupLabel, t }) {
+export function layoutGraph(model, { label, groupLabel, t, zh, en, groupLabelZh, groupLabelEn }) {
   const major = new Set();
   const boxes = model.groups.map((g) => {
     const main = backbone(g.members, model.edges);
@@ -190,17 +190,20 @@ export function layoutGraph(model, { label, groupLabel, t }) {
     const obstacles = [...abs.entries()].filter(([id, p]) => p.box === a.box && id !== e.from && id !== e.to).map(([, p]) => p);
     const { d } = edgePath(a, b, ports.get(`${i}:out`) || 0, ports.get(`${i}:in`) || 0, obstacles);
     const cls = ['edge', e.both ? 'both' : '', e.known ? '' : 'unknown', weak ? 'weak' : '', major.has(e) ? '' : 'minor'].filter(Boolean).join(' ');
-    const tip = t.edgeTip(e, label);
-    return `<g class="${cls}" data-from="${e.from}" data-to="${e.to}"><path class="line" d="${d}" style="stroke-width:${sw}px"/><path class="hit" d="${d}"><title>${esc(tip)}</title></path></g>`;
+    const tipZh = (zh || t).edgeTip(e, label);
+    const tipEn = (en || t).edgeTip(e, label);
+    const tip = en && t === en ? tipEn : tipZh;
+    return `<g class="${cls}" data-from="${e.from}" data-to="${e.to}"><path class="line" d="${d}" style="stroke-width:${sw}px"/><path class="hit" d="${d}"><title${tipAttrs(tipZh, tipEn)}>${esc(tip)}</title></path></g>`;
   }).join('');
 
   const boxSvg = boxes.map((box) => {
     const bx = box.x + 1;
     const by = box.y + 1;
-    const title = box.kind === 'group' ? groupLabel(box.group) : t.standaloneBox;
-    const titleFit = fit(title, (box.width - PAD * 2) / 12.5);
+    const limit = (box.width - PAD * 2) / 12.5;
+    const titleZh = box.kind === 'group' ? (groupLabelZh || groupLabel)(box.group) : (zh || t).standaloneBox;
+    const titleEn = box.kind === 'group' ? (groupLabelEn || groupLabel)(box.group) : (en || t).standaloneBox;
     return `<g class="box ${box.kind}"><rect x="${bx}" y="${by}" width="${box.width}" height="${box.height}" rx="12"/>`
-      + `<text class="box-title" x="${bx + PAD}" y="${by + 22}">${esc(titleFit)}</text></g>`;
+      + `<text class="box-title" x="${bx + PAD}" y="${by + 22}">${svgPair(fit(titleZh, limit), fit(titleEn, limit))}</text></g>`;
   }).join('');
 
   const nodeSvg = [...abs.entries()].map(([id, p]) => {
@@ -208,11 +211,14 @@ export function layoutGraph(model, { label, groupLabel, t }) {
     const name = label(id);
     const bar = model.maxSize ? Math.max(3, Math.round((NODE_W - 24) * m.size / model.maxSize)) : 0;
     const cls = ['node', m.hub ? 'hub' : '', m.degree === 0 ? 'alone' : ''].filter(Boolean).join(' ');
+    const tipZh = (zh || t).nodeTip(m, name);
+    const tipEn = (en || t).nodeTip(m, name);
+    const tip = en && t === en ? tipEn : tipZh;
     return `<a class="${cls}" href="#${id}" data-mod="${id}" aria-label="${esc(`${id} ${name}`)}">`
-      + `<title>${esc(t.nodeTip(m, name))}</title>`
+      + `<title${tipAttrs(tipZh, tipEn)}>${esc(tip)}</title>`
       + `<rect class="card" x="${p.x}" y="${p.y}" width="${NODE_W}" height="${NODE_H}" rx="9"/>`
-      + `<text class="nid" x="${p.x + 12}" y="${p.y + 19}">${id}${m.hub ? `<tspan class="nhub" dx="6">${esc(t.hub)}</tspan>` : ''}</text>`
-      + `<text class="nsize" x="${p.x + NODE_W - 12}" y="${p.y + 19}" text-anchor="end">${esc(t.sizeShort(m.size))}</text>`
+      + `<text class="nid" x="${p.x + 12}" y="${p.y + 19}">${id}${m.hub ? hubMark((zh || t).hub, (en || t).hub) : ''}</text>`
+      + `<text class="nsize" x="${p.x + NODE_W - 12}" y="${p.y + 19}" text-anchor="end">${svgPair((zh || t).sizeShort(m.size), (en || t).sizeShort(m.size))}</text>`
       + `<text class="nname" x="${p.x + 12}" y="${p.y + 39}">${esc(fit(name, NAME_EM))}</text>`
       + `<rect class="nbar" x="${p.x + 12}" y="${p.y + NODE_H - 9}" width="${bar}" height="3" rx="1.5"/>`
       + '</a>';
@@ -220,9 +226,32 @@ export function layoutGraph(model, { label, groupLabel, t }) {
 
   const marker = (id, cls) => `<marker id="${id}" viewBox="0 0 10 10" refX="8.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M0,1.5 L9,5 L0,8.5 z" class="${cls}"/></marker>`;
   const defs = `<defs>${marker('wa', 'arrow')}${marker('wa-on', 'arrow on')}</defs>`;
-  const svg = `<svg class="graph-svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="group" aria-label="${esc(t.graphLabel)}" xmlns="http://www.w3.org/2000/svg">`
+  const labelZh = (zh || t).graphLabel;
+  const labelEn = (en || t).graphLabel;
+  const labelShown = en && t === en ? labelEn : labelZh;
+  const svg = `<svg class="graph-svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="group" ${ariaPair(labelZh, labelEn, labelShown)} xmlns="http://www.w3.org/2000/svg">`
     + defs + boxSvg + `<g class="edges">${edgeSvg}</g><g class="nodes">${nodeSvg}</g></svg>`;
   return { svg, width, height, minor };
+}
+
+function svgPair(zhText, enText) {
+  if (zhText === enText) return esc(zhText);
+  return `<tspan class="lang-zh">${esc(zhText)}</tspan><tspan class="lang-en">${esc(enText)}</tspan>`;
+}
+
+function hubMark(zhText, enText) {
+  if (zhText === enText) return `<tspan class="nhub" dx="6">${esc(zhText)}</tspan>`;
+  return `<tspan class="nhub lang-zh" dx="6">${esc(zhText)}</tspan><tspan class="nhub lang-en" dx="6">${esc(enText)}</tspan>`;
+}
+
+function tipAttrs(zhText, enText) {
+  if (zhText === enText) return '';
+  return ` data-zh="${esc(zhText)}" data-en="${esc(enText)}"`;
+}
+
+function ariaPair(zhText, enText, shown) {
+  if (zhText === enText) return `aria-label="${esc(shown)}"`;
+  return `aria-label="${esc(shown)}" data-zh-aria="${esc(zhText)}" data-en-aria="${esc(enText)}"`;
 }
 
 function portOffsets(edges, abs, major) {

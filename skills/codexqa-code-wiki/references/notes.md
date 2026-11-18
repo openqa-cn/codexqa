@@ -98,5 +98,7 @@ text and marks the page as a draft.
 ## Language
 
 Default is 简体中文 for every string. Set `"lang": "en"` and write English when
-the user asks; the page chrome follows `lang`. Keep symbol and file names
-exactly as in the brief.
+the user asks; that is the language the page opens in. The page has a 中文 / EN
+switch, same as the other CodexQA HTML reports: it changes the chrome
+(navigation, section titles, counts, graph labels). It does not translate the
+notes. Keep symbol and file names exactly as in the brief.

@@ -81,6 +81,11 @@ test('real export + fixture notes: complete, linked, self-contained page', () =>
     assert.ok(all.has(id), `#${id}`);
   }
   assert.match(html, /<html lang="zh-CN"/);
+  assert.match(html, /data-lang="zh"/);
+  assert.match(html, /data-set-lang="zh" aria-pressed="true"/);
+  assert.match(html, /data-set-lang="en" aria-pressed="false"/);
+  assert.match(html, /class="lang-zh">概览</);
+  assert.match(html, /class="lang-en">Overview</);
   assert.match(html, /CodexQA 技能仓库/);
   assert.match(html, /缺陷扫描与诊断/);
   assert.doesNotMatch(html, /class="banner draft"/);
@@ -103,10 +108,12 @@ test('English notes switch every UI string', () => {
   const { html } = render(makeInputs(CHAIN), n, { draft: true });
   assertSound(html);
   assert.match(html, /<html lang="en"/);
+  assert.match(html, /data-lang="en"/);
+  assert.match(html, /data-set-lang="en" aria-pressed="true"/);
   const en = strings('en');
   const zh = strings('zh');
   assert.ok(html.includes(esc(en.mapTitle)));
-  assert.ok(!html.includes(zh.mapTitle));
+  assert.ok(html.includes(`class="lang-zh">${esc(zh.mapTitle)}`));
   assert.deepEqual(Object.keys(en).sort(), Object.keys(zh).sort(), 'zh and en define the same strings');
 });
 

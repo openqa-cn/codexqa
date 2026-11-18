@@ -1,0 +1,132 @@
+{
+  "lang": "en",
+  "title": "CodexQA skill repository",
+  "tagline": "Ten quality-verification skills, each a script pack that barely calls the others.",
+  "overview": "This repository is not one service. It is a row of skills: defect scan, root-cause diagnosis, test data, case generation, and browser replay. Each skill ships its own scripts and is installed by copying its own directory, so the code falls into islands that do not call each other.\n\nThe largest, most connected island is **defect scan and diagnosis**. P02 is the hub: the scan pipeline, the README preview scripts, and the example-repo entry points. P05 installs the scan agent and tools. P11 parses exceptions for root-cause diagnosis. A change to P02 touches all three.\n\n**Test data** and **browser replay** are the other two islands. Test data enters through the tool-binding pipeline in P06, passes the config and adapters in P04, and is checked by the scenario suites in P07. Browser replay is a dense back-and-forth between the runner in P03 and the decision agent in P10. P01 is the code-review rule scanner and has no calls to the other modules.",
+  "groups": {
+    "G1": {
+      "name": "Defect scan and diagnosis",
+      "summary": "Scan pipeline, scan agent, root-cause diagnosis, and the example repos. P02 ties them together, so changes here spread the furthest.",
+      "members": ["P02", "P05", "P11", "P12"]
+    },
+    "G2": {
+      "name": "Test data setup",
+      "summary": "The pipeline that picks a tool, calls an API, and writes the result back into a case, plus end-to-end scenario checks.",
+      "members": ["P04", "P06", "P07"]
+    },
+    "G3": {
+      "name": "Browser replay",
+      "summary": "The jev-browser runner and decision agent. They call each other heavily.",
+      "members": ["P03", "P10"]
+    },
+    "G4": {
+      "name": "Case generation",
+      "summary": "Case knowledge, the case report, and the incremental path that fetches and freezes remote code.",
+      "members": ["P08", "P09"]
+    }
+  },
+  "modules": {
+    "P01": {
+      "name": "Review rule scan",
+      "role": "Deterministic code-reviewer rules: complexity, dependencies, and duplicate code, one file at a time.",
+      "detail": "Twenty-odd `_*_body` scripts each implement one rule, and every entry is `scan_file`. The review flow calls them by file name. No calls to other modules were counted.",
+      "source": "_annotation_edges_body · KeyIndex"
+    },
+    "P02": {
+      "name": "Defect scan pipeline",
+      "role": "Full and incremental scan entry points and the HTML report, plus preview rebuild scripts.",
+      "detail": "Community detection grouped several kinds of script: `scan_full`, `scan_incremental`, and `render_html_report` are the scan; `rebuild_previews` and `screenshot.mjs` rebuild the README previews; `examples/` holds the sample repos. Read them by path.\n\nThis is the hub of the group. It calls exception parsing (P11), the example fixtures (P12), and the scan agent (P05), and they call it back.",
+      "layer": "application",
+      "source": "rebuild_previews · ZipReader"
+    },
+    "P03": {
+      "name": "Replay runner",
+      "role": "jev-browser command line, case compile, step execution, assertions, and the report.",
+      "detail": "`cmdRun`, `cmdAuto`, and `cmdGenerate` are the command entries. `runStep` runs one replay step: expand it, snapshot the control, act, then assert. `renderHtml` and `stepTimesHtml` write the report.",
+      "layer": "entry",
+      "source": "act.ts · PageState"
+    },
+    "P04": {
+      "name": "Testdata adapters",
+      "role": "Loads testdata config and wraps the API catalog, auth, and case write-back adapters.",
+      "detail": "`loadConfig` is called often from both sides. Changing an adapter's return shape affects the tool-binding pipeline (P06) and the scenario checks (P07).",
+      "layer": "storage",
+      "source": "cache_tool_binding.ts · JsonObject"
+    },
+    "P05": {
+      "name": "Defect scan agent",
+      "role": "Model calls for the scan, scan-tool install, and retrieval of related snippets.",
+      "detail": "`ensure_scan_tools` installs semgrep and the other tools. `rag_related_snippets` gives the model extra context. `build_scope_plan` decides which files to scan.",
+      "source": "agent_llm · CodexQAError"
+    },
+    "P06": {
+      "name": "Tool binding",
+      "role": "Picks a tool for each testdata action, chains them into a pipeline, and calls the entity API.",
+      "detail": "`selectTool` → `runPipeline` → `invokeEntity` is the main line. Its calls into P04 are among the heaviest cross-module edges in the repo.",
+      "layer": "application",
+      "source": "bind_action.ts · InputError"
+    },
+    "P07": {
+      "name": "Scenario checks",
+      "role": "End-to-end suites for onboarding, extra scenarios, and user journeys.",
+      "detail": "Each `run*Suite` runs one family of scenarios, to confirm the testdata pipeline still completes after a change.",
+      "layer": "entry",
+      "source": "_verify_enterprise_onboard.ts · JsonObject"
+    },
+    "P08": {
+      "name": "Case knowledge",
+      "role": "Imports requirement docs into the case knowledge base, checks stage outputs, and renders the case report.",
+      "detail": "`render_html` is the most-called function in the module. `ingest_one` splits one document into knowledge entries other steps can cite.",
+      "source": "bootstrap_knowledge · CaseRecord"
+    },
+    "P09": {
+      "name": "Incremental fetch",
+      "role": "For incremental case generation: fetch the PR, freeze the inputs, and archive the run.",
+      "detail": "`fetch_pr` resolves the source URL and creates a worktree in the local cache. `archive` packs the inputs for this run.",
+      "source": "build_diff_candidates · SkillError"
+    },
+    "P10": {
+      "name": "Replay decision agent",
+      "role": "Decides the next click: builds the model request, locator strategy, and error types.",
+      "detail": "`buildJevRequest` builds the request. `DecisionProvider` hides the different model providers. It reads the page-state types owned by the runner (P03), so the two change together.",
+      "source": "agent.ts · ActionSpace"
+    },
+    "P11": {
+      "name": "Exception parsing",
+      "role": "Root-cause diagnosis: parse Java and Node stacks, slice source for each frame, and query the call graph.",
+      "detail": "`analyze_frames` deduplicates frames and calls `slice_for_frame` on each one. `ensure_binary` makes sure the codexqa command is on the machine.",
+      "source": "ensure_codexqa.ts · StackFrame"
+    },
+    "P12": {
+      "name": "Example repos",
+      "role": "The checkout-boundary and inventory-service examples, plus scripts that build git fixtures.",
+      "detail": "The defects here are planted on purpose, to check that the scan and the review can find them. Do not fix them as product code.",
+      "source": "defective.mjs · TtlCache"
+    }
+  },
+  "guides": [
+    {
+      "title": "Changing browser replay",
+      "steps": [
+        { "module": "P03", "note": "Start with `cmdRun` and `runStep` to see one replay finish. The page-state types are defined here." },
+        { "module": "P10", "note": "Then see how the agent picks the next step from that page state. It reads the types from the previous step." }
+      ]
+    },
+    {
+      "title": "Changing test data setup",
+      "steps": [
+        { "module": "P06", "note": "Follow `selectTool` and `runPipeline` to see how one action picks a tool and how the steps are chained." },
+        { "module": "P04", "note": "The pipeline lands in the config and adapters here. Change a return shape here first." },
+        { "module": "P07", "note": "After the change, run the scenario suites here and confirm the path still completes." }
+      ]
+    },
+    {
+      "title": "Changing defect scan or diagnosis",
+      "steps": [
+        { "module": "P05", "note": "Start with how the scan agent installs tools and adds context for the model." },
+        { "module": "P02", "note": "Then read the scan pipeline and the report. This is the hub, so a change reaches the whole group." },
+        { "module": "P11", "note": "Exception parsing for root-cause diagnosis hangs off the same group. See how it queries the graph per frame." }
+      ]
+    }
+  ]
+}

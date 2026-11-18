@@ -63,6 +63,18 @@ const shots = [
     png: "code-wiki.png",
     prepare: `
       document.documentElement.setAttribute('data-theme','light');
+      document.documentElement.setAttribute('data-lang','zh');
+      document.documentElement.lang='zh-CN';
+      window.scrollTo(0,0);
+    `,
+  },
+  {
+    html: "code-wiki-en.html",
+    png: "code-wiki-en.png",
+    prepare: `
+      document.documentElement.setAttribute('data-theme','light');
+      document.documentElement.setAttribute('data-lang','en');
+      document.documentElement.lang='en';
       window.scrollTo(0,0);
     `,
   },

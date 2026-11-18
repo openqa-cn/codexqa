@@ -60,6 +60,8 @@ which task. You never edit HTML, CSS, or diagrams.
 2. **Notes.** Read [references/notes.md](references/notes.md), then fill
    `notes.json`. Every `P01`-style id and group id in it must exist in the
    brief. Write 简体中文 unless the user asked for English (`"lang": "en"`).
+   `lang` is the language the page opens in. The HTML also has a 中文 / EN
+   switch for the chrome; it does not translate `notes.json`.
 3. **Build.** Run `node <skill>/scripts/wiki.mjs build <repo>`. If it prints
    `error:` lines, fix those fields and rerun; they name the field and the fix.
    `check <repo>` validates without writing HTML.

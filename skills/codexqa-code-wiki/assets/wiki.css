@@ -9,6 +9,7 @@
   --line: #e1e5e1;
   --line-strong: #c8cfca;
   --acc: #0f6b4c;
+  --acc-fg: #fff;
   --acc-ink: #0b5a3f;
   --acc-soft: #e4f1ea;
   --warn: #9a4a07;
@@ -33,6 +34,7 @@ html[data-theme="dark"] {
   --line: #242e29;
   --line-strong: #34403a;
   --acc: #52c48f;
+  --acc-fg: #0e1311;
   --acc-ink: #7dd8ad;
   --acc-soft: #163126;
   --warn: #f2b36d;
@@ -84,6 +86,18 @@ button { font: inherit; color: inherit; }
 .icon svg { width: 18px; height: 18px; fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-linecap: round; }
 .icon svg .fill { fill: var(--muted); stroke: none; }
 .menu-btn { display: none; }
+.lang {
+  display: flex; flex: none; gap: 2px; align-items: center;
+  padding: 2px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel);
+}
+.lang button {
+  appearance: none; border: 0; background: transparent; color: var(--muted);
+  font: inherit; font-size: 12px; font-weight: 650; letter-spacing: .02em;
+  height: 30px; padding: 0 10px; border-radius: 7px; cursor: pointer;
+}
+.lang button[aria-pressed="true"] { background: var(--acc); color: var(--acc-fg); }
+html:not([data-lang="en"]) .lang-en { display: none !important; }
+html[data-lang="en"] .lang-zh { display: none !important; }
 
 .search { position: relative; margin-left: auto; flex: 0 1 340px; }
 .search > svg { position: absolute; left: 10px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); fill: none; stroke: var(--faint); stroke-width: 1.7; stroke-linecap: round; pointer-events: none; }
