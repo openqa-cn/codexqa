@@ -265,6 +265,25 @@ def _source_label(source):
     return {'sast_confirmed': 'SAST ✓', 'sast_only': 'SAST', 'llm_judged': 'LLM'}.get(source, source or '—')
 
 
+def _bi(zh, en):
+    if zh == en:
+        return _h(zh)
+    return '<span data-zh="%s" data-en="%s">%s</span>' % (_h(zh), _h(en), _h(zh))
+
+
+_SCAN_ZH = {'incremental': '增量', 'full': '全量', 'adhoc': '临时'}
+_SOURCE_COUNT_ZH = {
+    'sast_confirmed': 'SAST 已确认',
+    'sast_only': '仅 SAST',
+    'llm_judged': 'LLM 判定',
+}
+_SOURCE_COUNT_EN = {
+    'sast_confirmed': 'sast confirmed',
+    'sast_only': 'sast only',
+    'llm_judged': 'llm judged',
+}
+
+
 def _source_class(source):
     return {'sast_confirmed': 'confirmed', 'sast_only': 'sast', 'llm_judged': 'llm'}.get(
         source or '', 'llm')
@@ -371,8 +390,6 @@ def render_html_report(report):
     by_rule = cov.get('by_rule_id') or {}
     ts = report.get('tooling_status') or {}
     pp = report.get('policy_pack') or {}
-    scan_type = report.get('scan_type', 'scan').capitalize()
-    title = '%s Scan Report' % scan_type
     total = summary.get('total') or sum(sev_counts.get(k, 0) for k in ('P0', 'P1', 'P2', 'P3'))
 
     chips = ''.join(
@@ -391,7 +408,7 @@ def render_html_report(report):
 
     source_rows = ''.join(
         "<div class='stat-chip'><span class='n'>%d</span><span class='l'>%s</span></div>"
-        % (by_source.get(k, 0), _h(k.replace('_', ' ')))
+        % (by_source.get(k, 0), _bi(_SOURCE_COUNT_ZH[k], _SOURCE_COUNT_EN[k]))
         for k in ('sast_confirmed', 'sast_only', 'llm_judged')
     )
 
@@ -438,11 +455,19 @@ def render_html_report(report):
         rows = ''.join("<tr><td><code>%s</code></td><td>%s</td></tr>"
                        % (_h(h['path']), _h('%.1f' % h.get('hot_score', 0)))
                        for h in report['heat_map'][:20])
-        extra_sections.append('<section class="panel"><div class="panel-head"><h2 data-zh="热点文件" data-en="Hot files">热点文件</h2></div><table class="steps"><thead><tr><th data-zh="路径" data-en="Path">路径</th><th>score</th></tr></thead><tbody>%s</tbody></table></section>' % rows)
+        extra_sections.append('<section class="panel"><div class="panel-head"><h2 data-zh="热点文件" data-en="Hot files">热点文件</h2></div><table class="steps"><thead><tr><th data-zh="路径" data-en="Path">路径</th><th>%s</th></tr></thead><tbody>%s</tbody></table></section>' % (_bi('热度', 'score'), rows))
 
     det = cov.get('deterministic_share', 0) or 0
     llm = cov.get('llm_share', 0) or 0
-    tooling = 'Degraded' if ts.get('degraded') else 'Ready: %s' % _h(', '.join(ts.get('ready') or []))
+    scan_key = (report.get('scan_type') or 'scan').lower()
+    scan_en = scan_key.capitalize()
+    scan_zh = _SCAN_ZH.get(scan_key, scan_en)
+    title_en = '%s Scan Report' % scan_en
+    title_zh = '缺陷扫描报告'
+    if ts.get('degraded'):
+        tooling = _bi('降级', 'Degraded')
+    else:
+        tooling = '%s: %s' % (_bi('就绪', 'Ready'), _h(', '.join(ts.get('ready') or [])))
     css = chrome_css()
     js = chrome_js()
     return f'''<!DOCTYPE html>
@@ -450,7 +475,7 @@ def render_html_report(report):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title data-zh="{_h(title)}" data-en="{_h(title)}">{_h(title)}</title>
+<title data-zh="{_h(title_zh)}" data-en="{_h(title_en)}">{_h(title_zh)}</title>
 {boot_script()}
 <style>
 {css}
@@ -460,16 +485,16 @@ def render_html_report(report):
 {prefs_html()}
 <div class="wrap">
   <header class="hero">
-    <p class="kicker">codexqa-defect-analyzer · {_h(scan_type)}</p>
-    <h1><span data-zh="缺陷扫描报告" data-en="{_h(title)}">缺陷扫描报告</span>
+    <p class="kicker">codexqa-defect-analyzer · {_bi(scan_zh, scan_en)}</p>
+    <h1><span data-zh="{_h(title_zh)}" data-en="{_h(title_en)}">{_h(title_zh)}</span>
       <span class="total-pill">{total} <span class="unit-zh">条</span><span class="unit-en"> findings</span></span>
     </h1>
     <p class="sub"><span data-zh="目标" data-en="Target">目标</span> <code>{_h(report.get('target', '—'))}</code></p>
     <div class="meta-row">
       <span data-zh="生成时间" data-en="Generated">生成时间</span>: <code>{_h(report.get('generated_at', '—'))}</code>
       <span data-zh="扫描文件" data-en="Files scanned">扫描文件</span>: {_h(summary.get('files_scanned', '—'))}
-      <span>Policy: <code>{_h(pp.get('pack_id', '—'))}</code> v{_h(pp.get('version', '—'))}</span>
-      <span>Tooling: {tooling}</span>
+      <span>{_bi('策略', 'Policy')}: <code>{_h(pp.get('pack_id', '—'))}</code> v{_h(pp.get('version', '—'))}</span>
+      <span>{_bi('工具', 'Tooling')}: {tooling}</span>
     </div>
     <div class="stats">
       <div class="card">
@@ -488,7 +513,7 @@ def render_html_report(report):
   <section class="panel">
     <div class="panel-head">
       <h2 data-zh="规则命中" data-en="Rule hits">规则命中</h2>
-      <p class="desc">Active rules: {_h(pp.get('rule_count_active', '—'))}</p>
+      <p class="desc">{_bi('启用规则', 'Active rules')}: {_h(pp.get('rule_count_active', '—'))}</p>
     </div>
     {rule_rows}
   </section>

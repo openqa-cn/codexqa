@@ -31,6 +31,23 @@ const shots = [
       document.querySelectorAll('[data-set-theme]').forEach(function(b){
         b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
       });
+      var zh=document.querySelector('[data-set-lang="zh"]');
+      if(zh) zh.click();
+      var rules=document.querySelectorAll('.panel');
+      if(rules[0]) rules[0].style.display='none';
+      window.scrollTo(0,0);
+    `,
+  },
+  {
+    html: "defect-report.html",
+    png: "defect-report-en.png",
+    prepare: `
+      document.documentElement.setAttribute('data-theme','light');
+      document.querySelectorAll('[data-set-theme]').forEach(function(b){
+        b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
+      });
+      var en=document.querySelector('[data-set-lang="en"]');
+      if(en) en.click();
       var rules=document.querySelectorAll('.panel');
       if(rules[0]) rules[0].style.display='none';
       window.scrollTo(0,0);

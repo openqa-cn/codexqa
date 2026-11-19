@@ -53,7 +53,7 @@ GitHub is the skill source; product site: [openqa.cn](https://openqa.cn/?utm_sou
 <p><strong><a href="skills/codexqa-defect-analyzer/README.md">codexqa-defect-analyzer</a></strong></p>
 <p><strong>Verifies</strong> — whether the code you just wrote or merged hides bugs or security issues a quick glance would miss.</p>
 <p><strong>Does</strong> — merges SAST / lint / secrets with one Agent semantic pass into a P0–P3 HTML report: location, evidence, suggestion.</p>
-<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/defect-report.html"><img src="docs/assets/previews/defect-report.png" alt="codexqa-defect-analyzer HTML scan report"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/defect-report.html"><img src="docs/assets/previews/defect-report-en.png" alt="codexqa-defect-analyzer HTML scan report"></a></p>
 </td>
 <td width="50%" valign="top">
 <p><strong><a href="skills/codexqa-code-reviewer/README.md">codexqa-code-reviewer</a></strong></p>
