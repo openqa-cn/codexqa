@@ -5,7 +5,7 @@ Sample HTML used as screenshots in the repository README. Most are **illustratio
 | File | Skill | How it was produced |
 |---|---|---|
 | `defect-report.html` / `.png` | `codexqa-defect-analyzer` | `merge_report.render_html_report` (testcase-generator chrome; canned inventory-service findings). `.png` is the Chinese homepage. `defect-report-en.png` is the same page with EN selected; the root English README uses that shot |
-| `review-report.html` / `.png` | `codexqa-code-reviewer` | `scripts/render-review-html.sh` on `evals/fixtures/conclusion/with-llm-judgment.json` |
+| `review-report.html` / `.png` | `codexqa-code-reviewer` | `scripts/render-review-html.sh` on `evals/fixtures/conclusion/with-llm-judgment.json`. `.png` is the Chinese homepage. `review-report-en.png` is the same page with EN selected; the root English README uses that shot |
 | `code-wiki.html` / `.png` | `codexqa-code-wiki` | `render-code-wiki.mjs`: the skill's own renderer on its test fixture (a real `wiki inputs` export of this repo plus written `notes.json`); PNG is a **4:3** crop (`1280×960`), Chinese homepage |
 | `code-wiki-en.html` / `.png` | `codexqa-code-wiki` | Same export and renderer with `notes.en.json` (`"lang": "en"`). PNG is the English homepage at the same **4:3** crop. The root English README uses this shot |
 | `code-analyzer.html` / `.png` | `codexqa-code-analyzer` | Wrapper around published `checkout-change-impact.svg` |

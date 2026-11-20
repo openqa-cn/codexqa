@@ -539,8 +539,8 @@ jq -c '
       mode: (($r.mode // "pr") | esc),
       mode_html: (
         (($r.mode // "pr") | tostring) as $m
-        | if ($m | test("full"; "i")) then bi_text("全仓评审"; "full-repo")
-          elif ($m | test("pr"; "i")) then bi_text("PR 评审"; "pr")
+        | if ($m | test("full"; "i")) then bi_text("全仓评审"; "Full-repo review")
+          elif ($m | test("pr"; "i")) then bi_text("PR 评审"; "PR review")
           else ($m | esc) end
       ),
       evidence_dir: (($r.evidence_dir // "") | esc),

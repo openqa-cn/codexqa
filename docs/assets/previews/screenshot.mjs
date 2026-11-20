@@ -61,16 +61,52 @@ const shots = [
       document.querySelectorAll('[data-set-theme]').forEach(function(b){
         b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
       });
+      var zh=document.querySelector('[data-set-lang="zh"]');
+      if(zh) zh.click();
       document.querySelectorAll('article.finding.empty').forEach(function(el){ el.style.display='none'; });
       var first=document.querySelector('article.finding.case:not(.empty)');
-      if(first) first.classList.add('open');
+      if(first){
+        first.classList.add('open');
+        var head=first.querySelector('.case-head');
+        if(head) head.setAttribute('aria-expanded','true');
+      }
       document.querySelectorAll('section').forEach(function(sec){
         var h=sec.querySelector('h2');
-        var t=h?h.textContent:'';
-        if(t.indexOf('模型语义评审')>=0 || t.indexOf('回归必测')>=0 || t.indexOf('测试缺口')>=0){
+        var zh=h?(h.getAttribute('data-zh')||''):'';
+        if(zh.indexOf('回归必测')>=0 || zh.indexOf('测试缺口')>=0 || zh.indexOf('敏感路径')>=0){
           sec.style.display='none';
         }
       });
+      document.querySelectorAll('details.fold').forEach(function(el){ el.style.display='none'; });
+      document.querySelectorAll('section p.lede, section p.muted').forEach(function(p){ p.style.display='none'; });
+      window.scrollTo(0,0);
+    `,
+  },
+  {
+    html: "review-report.html",
+    png: "review-report-en.png",
+    prepare: `
+      document.documentElement.setAttribute('data-theme','light');
+      document.querySelectorAll('[data-set-theme]').forEach(function(b){
+        b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
+      });
+      var en=document.querySelector('[data-set-lang="en"]');
+      if(en) en.click();
+      document.querySelectorAll('article.finding.empty').forEach(function(el){ el.style.display='none'; });
+      var first=document.querySelector('article.finding.case:not(.empty)');
+      if(first){
+        first.classList.add('open');
+        var head=first.querySelector('.case-head');
+        if(head) head.setAttribute('aria-expanded','true');
+      }
+      document.querySelectorAll('section').forEach(function(sec){
+        var h=sec.querySelector('h2');
+        var zh=h?(h.getAttribute('data-zh')||''):'';
+        if(zh.indexOf('回归必测')>=0 || zh.indexOf('测试缺口')>=0 || zh.indexOf('敏感路径')>=0){
+          sec.style.display='none';
+        }
+      });
+      document.querySelectorAll('details.fold').forEach(function(el){ el.style.display='none'; });
       document.querySelectorAll('section p.lede, section p.muted').forEach(function(p){ p.style.display='none'; });
       window.scrollTo(0,0);
     `,

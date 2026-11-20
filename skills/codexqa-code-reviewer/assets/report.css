@@ -265,9 +265,9 @@ h3 { font-size: 1rem; margin: 16px 0 8px; color: var(--ink); }
 .sev.p1 { background: var(--p1-bg); color: var(--p1); }
 .sev.p2 { background: var(--p2-bg); color: var(--p2); }
 .finding h3 { margin: 0; flex: 1 1 220px; min-width: 0; font-size: 14px; font-weight: 600; letter-spacing: 0; text-wrap: balance; }
-.field { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; padding: 12px 16px; border-top: 1px dashed var(--line); }
+.field { display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 12px; padding: 12px 16px; border-top: 1px dashed var(--line); }
 .field:first-child { border-top: 0; }
-.field-k { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.field-k { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding-top: 3px; overflow-wrap: anywhere; }
 .field-v { min-width: 0; margin: 0; font-size: 13.5px; line-height: 1.65; overflow-wrap: anywhere; white-space: pre-wrap; color: var(--ink); }
 .field-v.is-path { font-family: var(--mono); font-size: 12px; background: var(--code-bg); padding: 8px 10px; border-radius: 8px; word-break: break-all; }
 .field-v.is-cat, .field-v.is-conf { font-family: var(--mono); font-size: 12px; font-weight: 600; }

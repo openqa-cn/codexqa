@@ -179,7 +179,9 @@ h1 { margin:0 0 10px; font-size:24px; letter-spacing:-.02em; text-wrap:balance; 
 .alert { padding:12px 14px; border-radius:10px; font-size:13px; margin:0; border:1px solid var(--line); }
 .alert-warn { background:var(--p1-bg); color:var(--p1); border-color:transparent; }
 .alert-drop { background:var(--p0-bg); color:var(--p0); border-color:transparent; }
+.unit-en { display:none; }
 html[data-lang="en"] .unit-zh { display:none; }
+html[data-lang="en"] .unit-en { display:inline; }
 html[data-lang="zh"] .unit-en { display:none; }
 .was { color:var(--p0); text-decoration:line-through; }
 .now { color:var(--acc); font-weight:600; }
@@ -234,6 +236,18 @@ h3 { font-size: 1rem; margin: 16px 0 8px; color: var(--ink); }
 .stat.p1 .n { color: var(--p1); }
 .stat.p2 .n { color: var(--p2); }
 .stat.risk .n { color: var(--med); font-size: clamp(1rem, 2.4vw, 1.55rem); }
+.stat.must { text-align: left; }
+.stat.must .n { font-size: 1rem; }
+.must-list { margin: 8px 0 0; padding-left: 1.1em; text-align: left; font-size: 12px; line-height: 1.45; }
+.defect-id { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: .04em; }
+.detect { flex: 0 0 auto; font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .02em; padding: 3px 8px; border-radius: 999px; }
+.detect.sast { background: var(--lang-bg); color: var(--lang-fg); }
+.detect.llm { background: var(--p1-bg); color: var(--p1); }
+.fold { margin-top: 12px; }
+.fold > summary { cursor: pointer; font-weight: 650; padding: 8px 0; }
+.dim-fold { padding: 12px 16px; background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; }
+.convention-list { margin: 0; padding-left: 1.2em; }
+.convention-list li { margin: 6px 0; }
 .lede { margin: 16px 0 0; overflow-wrap: anywhere; }
 .findings-hint { margin: 0 0 14px; }
 .findings-stack { display: grid; gap: 12px; }
@@ -258,9 +272,9 @@ h3 { font-size: 1rem; margin: 16px 0 8px; color: var(--ink); }
 .sev.p1 { background: var(--p1-bg); color: var(--p1); }
 .sev.p2 { background: var(--p2-bg); color: var(--p2); }
 .finding h3 { margin: 0; flex: 1 1 220px; min-width: 0; font-size: 14px; font-weight: 600; letter-spacing: 0; text-wrap: balance; }
-.field { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; padding: 12px 16px; border-top: 1px dashed var(--line); }
+.field { display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 12px; padding: 12px 16px; border-top: 1px dashed var(--line); }
 .field:first-child { border-top: 0; }
-.field-k { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.field-k { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding-top: 3px; overflow-wrap: anywhere; }
 .field-v { min-width: 0; margin: 0; font-size: 13.5px; line-height: 1.65; overflow-wrap: anywhere; white-space: pre-wrap; color: var(--ink); }
 .field-v.is-path { font-family: var(--mono); font-size: 12px; background: var(--code-bg); padding: 8px 10px; border-radius: 8px; word-break: break-all; }
 .field-v.is-cat, .field-v.is-conf { font-family: var(--mono); font-size: 12px; font-weight: 600; }
@@ -304,35 +318,15 @@ footer { margin-top: 8px; color: var(--muted); font-size: 12px; text-align: cent
 <header class="hero"><div class="hero-inner">
 <p class="kicker" data-zh="审查档案 · codexqa-code-reviewer · CodexQA" data-en="INSPECTION DOSSIER · codexqa-code-reviewer · CodexQA">审查档案 · codexqa-code-reviewer · CodexQA</p>
 <h1 data-zh="Code Review 结论报告" data-en="Code Review Report">Code Review 结论报告</h1>
-<p class="sub">fixture/repo · <span class="mode-bi"><span data-zh="PR 评审" data-en="pr">PR 评审</span></span> · <strong>feature</strong> vs <strong>origin/main</strong></p>
-<div class="badge-row">
-<span class="badge risk-med"><span data-zh="总体风险" data-en="Overall risk">总体风险</span> <span data-zh="中等" data-en="Medium">中等</span></span>
-<span class="badge lang"><span data-zh="主语言" data-en="Primary language">主语言</span> Java · high</span>
-<span class="badge ok">P0=0 · P1=1 · P2=0</span>
-<span class="badge"><span data-zh="焦点语言" data-en="focus">焦点语言</span>: Java</span>
-</div>
-<div class="meta-grid">
-<div class="meta"><span class="k">repo</span><span class="v">/tmp/fixture-repo</span></div>
-<div class="meta"><span class="k">diff_base</span><span class="v">origin/main</span></div>
-<div class="meta"><span class="k">codexqa</span><span class="v"></span></div>
-<div class="meta"><span class="k" data-zh="evidence" data-en="evidence">evidence</span><span class="v">/tmp/tmp.cR2vg54EZz</span></div>
-<div class="meta"><span class="k" data-zh="generated" data-en="generated">generated</span><span class="v"></span></div>
-</div>
-</div></header>
-<section><h2 data-zh="结论一览" data-en="Overview">结论一览</h2>
+<p class="sub">fixture/repo · <span class="mode-bi"><span data-zh="PR 评审" data-en="PR review">PR 评审</span></span> · <strong>feature</strong> vs <strong>origin/main</strong></p>
 <div class="stats">
-<div class="stat p0"><div class="n">0</div><div class="l" data-zh="P0 阻断" data-en="P0 Blocker">P0 阻断</div></div>
-<div class="stat p1"><div class="n">1</div><div class="l" data-zh="P1 本迭代应修" data-en="P1 fix this iteration">P1 本迭代应修</div></div>
-<div class="stat p2"><div class="n">0</div><div class="l" data-zh="P2 可选 / 债" data-en="P2 optional / debt">P2 可选 / 债</div></div>
-<div class="stat risk"><div class="n"><span data-zh="中等" data-en="Medium">中等</span></div><div class="l" data-zh="总体风险" data-en="Overall risk">总体风险</div></div>
+<div class="stat"><div class="n" data-zh="先修再合" data-en="Fix, then merge">先修再合</div><div class="l" data-zh="能否合入" data-en="Merge">能否合入</div></div>
+<div class="stat"><div class="n" data-zh="P1" data-en="P1">P1</div><div class="l" data-zh="最高严重级别" data-en="Highest severity">最高严重级别</div></div>
+<div class="stat"><div class="n">1</div><div class="l">P0=0 · P1=1 · P2=0 · <span data-zh="证据行 " data-en="evidence lines ">证据行 </span>0</div></div>
+<div class="stat must"><div class="l" data-zh="必测路径" data-en="Must-test paths">必测路径</div><ol class="must-list"><li class="muted" data-zh="无" data-en="None">无</li></ol></div>
 </div>
-<p class="lede" data-zh="Smoke conclusion including llm_judgment block after dedupe." data-en="Smoke conclusion including llm_judgment block after dedupe.">Smoke conclusion including llm_judgment block after dedupe.</p>
-<p class="muted lede"><span data-zh="意图：" data-en="Intent: ">意图：</span><span data-zh="Fixture smoke with Agent LLM judgment section" data-en="Fixture smoke with Agent LLM judgment section">Fixture smoke with Agent LLM judgment section</span></p>
-<p class="muted lede"><span data-zh="范围：" data-en="Scope: ">范围：</span><span data-zh="1 symbol" data-en="1 symbol">1 symbol</span></p>
-<p class="muted lede" data-zh="合入决策留给人工；本报告不自动通过合入。" data-en="Merge decision is left to humans; this report does not auto-approve.">合入决策留给人工；本报告不自动通过合入。</p>
-</section>
-<section><h2 data-zh="模型语义评审" data-en="Agent LLM judgment">模型语义评审</h2>
-<div class="field"><span class="field-k" data-zh="结论" data-en="Verdict">结论</span><div class="field-v is-cat"><span data-zh="需关注" data-en="concern">需关注</span></div></div><div class="field"><span class="field-k" data-zh="风险说明" data-en="Risk">风险说明</span><div class="field-v " data-zh="合并后仍有 1 个新颖语义问题：空指针路径未处理。" data-en="After merge, 1 novel semantic issue remains: unhandled NPE path.">合并后仍有 1 个新颖语义问题：空指针路径未处理。</div></div><div class="field"><span class="field-k" data-zh="新颖问题数" data-en="新颖问题数">新颖问题数</span><div class="field-v " data-zh="1" data-en="1">1</div></div><div class="field"><span class="field-k" data-zh="去重合并数" data-en="去重合并数">去重合并数</span><div class="field-v " data-zh="2" data-en="2">2</div></div><div class="field"><span class="field-k" data-zh="enrich 数" data-en="enrich 数">enrich 数</span><div class="field-v " data-zh="1" data-en="1">1</div></div><div class="field"><span class="field-k" data-zh="审阅焦点" data-en="审阅焦点">审阅焦点</span><div class="field-v " data-zh="src/PayService.java (diff hunk)" data-en="src/PayService.java (diff hunk)">src/PayService.java (diff hunk)</div></div><div class="field"><span class="field-k" data-zh="依据" data-en="Evidence">依据</span><div class="field-v " data-zh="22-llm-judgment.json + host-agent LLM pass" data-en="22-llm-judgment.json + host-agent LLM pass">22-llm-judgment.json + host-agent LLM pass</div></div><div class="field"><span class="field-k" data-zh="信号文件" data-en="Signals file">信号文件</span><div class="field-v is-path" data-zh="22-llm-judgment.json" data-en="22-llm-judgment.json">22-llm-judgment.json</div></div></section>
+<p class="muted lede" data-zh="合入仍由人决定，本报告不自动通过合入。" data-en="A person still decides the merge. This report does not auto-approve.">合入仍由人决定，本报告不自动通过合入。</p>
+</div></header>
 <section id="findings"><h2 data-zh="发现项" data-en="Findings">发现项</h2>
 <p class="muted findings-hint" data-zh="每条记录默认收起，点击卡片展开依据与修复建议。" data-en="Records are collapsed by default. Click a card to expand evidence and the suggested fix.">每条记录默认收起，点击卡片展开依据与修复建议。</p>
 <div class="toolbar">
@@ -347,21 +341,21 @@ footer { margin-top: 8px; color: var(--muted); font-size: 12px; text-align: cent
 <button class="tab" type="button" id="collapseAll"><span data-zh="收起全部" data-en="Collapse all">收起全部</span></button>
 </div></div>
 <div class="findings-stack" data-sev-panel="p0"><article class="finding case empty is-empty open" data-pri="P0"><header class="finding-head case-head"><span class="sev p0">P0</span><h3 data-zh="无" data-en="None">无</h3></header><div class="finding-body case-body"><p class="muted pad" data-zh="无此项。" data-en="None.">无此项。</p></div></article></div>
-<div class="findings-stack" data-sev-panel="p1"><article class="finding case p1" data-pri="P1"><header class="finding-head case-head" role="button" tabindex="0" aria-expanded="false"><span class="sev p1">P1</span><h3 data-zh="支付回调空指针未防护" data-en="Unhandled NPE on payment callback">支付回调空指针未防护</h3><span class="chev" aria-hidden="true"></span></header><div class="finding-body case-body"><div class="field"><span class="field-k" data-zh="位置" data-en="Location">位置</span><div class="field-v is-path" data-zh="src/PayService.java:88" data-en="src/PayService.java:88">src/PayService.java:88</div></div><div class="field"><span class="field-k" data-zh="变更" data-en="Change">变更</span><div class="field-v is-cat"><span data-zh="未纳入本次 diff（既有代码）" data-en="Not in this diff (existing code)">未纳入本次 diff（既有代码）</span></div></div><div class="field"><span class="field-k" data-zh="分类" data-en="Category">分类</span><div class="field-v is-cat"><span data-zh="正确性" data-en="correctness">正确性</span></div></div><div class="field"><span class="field-k" data-zh="风险" data-en="Risk">风险</span><div class="field-v " data-zh="callback 在 amount 为空时直接解引用，会导致主路径 NPE。" data-en="Callback dereferences null amount and NPE on main path.">callback 在 amount 为空时直接解引用，会导致主路径 NPE。</div></div><div class="field"><span class="field-k" data-zh="依据" data-en="Evidence">依据</span><div class="field-v " data-zh="diffs + on-disk PayService.java:88" data-en="diffs + on-disk PayService.java:88">diffs + on-disk PayService.java:88</div></div><div class="field"><span class="field-k" data-zh="修复建议" data-en="Fix">修复建议</span><div class="field-v " data-zh="在解引用前校验 amount 并返回明确错误。" data-en="Null-check amount before dereference and return a clear error.">在解引用前校验 amount 并返回明确错误。</div></div></div></article></div>
+<div class="findings-stack" data-sev-panel="p1"><article class="finding case p1" id="D-001" data-pri="P1"><header class="finding-head case-head" role="button" tabindex="0" aria-expanded="false"><span class="sev p1">P1</span><span class="detect llm" data-zh="LLM检出" data-en="LLM">LLM检出</span><span class="defect-id">D-001</span><h3 data-zh="支付回调空指针未防护" data-en="Unhandled NPE on payment callback">支付回调空指针未防护</h3><span class="chev" aria-hidden="true"></span></header><div class="finding-body case-body"><div class="field"><span class="field-k" data-zh="位置" data-en="Location">位置</span><div class="field-v is-path" data-zh="src/PayService.java" data-en="src/PayService.java">src/PayService.java</div></div><div class="field"><span class="field-k" data-zh="问题描述" data-en="Message">问题描述</span><div class="field-v " data-zh="callback 在 amount 为空时直接解引用，会导致主路径 NPE。" data-en="Callback dereferences null amount and NPE on main path.">callback 在 amount 为空时直接解引用，会导致主路径 NPE。</div></div><div class="field"><span class="field-k" data-zh="修复建议" data-en="Recommendation">修复建议</span><div class="field-v " data-zh="在解引用前校验 amount 并返回明确错误。" data-en="Null-check amount before dereference and return a clear error.">在解引用前校验 amount 并返回明确错误。</div></div><details class="fold"><summary data-zh="调用链与分类" data-en="Call chain and category">调用链与分类</summary><div class="field"><span class="field-k" data-zh="变更" data-en="Change">变更</span><div class="field-v is-cat"><span data-zh="未纳入本次 diff（既有代码）" data-en="Not in this diff (existing code)">未纳入本次 diff（既有代码）</span></div></div><div class="field"><span class="field-k" data-zh="分类" data-en="Category">分类</span><div class="field-v is-cat"><span data-zh="正确性" data-en="correctness">正确性</span></div></div><div class="field"><span class="field-k" data-zh="调用链路" data-en="Call chain">调用链路</span><div class="field-v is-chain"><div class="call-chain"><div class="chain-title" data-zh="未记录调用方" data-en="No caller recorded">未记录调用方</div><p data-zh="图里没有记下指向这一行的调用边。这不是僵尸函数。这一行可能是注释、导入，或由命令行直接进入。" data-en="The graph did not record a caller into this line. That does not make it a dead function. The line may be a comment, an import, or a command-line entry.">图里没有记下指向这一行的调用边。这不是僵尸函数。这一行可能是注释、导入，或由命令行直接进入。</p></div></div></div></details></div></article></div>
 <div class="findings-stack" data-sev-panel="p2"><article class="finding case empty is-empty open" data-pri="P2"><header class="finding-head case-head"><span class="sev p2">P2</span><h3 data-zh="无" data-en="None">无</h3></header><div class="finding-body case-body"><p class="muted pad" data-zh="无此项。" data-en="None.">无此项。</p></div></article></div>
 </section>
+<details class="fold dim-fold"><summary data-zh="维度与调用链" data-en="Dimensions and call chains">维度与调用链</summary>
+<section><h2 data-zh="模型语义评审" data-en="Agent LLM judgment">模型语义评审</h2>
+<div class="field"><span class="field-k" data-zh="结论" data-en="Verdict">结论</span><div class="field-v is-cat"><span data-zh="需关注" data-en="concern">需关注</span></div></div><div class="field"><span class="field-k" data-zh="风险说明" data-en="Risk">风险说明</span><div class="field-v " data-zh="合并后仍有 1 个新颖语义问题：空指针路径未处理。" data-en="After merge, 1 novel semantic issue remains: unhandled NPE path.">合并后仍有 1 个新颖语义问题：空指针路径未处理。</div></div><div class="field"><span class="field-k" data-zh="新颖问题数" data-en="Novel findings">新颖问题数</span><div class="field-v " data-zh="1" data-en="1">1</div></div><div class="field"><span class="field-k" data-zh="去重合并数" data-en="Deduped">去重合并数</span><div class="field-v " data-zh="2" data-en="2">2</div></div><div class="field"><span class="field-k" data-zh="enrich 数" data-en="Enriched">enrich 数</span><div class="field-v " data-zh="1" data-en="1">1</div></div><div class="field"><span class="field-k" data-zh="审阅焦点" data-en="Focus">审阅焦点</span><div class="field-v " data-zh="src/PayService.java (diff hunk)" data-en="src/PayService.java (diff hunk)">src/PayService.java (diff hunk)</div></div><div class="field"><span class="field-k" data-zh="依据" data-en="Evidence">依据</span><div class="field-v " data-zh="22-llm-judgment.json + host-agent LLM pass" data-en="22-llm-judgment.json + host-agent LLM pass">22-llm-judgment.json + host-agent LLM pass</div></div><div class="field"><span class="field-k" data-zh="信号文件" data-en="Signals file">信号文件</span><div class="field-v is-path" data-zh="22-llm-judgment.json" data-en="22-llm-judgment.json">22-llm-judgment.json</div></div></section>
+</details>
 <section><h2 data-zh="回归必测清单" data-en="Regression must-test">回归必测清单</h2>
 <p class="muted" data-zh="目标列写清可执行场景（入口/条件/期望）；证据列用通俗依据，勿只填符号 UUID 或证据包路径。" data-en="Write executable scenarios (entry/conditions/expected result). Evidence should be plain language — not only UUIDs or pack paths.">目标列写清可执行场景（入口/条件/期望）；证据列用通俗依据，勿只填符号 UUID 或证据包路径。</p>
 <div class="table-wrap"><table><thead><tr><th data-zh="回归测试场景" data-en="Regression scenario">回归测试场景</th><th data-zh="为什么必测" data-en="Why required">为什么必测</th><th data-zh="依据说明" data-en="Evidence">依据说明</th></tr></thead><tbody>
 <tr><td colspan="3" class="muted" data-zh="无" data-en="None">无</td></tr>
 </tbody></table></div></section>
-<section><h2 data-zh="测试缺口" data-en="Test gaps">测试缺口</h2>
-<p class="muted" data-zh="统计口径：看调用图里该生产符号是否被测试覆盖边罩住——tested_count&gt;0 或 tests-reach 非空才算已测。这不是「仓库有没有 tests 目录 / 有没有单测文件」。测试文件里普通调用了函数、或文件名带 test，都不算覆盖。因此可能出现：仓库里已有测试代码，但图上仍记为缺口。" data-en="Criterion: a production symbol counts as tested only when the call graph has a tests coverage edge (tested_count&gt;0 or non-empty tests-reach). This is not about whether a tests/ folder or unit-test files exist. Ordinary calls from test files, or test-like filenames, do not count as coverage. So the repo may already have tests while the graph still shows a gap.">统计口径：看调用图里该生产符号是否被测试覆盖边罩住——tested_count>0 或 tests-reach 非空才算已测。这不是「仓库有没有 tests 目录 / 有没有单测文件」。测试文件里普通调用了函数、或文件名带 test，都不算覆盖。因此可能出现：仓库里已有测试代码，但图上仍记为缺口。</p>
-<div class="table-wrap"><table><thead><tr><th data-zh="符号" data-en="Symbol">符号</th><th>tested_count</th><th>tests-reach</th><th data-zh="说明" data-en="Notes">说明</th></tr></thead><tbody>
-<tr><td colspan="4" class="muted" data-zh="无" data-en="None">无</td></tr>
-</tbody></table></div>
-<p class="muted lede"><span data-zh="敏感路径：" data-en="Sensitive paths: ">敏感路径：</span><span data-zh="None" data-en="None">None</span></p></section>
-<footer><span data-zh="由技能 codexqa-code-reviewer · CodexQA CLI · scripts/render-review-html.sh 生成" data-en="Generated by skill codexqa-code-reviewer · CodexQA CLI · scripts/render-review-html.sh">由技能 codexqa-code-reviewer · CodexQA CLI · scripts/render-review-html.sh 生成</span> · <span class="path">/tmp/tmp.cR2vg54EZz</span></footer>
+<section><h2 data-zh="敏感路径" data-en="Sensitive paths">敏感路径</h2>
+<p class="muted lede"><span data-zh="None" data-en="None">None</span></p></section>
+<footer><span data-zh="由技能 codexqa-code-reviewer · CodexQA CLI · scripts/render-review-html.sh 生成" data-en="Generated by skill codexqa-code-reviewer · CodexQA CLI · scripts/render-review-html.sh">由技能 codexqa-code-reviewer · CodexQA CLI · scripts/render-review-html.sh 生成</span> · <span class="path">evals/fixtures/conclusion</span></footer>
 </div>
 <script>
 (function(){
@@ -381,6 +375,9 @@ footer { margin-top: 8px; color: var(--muted); font-size: 12px; text-align: cent
     });
     document.querySelectorAll('[data-zh-placeholder][data-en-placeholder]').forEach(el => {
       el.setAttribute('placeholder', el.getAttribute(lang === 'en' ? 'data-en-placeholder' : 'data-zh-placeholder') || '');
+    });
+    document.querySelectorAll('[data-zh-alt][data-en-alt]').forEach(el => {
+      el.setAttribute('alt', el.getAttribute(lang === 'en' ? 'data-en-alt' : 'data-zh-alt') || '');
     });
   }
 
