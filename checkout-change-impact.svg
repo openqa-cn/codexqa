@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1480" height="860" viewBox="0 0 1480 860" role="img" aria-label="Checkout change impact and test coverage">
+  <defs>
+    <filter id="shadow" x="-10%" y="-12%" width="124%" height="140%">
+      <feDropShadow dx="0" dy="2.5" stdDeviation="3.2" flood-color="#141413" flood-opacity="0.09"/>
+    </filter>
+    <style>
+      .bg { fill: #FAF9F5; }
+      .frame { fill: #FAF9F5; stroke: #E8E6DE; stroke-width: 1.5; }
+      .hdr { font: 500 14px "Noto Sans", "Helvetica Neue", sans-serif; fill: #87867F; }
+      .hdr-change { fill: #C96E52; }
+      .title { font: 600 15px "Source Code Pro", ui-monospace, monospace; fill: #141413; }
+      .sub { font: 400 12.5px "Noto Sans", "Helvetica Neue", sans-serif; fill: #87867F; }
+      .pill-text { font: 500 11px "Noto Sans", "Helvetica Neue", sans-serif; fill: #78766E; text-anchor: middle; dominant-baseline: central; }
+      .edge { fill: none; stroke: #B4B2A8; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+      .dash { stroke-dasharray: 5.5 5; }
+      .card { stroke: #D1CFC5; stroke-width: 1.1; filter: url(#shadow); }
+    </style>
+  </defs>
+  <rect class="bg" width="1480" height="860"/>
+  <rect class="frame" x="28" y="28" width="1424" height="804" rx="24"/>
+  <text class="hdr" x="64" y="70">Entry — risk</text>
+  <text class="hdr" x="400" y="70">Impact — regression</text>
+  <text class="hdr hdr-change" x="736" y="70">Changed — this change</text>
+  <text class="hdr" x="64" y="482">Tests — coverage</text>
+  <path class="edge" d="M 344.0,254.0 L 372.0,254.0 L 372.0,218.0 L 400.0,128.0"/>
+  <path class="edge" d="M 372.0,218.0 L 400.0,308.0"/>
+  <path class="edge" d="M 680.0,128.0 L 708.0,128.0"/>
+  <path class="edge" d="M 680.0,308.0 L 708.0,308.0"/>
+  <path class="edge" d="M 708.0,128.0 L 708.0,308.0"/>
+  <path class="edge" d="M 708.0,128.0 L 736.0,128.0"/>
+  <path class="edge" d="M 708.0,308.0 L 736.0,308.0"/>
+  <path class="edge" d="M 1016.0,128.0 L 1048.0,128.0 L 1048.0,96.0 L 1072.0,96.0"/>
+  <path class="edge" d="M 1048.0,128.0 L 1048.0,192.0 L 1072.0,192.0"/>
+  <path class="edge" d="M 1016.0,308.0 L 1072.0,308.0"/>
+  <path class="edge dash" d="M 876.0,348.0 L 876.0,430.0 L 440.0,430.0"/>
+  <path class="edge dash" d="M 440.0,430.0 L 440.0,540.0 L 404.0,540.0"/>
+  <path class="edge dash" d="M 440.0,430.0 L 440.0,644.0 L 404.0,644.0"/>
+  <g>
+    <rect class="card" x="64" y="214" width="280" height="80" rx="14" fill="#FFFFFF"/>
+    <circle cx="86" cy="242" r="5" fill="#141413"/>
+    <text class="title" x="100" y="246">POST /orders</text>
+    <text class="sub" x="100" y="268">create or preview</text>
+  </g>
+  <g>
+    <rect class="card" x="400" y="88" width="280" height="80" rx="14" fill="#FFFFFF"/>
+    <circle cx="422" cy="116" r="5" fill="#141413"/>
+    <text class="title" x="436" y="120">checkout</text>
+    <text class="sub" x="436" y="142">place-order path</text>
+  </g>
+  <g>
+    <rect class="card" x="400" y="268" width="280" height="80" rx="14" fill="#FFFFFF"/>
+    <circle cx="422" cy="296" r="5" fill="#141413"/>
+    <text class="title" x="436" y="300">previewOrder</text>
+    <text class="sub" x="436" y="322">preview-order path</text>
+  </g>
+  <g>
+    <rect class="card" x="736" y="88" width="280" height="80" rx="14" fill="#FDF4EC"/>
+    <circle cx="758" cy="116" r="5" fill="#D97757"/>
+    <text class="title" x="772" y="120">verify_jwt</text>
+    <text class="sub" x="772" y="142">checkExpiry / claims</text>
+  </g>
+  <g>
+    <rect class="card" x="736" y="268" width="280" height="80" rx="14" fill="#F4F7F0"/>
+    <circle cx="758" cy="296" r="5" fill="#788C5D"/>
+    <text class="title" x="772" y="300">applyDiscount</text>
+    <text class="sub" x="772" y="322">tiered · GOLD 20%</text>
+  </g>
+  <g>
+    <rect class="card" x="1072" y="56" width="280" height="80" rx="14" fill="#FDF4EC"/>
+    <circle cx="1094" cy="84" r="5" fill="#D97757"/>
+    <text class="title" x="1108" y="88">parse_token</text>
+    <text class="sub" x="1108" y="110">unwrap() + Result</text>
+  </g>
+  <g>
+    <rect class="card" x="1072" y="152" width="280" height="80" rx="14" fill="#FDF4EC"/>
+    <circle cx="1094" cy="180" r="5" fill="#D97757"/>
+    <text class="title" x="1108" y="184">token_cache</text>
+    <text class="sub" x="1108" y="206">LRU cap 256</text>
+  </g>
+  <g>
+    <rect class="card" x="1072" y="268" width="280" height="80" rx="14" fill="#F4F7F0"/>
+    <circle cx="1094" cy="296" r="5" fill="#788C5D"/>
+    <text class="title" x="1108" y="300">cartTotal</text>
+    <text class="sub" x="1108" y="322">float + integer cents</text>
+  </g>
+  <g>
+    <rect class="card" x="64" y="500" width="340" height="80" rx="14" fill="#F4F7F0"/>
+    <circle cx="86" cy="528" r="5" fill="#788C5D"/>
+    <text class="title" x="100" y="532">checkout_applies_discount</text>
+    <text class="sub" x="100" y="554">assert 20% for GOLD</text>
+  </g>
+  <g>
+    <rect class="card" x="64" y="604" width="340" height="80" rx="14" fill="#F4F7F0"/>
+    <circle cx="86" cy="632" r="5" fill="#788C5D"/>
+    <text class="title" x="100" y="636">discount_boundary_50</text>
+    <text class="sub" x="100" y="658">assert boundary at 50</text>
+  </g>
+  <circle cx="372" cy="218.0" r="5" fill="#fff" stroke="#B4B2A8" stroke-width="1.2"/>
+  <circle cx="708" cy="218.0" r="5" fill="#fff" stroke="#B4B2A8" stroke-width="1.2"/>
+  <circle cx="1048" cy="128.0" r="5" fill="#fff" stroke="#B4B2A8" stroke-width="1.2"/>
+  <circle cx="440" cy="430" r="5" fill="#fff" stroke="#B4B2A8" stroke-width="1.2"/>
+  <rect x="336.0" y="245.0" width="44" height="18" rx="9" fill="#fff" stroke="#D1CFC5"/>
+  <text class="pill-text" x="358.0" y="254.0">calls</text>
+  <rect x="672.0" y="119.0" width="44" height="18" rx="9" fill="#fff" stroke="#D1CFC5"/>
+  <text class="pill-text" x="694.0" y="128.0">calls</text>
+  <rect x="1016.0" y="119.0" width="44" height="18" rx="9" fill="#fff" stroke="#D1CFC5"/>
+  <text class="pill-text" x="1038.0" y="128.0">calls</text>
+  <rect x="1022.0" y="299.0" width="44" height="18" rx="9" fill="#fff" stroke="#D1CFC5"/>
+  <text class="pill-text" x="1044.0" y="308.0">calls</text>
+  <rect x="636.0" y="421" width="44" height="18" rx="9" fill="#fff" stroke="#D1CFC5"/>
+  <text class="pill-text" x="658.0" y="430">tests</text>
+</svg>
