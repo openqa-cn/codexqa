@@ -806,13 +806,13 @@ html[data-lang="zh"] .unit-en {{ display:none; }}
 </div>
 <div class="wrap">
   <header class="hero">
-    <p class="kicker">codexqa-testcase-generator · V56 · case report v{SCRIPT_VERSION}</p>
+    <p class="kicker">codexqa-testcase-generator · V56 · {_bi('用例报告', 'case report')} v{SCRIPT_VERSION}</p>
     <h1>{_bi('测试用例生成报告', 'Test Case Generation Report')}
       <span class="total-pill">{stats['total']} <span class="unit-zh">条</span><span class="unit-en"> cases</span></span>
     </h1>
     <p class="sub">{_esc(project_name)} · {_bi('聚合 Web / 服务端 / APP 三类用例集', 'Aggregates Web / Server / APP case sets')}</p>
     <div class="meta-row">
-      <span>Run ID: <code>{_esc(runid or run_dir.name)}</code></span>
+      <span>{_bi('运行 ID', 'Run ID')}: <code>{_esc(runid or run_dir.name)}</code></span>
       <span>{_bi('运行目录', 'Run dir')}: <code>{_esc(str(run_dir))}</code></span>
       <span>{_bi('正式方案', 'Formal plan')}: {plan_note}</span>
       <span>{_bi('生成时间', 'Generated at')}: {_esc(generated)}</span>

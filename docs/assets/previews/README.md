@@ -11,7 +11,7 @@ Sample HTML used as screenshots in the repository README. Most are **illustratio
 | `code-analyzer.html` / `.png` | `codexqa-code-analyzer` | Wrapper around published `checkout-change-impact.svg` |
 | `rootcause.html` / `.png` | `codexqa-rootcause-analyzer` | Bilingual RCA sample (English `report.md` headings + Chinese twins); native delivery is Markdown + `report.html` |
 | `ra-register.html` / `.png` | `codexqa-requirement-analyzer` | Sample gap/conflict register |
-| `testcase-report.html` / `.png` | `codexqa-testcase-generator` | `generate_case_report.py --run-dir` (Web / Server / APP aggregate) |
+| `testcase-report.html` / `.png` | `codexqa-testcase-generator` | `generate_case_report.py --run-dir` (Web / Server / APP aggregate). `.png` is the Chinese homepage. `testcase-report-en.png` is the same page with EN selected; the root English README uses that shot |
 | `testdata-writeback.html` / `.png` | `codexqa-testdata-generator` | `{placeholder}` replaced with a backend-returned id |
 | `testcase-sample.html` / `.png` | `codexqa-testcase-generator` | Extra: one V56 server-end case table |
 | `jev-report.html` / `.png` | `codexqa-jev-browser` | Real run `20260923-150451` (Baidu search → Ctrip domestic round trip). PNG is the full page with the case open, Chinese, light theme. Step shots and `recording.mp4` sit under `jev-report/` |

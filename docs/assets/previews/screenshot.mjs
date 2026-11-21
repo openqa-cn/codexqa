@@ -178,6 +178,23 @@ const shots = [
       document.querySelectorAll('[data-set-theme]').forEach(function(b){
         b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
       });
+      var zh=document.querySelector('[data-set-lang="zh"]');
+      if(zh) zh.click();
+      var first=document.querySelector('.case[data-pri="P0"]');
+      if(first) first.classList.add('open');
+      window.scrollTo(0,0);
+    `,
+  },
+  {
+    html: "testcase-report.html",
+    png: "testcase-report-en.png",
+    prepare: `
+      document.documentElement.setAttribute('data-theme','light');
+      document.querySelectorAll('[data-set-theme]').forEach(function(b){
+        b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
+      });
+      var en=document.querySelector('[data-set-lang="en"]');
+      if(en) en.click();
       var first=document.querySelector('.case[data-pri="P0"]');
       if(first) first.classList.add('open');
       window.scrollTo(0,0);

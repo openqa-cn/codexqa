@@ -95,7 +95,7 @@ GitHub is the skill source; product site: [openqa.cn](https://openqa.cn/?utm_sou
 <p><strong><a href="skills/codexqa-testcase-generator/README.md">codexqa-testcase-generator</a></strong></p>
 <p><strong>Verifies</strong> — what a complete test pass should cover for Web / server / APP, without inventing business facts when the PRD is silent.</p>
 <p><strong>Does</strong> — local Markdown plan + cases (unknowns stay TBD) plus an aggregated HTML you can open. No test-management platform.</p>
-<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testcase-report.html"><img src="docs/assets/previews/testcase-report.png" alt="codexqa-testcase-generator aggregated HTML case report"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/testcase-report.html"><img src="docs/assets/previews/testcase-report-en.png" alt="codexqa-testcase-generator aggregated HTML case report"></a></p>
 </td>
 <td width="50%" valign="top">
 <p><strong><a href="skills/codexqa-testdata-generator/README.md">codexqa-testdata-generator</a></strong></p>
