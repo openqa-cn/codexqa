@@ -109,7 +109,7 @@ GitHub is the skill source; product site: [openqa.cn](https://openqa.cn/?utm_sou
 <p><strong><a href="skills/codexqa-jev-browser/README.md">codexqa-jev-browser</a></strong> · <a href="https://github.com/openqa-cn/jev-browser">Jev Browser repo</a></p>
 <p><strong>Verifies</strong> — whether a browser flow reaches the visible evidence named in the goal. A model's DONE is not a pass.</p>
 <p><strong>Does</strong> — drives Playwright Chromium from a page index (role, name, allowed operations). Replays YAML, Markdown, or API cases, or generates a case from a goal. Each run writes <code>reports/&lt;run-id&gt;/report.html</code> with the marked screenshot and the step result.</p>
-<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/jev-report.html"><img src="docs/assets/previews/jev-report.png" alt="codexqa-jev-browser HTML execution report"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/jev-report.html"><img src="docs/assets/previews/jev-report-en.png" alt="codexqa-jev-browser HTML execution report"></a></p>
 </td>
 <td width="50%" valign="top">
 <p><strong><a href="skills/codexqa-change-analysis/README.md">codexqa-change-analysis</a></strong></p>

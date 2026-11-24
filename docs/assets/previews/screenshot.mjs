@@ -224,14 +224,24 @@ const shots = [
     fullPage: true,
     prepare: `
       document.documentElement.setAttribute('data-theme','light');
-      document.documentElement.setAttribute('data-lang','zh');
-      document.documentElement.lang='zh-CN';
-      document.querySelectorAll('[data-en]').forEach(function(el){
-        el.textContent = el.getAttribute('data-zh') || '';
+      var zh=document.querySelector('[data-set-lang="zh"]');
+      if(zh) zh.click();
+      document.querySelectorAll('[data-set-theme]').forEach(function(b){
+        b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
       });
-      document.querySelectorAll('[data-set-lang]').forEach(function(b){
-        b.setAttribute('aria-pressed', b.getAttribute('data-set-lang')==='zh' ? 'true' : 'false');
-      });
+      var caseEl=document.querySelector('details.case');
+      if(caseEl) caseEl.open=true;
+      window.scrollTo(0,0);
+    `,
+  },
+  {
+    html: "jev-report.html",
+    png: "jev-report-en.png",
+    fullPage: true,
+    prepare: `
+      document.documentElement.setAttribute('data-theme','light');
+      var en=document.querySelector('[data-set-lang="en"]');
+      if(en) en.click();
       document.querySelectorAll('[data-set-theme]').forEach(function(b){
         b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
       });

@@ -648,6 +648,18 @@ function statusLabel(status: string): string {
   return ({ pass: "PASS", fail: "FAIL", skip: "SKIP", blocked: "BLOCKED" }[status] ?? status).toUpperCase();
 }
 
+function statusHtml(status: string): string {
+  const labels: Record<string, [string, string]> = {
+    pass: ["PASS", "通过"],
+    fail: ["FAIL", "失败"],
+    skip: ["SKIP", "跳过"],
+    blocked: ["BLOCKED", "阻塞"],
+  };
+  const pair = labels[status];
+  if (!pair) return escapeHtml(statusLabel(status));
+  return `<span ${bilingual(pair[0], pair[1])}>${escapeHtml(pair[0])}</span>`;
+}
+
 function suiteChip(report: SuiteReport): { label: string; className: string; icon: string } {
   const t = totals(report);
   const failed = (t.fail ?? 0) + (t.blocked ?? 0);
@@ -714,7 +726,7 @@ function caseHtml(item: CaseResult, index: number, open: boolean, recording?: st
           <small title="${escapeHtml(item.source || item.id)}">${escapeHtml(source)} · <span ${bilingual(stepCountEn, stepCountZh)}>${escapeHtml(stepCountEn)}</span></small>
         </span>
         ${recordingButton(recording)}
-        <span class="pill ${escapeHtml(item.status)}">${escapeHtml(statusLabel(item.status))}</span>
+        <span class="pill ${escapeHtml(item.status)}">${statusHtml(item.status)}</span>
         <span class="time">${escapeHtml(formatDuration(item.durationMs))}</span>
         <span class="chevron"></span>
       </summary>

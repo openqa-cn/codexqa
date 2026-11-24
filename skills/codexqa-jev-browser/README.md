@@ -45,7 +45,7 @@ Typing uses characters the same Jev decision chooses from phrases already in the
 
 Each run writes `reports/<run-id>/report.html`: the case, every step, and the marked screenshot. Open the sample:
 
-<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/jev-report.html"><img src="docs/jev-report.png" alt="Jev Browser HTML execution report" width="640"></a></p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/jev-report.html"><img src="../../docs/assets/previews/jev-report-en.png" alt="Jev Browser HTML execution report" width="640"></a></p>
 
 ## Install
 
@@ -115,7 +115,7 @@ tests/              Offline checks. They do not call a live site or a live model
 agents/openai.yaml  Display name and short description for the Agents surface
 docs/jev-browser-overview.en.jpg English product overview at the top of this README
 docs/jev-browser-overview.jpg    Chinese product overview, used by README.zh-CN.md
-docs/jev-report.png Report screenshot in the Execution report section
+docs/jev-report.png Chinese report screenshot, used by README.zh-CN.md
 reports/            One folder per run. Git ignores it
 ```
 

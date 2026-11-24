@@ -14,7 +14,7 @@ Sample HTML used as screenshots in the repository README. Most are **illustratio
 | `testcase-report.html` / `.png` | `codexqa-testcase-generator` | `generate_case_report.py --run-dir` (Web / Server / APP aggregate). `.png` is the Chinese homepage. `testcase-report-en.png` is the same page with EN selected; the root English README uses that shot |
 | `testdata-writeback.html` / `.png` | `codexqa-testdata-generator` | `{placeholder}` replaced with a backend-returned id |
 | `testcase-sample.html` / `.png` | `codexqa-testcase-generator` | Extra: one V56 server-end case table |
-| `jev-report.html` / `.png` | `codexqa-jev-browser` | Real run `20260923-150451` (Baidu search → Ctrip domestic round trip). PNG is the full page with the case open, Chinese, light theme. Step shots and `recording.mp4` sit under `jev-report/` |
+| `jev-report.html` / `.png` | `codexqa-jev-browser` | Real run `20260923-150451` (Baidu search → Ctrip domestic round trip). `.png` is the full page with the case open, Chinese, light theme. `jev-report-en.png` is the same page with EN selected; the root English README uses that shot. Step shots and `recording.mp4` sit under `jev-report/` |
 
 Rebuild illustration HTML (except `review-report.html` and `testcase-report.html`):
 
