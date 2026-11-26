@@ -9,7 +9,7 @@ Sample HTML used as screenshots in the repository README. Most are **illustratio
 | `code-wiki.html` / `.png` | `codexqa-code-wiki` | `render-code-wiki.mjs`: the skill's own renderer on its test fixture (a real `wiki inputs` export of this repo plus written `notes.json`); PNG is a **4:3** crop (`1280×960`), Chinese homepage |
 | `code-wiki-en.html` / `.png` | `codexqa-code-wiki` | Same export and renderer with `notes.en.json` (`"lang": "en"`). PNG is the English homepage at the same **4:3** crop. The root English README uses this shot |
 | `code-analyzer.html` / `.png` | `codexqa-code-analyzer` | Wrapper around published `checkout-change-impact.svg` |
-| `change-impact.html` / `.png` | `codexqa-change-analysis` | Filled copy of `assets/report-template.html` (inventory-service hold and refund). The report body is English. PNG is a **4:3** crop of the homepage. Root README sections use this shot |
+| `change-impact.html` / `.png` | `codexqa-change-analysis` | Homepage illustration in the shared light report chrome (inventory-service hold and refund). The skill template itself stays the terminal skin. The report body is English. PNG is a **4:3** crop. Root README sections use this shot |
 | `rootcause.html` / `.png` | `codexqa-rootcause-analyzer` | Bilingual RCA sample (English `report.md` headings + Chinese twins); native delivery is Markdown + `report.html` |
 | `ra-register.html` / `.png` | `codexqa-requirement-analyzer` | Sample gap/conflict register |
 | `testcase-report.html` / `.png` | `codexqa-testcase-generator` | `generate_case_report.py --run-dir` (Web / Server / APP aggregate). `.png` is the Chinese homepage. `testcase-report-en.png` is the same page with EN selected; the root English README uses that shot |

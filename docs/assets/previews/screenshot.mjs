@@ -160,7 +160,13 @@ const shots = [
   {
     html: "change-impact.html",
     png: "change-impact.png",
-    prepare: `window.scrollTo(0,0);`,
+    prepare: `
+      document.documentElement.setAttribute('data-theme','light');
+      document.querySelectorAll('[data-set-theme]').forEach(function(b){
+        b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
+      });
+      window.scrollTo(0,0);
+    `,
   },
   {
     html: "ra-register.html",
