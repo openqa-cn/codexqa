@@ -251,7 +251,7 @@ const shots = [
         b.setAttribute('aria-pressed', b.getAttribute('data-set-theme')==='light' ? 'true' : 'false');
       });
       var caseEl=document.querySelector('details.case');
-      if(caseEl) caseEl.open=true;
+      if(caseEl) caseEl.open=false;
       window.scrollTo(0,0);
     `,
   },
