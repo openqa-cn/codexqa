@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Change impact analysis · inventory-service</title>
+<style>
+  /* Do not edit the <style> in this file. Change only text and rows inside body.
+     Diagram: the template ships a <pre class="mermaid"> source plus a loader at the end, for drafting only.
+     Before delivery, render a static inline SVG as references/report.md "Diagrams must be static" describes, and delete the loader.
+     Archive the source only with <script type="text/plain" class="diagram-source">.
+     Do not use an HTML comment — Mermaid edges are -->, which close the comment early and print the source on the page. */
+  :root {
+    /* anthropic / claude-code palette — same tokens as official session-report */
+    --ivory: #FAF9F5;
+    --term-bg: #1a1918;
+    --term-fg: #d1cfc5;
+    --titlebar: #252321;
+    --outline: rgba(255,255,255,0.08);
+    --hover: rgba(255,255,255,0.035);
+    --clay: #D97757;
+    --dim: rgb(136,136,136);
+    --subtle: rgb(80,80,80);
+    --green: rgb(78,186,101);
+    --red: rgb(255,107,128);
+    --blue: rgb(177,185,249);
+    --yellow: rgb(255,193,7);
+    --mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, Monaco, monospace;
+    --sans: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { background: var(--ivory); }
+  body {
+    margin: 0; padding: 48px 24px 80px;
+    font: 14px/1.7 var(--sans);
+    font-variant-numeric: tabular-nums;
+    color: var(--term-fg);
+  }
+
+  /* ——— terminal window chrome ——— */
+  .term {
+    max-width: 1180px; margin: 0 auto;
+    background: var(--term-bg);
+    border-radius: 8px;
+    outline: 1px solid var(--outline);
+    box-shadow: 0 20px 60px rgba(20,20,19,0.22);
+  }
+  .titlebar {
+    background: var(--titlebar);
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid var(--outline);
+    padding: 11px 14px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .titlebar .dot { width: 11px; height: 11px; border-radius: 50%; background: #3a3836; }
+  .titlebar .path { margin-left: 14px; color: var(--dim); font-size: 11px; font-family: var(--mono); }
+  .term-body { padding: 22px 30px 30px; }
+
+  /* ——— command + hero ——— */
+  .cmd { color: var(--dim); margin-bottom: 6px; font-family: var(--mono); font-size: 12px; }
+  .cmd .prompt { color: var(--clay); }
+  .cmd .flag { color: var(--blue); }
+  #meta-line { color: var(--subtle); font-size: 12px; }
+
+  #hero { margin: 14px 0 6px; }
+  #hero-total { font-size: 52px; font-weight: 700; line-height: 1; font-family: var(--mono); }
+  #hero-total .unit { color: var(--clay); font-size: 22px; margin-left: 6px; }
+  #hero-total .label { font-size: 16px; font-weight: 400; color: var(--dim); margin-left: 8px; font-family: var(--sans); }
+  #hero-split { color: var(--dim); margin-top: 10px; }
+  #hero-split b { color: var(--term-fg); font-weight: 500; }
+  #hero-split .ok { color: var(--green); }
+  #hero-split .warn { color: var(--yellow); }
+  #hero-split .bad { color: var(--red); }
+
+  .howto {
+    margin: 14px 0 4px; padding: 10px 14px;
+    border-left: 2px solid var(--clay);
+    color: var(--dim); font-size: 13px;
+  }
+  .howto b { color: var(--term-fg); font-weight: 500; }
+
+  /* ——— sections ——— */
+  section { margin-top: 26px; }
+  .hr { color: var(--subtle); overflow: hidden; white-space: nowrap;
+        user-select: none; margin-bottom: 8px; font-family: var(--mono); }
+  .hr::after { content: '────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────'; }
+  h2 { all: unset; display: block; color: var(--clay); font-weight: 500; }
+  h2::before { content: '▸ '; font-family: var(--mono); }
+  h2 .hint { color: var(--subtle); font-size: 12px; font-weight: 400; margin-left: 10px; }
+  .section-body { margin-top: 10px; }
+
+  /* ——— overall stat grid ——— */
+  #overall-grid { display: grid; gap: 4px 28px;
+                  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .stat { padding: 4px 0; }
+  .stat .label { font-size: 12px; color: var(--dim); }
+  .stat .val { font-size: 22px; font-weight: 500; font-family: var(--mono); }
+  .stat .detail { font-size: 12px; color: var(--subtle); }
+  .stat .val.ok { color: var(--green); }
+  .stat .val.warn { color: var(--yellow); }
+  .stat .val.bad { color: var(--red); }
+
+  /* ——— takeaways ——— */
+  .take { display: grid; grid-template-columns: 9ch 1fr; gap: 18px;
+          padding: 8px 0; align-items: baseline; }
+  .take .fig { text-align: right; font-weight: 700; font-size: 15px; font-family: var(--mono); }
+  .take .txt { color: var(--dim); }
+  .take .txt b { color: var(--term-fg); font-weight: 500; }
+  .take.bad  .fig { color: var(--red); }
+  .take.good .fig { color: var(--green); }
+  .take.info .fig { color: var(--blue); }
+
+  /* ——— callouts ——— */
+  .callout { padding: 8px 0 8px 14px; border-left: 2px solid var(--subtle);
+             color: var(--dim); margin: 8px 0; }
+  .callout b, .callout code { color: var(--term-fg); }
+  .callout.risk { border-left-color: var(--clay); }
+  .callout.ok { border-left-color: var(--green); }
+  .callout .why { display: block; margin-top: 4px; font-size: 12px; color: var(--subtle); }
+
+  /* ——— ivory insets: diagram paper ——— */
+  .diagram {
+    margin: 8px 0 12px; padding: 12px 14px;
+    background: #FAF9F5; color: #1a1918;
+    border-radius: 6px; font-size: 13px; overflow-x: auto;
+  }
+  .diagram .mermaid { margin: 0; }
+  .mermaid-svg svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+  .diagram-meta { margin-top: 10px; color: #87867F; font-size: 12px; }
+  .diagram-meta div { padding: 1px 0; }
+
+  .prose { color: var(--dim); }
+  .prose p { margin: 0 0 10px; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose b, .prose strong { color: var(--term-fg); font-weight: 500; }
+
+  /* ——— badges ——— */
+  .tag {
+    display: inline-block; padding: 0 6px; margin-right: 4px;
+    border: 1px solid var(--subtle); border-radius: 3px;
+    font-size: 11px; color: var(--dim); white-space: nowrap;
+  }
+  .tag.entry  { border-color: var(--green); color: var(--green); }   /* entry */
+  .tag.mid    { border-color: var(--subtle); color: var(--dim); }    /* intermediate */
+  .tag.risk   { border-color: var(--clay); color: var(--clay); }     /* sensitive / risk */
+
+  /* ——— subheads inside a section (new coverage / regression groups) ——— */
+  .subhead { margin: 18px 0 4px; color: var(--term-fg); font-weight: 500; font-size: 13px; }
+  .subhead::before { content: '· '; color: var(--clay); font-family: var(--mono); }
+  .subhead .subhint { color: var(--subtle); font-weight: 400; font-size: 12px; margin-left: 8px; }
+
+  /* ——— tables ——— */
+  .scroll { overflow-x: auto;
+            border-top: 1px solid var(--outline); border-bottom: 1px solid var(--outline); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 10px; vertical-align: top; }
+  td { border-top: 1px solid rgba(255,255,255,0.04); }
+  th { position: sticky; top: 0; background: var(--term-bg); z-index: 1;
+       font-weight: 500; font-size: 12px; color: var(--subtle);
+       user-select: none;
+       border-bottom: 1px solid var(--outline); }
+  td.num, th.num { text-align: right; font-family: var(--mono); }
+  td.mono { font-family: var(--mono); font-size: 12px; }
+  tbody tr:hover td { background: var(--hover); }
+
+  footer { margin-top: 28px; color: var(--subtle); font-size: 12px;
+           display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  code { color: var(--blue); font-family: var(--mono); font-size: 12px; }
+  a { color: var(--clay); }
+  ::selection { background: var(--clay); color: var(--term-bg); }
+
+  @media (max-width: 760px) {
+    body { padding: 20px 12px 48px; }
+    .term-body { padding: 16px 16px 24px; }
+    #hero-total { font-size: 36px; }
+    .take { grid-template-columns: 7ch 1fr; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="term">
+  <div class="titlebar">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span class="path" id="title-path">inventory-service — change impact analysis</span>
+  </div>
+  <div class="term-body">
+
+    <div class="cmd"><span class="prompt">&gt;</span> codexqa-change-analysis <span id="cmd-repo">inventory-service</span> <span class="flag" id="cmd-flags">--diff-base origin/main --full</span></div>
+    <div id="meta-line">baseline origin/main · change 2 files / 2 methods · coverage partially covered · uncovered test points 2</div>
+
+    <!-- Hero number = how many entries this change can reach (reader wording, not analysis wording) -->
+    <div id="hero">
+      <div id="hero-total">3 <span class="unit">entries</span><span class="label">this change can reach</span></div>
+      <div id="hero-split">change <b>2</b> files / <b>2</b> methods (added 0, changed <b>2</b>, deleted 0) · reusable cases <span class="ok">1</span> · coverage <span class="warn">partially covered</span> · uncovered test points <span class="bad">2</span></div>
+    </div>
+
+    <div class="howto" id="howto">
+      <b>How to read:</b> start with Key findings for blast radius and uncovered test points, then Affected entries for which APIs or pages can trigger this change, then the case-file column of the test plan and the coverage verdict — which existing cases can be reused, and which still need to be added, are both there.
+    </div>
+
+    <div id="overall-grid">
+      <div class="stat"><div class="label">Changed files</div><div class="val">2</div><div class="detail">2 production</div></div>
+      <div class="stat"><div class="label">Changed methods</div><div class="val">2</div><div class="detail">added 0 / changed 2 / deleted 0</div></div>
+      <div class="stat"><div class="label">Affected entries</div><div class="val">3</div><div class="detail">2 APIs + 1 page route</div></div>
+      <div class="stat"><div class="label">Reusable cases</div><div class="val ok">1</div><div class="detail">0 of them added this run</div></div>
+      <div class="stat"><div class="label">Uncovered points</div><div class="val bad">2</div><div class="detail">2 with no coverage + 0 with a weak assertion</div></div>
+      <div class="stat"><div class="label">Coverage verdict</div><div class="val warn">partial</div><div class="detail">partially covered</div></div>
+    </div>
+
+    <!-- ====================================================================
+         Key findings — 3 to 5 items. Each item = a fact plus what it means.
+         Write only this change's impact and risk, in business / API language.
+         Do not write analysis criteria or process data (true-entry counts,
+         missing edges, stub ratios, verdict criteria, command names).
+         .bad = uncovered point / contract blast / sensitive path with zero coverage;
+         .good = well covered; .info = nature of the change.
+         .fig is a short label (Gap / Blast / Covered / Nature).
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>Key findings <span class="hint">read these before drilling in</span></h2>
+      <div class="section-body" id="takeaways">
+        <div class="take bad"><div class="fig">Gap</div><div class="txt"><b><code>holdStock</code> can let two last-unit holds both succeed.</b> The check and the reserve are separate writes, and <code>POST /holds</code> has no concurrent case.</div></div>
+        <div class="take bad"><div class="fig">Blast</div><div class="txt"><b><code>resolveRefundAmount</code> can refund more than the remaining balance.</b> <code>POST /refunds</code> returns the requested amount and never caps it.</div></div>
+        <div class="take good"><div class="fig">Covered</div><div class="txt"><b>Hold expiry is already covered.</b> <code>tests/hold-expiry.test.js:18</code> checks that a swept hold frees the unit and the storefront shows it.</div></div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Risks and unknowns — only risks of this change itself: contract
+         compatibility, uncovered sensitive paths, uncertain boundary behavior,
+         places that need a human. State the impact of each one.
+         Do not write method limits, criterion notes, or a confidence statement.
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>Risks and unknowns <span class="hint">risks of this change itself</span></h2>
+      <div class="section-body prose" id="risks">
+        <p><b>Stock can go negative under two concurrent holds.</b> <code>POST /holds</code> still accepts both when only one unit is left.</p>
+        <p><b>A refund can exceed what the customer paid.</b> Callers of <code>POST /refunds</code> see a settled amount the ledger did not cap.</p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Affected entries — an entry is a method with no upstream caller.
+         At least one .diagram. Keep %%{init:...}%%. Change only nodes and edges.
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>Affected entries <span class="hint">which APIs or pages can trigger this change</span></h2>
+      <div class="section-body">
+        <div class="diagram">
+          <div class="mermaid-svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 150" width="760" height="150" role="img" aria-label="Entries that reach the changed methods">
+            <style>text{font:12px ui-monospace,Menlo,monospace;fill:#141413}</style>
+            <rect x="8" y="16" width="210" height="36" rx="6" fill="#F0EEE6" stroke="#D97757" stroke-width="2"/>
+            <text x="113" y="39" text-anchor="middle">POST /holds</text>
+            <rect x="270" y="16" width="210" height="36" rx="6" fill="#FFF3D6" stroke="#E0A800" stroke-width="2"/>
+            <text x="375" y="39" text-anchor="middle">holdStock</text>
+            <rect x="8" y="96" width="210" height="36" rx="6" fill="#F0EEE6" stroke="#D97757" stroke-width="2"/>
+            <text x="113" y="119" text-anchor="middle">POST /refunds</text>
+            <rect x="270" y="96" width="230" height="36" rx="6" fill="#FFF3D6" stroke="#E0A800" stroke-width="2"/>
+            <text x="385" y="119" text-anchor="middle">resolveRefundAmount</text>
+            <path d="M218 34 H270" stroke="#87867F" fill="none"/>
+            <path d="M218 114 H270" stroke="#87867F" fill="none"/>
+          </svg></div>
+          <div class="diagram-meta">
+            <div>Basis: callers of holdStock and resolveRefundAmount</div>
+            <div>Cut off: storefront availability reads stock after the hold</div>
+            <div>What this shows: two APIs reach the two changed methods</div>
+          </div>
+        </div>
+
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Changed method</th><th>Call chain (real callers)</th><th>Reachable entry (file:line)</th><th>Shape</th><th>Verdict</th></tr>
+            </thead>
+            <tbody id="entry-rows">
+              <tr><td>1</td><td class="mono">holdStock</td><td class="mono">createHold → holdStock</td><td class="mono">src/holds.js:22</td><td>API</td><td><span class="tag mid">intermediate</span></td></tr>
+              <tr><td>2</td><td class="mono">resolveRefundAmount</td><td class="mono">postRefund → resolveRefundAmount</td><td class="mono">src/refunds.js:14</td><td>API</td><td><span class="tag mid">intermediate</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout risk" id="entry-extra">
+          <b>Extra entries hit:</b> <code>GET /storefront/availability</code> reads the stock <code>holdStock</code> reserved. The route itself did not change.
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Change list — methods only, not a file inventory (each method has file:line).
+         Four columns only: category / method / file:line / what changed.
+         Category is only added / changed / deleted.
+         Nature of the change (signature, internal-only, test code) goes in "what changed".
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>Change list <span class="hint" id="change-count">added 0 / changed 2 / deleted 0</span></h2>
+      <div class="section-body">
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr><th>Category</th><th>Method</th><th>file:line</th><th>What changed</th></tr>
+            </thead>
+            <tbody id="change-rows">
+              <tr><td>changed</td><td class="mono">holdStock</td><td class="mono">src/inventory.js:49</td><td>Still reads stock, then writes the reserved count. Two overlapping holds of the last unit can both pass.</td></tr>
+              <tr><td>changed</td><td class="mono">resolveRefundAmount</td><td class="mono">src/refund.js:27</td><td>Returns the requested amount. The remaining balance is computed and then ignored.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Test plan — two groups, required:
+         1) points this change must newly cover = behavior this change introduced or altered
+         2) points to regression-test = existing behavior this change might break
+         One group is a rewrite. Reviewers use the split to tell "what to add" from "what must not break".
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>Test plan <span class="hint">cover the new behavior, then keep the old behavior</span></h2>
+      <div class="section-body">
+        <div class="prose" id="testplan-entries">
+          <p><b>Must-test entries:</b> <code>POST /holds</code>, <code>POST /refunds</code>, <code>GET /storefront/availability</code>.</p>
+        </div>
+
+        <div class="subhead">Points this change must newly cover <span class="subhint">behavior this change introduced or altered; disposition is reuse / extend / add, and the case file gives the location</span></div>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>Entry</th><th>Scenario</th><th>Assertion</th><th>Disposition</th><th>Kind</th><th>Case file</th></tr></thead>
+            <tbody id="testplan-new-rows">
+              <tr><td class="mono">POST /holds</td><td>Two last-unit holds at the same time</td><td>Exactly one succeeds; stock never goes negative</td><td>add</td><td>API test</td><td class="mono">scripts/change-impact-tests.mjs:24</td></tr>
+              <tr><td class="mono">POST /refunds</td><td>Requested refund is larger than the remaining balance</td><td>Settled amount is the remaining balance</td><td>add</td><td>API test</td><td class="mono">scripts/change-impact-tests.mjs:41</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="subhead">Points to regression-test <span class="subhint">existing behavior this change might break; same three columns: disposition / kind / case file</span></div>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>Entry / caller</th><th>Why this change can hit it</th><th>Regression assertion</th><th>Disposition</th><th>Kind</th><th>Case file</th></tr></thead>
+            <tbody id="testplan-regression-rows">
+              <tr><td class="mono">GET /storefront/availability</td><td>A swept hold must free the unit the page shows</td><td>Availability returns to 3 after expiry</td><td>reuse</td><td>API test</td><td class="mono">tests/hold-expiry.test.js:18</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout ok" id="testplan-artifact">
+          <b>New case files:</b> <code>scripts/change-impact-tests.mjs</code> (2 cases: 2 passed / 0 skipped) — <b>2 cases, all passed</b>.
+          <!-- Names follow the repo: JS is scripts/change-impact-tests.mjs / -e2e.mjs; Python / Rust / Java use the same idea. See references/generate-cases.md -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Coverage verdict — a sibling of the test plan. Summarize the current cases in three parts:
+         1) how many points existing cases cover; 2) which original gaps the new cases now cover;
+         3) which points still cannot be covered, and why.
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>Coverage verdict <span class="hint">based on the cases as they are now</span></h2>
+      <div class="section-body prose" id="coverage">
+        <p><b>Verdict:</b> partially covered. Existing cases cover 1 point (<code>tests/hold-expiry.test.js</code>).</p>
+        <p><b>Original gaps now covered:</b> none. The two new cases are the first coverage for the last-unit hold and the refund cap.</p>
+        <p><b>Still cannot cover:</b> none.</p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Sensitive paths — a sibling of the test plan. Required when auth / password /
+         payment / stock / user data is hit. Same shape: previous coverage →
+         what the new cases cover → what still cannot be covered, and why.
+         ==================================================================== -->
+    <section>
+      <div class="hr"></div>
+      <h2>Sensitive paths <span class="hint">high-risk surfaces and user-data isolation</span></h2>
+      <div class="section-body prose" id="sensitive">
+        <p><b>Stock.</b> Previously the last-unit race had no case. <code>scripts/change-impact-tests.mjs:24</code> now covers two concurrent holds. Nothing on this path is still uncovered.</p>
+        <p><b>Payment.</b> Previously a refund could exceed the remaining balance with no case. <code>scripts/change-impact-tests.mjs:41</code> now caps it. Nothing on this path is still uncovered.</p>
+      </div>
+    </section>
+
+
+
+    <footer>
+      <div id="foot-left">codexqa-change-analysis · inventory-service · origin/main</div>
+      <div id="foot-right">generated 2026-09-21 14:40</div>
+    </footer>
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -114,6 +114,7 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 <p><strong><a href="skills/codexqa-change-analysis/README.zh-CN.md">codexqa-change-analysis</a></strong></p>
 <p><strong>验证什么</strong> — 针对一次 diff：新增、修改了哪些方法，哪些接口或页面会触发它们，其中哪些路径现有测试没覆盖。</p>
 <p><strong>核心能力</strong> — 写一份自包含的 HTML 变更影响报告（入口、变更清单、测试方案、覆盖判定、敏感路径），并为未覆盖的点新增可运行的测试文件，不改已有测试文件。报告正文为英文。</p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/change-impact.html"><img src="docs/assets/previews/change-impact.png" alt="codexqa-change-analysis HTML 变更影响报告"></a></p>
 </td>
 </tr>
 </table>

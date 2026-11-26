@@ -158,6 +158,11 @@ const shots = [
     `,
   },
   {
+    html: "change-impact.html",
+    png: "change-impact.png",
+    prepare: `window.scrollTo(0,0);`,
+  },
+  {
     html: "ra-register.html",
     png: "ra-register.png",
     prepare: `

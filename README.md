@@ -115,6 +115,7 @@ GitHub is the skill source; product site: [openqa.cn](https://openqa.cn/?utm_sou
 <p><strong><a href="skills/codexqa-change-analysis/README.md">codexqa-change-analysis</a></strong></p>
 <p><strong>Verifies</strong> — for one diff, which methods were added or changed, which APIs or pages can trigger them, and which of those paths no existing test covers.</p>
 <p><strong>Does</strong> — writes one self-contained HTML change-impact report (entries, change list, test plan, coverage verdict, sensitive paths) and adds runnable test files for the uncovered points. Existing test files are not edited.</p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/change-impact.html"><img src="docs/assets/previews/change-impact.png" alt="codexqa-change-analysis HTML change-impact report"></a></p>
 </td>
 </tr>
 </table>
@@ -339,6 +340,7 @@ GitHub 是 skill 源码；产品站点：[openqa.cn](https://openqa.cn/?utm_sour
 <p><strong><a href="skills/codexqa-change-analysis/README.zh-CN.md">codexqa-change-analysis</a></strong></p>
 <p><strong>验证什么</strong> — 针对一次 diff：新增、修改了哪些方法，哪些接口或页面会触发它们，其中哪些路径现有测试没覆盖。</p>
 <p><strong>核心能力</strong> — 写一份自包含的 HTML 变更影响报告（入口、变更清单、测试方案、覆盖判定、敏感路径），并为未覆盖的点新增可运行的测试文件，不改已有测试文件。报告正文为英文。</p>
+<p align="center"><a href="https://htmlpreview.github.io/?https://github.com/openqa-cn/codexqa/blob/main/docs/assets/previews/change-impact.html"><img src="docs/assets/previews/change-impact.png" alt="codexqa-change-analysis HTML 变更影响报告"></a></p>
 </td>
 </tr>
 </table>
