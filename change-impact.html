@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Change impact analysis · inventory-service</title>
+<style>
+:root, html[data-theme="light"] {
+  color-scheme: light;
+  --bg:#f0f3f6; --sheet:#ffffff; --ink:#1a2332; --muted:#5a6578;
+  --line:#d5dde8; --acc:#0f6b4c; --acc-soft:#e6f4ee; --acc-fg:#fff;
+  --p0:#b42318; --p0-bg:#fde8e4;
+  --p1:#c2410c; --p1-bg:#ffedd5;
+  --p2:#9a6700; --p2-bg:#fef3c7;
+  --card:#f8fafc; --chip:#fff; --head:#fbfcfd; --code-bg:#eef2f6;
+  --hero-a:#d9ebe3; --hero-b:#d6e4f5;
+  --ok:#17663a; --ok-bg:#dcfce7;
+  --toolbar-bg: color-mix(in srgb, var(--sheet) 92%, transparent);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Segoe UI", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#0f141b; --sheet:#1a222c; --ink:#e8edf2; --muted:#9aa7b5;
+  --line:#2f3b49; --acc:#3ecf8e; --acc-soft:#163526; --acc-fg:#0b1a12;
+  --p0:#ff8a80; --p0-bg:#3a1d1c;
+  --p1:#ffb074; --p1-bg:#3a2718;
+  --p2:#e6c35c; --p2-bg:#3a3218;
+  --card:#141b24; --chip:#1f2833; --head:#162029; --code-bg:#24303b;
+  --hero-a:#1a2e28; --hero-b:#1a2433;
+  --ok:#7ddea4; --ok-bg:#163526;
+  --toolbar-bg: color-mix(in srgb, var(--sheet) 88%, transparent);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font: 14px/1.55 var(--sans);
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 500px at 10% -10%, var(--hero-a) 0%, transparent 55%),
+    radial-gradient(900px 400px at 100% 0%, var(--hero-b) 0%, transparent 50%),
+    var(--bg);
+}
+button { font: inherit; }
+code { font-family: var(--mono); font-size: 12px; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+.prefs {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; justify-content: flex-end;
+  padding: 10px 20px;
+  background: var(--toolbar-bg);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.prefs .group {
+  display: flex; gap: 4px; padding: 2px;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--sheet);
+}
+.prefs button {
+  appearance: none; border: 0; background: transparent; color: var(--muted);
+  font-size: 12px; font-weight: 600; padding: 8px 14px; min-height: 36px;
+  border-radius: 999px; cursor: pointer;
+}
+.prefs button[aria-pressed="true"] { background: var(--acc); color: var(--acc-fg); }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 24px 20px 72px; display: flex; flex-direction: column; gap: 20px; }
+.hero, .panel {
+  background: var(--sheet); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 1px 0 rgba(26,35,50,.04);
+}
+.hero { padding: 24px 28px; }
+.kicker { margin: 0 0 8px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0 0 8px; font-size: 24px; letter-spacing: -.02em; }
+.pill {
+  display: inline-block; margin-left: 8px; padding: 3px 10px; border-radius: 999px;
+  background: var(--p2-bg); color: var(--p2); font-size: 13px; font-weight: 700; vertical-align: middle;
+}
+.sub { margin: 0 0 14px; color: var(--muted); }
+.meta-row { display: flex; flex-wrap: wrap; gap: 10px 18px; font-size: 12.5px; color: var(--muted); }
+.chip-row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+.stat-chip { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); }
+.stat-chip .n { display: block; font-size: 22px; font-weight: 700; line-height: 1.1; }
+.stat-chip .l { display: block; margin-top: 4px; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.stat-chip .d { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); }
+.stat-chip.ok { background: var(--ok-bg); border-color: transparent; }
+.stat-chip.ok .n { color: var(--ok); }
+.stat-chip.bad { background: var(--p0-bg); border-color: transparent; }
+.stat-chip.bad .n { color: var(--p0); }
+.stat-chip.warn { background: var(--p2-bg); border-color: transparent; }
+.stat-chip.warn .n { color: var(--p2); font-size: 18px; padding-top: 2px; }
+.panel { padding: 20px 22px 16px; }
+.panel h2 { margin: 0; font-size: 18px; }
+.panel .hint { margin: 6px 0 14px; color: var(--muted); font-size: 13px; }
+.finding { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; align-items: start;
+  padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--head); }
+.finding + .finding { margin-top: 10px; }
+.badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .04em; padding: 3px 8px; border-radius: 999px; }
+.badge.gap { background: var(--p0-bg); color: var(--p0); }
+.badge.blast { background: var(--p1-bg); color: var(--p1); }
+.badge.covered { background: var(--ok-bg); color: var(--ok); }
+.finding h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+.finding p { margin: 0; color: var(--muted); font-size: 13px; }
+.risk { margin: 0 0 10px; padding: 12px 14px; border-radius: 10px; background: var(--p1-bg); color: var(--p1); }
+.risk:last-child { margin-bottom: 0; }
+.risk b { font-weight: 650; }
+.diagram { margin: 0 0 14px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); overflow-x: auto; }
+.diagram svg { max-width: 100%; height: auto; display: block; }
+.diagram-meta { margin-top: 8px; color: var(--muted); font-size: 12px; }
+.diagram-meta div { padding: 1px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { border: 1px solid var(--line); padding: 8px 10px; vertical-align: top; text-align: left; }
+th { background: var(--code-bg); font-size: 12px; font-weight: 600; color: var(--muted); }
+td.mono { font-family: var(--mono); font-size: 12px; }
+.tag { display: inline-block; padding: 1px 7px; border-radius: 999px; background: var(--code-bg); color: var(--muted); font-size: 11px; font-weight: 650; }
+.subhead { margin: 16px 0 8px; font-weight: 650; }
+.subhead span { margin-left: 8px; color: var(--muted); font-weight: 400; font-size: 12px; }
+.callout { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); }
+.callout.ok { background: var(--ok-bg); border-color: transparent; color: var(--ok); }
+.footer { margin: 4px 0 0; color: var(--muted); font-size: 12px; text-align: center; }
+@media (max-width: 900px) {
+  .chip-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .finding { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="prefs">
+  <div class="group" role="group" aria-label="Theme">
+    <button type="button" data-set-theme="light" aria-pressed="true">Light</button>
+    <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+  </div>
+</div>
+<div class="wrap">
+  <header class="hero">
+    <p class="kicker">codexqa-change-analysis · inventory-service</p>
+    <h1>Change impact analysis <span class="pill">partial</span></h1>
+    <p class="sub">3 entries this change can reach · baseline <code>origin/main</code></p>
+    <div class="meta-row">
+      <span>Command <code>codexqa-change-analysis inventory-service --diff-base origin/main --full</code></span>
+      <span>Generated 2026-09-21 14:40</span>
+    </div>
+    <div class="chip-row">
+      <div class="stat-chip"><span class="n">2</span><span class="l">Changed files</span><span class="d">2 production</span></div>
+      <div class="stat-chip"><span class="n">2</span><span class="l">Changed methods</span><span class="d">added 0 / changed 2 / deleted 0</span></div>
+      <div class="stat-chip"><span class="n">3</span><span class="l">Affected entries</span><span class="d">2 APIs + 1 page route</span></div>
+      <div class="stat-chip ok"><span class="n">1</span><span class="l">Reusable cases</span><span class="d">0 added this run</span></div>
+      <div class="stat-chip bad"><span class="n">2</span><span class="l">Uncovered points</span><span class="d">2 with no coverage</span></div>
+      <div class="stat-chip warn"><span class="n">Partial</span><span class="l">Coverage verdict</span><span class="d">partially covered</span></div>
+    </div>
+  </header>
+
+  <section class="panel">
+    <h2>Key findings</h2>
+    <p class="hint">Read these before drilling in.</p>
+    <article class="finding">
+      <span class="badge gap">Gap</span>
+      <div>
+        <h3><code>holdStock</code> can let two last-unit holds both succeed</h3>
+        <p>The check and the reserve are separate writes, and <code>POST /holds</code> has no concurrent case.</p>
+      </div>
+    </article>
+    <article class="finding">
+      <span class="badge blast">Blast</span>
+      <div>
+        <h3><code>resolveRefundAmount</code> can refund more than the remaining balance</h3>
+        <p><code>POST /refunds</code> returns the requested amount and never caps it.</p>
+      </div>
+    </article>
+    <article class="finding">
+      <span class="badge covered">Covered</span>
+      <div>
+        <h3>Hold expiry is already covered</h3>
+        <p><code>tests/hold-expiry.test.js:18</code> checks that a swept hold frees the unit and the storefront shows it.</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="panel">
+    <h2>Risks and unknowns</h2>
+    <p class="hint">Risks of this change itself.</p>
+    <p class="risk"><b>Stock can go negative under two concurrent holds.</b> <code>POST /holds</code> still accepts both when only one unit is left.</p>
+    <p class="risk"><b>A refund can exceed what the customer paid.</b> Callers of <code>POST /refunds</code> see a settled amount the ledger did not cap.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Affected entries</h2>
+    <p class="hint">Which APIs or pages can trigger this change.</p>
+    <div class="diagram">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 150" width="760" height="150" role="img" aria-label="Entries that reach the changed methods">
+        <style>text{font:12px ui-monospace,Menlo,monospace;fill:#141413}</style>
+        <rect x="8" y="16" width="210" height="36" rx="6" fill="#F0EEE6" stroke="#0f6b4c" stroke-width="2"/>
+        <text x="113" y="39" text-anchor="middle">POST /holds</text>
+        <rect x="270" y="16" width="210" height="36" rx="6" fill="#e6f4ee" stroke="#0f6b4c" stroke-width="2"/>
+        <text x="375" y="39" text-anchor="middle">holdStock</text>
+        <rect x="8" y="96" width="210" height="36" rx="6" fill="#F0EEE6" stroke="#0f6b4c" stroke-width="2"/>
+        <text x="113" y="119" text-anchor="middle">POST /refunds</text>
+        <rect x="270" y="96" width="230" height="36" rx="6" fill="#e6f4ee" stroke="#0f6b4c" stroke-width="2"/>
+        <text x="385" y="119" text-anchor="middle">resolveRefundAmount</text>
+        <path d="M218 34 H270" stroke="#5a6578" fill="none"/>
+        <path d="M218 114 H270" stroke="#5a6578" fill="none"/>
+      </svg>
+      <div class="diagram-meta">
+        <div>Basis: callers of holdStock and resolveRefundAmount</div>
+        <div>Cut off: storefront availability reads stock after the hold</div>
+        <div>What this shows: two APIs reach the two changed methods</div>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Changed method</th><th>Call chain</th><th>Reachable entry</th><th>Shape</th><th>Verdict</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td class="mono">holdStock</td><td class="mono">createHold → holdStock</td><td class="mono">src/holds.js:22</td><td>API</td><td><span class="tag">intermediate</span></td></tr>
+        <tr><td>2</td><td class="mono">resolveRefundAmount</td><td class="mono">postRefund → resolveRefundAmount</td><td class="mono">src/refunds.js:14</td><td>API</td><td><span class="tag">intermediate</span></td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><b>Extra entries hit:</b> <code>GET /storefront/availability</code> reads the stock <code>holdStock</code> reserved. The route itself did not change.</div>
+  </section>
+
+  <section class="panel">
+    <h2>Change list</h2>
+    <p class="hint">added 0 / changed 2 / deleted 0</p>
+    <table>
+      <thead><tr><th>Category</th><th>Method</th><th>file:line</th><th>What changed</th></tr></thead>
+      <tbody>
+        <tr><td>changed</td><td class="mono">holdStock</td><td class="mono">src/inventory.js:49</td><td>Still reads stock, then writes the reserved count. Two overlapping holds of the last unit can both pass.</td></tr>
+        <tr><td>changed</td><td class="mono">resolveRefundAmount</td><td class="mono">src/refund.js:27</td><td>Returns the requested amount. The remaining balance is computed and then ignored.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <h2>Test plan</h2>
+    <p class="hint">Cover the new behavior, then keep the old behavior. Must-test entries: <code>POST /holds</code>, <code>POST /refunds</code>, <code>GET /storefront/availability</code>.</p>
+    <div class="subhead">Points this change must newly cover <span>disposition is reuse / extend / add</span></div>
+    <table>
+      <thead><tr><th>Entry</th><th>Scenario</th><th>Assertion</th><th>Disposition</th><th>Kind</th><th>Case file</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">POST /holds</td><td>Two last-unit holds at the same time</td><td>Exactly one succeeds; stock never goes negative</td><td>add</td><td>API test</td><td class="mono">scripts/change-impact-tests.mjs:24</td></tr>
+        <tr><td class="mono">POST /refunds</td><td>Requested refund is larger than the remaining balance</td><td>Settled amount is the remaining balance</td><td>add</td><td>API test</td><td class="mono">scripts/change-impact-tests.mjs:41</td></tr>
+      </tbody>
+    </table>
+    <div class="subhead">Points to regression-test <span>existing behavior this change might break</span></div>
+    <table>
+      <thead><tr><th>Entry / caller</th><th>Why this change can hit it</th><th>Regression assertion</th><th>Disposition</th><th>Kind</th><th>Case file</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">GET /storefront/availability</td><td>A swept hold must free the unit the page shows</td><td>Availability returns to 3 after expiry</td><td>reuse</td><td>API test</td><td class="mono">tests/hold-expiry.test.js:18</td></tr>
+      </tbody>
+    </table>
+    <div class="callout ok"><b>New case files:</b> <code>scripts/change-impact-tests.mjs</code> — 2 cases, all passed.</div>
+  </section>
+
+  <section class="panel">
+    <h2>Coverage verdict</h2>
+    <p class="hint">Based on the cases as they are now.</p>
+    <p><b>Verdict:</b> partially covered. Existing cases cover 1 point (<code>tests/hold-expiry.test.js</code>).</p>
+    <p><b>Original gaps now covered:</b> none. The two new cases are the first coverage for the last-unit hold and the refund cap.</p>
+    <p><b>Still cannot cover:</b> none.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Sensitive paths</h2>
+    <p class="hint">High-risk surfaces and user-data isolation.</p>
+    <p><b>Stock.</b> Previously the last-unit race had no case. <code>scripts/change-impact-tests.mjs:24</code> now covers two concurrent holds. Nothing on this path is still uncovered.</p>
+    <p><b>Payment.</b> Previously a refund could exceed the remaining balance with no case. <code>scripts/change-impact-tests.mjs:41</code> now caps it. Nothing on this path is still uncovered.</p>
+  </section>
+
+  <p class="footer">codexqa-change-analysis · inventory-service · origin/main · generated 2026-09-21 14:40</p>
+</div>
+<script>
+(function () {
+  var key = "change-impact-preview-theme";
+  function setTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    document.querySelectorAll("[data-set-theme]").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-set-theme") === theme ? "true" : "false");
+    });
+    try { localStorage.setItem(key, theme); } catch (e) {}
+  }
+  document.querySelectorAll("[data-set-theme]").forEach(function (b) {
+    b.addEventListener("click", function () { setTheme(b.getAttribute("data-set-theme")); });
+  });
+  try {
+    var saved = localStorage.getItem(key);
+    if (saved === "light" || saved === "dark") setTheme(saved);
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>
