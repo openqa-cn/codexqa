@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light" data-lang="en" data-store="analyzer-report">
+<html lang="zh-CN" data-theme="light" data-lang="zh" data-store="analyzer-report">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title data-zh="变更影响图" data-en="codexqa-code-analyzer · checkout change impact">codexqa-code-analyzer · checkout change impact</title>
+<title data-zh="变更影响图" data-en="codexqa-code-analyzer · checkout change impact">变更影响图</title>
 <script>
 (function(){
   try {
@@ -210,30 +210,37 @@ html[data-lang="en"] .unit-zh { display:none; }
 <body>
 <div class="prefs" role="toolbar" aria-label="Language and theme">
   <div class="group" role="group" aria-label="Language">
-    <button type="button" data-set-lang="zh" aria-pressed="false">中文</button>
-    <button type="button" data-set-lang="en" aria-pressed="true">EN</button>
+    <button type="button" data-set-lang="zh" aria-pressed="true">中文</button>
+    <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
   </div>
   <div class="group" role="group" aria-label="Theme">
-    <button type="button" data-set-theme="light" aria-pressed="true"><span data-zh="白天" data-en="Light">Light</span></button>
-    <button type="button" data-set-theme="dark" aria-pressed="false"><span data-zh="黑夜" data-en="Dark">Dark</span></button>
+    <button type="button" data-set-theme="light" aria-pressed="true"><span data-zh="白天" data-en="Light">白天</span></button>
+    <button type="button" data-set-theme="dark" aria-pressed="false"><span data-zh="黑夜" data-en="Dark">黑夜</span></button>
   </div>
 </div>
 <div class="wrap">
 
+  <style>
+    .figure-frame img.unit-zh,
+    .figure-frame img.unit-en { display:block; }
+    html:not([data-lang="en"]) .figure-frame img.unit-en { display:none; }
+    html[data-lang="en"] .figure-frame img.unit-zh { display:none; }
+  </style>
   <header class="hero">
-    <p class="kicker">codexqa-code-analyzer · change-impact graph</p>
-    <h1>Checkout: who calls the change, which entries fire, which tests miss it</h1>
-    <p class="sub"><span class="badge type">symbol graph</span> Entry → impact → changed symbols → graph-backed tests</p>
+    <p class="kicker"><span data-zh="codexqa-code-analyzer · 变更影响图" data-en="codexqa-code-analyzer · change-impact graph">codexqa-code-analyzer · 变更影响图</span></p>
+    <h1><span data-zh="结账：谁调用这次改动，哪些入口会触发，哪些测试没罩住" data-en="Checkout: who calls the change, which entries fire, which tests miss it">结账：谁调用这次改动，哪些入口会触发，哪些测试没罩住</span></h1>
+    <p class="sub"><span class="badge type"><span data-zh="符号图" data-en="symbol graph">符号图</span></span> <span data-zh="入口 → 影响 → 变更符号 → 图上的测试" data-en="Entry → impact → changed symbols → graph-backed tests">入口 → 影响 → 变更符号 → 图上的测试</span></p>
   </header>
   <section class="panel">
-    <div class="panel-head"><h2>Change-impact graph</h2></div>
+    <div class="panel-head"><h2><span data-zh="变更影响图" data-en="Change-impact graph">变更影响图</span></h2></div>
     <div class="figure-frame">
-      <img src="checkout-change-impact.svg" alt="Checkout change-impact graph" width="1200" height="720">
+      <img class="unit-zh" src="checkout-change-impact.zh.svg" alt="结账变更影响图" width="1200" height="720">
+      <img class="unit-en" src="checkout-change-impact.svg" alt="Checkout change-impact graph" width="1200" height="720">
     </div>
   </section>
   <div class="toolbar">
     <div class="tabs" role="tablist">
-      <button type="button" class="tab" data-sev="all" aria-selected="true">All (3)</button>
+      <button type="button" class="tab" data-sev="all" aria-selected="true"><span data-zh="全部 (3)" data-en="All (3)">全部 (3)</span></button>
     </div>
     <div class="filters">
       <button class="tab" type="button" id="expandAll"><span data-zh="展开全部" data-en="Expand all">展开全部</span></button>
@@ -242,37 +249,37 @@ html[data-lang="en"] .unit-zh { display:none; }
   </div>
   <section class="panel">
     <div class="panel-head">
-      <h2>Impact records</h2>
-      <p class="desc">Click a card to expand callers, entries, and test gaps</p>
+      <h2><span data-zh="影响记录" data-en="Impact records">影响记录</span></h2>
+      <p class="desc"><span data-zh="点开卡片查看调用方、入口和测试缺口" data-en="Click a card to expand callers, entries, and test gaps">点开卡片查看调用方、入口和测试缺口</span></p>
     </div>
     <div class="case-list">
       <article class="case" id="an-1">
       <div class="case-head" role="button" tabindex="0" aria-expanded="false">
-        <span class="badge type">callers</span>
-        <h3>Who calls the change</h3>
+        <span class="badge type"><span data-zh="调用方" data-en="callers">调用方</span></span>
+        <h3><span data-zh="谁在调用这次改动" data-en="Who calls the change">谁在调用这次改动</span></h3>
         <span class="chev" aria-hidden="true"></span>
       </div>
-      <div class="case-body"><div class="block"><p><code>checkout.js#placeOrder</code> and <code>cart.js#reprice</code> both reach <code>pricing.js#volumeDiscountRate</code>.</p></div></div>
+      <div class="case-body"><div class="block"><p class="unit-zh"><code>checkout.js#placeOrder</code> 和 <code>cart.js#reprice</code> 都会到达 <code>pricing.js#volumeDiscountRate</code>。</p><p class="unit-en"><code>checkout.js#placeOrder</code> and <code>cart.js#reprice</code> both reach <code>pricing.js#volumeDiscountRate</code>.</p></div></div>
     </article>
       <article class="case" id="an-2">
       <div class="case-head" role="button" tabindex="0" aria-expanded="false">
-        <span class="badge type">entries</span>
-        <h3>Which entries fire</h3>
+        <span class="badge type"><span data-zh="入口" data-en="entries">入口</span></span>
+        <h3><span data-zh="哪些入口会触发" data-en="Which entries fire">哪些入口会触发</span></h3>
         <span class="chev" aria-hidden="true"></span>
       </div>
-      <div class="case-body"><div class="block"><p><code>POST /v1/checkout</code> and the cart reprice worker both enter the changed symbol.</p></div></div>
+      <div class="case-body"><div class="block"><p class="unit-zh"><code>POST /v1/checkout</code> 和购物车改价任务都会进入被改符号。</p><p class="unit-en"><code>POST /v1/checkout</code> and the cart reprice worker both enter the changed symbol.</p></div></div>
     </article>
       <article class="case" id="an-3" data-pri="P1">
       <div class="case-head" role="button" tabindex="0" aria-expanded="false">
-        <span class="badge pri p1">gap</span>
-        <h3>Which tests miss it</h3>
+        <span class="badge pri p1"><span data-zh="缺口" data-en="gap">缺口</span></span>
+        <h3><span data-zh="哪些测试没罩住" data-en="Which tests miss it">哪些测试没罩住</span></h3>
         <span class="chev" aria-hidden="true"></span>
       </div>
-      <div class="case-body"><div class="block"><p>Graph has no tests-reach edge on <code>volumeDiscountRate</code>. Existing checkout tests never cover the inclusive 10-unit tier.</p></div></div>
+      <div class="case-body"><div class="block"><p class="unit-zh">图上没有指向 <code>volumeDiscountRate</code> 的 tests 边。现有结账测试没有覆盖「满 10 件含本档」。</p><p class="unit-en">Graph has no tests-reach edge on <code>volumeDiscountRate</code>. Existing checkout tests never cover the inclusive 10-unit tier.</p></div></div>
     </article>
     </div>
   </section>
-  <p class="footer">codexqa-code-analyzer · illustration from the published SVG</p>
+  <p class="footer"><span data-zh="codexqa-code-analyzer · 取自已发布的变更影响图" data-en="codexqa-code-analyzer · illustration from the published SVG">codexqa-code-analyzer · 取自已发布的变更影响图</span></p>
 
 </div>
 <script>

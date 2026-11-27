@@ -180,35 +180,48 @@ def write_wiki():
     subprocess.run(["node", str(PREVIEWS / "render-code-wiki.mjs")], check=True)
 
 
+def bi(zh, en, lang="zh"):
+    shown = zh if lang == "zh" else en
+    return f'<span data-zh="{zh}" data-en="{en}">{shown}</span>'
+
+
 def write_analyzer():
+    lang = "zh"
     body = f"""
+  <style>
+    .figure-frame img.unit-zh,
+    .figure-frame img.unit-en {{ display:block; }}
+    html:not([data-lang="en"]) .figure-frame img.unit-en {{ display:none; }}
+    html[data-lang="en"] .figure-frame img.unit-zh {{ display:none; }}
+  </style>
   <header class="hero">
-    <p class="kicker">codexqa-code-analyzer · change-impact graph</p>
-    <h1>Checkout: who calls the change, which entries fire, which tests miss it</h1>
-    <p class="sub"><span class="badge type">symbol graph</span> Entry → impact → changed symbols → graph-backed tests</p>
+    <p class="kicker">{bi("codexqa-code-analyzer · 变更影响图", "codexqa-code-analyzer · change-impact graph", lang)}</p>
+    <h1>{bi("结账：谁调用这次改动，哪些入口会触发，哪些测试没罩住", "Checkout: who calls the change, which entries fire, which tests miss it", lang)}</h1>
+    <p class="sub"><span class="badge type">{bi("符号图", "symbol graph", lang)}</span> {bi("入口 → 影响 → 变更符号 → 图上的测试", "Entry → impact → changed symbols → graph-backed tests", lang)}</p>
   </header>
   <section class="panel">
-    <div class="panel-head"><h2>Change-impact graph</h2></div>
+    <div class="panel-head"><h2>{bi("变更影响图", "Change-impact graph", lang)}</h2></div>
     <div class="figure-frame">
-      <img src="checkout-change-impact.svg" alt="Checkout change-impact graph" width="1200" height="720">
+      <img class="unit-zh" src="checkout-change-impact.zh.svg" alt="结账变更影响图" width="1200" height="720">
+      <img class="unit-en" src="checkout-change-impact.svg" alt="Checkout change-impact graph" width="1200" height="720">
     </div>
   </section>
-{toolbar([("all", "All (3)")])}
+{toolbar([("all", bi("全部 (3)", "All (3)", lang))])}
   <section class="panel">
     <div class="panel-head">
-      <h2>Impact records</h2>
-      <p class="desc">Click a card to expand callers, entries, and test gaps</p>
+      <h2>{bi("影响记录", "Impact records", lang)}</h2>
+      <p class="desc">{bi("点开卡片查看调用方、入口和测试缺口", "Click a card to expand callers, entries, and test gaps", lang)}</p>
     </div>
     <div class="case-list">
-      {case_card("Who calls the change", '<div class="block"><p><code>checkout.js#placeOrder</code> and <code>cart.js#reprice</code> both reach <code>pricing.js#volumeDiscountRate</code>.</p></div>', badges='<span class="badge type">callers</span>', cid="an-1")}
-      {case_card("Which entries fire", '<div class="block"><p><code>POST /v1/checkout</code> and the cart reprice worker both enter the changed symbol.</p></div>', badges='<span class="badge type">entries</span>', cid="an-2")}
-      {case_card("Which tests miss it", '<div class="block"><p>Graph has no tests-reach edge on <code>volumeDiscountRate</code>. Existing checkout tests never cover the inclusive 10-unit tier.</p></div>', badges='<span class="badge pri p1">gap</span>', pri="P1", cid="an-3")}
+      {case_card(bi("谁在调用这次改动", "Who calls the change", lang), '<div class="block"><p class="unit-zh"><code>checkout.js#placeOrder</code> 和 <code>cart.js#reprice</code> 都会到达 <code>pricing.js#volumeDiscountRate</code>。</p><p class="unit-en"><code>checkout.js#placeOrder</code> and <code>cart.js#reprice</code> both reach <code>pricing.js#volumeDiscountRate</code>.</p></div>', badges=f'<span class="badge type">{bi("调用方", "callers", lang)}</span>', cid="an-1")}
+      {case_card(bi("哪些入口会触发", "Which entries fire", lang), '<div class="block"><p class="unit-zh"><code>POST /v1/checkout</code> 和购物车改价任务都会进入被改符号。</p><p class="unit-en"><code>POST /v1/checkout</code> and the cart reprice worker both enter the changed symbol.</p></div>', badges=f'<span class="badge type">{bi("入口", "entries", lang)}</span>', cid="an-2")}
+      {case_card(bi("哪些测试没罩住", "Which tests miss it", lang), '<div class="block"><p class="unit-zh">图上没有指向 <code>volumeDiscountRate</code> 的 tests 边。现有结账测试没有覆盖「满 10 件含本档」。</p><p class="unit-en">Graph has no tests-reach edge on <code>volumeDiscountRate</code>. Existing checkout tests never cover the inclusive 10-unit tier.</p></div>', badges=f'<span class="badge pri p1">{bi("缺口", "gap", lang)}</span>', pri="P1", cid="an-3")}
     </div>
   </section>
-  <p class="footer">codexqa-code-analyzer · illustration from the published SVG</p>
+  <p class="footer">{bi("codexqa-code-analyzer · 取自已发布的变更影响图", "codexqa-code-analyzer · illustration from the published SVG", lang)}</p>
 """
     (PREVIEWS / "code-analyzer.html").write_text(
-        page("analyzer-report", "变更影响图", "codexqa-code-analyzer · checkout change impact", body, lang="en"),
+        page("analyzer-report", "变更影响图", "codexqa-code-analyzer · checkout change impact", body, lang=lang),
         encoding="utf-8")
     print("code-analyzer.html")
 
